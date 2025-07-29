@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:joyphysics/data.dart';
+import 'package:joyphysics/model.dart';
 
 // 色コードからColor生成拡張
 extension HexColor on Color {
@@ -22,31 +24,16 @@ extension HexColor on Color {
 // 表示モード
 enum VideoViewMode { byCategory, byFormula }
 
-// データモデル
-class Video {
-  final String iconName;
-  final String title;
-  final String videoURL;
-  final List<String> equipment;
-  final String costRating;
-  final String? latex;
-
-  Video({
-    required this.iconName,
-    required this.title,
-    required this.videoURL,
-    required this.equipment,
-    required this.costRating,
-    this.latex,
-  });
-}
-
 class FormulaEntry {
   final String latex;
   final Video relatedVideo;
   final String categoryName;
 
-  FormulaEntry(this.latex, this.relatedVideo, this.categoryName);
+  FormulaEntry({
+    required this.latex,
+    required this.relatedVideo,
+    required this.categoryName,
+  });
 }
 
 class Subcategory {
@@ -62,88 +49,323 @@ class Category {
   Category({required this.name, required this.gifUrl, required this.subcategories});
 }
 
-// サンプルデータ: 動作確認用
-final sampleVideo = Video(
-  iconName: 'assets/profile.jpg',
-  title: 'サンプル動画',
-  videoURL: 'UU2CRiPpxDQ',
-  equipment: ['はかり', '定規'],
-  costRating: '★☆☆',
-  latex: r"$x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$",
-);
-
-final elasticCollision2D = Video(
-  iconName: 'assets/elasticCollision2D.png',
-  title: '弾性衝突(2次元)',
-  videoURL: 'UU2CRiPpxDQ',
-  equipment: ['10円玉'],
-  costRating: '★☆☆',
-  latex: """
-<div class="common-box">ポイント</div>
-<p>・運動量保存則:\$\\displaystyle m_1\\overrightarrow{v_1} + m_2\\overrightarrow{v_2} = m_1\\overrightarrow{v_1'} + m_2\\overrightarrow{v_2'}\$</p>
-<p>・力学的エネルギー保存則:\$\\displaystyle \\frac12 m_1 |\\overrightarrow{v_1}|^2 + \\frac12 m_2 |\\overrightarrow{v_2}|^2 = \\frac12 m_1 |\\overrightarrow{v_1'}|^2 + \\frac12 m_2 |\\overrightarrow{v_2'}|^2\$</p>
-<p>\$m_1\$, \$m_2\$：質量, \$\\overrightarrow{v_1}\$, \$\\overrightarrow{v_2}\$：衝突前の速度, \$\\overrightarrow{v_1'}\$, \$\\overrightarrow{v_2'}\$：衝突後の速度</p>
-
-<div class="common-box">問題設定</div>
-<p>静止している質量\$m\$の物体に対して、同じ質量\$m\$の物体が速度\$\\overrightarrow{v}\$で弾性衝突した場合、衝突後の2つの速度ベクトル\$\\overrightarrow{v_1}, \\overrightarrow{v_2}\$のなす角度を求めて下さい。</p>
-<div style="text-align:center; margin:1em 0;">
-  <img src="elasticCollision2D.png"
-       alt="2次元弾性衝突"
-       style="max-width:100%; height:auto;" />
-</div>
-<div class="common-box">理論計算</div>
-<p>まず、2次元における運動量保存（ベクトル式）は次のように表される。</p>
-\\[
-\\begin{aligned}
-m \\overrightarrow{v} &= m \\overrightarrow{v_1} + m \\overrightarrow{v_2} \\\\
-\\Longleftrightarrow \\overrightarrow{v} &= \\overrightarrow{v_1} + \\overrightarrow{v_2}.
-\\end{aligned}
-\\]
-
-<p>また、弾性衝突では力学的エネルギーも保存されるので、</p>
-\\[
-\\begin{aligned}
-\\frac{1}{2} m |\\overrightarrow{v}|^2
-&= \\frac{1}{2} m |\\overrightarrow{v_1}|^2 + \\frac{1}{2} m |\\overrightarrow{v_2}|^2 \\\\
-\\Longleftrightarrow |\\overrightarrow{v}|^2 &= |\\overrightarrow{v_1}|^2 + |\\overrightarrow{v_2}|^2.
-\\end{aligned}
-\\]
-<p>この2つの条件を同時に満たすとき、衝突後の2つの速度ベクトルは直角（90°）をなす。</p>
-"""
-);
-
-
 final categories = <Category>[
+  // 力学
   Category(
     name: '力学',
-    gifUrl: 'assets/dynamics.gif',
-    subcategories: [Subcategory(name: 'サンプル', videos: [elasticCollision2D])],
+    gifUrl: 'assets/init/dynamics.gif',
+    subcategories: [
+      Subcategory(
+        name: '色々な力',
+        videos: [
+          fook,
+          staticFriction,
+          kineticFriction,
+          buoyancyAndActionReaction,
+          buoyancyComparison,
+        ],
+      ),
+      Subcategory(
+        name: '運動方程式',
+        videos: [
+          freeFall,
+          verticalSpringOscillation,
+          pendulumPeriodMeasurement,
+        ],
+      ),
+      Subcategory(
+        name: '保存則',
+        videos: [
+          elasticCollision1D,
+          elasticCollision2D,
+        ],
+      ),
+      Subcategory(
+        name: '剛体',
+        videos: [
+          oneSideLift,
+          buildingBlocksStability,
+        ],
+      ),
+      Subcategory(
+        name: 'ケプラーの法則',
+        videos: [
+          planets,
+          moonOrbit,
+          jupiter,
+        ],
+      ),
+    ],
   ),
+
+  // 電磁気学
   Category(
     name: '電磁気学',
-    gifUrl: 'assets/electromag.gif',
-    subcategories: [Subcategory(name: 'サンプル', videos: [sampleVideo])],
+    gifUrl: 'assets/init/electromag.gif',
+    subcategories: [
+      Subcategory(
+        name: 'コンデンサ',
+        videos: [
+          capacitorIntroduction,
+          parallelPlateCapacitanceMeasurement,
+          capacitanceSeriesCombination,
+          capacitanceParallelCombination,
+          capacitorChargeStorage,
+        ],
+      ),
+      Subcategory(
+        name: '抵抗',
+        videos: [
+          resistanceMeasurement,
+          resistanceVsLength,
+          seriesResistance,
+          parallelResistance,
+          resistivityTemperatureDependence,
+        ],
+      ),
+      Subcategory(
+        name: '電流',
+        videos: [
+          lemonBatteryVoltage,
+          rcCircuit,
+        ],
+      ),
+      Subcategory(
+        name: '半導体・電子素子',
+        videos: [
+          diodeIntroduction,
+        ],
+      ),
+      Subcategory(
+        name: '磁場',
+        videos: [
+          ampereLawTorque,
+          magneticFieldCircularLoop,
+          lorentzForce,
+          forceBetweenParallelCurrents,
+          neodymiumMagnetFieldMeasurement,
+        ],
+      ),
+      Subcategory(
+        name: 'コイルの性質',
+        videos: [
+          coilProperties,
+          solenoidSelfInductance,
+        ],
+      ),
+      Subcategory(
+        name: '磁性体',
+        videos: [
+          bismuthDiamagnetism,
+        ],
+      ),
+    ],
   ),
+
+  // 波動
   Category(
     name: '波動',
-    gifUrl: 'assets/wave.gif',
-    subcategories: [Subcategory(name: 'サンプル', videos: [sampleVideo])],
+    gifUrl: 'assets/init/wave.gif',
+    subcategories: [
+      Subcategory(
+        name: '音波',
+        videos: [
+          closedPipeResonance,
+          openPipeResonance,
+        ],
+      ),
+      Subcategory(
+        name: '光波',
+        videos: [
+          diffractionGrating,
+          spectroscopy,
+        ],
+      ),
+    ],
   ),
+
+  // 熱力学
   Category(
     name: '熱力学',
-    gifUrl: 'assets/fire.gif',
-    subcategories: [Subcategory(name: 'サンプル', videos: [sampleVideo])],
+    gifUrl: 'assets/init/fire.gif',
+    subcategories: [
+      Subcategory(
+        name: '気体の法則',
+        videos: [
+          boyleLaw,
+        ],
+      ),
+    ],
+  )
+];
+
+final List<FormulaEntry> formulaList = [
+  // — 力学 —
+  FormulaEntry(
+    latex: "浮力の大きさ（アルキメデスの原理）： f = \\rho g V",
+    relatedVideo: buoyancyAndActionReaction,
+    categoryName: "力のつり合い・浮力",
   ),
-  Category(
-    name: 'アプリについて',
-    gifUrl: 'assets/dynamics.gif',
-    subcategories: [Subcategory(name: 'サンプル', videos: [sampleVideo])],
+  FormulaEntry(
+    latex: "作用・反作用の法則： \\overrightarrow{F}_{1 \\leftarrow 2} + \\overrightarrow{F}_{2 \\leftarrow 1} = \\overrightarrow{0}",
+    relatedVideo: buoyancyAndActionReaction,
+    categoryName: "力のつり合い・浮力",
+  ),
+  FormulaEntry(
+    latex: "自由落下の変位： x(t) = \\frac12 g t^2",
+    relatedVideo: freeFall,
+    categoryName: "等加速度運動",
+  ),
+  FormulaEntry(
+    latex: "自由落下の時間： t(x) = \\sqrt{\\frac{2x}{g}}",
+    relatedVideo: freeFall,
+    categoryName: "等加速度運動",
+  ),
+  FormulaEntry(
+    latex: "バネの弾性力： F(x) = -k x",
+    relatedVideo: verticalSpringOscillation,
+    categoryName: "バネ・単振動",
+  ),
+  FormulaEntry(
+    latex: "鉛直バネ振り子の周期： T = 2\\pi \\sqrt{\\frac{m}{k}}",
+    relatedVideo: verticalSpringOscillation,
+    categoryName: "バネ・単振動",
+  ),
+  FormulaEntry(
+    latex: "静止摩擦力,静止摩擦係数： F_{s} = \\mu_{s} N",
+    relatedVideo: staticFriction,
+    categoryName: "摩擦力",
+  ),
+  FormulaEntry(
+    latex: "動摩擦力,動摩擦係数： F_{k} = \\mu_{k} N",
+    relatedVideo: kineticFriction,
+    categoryName: "摩擦力",
+  ),
+  FormulaEntry(
+    latex: "単振り子の周期： T = 2\\pi \\sqrt{\\frac{l}{g}}",
+    relatedVideo: pendulumPeriodMeasurement,
+    categoryName: "バネ・単振動",
+  ),
+  FormulaEntry(
+    latex: "1次元の運動量保存： m_{1} v_{1} + m_{2} v_{2} = m_{1} v_{1}' + m_{2} v_{2}'",
+    relatedVideo: elasticCollision1D,
+    categoryName: "運動量保存則",
+  ),
+  FormulaEntry(
+    latex: "2次元の運動量保存： m_{1} \\vec{v}_{1} + m_{2} \\vec{v}_{2} = m_{1} \\vec{v}_{1}' + m_{2} \\vec{v}_{2}'",
+    relatedVideo: elasticCollision2D,
+    categoryName: "運動量保存則",
+  ),
+  FormulaEntry(
+    latex: "2次元弾性衝突（E保存）： \\tfrac12 m_{1} v_{1}^{2} + \\tfrac12 m_{2} v_{2}^{2} = \\tfrac12 m_{1} v_{1}'^{2} + \\tfrac12 m_{2} v_{2}'^{2}",
+    relatedVideo: elasticCollision2D,
+    categoryName: "力学的エネルギー保存",
+  ),
+  FormulaEntry(
+    latex: "ケプラーの第3法則： \\displaystyle \\frac{T^{2}}{a^{3}} = \\frac{4\\pi^{2}}{GM}",
+    relatedVideo: planets,
+    categoryName: "ケプラーの第3法則",
+  ),
+
+  // — 電磁気 —
+  FormulaEntry(
+    latex: "ローレンツ力の大きさ： F = q v B \\sin\\theta",
+    relatedVideo: lorentzForce,
+    categoryName: "電磁力・ローレンツ力",
+  ),
+  FormulaEntry(
+    latex: "磁場が電流に及ぼす力： F = I \\ell B \\sin\\theta",
+    relatedVideo: lorentzForce,
+    categoryName: "電磁力・ローレンツ力",
+  ),
+  FormulaEntry(
+    latex: "アンペールの法則： B = \\dfrac{\\mu_{0} I}{2\\pi r}",
+    relatedVideo: ampereLawTorque,
+    categoryName: "磁場",
+  ),
+  FormulaEntry(
+    latex: "円形電流の中心における磁場： B = \\dfrac{\\mu_{0} I}{2a}",
+    relatedVideo: magneticFieldCircularLoop,
+    categoryName: "磁場",
+  ),
+  FormulaEntry(
+    latex: "平行電流間の力： F = \\dfrac{\\mu_{0} I_{1} I_{2} \\ell}{2\\pi r}",
+    relatedVideo: forceBetweenParallelCurrents,
+    categoryName: "電磁力・ローレンツ力",
+  ),
+  FormulaEntry(
+    latex: "ソレノイドコイルの自己インダクタンス： L = \\mu_{0} \\mu_{r} \\dfrac{N^{2} A}{\\ell}",
+    relatedVideo: solenoidSelfInductance,
+    categoryName: "電磁誘導・インダクタンス",
+  ),
+
+  // — 電気回路 —
+  FormulaEntry(
+    latex: "導線抵抗： R = \\rho \\dfrac{\\ell}{A}",
+    relatedVideo: resistanceVsLength,
+    categoryName: "オームの法則・抵抗",
+  ),
+  FormulaEntry(
+    latex: "合成抵抗（直列）： \\displaystyle R = \\sum_{i=1}^{n} R_{i}",
+    relatedVideo: seriesResistance,
+    categoryName: "オームの法則・抵抗",
+  ),
+  FormulaEntry(
+    latex: "合成抵抗（並列）： \\displaystyle \\dfrac{1}{R} = \\sum_{i=1}^{n} \\dfrac{1}{R_{i}}",
+    relatedVideo: parallelResistance,
+    categoryName: "オームの法則・抵抗",
+  ),
+  FormulaEntry(
+    latex: "温度と抵抗： R = R_{0} \\bigl(1 + \\alpha (T - T_{0})\\bigr)",
+    relatedVideo: resistivityTemperatureDependence,
+    categoryName: "オームの法則・抵抗",
+  ),
+  FormulaEntry(
+    latex: "平行板コンデンサの電気容量： C = \\varepsilon_{0} \\dfrac{S}{d}",
+    relatedVideo: parallelPlateCapacitanceMeasurement,
+    categoryName: "コンデンサ・静電気",
+  ),
+  FormulaEntry(
+    latex: "合成容量（直列）： \\displaystyle \\dfrac{1}{C} = \\sum_{i=1}^{n} \\dfrac{1}{C_{i}}",
+    relatedVideo: capacitanceSeriesCombination,
+    categoryName: "コンデンサ・静電気",
+  ),
+  FormulaEntry(
+    latex: "合成容量（並列）： C = \\displaystyle \\sum_{i=1}^{n} C_{i}",
+    relatedVideo: capacitanceParallelCombination,
+    categoryName: "コンデンサ・静電気",
+  ),
+  FormulaEntry(
+    latex: "コンデンサに蓄えられる電気量： Q = CV",
+    relatedVideo: capacitorChargeStorage,
+    categoryName: "コンデンサ・静電気",
+  ),
+
+  // — 波動 —
+  FormulaEntry(
+    latex: "閉管のn倍振動の波長： L = \\frac{(2n-1)\\lambda}{4} （n=1,3,5,⋯）",
+    relatedVideo: closedPipeResonance,
+    categoryName: "音・共鳴",
+  ),
+  FormulaEntry(
+    latex: "開管のn倍振動の波長： L = \\frac{n\\lambda}{2} （n=1,2,3,⋯）",
+    relatedVideo: openPipeResonance,
+    categoryName: "音・共鳴",
+  ),
+  FormulaEntry(
+    latex: "回折格子の干渉条件： d \\sin\\theta = n\\lambda",
+    relatedVideo: diffractionGrating,
+    categoryName: "光の干渉・回折",
+  ),
+
+  // — 熱力学 —
+  FormulaEntry(
+    latex: "ボイルの法則： PV = \\text{一定}",
+    relatedVideo: boyleLaw,
+    categoryName: "気体の法則・熱力学",
   ),
 ];
 
-final formulaList = <FormulaEntry>[
-  FormulaEntry(sampleVideo.latex!, sampleVideo, '二次方程式'),
-];
 
 void main() => runApp(JoyPhysicsApp());
 
@@ -161,7 +383,7 @@ class ContentView extends StatelessWidget {
   Widget build(BuildContext context) => Scaffold(
       body: Stack(
         children: [
-          Positioned.fill(child: Image.asset('assets/init.png', fit: BoxFit.cover)),
+          Positioned.fill(child: Image.asset('assets/init/init.png', fit: BoxFit.cover)),
           Positioned.fill(child: Container(color: Colors.white.withOpacity(0.7))),
           SafeArea(
             child: Column(
@@ -182,7 +404,7 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Column(
         children: [
-          Image.asset('assets/profile.jpg', width: 120, height: 80),
+          Image.asset('assets/init/profile_arrange.png', width: 120, height: 80),
           SizedBox(height: 4),
           Text('実験で学ぶ高校物理',
               style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.black)),
@@ -196,27 +418,50 @@ class _CategoryList extends StatelessWidget {
         padding: EdgeInsets.zero,
         itemCount: categories.length + 1,
         itemBuilder: (context, index) {
-          if (index == categories.length) return ListTile(
-            title: Text('アプリについて'),
-            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => AboutView())),
-          );
+          if (index == categories.length) {
+            // 「アプリについて」のボタン
+            return Padding(
+              padding: EdgeInsets.symmetric(vertical: 8, horizontal: 40),
+              child: GestureDetector(
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => AboutView())),
+                child: Container(
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withOpacity(0.9), // 背景をグレーに
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [BoxShadow(blurRadius: 4, color: Colors.black26)],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset('assets/init/about.gif', width: 35, height: 35),
+                      SizedBox(width: 8),
+                      Text('アプリについて',
+                          style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }
+
           final cat = categories[index];
           return Padding(
             padding: EdgeInsets.symmetric(vertical: 8, horizontal: 40),
             child: GestureDetector(
-              onTap: () => Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => VideoListView(category: cat))),
+              onTap: () => Navigator.push(
+                  context, MaterialPageRoute(builder: (_) => VideoListView(category: cat))),
               child: Container(
                 height: 60,
                 decoration: BoxDecoration(
-                  color: HexColor.fromHex('#A52A2A').withOpacity(0.9),
+                  color: Color(0xFFE96508).withOpacity(0.9), // 明るい茶色
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [BoxShadow(blurRadius: 4, color: Colors.black26)],
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Image.asset(cat.gifUrl, width: 35, height: 35), // ← ここを修正！
+                    Image.asset(cat.gifUrl, width: 35, height: 35),
                     SizedBox(width: 8),
                     Text(cat.name,
                         style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
@@ -228,6 +473,7 @@ class _CategoryList extends StatelessWidget {
         },
       );
 }
+
 
 class _Footer extends StatelessWidget {
   @override
@@ -244,8 +490,17 @@ class AboutView extends StatelessWidget {
         body: SingleChildScrollView(
           padding: EdgeInsets.all(16),
           child: Text('''
+
 コンテンツはこれからも随時追加していく予定です。
-...''', style: TextStyle(fontSize: 16)),
+
+扱ってほしいテーマがあれば、YouTubeやTikTokのコメント欄、またはアプリの評価欄にぜひご記入ください。できる限りリクエストにお応えしていきます。
+
+このアプリのテーマは、「実験を通して物理を楽しんで学んでもらう」こと。
+「物理がわからない」「楽しくない」「もっとちゃんと学びたい」——そんな悩みや思いを持つ方の力になれたら嬉しいです。
+
+AIの発展によって、多くの情報が無料で手に入るようになりました。だからこそ今、体験を通じて学ぶことの価値がより大きくなっていると感じています。
+物理を、もっと身近に。もっと楽しく。あなたの学びの一歩になれば幸いです。
+''', style: TextStyle(fontSize: 16)),
         ),
       );
 }
@@ -256,15 +511,17 @@ class VideoListView extends StatefulWidget {
   @override
   _VideoListViewState createState() => _VideoListViewState();
 }
-
 class _VideoListViewState extends State<VideoListView> {
   VideoViewMode viewMode = VideoViewMode.byCategory;
 
-  List<Video> get videosInCategory => widget.category.subcategories.expand((s) => s.videos).toList();
-  List<FormulaEntry> get formulasInCategory => formulaList.where((f) => videosInCategory.contains(f.relatedVideo)).toList();
+  List<Video> get videosInCategory =>
+      widget.category.subcategories.expand((s) => s.videos).toList();
+  List<FormulaEntry> get formulasInCategory =>
+      formulaList.where((f) => videosInCategory.contains(f.relatedVideo)).toList();
 
   @override
   Widget build(BuildContext context) {
+    // 公式をカテゴリ毎にグループ化
     final groupMap = <String, List<FormulaEntry>>{};
     for (var f in formulasInCategory) {
       groupMap.putIfAbsent(f.categoryName, () => []).add(f);
@@ -274,17 +531,41 @@ class _VideoListViewState extends State<VideoListView> {
       appBar: AppBar(title: Text(widget.category.name)),
       body: Column(
         children: [
+          // ─── 単元一覧 / 公式一覧 トグル ───
           Padding(
-            padding: EdgeInsets.all(8),
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
             child: ToggleButtons(
-              isSelected: [viewMode == VideoViewMode.byCategory, viewMode == VideoViewMode.byFormula],
-              onPressed: (i) => setState(() => viewMode = i == 0 ? VideoViewMode.byCategory : VideoViewMode.byFormula),
-              children: [Text('単元一覧'), Text('公式一覧')],
+              constraints: const BoxConstraints(minWidth: 120, minHeight: 40),
+              borderRadius: BorderRadius.circular(8),
+              isSelected: [
+                viewMode == VideoViewMode.byCategory,
+                viewMode == VideoViewMode.byFormula,
+              ],
+              onPressed: (i) => setState(() {
+                viewMode =
+                    i == 0 ? VideoViewMode.byCategory : VideoViewMode.byFormula;
+              }),
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Text('単元一覧'),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Text('公式一覧'),
+                ),
+              ],
             ),
           ),
+
+          // ─── 実験コスト凡例 ───
+          const CostLegendSection(),
+
+          // ─── コンテンツ本体（一覧 or 公式） ───
           Expanded(
             child: viewMode == VideoViewMode.byCategory
-                ? _VideoCategoryList(subcategories: widget.category.subcategories)
+                ? _VideoCategoryList(
+                    subcategories: widget.category.subcategories)
                 : _FormulaList(groupedFormulas: groupMap),
           ),
         ],
@@ -301,16 +582,40 @@ class _VideoCategoryList extends StatelessWidget {
   Widget build(BuildContext context) => ListView(
         children: subcategories.expand((sub) {
           return [
-            ListTile(title: Text(sub.name, style: TextStyle(fontWeight: FontWeight.bold))),
+            // ── サブカテゴリ見出し帯 ──
+            Container(
+              width: double.infinity,
+              color: Colors.grey[200],             // 薄いグレー
+              padding: EdgeInsets.symmetric(
+                vertical: 8,
+                horizontal: 16,
+              ),
+              child: Text(
+                sub.name,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            // ▼ サブカテゴリに属する動画リスト
             ...sub.videos.map((v) => ListTile(
-                  leading: Image.asset(v.iconName, width: 48, height: 27),
+                  leading: Image.asset(
+                    'assets/${v.category}/${v.iconName}.png',
+                    width: 48,
+                    height: 27,
+                  ),
                   title: Text(v.title),
-                  trailing: Text(v.costRating, style: TextStyle(color: HexColor.fromHex('#FF9900'))),
+                  trailing: Text(
+                    v.costRating,
+                    style: TextStyle(color: HexColor.fromHex('#FF9900')),
+                  ),
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => VideoDetailView(video: v)),
                   ),
                 )),
+            SizedBox(height: 8), // 次の帯との間隔
           ];
         }).toList(),
       );
@@ -356,11 +661,11 @@ class VideoDetailView extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (video.videoURL.isNotEmpty) YouTubeWebView(videoURL: video.videoURL),
+              if (video.equipment.isNotEmpty) EquipmentListView(equipment: video.equipment),
               if (video.latex != null) Padding(
                 padding: EdgeInsets.only(top: 16),
                 child: LatexWebView(latexHtml: video.latex!),  // ← ここをMath.texから変更
               ),
-              if (video.equipment.isNotEmpty) EquipmentListView(equipment: video.equipment),
             ],
           ),
         ),
@@ -563,6 +868,59 @@ class _LatexWebViewState extends State<LatexWebView> {
     return SizedBox(
       height: webViewHeight,
       child: WebViewWidget(controller: _controller..loadHtmlString(htmlContent)),
+    );
+  }
+}
+
+
+class CostLegendSection extends StatelessWidget {
+  const CostLegendSection({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    const starColor = Color.fromRGBO(255, 153, 0, 1.0); // Swiftの (1.0, 0.6, 0.0) に近い
+
+    return Container(
+      width: double.infinity,
+      color: Colors.grey[100], // Swiftの systemGray6 相当
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // 上部タイトル
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              Text("★", style: TextStyle(color: starColor)),
+              Text("・・・実験コスト"),
+            ],
+          ),
+          const SizedBox(height: 4),
+
+          // 凡例項目
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              Text("★☆☆", style: TextStyle(color: starColor)),
+              Text(" = 500円未満"),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              Text("★★☆", style: TextStyle(color: starColor)),
+              Text(" = 1500円未満"),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              Text("★★★", style: TextStyle(color: starColor)),
+              Text(" = 1500円以上"),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

@@ -64,15 +64,20 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
+  # assets:
+  #   - assets/profile.jpg
+  #   - assets/dynamics.gif
+  #   - assets/wave.gif
+  #   - assets/electromag.gif
+  #   - assets/fire.gif
+  #   - assets/init.png
+  #   - assets/elasticCollision2D.png
   assets:
-    - assets/profile.jpg
-    - assets/dynamics.gif
-    - assets/wave.gif
-    - assets/electromag.gif
-    - assets/fire.gif
-    - assets/init.png
-    - assets/elasticCollision2D.png
-    
+    - assets/init/
+    - assets/dynamics/
+    - assets/electroMagnetism/
+    - assets/thermoDynamics/
+    - assets/waves/
     # - images/a_dot_burr.jpeg
     # - images/a_dot_ham.jpeg
 
