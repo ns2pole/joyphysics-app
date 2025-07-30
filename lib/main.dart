@@ -614,7 +614,10 @@ class _VideoCategoryList extends StatelessWidget {
                   title: Text(v.title),
                   trailing: Text(
                     v.costRating,
-                    style: TextStyle(color: HexColor.fromHex('#FF9900')),
+                    style: TextStyle(
+                      color: HexColor.fromHex('#FF9900'),
+                      fontSize: 19,     // ここにfontSizeを書く
+                    ),
                   ),
                   onTap: () => Navigator.push(
                     context,
@@ -657,7 +660,10 @@ class _FormulaList extends StatelessWidget {
                   ),
                   trailing: Text(
                     f.relatedVideo.costRating,
-                    style: TextStyle(color: HexColor.fromHex('#FF9900')),
+                    style: TextStyle(
+                      color: HexColor.fromHex('#FF9900'),
+                      fontSize: 19, // ⭐️ここをお好みで大きく
+                    ),
                   ),
                   onTap: () => Navigator.push(
                     context,
@@ -672,27 +678,90 @@ class _FormulaList extends StatelessWidget {
 
 class VideoDetailView extends StatelessWidget {
   final Video video;
-  VideoDetailView({required this.video});
+  const VideoDetailView({required this.video, Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: Text(video.videoURL.isEmpty ? '' : video.title)),
-        body: SingleChildScrollView(
-          padding: EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (video.videoURL.isNotEmpty) YouTubeWebView(videoURL: video.videoURL),
-              if (video.equipment.isNotEmpty) EquipmentListView(equipment: video.equipment),
-              if (video.latex != null) Padding(
-                padding: EdgeInsets.only(top: 16),
-                child: LatexWebView(latexHtml: video.latex!),  // ← ここをMath.texから変更
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(video.videoURL.isEmpty ? '' : video.title)),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(6), // 画面端の余白を一括管理
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (video.videoURL.isNotEmpty) YouTubeWebView(videoURL: video.videoURL),
+            if (video.equipment.isNotEmpty) EquipmentListView(equipment: video.equipment),
+            if (video.latex != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return SizedBox(
+                      width: constraints.maxWidth, // 親のパディング内いっぱいに広げる
+                      child: LatexWebView(latexHtml: video.latex!),
+                    );
+                  },
+                ),
               ),
+          ],
+        ),
+      ),
+    );
+  }
+} 
+class CostLegendSection extends StatelessWidget {
+  const CostLegendSection({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    const starColor = Color.fromRGBO(255, 153, 0, 1.0); // Swiftの (1.0, 0.6, 0.0) に近い
+
+    return Container(
+      width: double.infinity,
+      color: Colors.grey[100], // Swiftの systemGray6 相当
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // 上部タイトル
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              Text("★", style: TextStyle(color: starColor)),
+              Text("・・・実験コスト"),
             ],
           ),
-        ),
-      );
+          const SizedBox(height: 4),
+
+          // 凡例項目
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              Text("★☆☆", style: TextStyle(color: starColor)),
+              Text(" = 500円未満"),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              Text("★★☆", style: TextStyle(color: starColor)),
+              Text(" = 1500円未満"),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              Text("★★★", style: TextStyle(color: starColor)),
+              Text(" = 1500円以上"),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 }
+
+
 
 class EquipmentListView extends StatelessWidget {
   final List<String> equipment;
@@ -746,59 +815,9 @@ class _YouTubeWebViewState extends State<YouTubeWebView> {
     );
   }
 }
-class LatexHtmlView extends StatefulWidget {
-  final String htmlContent;
 
-  const LatexHtmlView({Key? key, required this.htmlContent}) : super(key: key);
-
-  @override
-  _LatexHtmlViewState createState() => _LatexHtmlViewState();
-}
-
-class _LatexHtmlViewState extends State<LatexHtmlView> {
-  late final WebViewController _controller;
-
-  String get htmlTemplate => '''
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-  <style>
-    body { font-family: sans-serif; padding: 12px; }
-    .common-box {
-      background: #eee;
-      padding: 6px;
-      margin: 10px 0;
-      border-radius: 4px;
-    }
-    </style>
-</head>
-<body>
-${widget.htmlContent}
-</body>
-</html>
-''';
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..loadHtmlString(htmlTemplate);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 300, // 必要に応じて調整してください
-      child: WebViewWidget(controller: _controller),
-    );
-  }
-}
 class LatexWebView extends StatefulWidget {
-  final String latexHtml; // 数式＋画像タグなどのHTML
-
+  final String latexHtml;
   const LatexWebView({super.key, required this.latexHtml});
 
   @override
@@ -833,7 +852,9 @@ class _LatexWebViewState extends State<LatexWebView> {
           onPageFinished: (url) async {
             await _controller.runJavaScript('''
               MathJax.typesetPromise().then(() => {
-                SizeChannel.postMessage(document.body.scrollHeight.toString());
+                setTimeout(() => {
+                  SizeChannel.postMessage(document.body.scrollHeight.toString());
+                }, 100);
               });
             ''');
           },
@@ -845,10 +866,10 @@ class _LatexWebViewState extends State<LatexWebView> {
 
   Future<void> _prepareAndLoad() async {
     final processedHtml = await _embedBase64Images(widget.latexHtml);
-    _controller.loadHtmlString(_wrapHtml(processedHtml));
+    final fullHtml = await _wrapHtmlWithFont(processedHtml);
+    _controller.loadHtmlString(fullHtml);
   }
 
-  /// HTML内の <img src="assets/..." > をBase64に変換して埋め込みます
   Future<String> _embedBase64Images(String html) async {
     final regex = RegExp(r'<img\s+[^>]*src="([^"]+)"[^>]*>', caseSensitive: false);
     var newHtml = html;
@@ -860,123 +881,96 @@ class _LatexWebViewState extends State<LatexWebView> {
             final bytes = await rootBundle.load(src);
             final b64 = base64Encode(bytes.buffer.asUint8List());
             _base64Cache[src] = b64;
-          } catch (e) {
+          } catch (_) {
             _base64Cache[src] = '';
           }
         }
         final b64 = _base64Cache[src];
         if (b64 != null && b64.isNotEmpty) {
-          final base64Src = 'data:image/png;base64,$b64';
-          newHtml = newHtml.replaceAll(src, base64Src);
+          newHtml = newHtml.replaceAll(src, 'data:image/png;base64,$b64');
         }
       }
     }
     return newHtml;
   }
 
-  String _wrapHtml(String bodyHtml) => '''
+  Future<String> _wrapHtmlWithFont(String bodyHtml) async {
+    final fontData = await rootBundle.load('assets/fonts/keifont.ttf');
+    final fontBase64 = base64Encode(fontData.buffer.asUint8List());
+
+    return '''
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<script>
-  window.MathJax = {
-    options: {localStorage: false},
-    tex: {inlineMath: [['\$', '\$'], ['\\\\(', '\\\\)']]},
-    svg: {fontCache: 'global'}
-  };
-</script>
-<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-<style>
-  html, body {
-    margin:0; padding:0;
-    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
-    font-size:17px;
-    background-color: transparent;
-  }
-  .common-box {
-    background: #eee;
-    padding: 6px;
-    margin: 10px 0;
-    border-radius: 4px;
-  }
-  .math-box {
-    width: 100%;
-    padding: 8px 16px;
-    box-sizing: border-box;
-    white-space: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    @font-face {
+      font-family: 'KeiFont';
+      src: url(data:font/ttf;base64,$fontBase64) format('truetype');
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: 'KeiFont', sans-serif;
+      font-size: 17px;
+      background-color: transparent;
+      line-height: 1.75;  /* ← 行間を少し広く */
+    }
+    .common-box {
+      background: #eee;
+      padding: 8px 16px;
+      margin: 0px 0;
+      border-radius: 4px;
+    }
+    .math-box {
+      width: 100%;
+      padding: 0px 0px;
+      box-sizing: border-box;
+      white-space: normal;
+      overflow-wrap: break-word;
+      word-break: break-word;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
+    .math-box img,
+    .math-box table {
+      max-width: 90%;
+      height: auto;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .math-box table td,
+    .math-box table th {
+      word-wrap: break-word;
+      white-space: normal;
+    }
+  </style>
+  <script>
+    window.MathJax = {
+      options: {localStorage: false},
+      tex: {inlineMath: [['\$','\$'], ['\\\\(','\\\\)']]},
+      svg: {fontCache: 'global'}
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 <body>
-<div class="math-box">
-$bodyHtml
-</div>
+  <div class="math-box">
+    $bodyHtml
+  </div>
 </body>
 </html>
 ''';
+  }
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
+      width: double.infinity,
       height: webViewHeight,
       child: WebViewWidget(controller: _controller),
-    );
-  }
-}
-
-
-class CostLegendSection extends StatelessWidget {
-  const CostLegendSection({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    const starColor = Color.fromRGBO(255, 153, 0, 1.0); // Swiftの (1.0, 0.6, 0.0) に近い
-
-    return Container(
-      width: double.infinity,
-      color: Colors.grey[100], // Swiftの systemGray6 相当
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // 上部タイトル
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
-              Text("★", style: TextStyle(color: starColor)),
-              Text("・・・実験コスト"),
-            ],
-          ),
-          const SizedBox(height: 4),
-
-          // 凡例項目
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
-              Text("★☆☆", style: TextStyle(color: starColor)),
-              Text(" = 500円未満"),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
-              Text("★★☆", style: TextStyle(color: starColor)),
-              Text(" = 1500円未満"),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
-              Text("★★★", style: TextStyle(color: starColor)),
-              Text(" = 1500円以上"),
-            ],
-          ),
-        ],
-      ),
     );
   }
 }
