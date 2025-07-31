@@ -27,17 +27,18 @@ extension HexColor on Color {
 enum VideoViewMode { byCategory, byFormula }
 
 class FormulaEntry {
-  final String latex;
+  final String title; // 日本語部分（keifontで表示）
+  final String latex; // 数式部分（Math.texで表示）
   final Video relatedVideo;
   final String categoryName;
 
   FormulaEntry({
+    required this.title,
     required this.latex,
     required this.relatedVideo,
     required this.categoryName,
   });
 }
-
 class Subcategory {
   final String name;
   final List<Video> videos;
@@ -201,172 +202,196 @@ final categories = <Category>[
   )
 ];
 
+
 final List<FormulaEntry> formulaList = [
-  // — 力学 —
   FormulaEntry(
-    latex: "浮力の大きさ（アルキメデスの原理）： f = \\rho g V",
+    title: "浮力の大きさ（アルキメデスの原理）",
+    latex: "f = \\rho g V",
     relatedVideo: buoyancyAndActionReaction,
     categoryName: "力のつり合い・浮力",
   ),
   FormulaEntry(
-    latex: "作用・反作用の法則： \\overrightarrow{F}_{1 \\leftarrow 2} + \\overrightarrow{F}_{2 \\leftarrow 1} = \\overrightarrow{0}",
+    title: "作用・反作用の法則",
+    latex: "\\overrightarrow{F}_{1 \\leftarrow 2} + \\overrightarrow{F}_{2 \\leftarrow 1} = \\overrightarrow{0}",
     relatedVideo: buoyancyAndActionReaction,
     categoryName: "力のつり合い・浮力",
   ),
   FormulaEntry(
-    latex: "自由落下の変位： x(t) = \\frac12 g t^2",
+    title: "自由落下の変位",
+    latex: "x(t) = \\frac12 g t^2",
     relatedVideo: freeFall,
     categoryName: "等加速度運動",
   ),
   FormulaEntry(
-    latex: "自由落下の時間： t(x) = \\sqrt{\\frac{2x}{g}}",
+    title: "自由落下の時間",
+    latex: "t(x) = \\sqrt{\\frac{2x}{g}}",
     relatedVideo: freeFall,
     categoryName: "等加速度運動",
   ),
   FormulaEntry(
-    latex: "バネの弾性力： F(x) = -k x",
+    title: "バネの弾性力",
+    latex: "F(x) = -k x",
     relatedVideo: verticalSpringOscillation,
     categoryName: "バネ・単振動",
   ),
   FormulaEntry(
-    latex: "鉛直バネ振り子の周期： T = 2\\pi \\sqrt{\\frac{m}{k}}",
+    title: "鉛直バネ振り子の周期",
+    latex: "T = 2\\pi \\sqrt{\\frac{m}{k}}",
     relatedVideo: verticalSpringOscillation,
     categoryName: "バネ・単振動",
   ),
   FormulaEntry(
-    latex: "静止摩擦力,静止摩擦係数： F_{s} = \\mu_{s} N",
+    title: "静止摩擦力",
+    latex: "F_{s} = \\mu_{s} N",
     relatedVideo: staticFriction,
     categoryName: "摩擦力",
   ),
   FormulaEntry(
-    latex: "動摩擦力,動摩擦係数： F_{k} = \\mu_{k} N",
+    title: "動摩擦力",
+    latex: "F_{k} = \\mu_{k} N",
     relatedVideo: kineticFriction,
     categoryName: "摩擦力",
   ),
   FormulaEntry(
-    latex: "単振り子の周期： T = 2\\pi \\sqrt{\\frac{l}{g}}",
+    title: "単振り子の周期",
+    latex: "T = 2\\pi \\sqrt{\\frac{l}{g}}",
     relatedVideo: pendulumPeriodMeasurement,
     categoryName: "バネ・単振動",
   ),
   FormulaEntry(
-    latex: "1次元の運動量保存： m_{1} v_{1} + m_{2} v_{2} = m_{1} v_{1}' + m_{2} v_{2}'",
+    title: "1次元の運動量保存",
+    latex: "m_{1} v_{1} + m_{2} v_{2} = m_{1} v_{1}' + m_{2} v_{2}'",
     relatedVideo: elasticCollision1D,
     categoryName: "運動量保存則",
   ),
   FormulaEntry(
-    latex: "2次元の運動量保存： m_{1} \\vec{v}_{1} + m_{2} \\vec{v}_{2} = m_{1} \\vec{v}_{1}' + m_{2} \\vec{v}_{2}'",
+    title: "2次元の運動量保存",
+    latex: "m_{1} \\vec{v}_{1} + m_{2} \\vec{v}_{2} = m_{1} \\vec{v}_{1}' + m_{2} \\vec{v}_{2}'",
     relatedVideo: elasticCollision2D,
     categoryName: "運動量保存則",
   ),
   FormulaEntry(
-    latex: "2次元弾性衝突（E保存）： \\tfrac12 m_{1} v_{1}^{2} + \\tfrac12 m_{2} v_{2}^{2} = \\tfrac12 m_{1} v_{1}'^{2} + \\tfrac12 m_{2} v_{2}'^{2}",
+    title: "2次元弾性衝突（エネルギー保存）",
+    latex: "\\tfrac12 m_{1} v_{1}^{2} + \\tfrac12 m_{2} v_{2}^{2} = \\tfrac12 m_{1} v_{1}'^{2} + \\tfrac12 m_{2} v_{2}'^{2}",
     relatedVideo: elasticCollision2D,
     categoryName: "力学的エネルギー保存",
   ),
   FormulaEntry(
-    latex: "ケプラーの第3法則： \\displaystyle \\frac{T^{2}}{a^{3}} = \\frac{4\\pi^{2}}{GM}",
+    title: "ケプラーの第3法則",
+    latex: "\\frac{T^{2}}{a^{3}} = \\frac{4\\pi^{2}}{GM}",
     relatedVideo: planets,
     categoryName: "ケプラーの第3法則",
   ),
-
-  // — 電磁気 —
   FormulaEntry(
-    latex: "ローレンツ力の大きさ： F = q v B \\sin\\theta",
+    title: "ローレンツ力の大きさ",
+    latex: "F = q v B \\sin\\theta",
     relatedVideo: lorentzForce,
     categoryName: "電磁力・ローレンツ力",
   ),
   FormulaEntry(
-    latex: "磁場が電流に及ぼす力： F = I \\ell B \\sin\\theta",
+    title: "磁場が電流に及ぼす力",
+    latex: "F = I \\ell B \\sin\\theta",
     relatedVideo: lorentzForce,
     categoryName: "電磁力・ローレンツ力",
   ),
   FormulaEntry(
-    latex: "アンペールの法則： B = \\dfrac{\\mu_{0} I}{2\\pi r}",
+    title: "アンペールの法則",
+    latex: "B = \\dfrac{\\mu_{0} I}{2\\pi r}",
     relatedVideo: ampereLawTorque,
     categoryName: "磁場",
   ),
   FormulaEntry(
-    latex: "円形電流の中心における磁場： B = \\dfrac{\\mu_{0} I}{2a}",
+    title: "円形電流の中心における磁場",
+    latex: "B = \\dfrac{\\mu_{0} I}{2a}",
     relatedVideo: magneticFieldCircularLoop,
     categoryName: "磁場",
   ),
   FormulaEntry(
-    latex: "平行電流間の力： F = \\dfrac{\\mu_{0} I_{1} I_{2} \\ell}{2\\pi r}",
+    title: "平行電流間の力",
+    latex: "F = \\dfrac{\\mu_{0} I_{1} I_{2} \\ell}{2\\pi r}",
     relatedVideo: forceBetweenParallelCurrents,
     categoryName: "電磁力・ローレンツ力",
   ),
   FormulaEntry(
-    latex: "ソレノイドコイルの自己インダクタンス： L = \\mu_{0} \\mu_{r} \\dfrac{N^{2} A}{\\ell}",
+    title: "ソレノイドコイルの自己インダクタンス",
+    latex: "L = \\mu_{0} \\mu_{r} \\dfrac{N^{2} A}{\\ell}",
     relatedVideo: solenoidSelfInductance,
     categoryName: "電磁誘導・インダクタンス",
   ),
-
-  // — 電気回路 —
   FormulaEntry(
-    latex: "導線抵抗： R = \\rho \\dfrac{\\ell}{A}",
+    title: "導線抵抗",
+    latex: "R = \\rho \\dfrac{\\ell}{A}",
     relatedVideo: resistanceVsLength,
     categoryName: "オームの法則・抵抗",
   ),
   FormulaEntry(
-    latex: "合成抵抗（直列）： \\displaystyle R = \\sum_{i=1}^{n} R_{i}",
+    title: "合成抵抗（直列）",
+    latex: "R = \\sum_{i=1}^{n} R_{i}",
     relatedVideo: seriesResistance,
     categoryName: "オームの法則・抵抗",
   ),
   FormulaEntry(
-    latex: "合成抵抗（並列）： \\displaystyle \\dfrac{1}{R} = \\sum_{i=1}^{n} \\dfrac{1}{R_{i}}",
+    title: "合成抵抗（並列）",
+    latex: "\\dfrac{1}{R} = \\sum_{i=1}^{n} \\dfrac{1}{R_{i}}",
     relatedVideo: parallelResistance,
     categoryName: "オームの法則・抵抗",
   ),
   FormulaEntry(
-    latex: "温度と抵抗： R = R_{0} \\bigl(1 + \\alpha (T - T_{0})\\bigr)",
+    title: "温度と抵抗",
+    latex: "R = R_{0} \\bigl(1 + \\alpha (T - T_{0})\\bigr)",
     relatedVideo: resistivityTemperatureDependence,
     categoryName: "オームの法則・抵抗",
   ),
   FormulaEntry(
-    latex: "平行板コンデンサの電気容量： C = \\varepsilon_{0} \\dfrac{S}{d}",
+    title: "平行板コンデンサの電気容量",
+    latex: "C = \\varepsilon_{0} \\dfrac{S}{d}",
     relatedVideo: parallelPlateCapacitanceMeasurement,
     categoryName: "コンデンサ・静電気",
   ),
   FormulaEntry(
-    latex: "合成容量（直列）： \\displaystyle \\dfrac{1}{C} = \\sum_{i=1}^{n} \\dfrac{1}{C_{i}}",
+    title: "合成容量（直列）",
+    latex: "\\dfrac{1}{C} = \\sum_{i=1}^{n} \\dfrac{1}{C_{i}}",
     relatedVideo: capacitanceSeriesCombination,
     categoryName: "コンデンサ・静電気",
   ),
   FormulaEntry(
-    latex: "合成容量（並列）： C = \\displaystyle \\sum_{i=1}^{n} C_{i}",
+    title: "合成容量（並列）",
+    latex: "C = \\sum_{i=1}^{n} C_{i}",
     relatedVideo: capacitanceParallelCombination,
     categoryName: "コンデンサ・静電気",
   ),
   FormulaEntry(
-    latex: "コンデンサに蓄えられる電気量： Q = CV",
+    title: "コンデンサに蓄えられる電気量",
+    latex: "Q = CV",
     relatedVideo: capacitorChargeStorage,
     categoryName: "コンデンサ・静電気",
   ),
-
-  // — 波動 —
   FormulaEntry(
-    latex: "閉管のn倍振動の波長： L = \\frac{(2n-1)\\lambda}{4} （n=1,3,5,⋯）",
+    title: "閉管のn倍振動の波長",
+    latex: "L = \\frac{(2n-1)\\lambda}{4} （n=1,3,5,\\cdots）",
     relatedVideo: closedPipeResonance,
     categoryName: "音・共鳴",
   ),
   FormulaEntry(
-    latex: "開管のn倍振動の波長： L = \\frac{n\\lambda}{2} （n=1,2,3,⋯）",
+    title: "開管のn倍振動の波長",
+    latex: "L = \\frac{n\\lambda}{2} （n=1,2,3,\\cdots）",
     relatedVideo: openPipeResonance,
     categoryName: "音・共鳴",
   ),
   FormulaEntry(
-    latex: "回折格子の干渉条件： d \\sin\\theta = n\\lambda",
+    title: "回折格子の干渉条件",
+    latex: "d \\sin\\theta = n\\lambda",
     relatedVideo: diffractionGrating,
     categoryName: "光の干渉・回折",
   ),
-
-  // — 熱力学 —
   FormulaEntry(
-    latex: "ボイルの法則： PV = \\text{一定}",
+    title: "ボイルの法則",
+    latex: "PV = \\text{一定}",
     relatedVideo: boyleLaw,
     categoryName: "気体の法則・熱力学",
   ),
 ];
+
 
 
 void main() => runApp(JoyPhysicsApp());
@@ -517,6 +542,7 @@ class VideoListView extends StatefulWidget {
   @override
   _VideoListViewState createState() => _VideoListViewState();
 }
+
 class _VideoListViewState extends State<VideoListView> {
   VideoViewMode viewMode = VideoViewMode.byCategory;
 
@@ -554,11 +580,17 @@ class _VideoListViewState extends State<VideoListView> {
               children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text('単元一覧'),
+                  child: Text(
+                    '単元一覧',
+                    style: TextStyle(fontSize: 20), // フォントサイズ大きく
+                  ),
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text('公式一覧'),
+                  child: Text(
+                    '公式一覧',
+                    style: TextStyle(fontSize: 20), // フォントサイズ大きく
+                  ),
                 ),
               ],
             ),
@@ -579,7 +611,6 @@ class _VideoListViewState extends State<VideoListView> {
     );
   }
 }
-
 class _VideoCategoryList extends StatelessWidget {
   final List<Subcategory> subcategories;
   _VideoCategoryList({required this.subcategories});
@@ -587,11 +618,13 @@ class _VideoCategoryList extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ListView(
         children: subcategories.expand((sub) {
+          final videos = sub.videos;
+
           return [
             // ── サブカテゴリ見出し帯 ──
             Container(
               width: double.infinity,
-              color: Colors.grey[200],             // 薄いグレー
+              color: Colors.grey[200], // 薄いグレー
               padding: EdgeInsets.symmetric(
                 vertical: 8,
                 horizontal: 16,
@@ -604,31 +637,50 @@ class _VideoCategoryList extends StatelessWidget {
                 ),
               ),
             ),
-            // ▼ サブカテゴリに属する動画リスト
-            ...sub.videos.map((v) => ListTile(
-                  leading: Image.asset(
-                    'assets/${v.category}/${v.iconName}.png',
-                    width: 48,
-                    height: 27,
-                  ),
-                  title: Text(v.title),
-                  trailing: Text(
-                    v.costRating,
-                    style: TextStyle(
-                      color: HexColor.fromHex('#FF9900'),
-                      fontSize: 19,     // ここにfontSizeを書く
+            // ▼ サブカテゴリに属する動画リスト（線入り）
+            ...List.generate(videos.length, (index) {
+              final v = videos[index];
+              final isLast = index == videos.length - 1;
+
+              return Column(
+                children: [
+                  ListTile(
+                    leading: Image.asset(
+                      'assets/${v.category}/${v.iconName}.png',
+                      width: 48,
+                      height: 27,
+                    ),
+                    title: Text(v.title),
+                    trailing: Text(
+                      v.costRating,
+                      style: TextStyle(
+                        fontFamily: 'Keifont',
+                        color: HexColor.fromHex('#FF9900'),
+                        fontSize: 19,
+                      ),
+                    ),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => VideoDetailView(video: v)),
                     ),
                   ),
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => VideoDetailView(video: v)),
-                  ),
-                )),
+                  if (!isLast)
+                    Divider(
+                      thickness: 1.0,
+                      height: 0,
+                      indent: 16,
+                      endIndent: 16,
+                      color: Colors.grey[300],
+                    ),
+                ],
+              );
+            }),
             SizedBox(height: 8), // 次の帯との間隔
           ];
         }).toList(),
       );
 }
+
 
 class _FormulaList extends StatelessWidget {
   final Map<String, List<FormulaEntry>> groupedFormulas;
@@ -638,39 +690,71 @@ class _FormulaList extends StatelessWidget {
   Widget build(BuildContext context) => ListView(
         padding: EdgeInsets.all(8),
         children: groupedFormulas.entries.expand((entry) {
+          final formulas = entry.value;
+
           return [
             // サブカテゴリヘッダー
             Container(
               width: double.infinity,
-              color: Colors.grey[100],
+              color: Colors.grey[200],
               padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
               child: Text(
                 entry.key,
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
             ),
-            // 公式リスト
-            ...entry.value.map((f) => ListTile(
-                  title: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Math.tex(
-                      f.latex,
-                      textStyle: TextStyle(fontSize: 16),
+            // 公式リスト（タイトル＋数式＋区切り線）
+            ...List.generate(formulas.length, (index) {
+              final f = formulas[index];
+              final isLast = index == formulas.length - 1;
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ListTile(
+                    title: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          f.title,
+                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                        ),
+                        SizedBox(height: 4),
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Math.tex(
+                            f.latex,
+                            textStyle: TextStyle(fontSize: 16),
+                          ),
+                        ),
+                      ],
+                    ),
+                    trailing: Text(
+                      f.relatedVideo.costRating,
+                      style: TextStyle(
+                        fontFamily: 'Keifont',
+                        color: HexColor.fromHex('#FF9900'),
+                        fontSize: 19,
+                      ),
+                    ),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => VideoDetailView(video: f.relatedVideo),
+                      ),
                     ),
                   ),
-                  trailing: Text(
-                    f.relatedVideo.costRating,
-                    style: TextStyle(
-                      color: HexColor.fromHex('#FF9900'),
-                      fontSize: 19, // ⭐️ここをお好みで大きく
+                  if (!isLast)
+                    Divider(
+                      thickness: 1.0,
+                      height: 0,
+                      indent: 16,
+                      endIndent: 16,
+                      color: Colors.grey[300],
                     ),
-                  ),
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => VideoDetailView(video: f.relatedVideo)),
-                  ),
-                ))
+                ],
+              );
+            }),
           ];
         }).toList(),
       );
