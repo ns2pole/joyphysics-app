@@ -27,6 +27,7 @@ export './electroMagnetism/forceBetweenParallelCurrents.dart';
 export './electroMagnetism/lemonBatteryVoltage.dart';
 export './electroMagnetism/lorentzForce.dart';
 export './electroMagnetism/magneticFieldCircularLoop.dart';
+export './electroMagnetism/solenoidMagneticField.dart';
 export './electroMagnetism/neodymiumMagnetFieldMeasurement.dart';
 export './electroMagnetism/parallelPlateCapacitanceMeasurement.dart';
 export './electroMagnetism/parallelResistance.dart';
@@ -36,6 +37,8 @@ export './electroMagnetism/resistanceVsLength.dart';
 export './electroMagnetism/resistivityTemperatureDependence.dart';
 export './electroMagnetism/seriesResistance.dart';
 export './electroMagnetism/solenoidSelfInductance.dart';
+export './electroMagnetism/ohmsLaw.dart';
+
 
 // thermoDynamics
 export './thermoDynamics/boyle_law.dart';
@@ -45,3 +48,4 @@ export './waves/closedPipeResonance.dart';
 export './waves/diffractionGrating.dart';
 export './waves/openPipeResonance.swift.dart';
 export './waves/spectroscopy.dart';
+export './waves/beat.dart';

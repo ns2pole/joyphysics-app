@@ -130,6 +130,7 @@ final categories = <Category>[
         name: '電流',
         videos: [
           lemonBatteryVoltage,
+          ohmsLaw,
           rcCircuit,
         ],
       ),
@@ -144,6 +145,7 @@ final categories = <Category>[
         videos: [
           ampereLawTorque,
           magneticFieldCircularLoop,
+          solenoidMagneticField,
           lorentzForce,
           forceBetweenParallelCurrents,
           neodymiumMagnetFieldMeasurement,
@@ -175,6 +177,7 @@ final categories = <Category>[
         videos: [
           closedPipeResonance,
           openPipeResonance,
+          beat,
         ],
       ),
       Subcategory(
@@ -307,6 +310,12 @@ final List<FormulaEntry> formulaList = [
     categoryName: "磁場",
   ),
   FormulaEntry(
+    title: "ソレノイドコイルの作る磁場",
+    latex: "B = \\mu n I",
+    relatedVideo: solenoidMagneticField,
+    categoryName: "磁場",
+  ),
+  FormulaEntry(
     title: "平行電流間の力",
     latex: "F = \\dfrac{\\mu_{0} I_{1} I_{2} \\ell}{2\\pi r}",
     relatedVideo: forceBetweenParallelCurrents,
@@ -322,25 +331,31 @@ final List<FormulaEntry> formulaList = [
     title: "導線抵抗",
     latex: "R = \\rho \\dfrac{\\ell}{A}",
     relatedVideo: resistanceVsLength,
-    categoryName: "オームの法則・抵抗",
+    categoryName: "電流",
+  ),
+  FormulaEntry(
+    title: "オームの法則",
+    latex: "V = RI",
+    relatedVideo: ohmsLaw,
+    categoryName: "電流",
   ),
   FormulaEntry(
     title: "合成抵抗（直列）",
     latex: "R = \\sum_{i=1}^{n} R_{i}",
     relatedVideo: seriesResistance,
-    categoryName: "オームの法則・抵抗",
+    categoryName: "電流",
   ),
   FormulaEntry(
     title: "合成抵抗（並列）",
     latex: "\\dfrac{1}{R} = \\sum_{i=1}^{n} \\dfrac{1}{R_{i}}",
     relatedVideo: parallelResistance,
-    categoryName: "オームの法則・抵抗",
+    categoryName: "電流",
   ),
   FormulaEntry(
     title: "温度と抵抗",
     latex: "R = R_{0} \\bigl(1 + \\alpha (T - T_{0})\\bigr)",
     relatedVideo: resistivityTemperatureDependence,
-    categoryName: "オームの法則・抵抗",
+    categoryName: "電流",
   ),
   FormulaEntry(
     title: "平行板コンデンサの電気容量",
@@ -377,6 +392,12 @@ final List<FormulaEntry> formulaList = [
     latex: "L = \\frac{n\\lambda}{2} （n=1,2,3,\\cdots）",
     relatedVideo: openPipeResonance,
     categoryName: "音・共鳴",
+  ),
+  FormulaEntry(
+    title: "うなり",
+    latex: "f = \\bigl| f_1 - f_2 \\bigr| ",
+    relatedVideo: beat,
+    categoryName: "うなり",
   ),
   FormulaEntry(
     title: "回折格子の干渉条件",
@@ -788,19 +809,29 @@ class VideoDetailView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(video.videoURL.isEmpty ? '' : video.title)),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(6), // 画面端の余白を一括管理
+        padding: const EdgeInsets.all(6),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (video.videoURL.isNotEmpty) YouTubeWebView(videoURL: video.videoURL),
-            if (video.equipment.isNotEmpty) EquipmentListView(equipment: video.equipment),
+            // ✅ 実験ウィジェットがある場合だけ表示
+            if (video.experimentWidget != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: video.experimentWidget!,
+            ),
+            if (video.videoURL.isNotEmpty)
+              YouTubeWebView(videoURL: video.videoURL),
+
+            if (video.equipment.isNotEmpty)
+              EquipmentListView(equipment: video.equipment),
+
             if (video.latex != null)
               Padding(
                 padding: const EdgeInsets.only(top: 16),
                 child: LayoutBuilder(
                   builder: (context, constraints) {
                     return SizedBox(
-                      width: constraints.maxWidth, // 親のパディング内いっぱいに広げる
+                      width: constraints.maxWidth,
                       child: LatexWebView(latexHtml: video.latex!),
                     );
                   },
@@ -811,7 +842,8 @@ class VideoDetailView extends StatelessWidget {
       ),
     );
   }
-} 
+}
+
 
 
 class CostLegendSection extends StatelessWidget {

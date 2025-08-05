@@ -9,6 +9,7 @@ class Video {
   final List<String> equipment;
   final String costRating;
   final String? latex;
+  final Widget? experimentWidget;
 
   Video({
     required this.category,
@@ -18,6 +19,7 @@ class Video {
     required this.equipment,
     required this.costRating,
     this.latex,
+    this.experimentWidget,  // ← named, optional, default null
   });
 
   String get assetPath => 'assets/$category/$iconName.png';
