@@ -1,7 +1,7 @@
 import '../model.dart'; // Videoクラス定義が別ならインポート
 final neodymiumMagnetFieldMeasurement = Video(
     category: 'electroMagnetism', // ← 追加
-    iconName: "magnet",
+    iconName: "neodium",
     title: "ネオジム磁石の磁場の測定",
     videoURL: "etUEGohtVLY",
     equipment: ["ネオジム磁石", "磁力計"],

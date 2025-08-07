@@ -14,6 +14,9 @@ export './dynamics/pendulumPeriodMeasurement.dart';
 export './dynamics/planets.dart';
 export './dynamics/staticFriction.dart';
 export './dynamics/verticalSpringOscillation.dart';
+export './dynamics/barometer.dart';
+export './dynamics/accelerometer.dart';
+
 // electroMagnetism
 export './electroMagnetism/ampereLawTorque.dart';
 export './electroMagnetism/bismuthDiamagnetism.dart';
@@ -38,6 +41,7 @@ export './electroMagnetism/resistivityTemperatureDependence.dart';
 export './electroMagnetism/seriesResistance.dart';
 export './electroMagnetism/solenoidSelfInductance.dart';
 export './electroMagnetism/ohmsLaw.dart';
+export './electroMagnetism/magnetometer.dart';
 
 
 // thermoDynamics

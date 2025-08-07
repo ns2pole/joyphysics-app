@@ -66,6 +66,7 @@ final categories = <Category>[
           kineticFriction,
           buoyancyAndActionReaction,
           buoyancyComparison,
+          barometer
         ],
       ),
       Subcategory(
@@ -143,6 +144,8 @@ final categories = <Category>[
       Subcategory(
         name: '磁場',
         videos: [
+          magnetometer,
+          neodymiumMagnetFieldMeasurement,
           ampereLawTorque,
           magneticFieldCircularLoop,
           solenoidMagneticField,
@@ -211,13 +214,19 @@ final List<FormulaEntry> formulaList = [
     title: "浮力の大きさ（アルキメデスの原理）",
     latex: "f = \\rho g V",
     relatedVideo: buoyancyAndActionReaction,
-    categoryName: "力のつり合い・浮力",
+    categoryName: "浮力・圧力",
   ),
   FormulaEntry(
     title: "作用・反作用の法則",
     latex: "\\overrightarrow{F}_{1 \\leftarrow 2} + \\overrightarrow{F}_{2 \\leftarrow 1} = \\overrightarrow{0}",
     relatedVideo: buoyancyAndActionReaction,
-    categoryName: "力のつり合い・浮力",
+    categoryName: "運動の第3法則",
+  ),
+  FormulaEntry(
+    title: "圧力の式",
+    latex: "\\p = \\p_{0} + \\rho g h",
+    relatedVideo: barometer,
+    categoryName: "浮力・圧力",
   ),
   FormulaEntry(
     title: "自由落下の変位",
@@ -505,15 +514,16 @@ class _CategoryList extends StatelessWidget {
 
           final cat = categories[index];
           return Padding(
-            padding: EdgeInsets.symmetric(vertical: 8, horizontal: 40),
+            padding: EdgeInsets.symmetric(vertical: 8, horizontal: 75),
             child: GestureDetector(
               onTap: () => Navigator.push(
                   context, MaterialPageRoute(builder: (_) => VideoListView(category: cat))),
               child: Container(
                 height: 60,
                 decoration: BoxDecoration(
+                  // color: Color(0xFF8D3ED9).withOpacity(0.95), // 紫
                   color: Color(0xFFC3734F).withOpacity(0.95), // 淡い茶色
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(15),
                   boxShadow: [BoxShadow(blurRadius: 4, color: Colors.black26)],
                 ),
                 child: Row(
@@ -524,9 +534,8 @@ class _CategoryList extends StatelessWidget {
                     Text(
                       cat.name,
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 25,
                         color: Colors.white, // テキストは白
-                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ],
