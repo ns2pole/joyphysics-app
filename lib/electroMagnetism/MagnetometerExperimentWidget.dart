@@ -34,23 +34,42 @@ class _MagnetometerExperimentWidgetState extends State<MagnetometerExperimentWid
   Widget build(BuildContext context) {
     final magnitude = sqrt(_x * _x + _y * _y + _z * _z);
 
-    return Card(
-      margin: const EdgeInsets.all(12),
-      elevation: 4,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text("現在の磁場強度", style: TextStyle(fontSize: 18)),
-            const SizedBox(height: 8),
-            Text("X: ${_x.toStringAsFixed(1)} μT"),
-            Text("Y: ${_y.toStringAsFixed(1)} μT"),
-            Text("Z: ${_z.toStringAsFixed(1)} μT"),
-            const SizedBox(height: 8),
-            Text("合成磁場: ${magnitude.toStringAsFixed(1)} μT",
-                style: const TextStyle(fontWeight: FontWeight.bold)),
-          ],
+    return Scaffold(
+      backgroundColor: Colors.white,  // 画面全体白背景
+      body: Center(
+        child: Card(
+          margin: const EdgeInsets.all(24),
+          elevation: 6,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  "現在の磁場強度",
+                  style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black),
+                ),
+                const SizedBox(height: 24),
+                Text("X: ${_x.toStringAsFixed(1)} μT",
+                    style: const TextStyle(fontSize: 18, color: Colors.black)),
+                Text("Y: ${_y.toStringAsFixed(1)} μT",
+                    style: const TextStyle(fontSize: 18, color: Colors.black)),
+                Text("Z: ${_z.toStringAsFixed(1)} μT",
+                    style: const TextStyle(fontSize: 18, color: Colors.black)),
+                const SizedBox(height: 24),
+                Text(
+                  "合成磁場: ${magnitude.toStringAsFixed(1)} μT",
+                  style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

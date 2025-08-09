@@ -36,37 +36,46 @@ class _BarometerExperimentWidgetState extends State<BarometerExperimentWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.all(12),
-      elevation: 4,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Center(
-          child: _pressure == null
-              ? Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 8),
-                    Text("気圧データを取得中..."),
-                  ],
-                )
-              : Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text("現在の大気圧", style: TextStyle(fontSize: 18)),
-                    const SizedBox(height: 8),
-                    Text(
-                      "${_pressure!.toStringAsFixed(2)} hPa",
-                      style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-                    ),
-                    // const SizedBox(height: 8),
-                    // Text(
-                    //   _estimateAltitude(_pressure!),
-                    //   style: const TextStyle(fontSize: 16, color: Colors.grey),
-                    // ),
-                  ],
-                ),
+    return Scaffold(
+      backgroundColor: Colors.white, // 画面全体の背景白
+      body: Center(
+        child: Card(
+          elevation: 6,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+            child: _pressure == null
+                ? Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 16),
+                      Text(
+                        "気圧データを取得中...",
+                        style: TextStyle(fontSize: 18, color: Colors.black),
+                      ),
+                    ],
+                  )
+                : Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        "現在の大気圧",
+                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black),
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        "${_pressure!.toStringAsFixed(2)} hPa",
+                        style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Colors.black),
+                      ),
+                      // 推定標高差が必要なら復活してください
+                      // const SizedBox(height: 8),
+                      // Text(
+                      //   _estimateAltitude(_pressure!),
+                      //   style: const TextStyle(fontSize: 16, color: Colors.grey),
+                      // ),
+                    ],
+                  ),
+          ),
         ),
       ),
     );

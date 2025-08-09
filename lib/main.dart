@@ -7,6 +7,10 @@ import 'package:joyphysics/data.dart';
 import 'package:joyphysics/model.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
+import 'package:joyphysics/waves/LuxMeasurementWidget.dart';
+import 'package:joyphysics/dynamics/AccelerometerExperimentWidget.dart';
+import 'package:joyphysics/electroMagnetism/MagnetometerExperimentWidget.dart';
+import 'package:joyphysics/dynamics/BarometerExperimentWidget.dart';
 
 // 色コードからColor生成拡張
 extension HexColor on Color {
@@ -56,6 +60,12 @@ final categories = <Category>[
     name: '力学',
     gifUrl: 'assets/init/dynamics.gif',
     subcategories: [
+      Subcategory(        
+        name: '加速度センサー',
+        videos: [
+          accelerometer
+        ],
+      ),
       Subcategory(
         name: '色々な力',
         videos: [
@@ -179,6 +189,7 @@ final categories = <Category>[
           closedPipeResonance,
           openPipeResonance,
           beat,
+          // doppler
         ],
       ),
       Subcategory(
@@ -186,6 +197,7 @@ final categories = <Category>[
         videos: [
           diffractionGrating,
           spectroscopy,
+          luxMeasurement
         ],
       ),
     ],
@@ -374,6 +386,16 @@ final List<FormulaEntry> formulaList = [
     categoryName: "うなり",
   ),
   FormulaEntry(
+    latex: "f' = f \cdot \frac{v \pm v_{\text{観測者}}}{v}",
+      relatedVideo: doppler,
+      categoryName: "ドップラー効果（観測者が動く場合）",
+  ),
+  FormulaEntry(
+    latex: "f' = f \cdot \frac{v}{v \mp v_{\text{音源}}} \quad (v: 音速, \quad v_{\text{音源}}: 音源の速度)",
+      relatedVideo: doppler,
+      categoryName: "ドップラー効果（音源が動く場合）",
+  ),
+  FormulaEntry(
     latex: "d \\sin\\theta = n\\lambda",
     relatedVideo: diffractionGrating,
     categoryName: "光の干渉・回折",
@@ -436,16 +458,50 @@ class _Header extends StatelessWidget {
         ],
       );
 }
+
 class _CategoryList extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ListView.builder(
         padding: EdgeInsets.zero,
-        itemCount: categories.length + 1,
+        itemCount: categories.length + 2, // +2に変更（既存 + アプリについて + センサーを使う）
         itemBuilder: (context, index) {
           if (index == categories.length) {
+            // 「センサーを使う」ボタン（追加）
+            return Padding(
+              padding: EdgeInsets.symmetric(vertical: 8, horizontal: 75),
+              child: GestureDetector(
+                onTap: () => Navigator.push(
+                    context, MaterialPageRoute(builder: (_) => SensorListView())),
+                child: Container(
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.9), // 適宜色を変えてください
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [BoxShadow(blurRadius: 4, color: Colors.black26)],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.sensors, color: Colors.white, size: 35),
+                      SizedBox(width: 8),
+                      Text(
+                        'センサーを使う！',
+                        style: TextStyle(
+                          fontSize: 20,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }
+          if (index == categories.length + 1) {
             // 「アプリについて」のボタン（そのまま）
             return Padding(
-              padding: EdgeInsets.symmetric(vertical: 8, horizontal: 40),
+              padding: EdgeInsets.symmetric(vertical: 8, horizontal: 75),
               child: GestureDetector(
                 onTap: () => Navigator.push(
                     context, MaterialPageRoute(builder: (_) => AboutView())),
@@ -485,7 +541,6 @@ class _CategoryList extends StatelessWidget {
               child: Container(
                 height: 60,
                 decoration: BoxDecoration(
-                  // color: Color(0xFF8D3ED9).withOpacity(0.95), // 紫
                   color: Color(0xFFC3734F).withOpacity(0.95), // 淡い茶色
                   borderRadius: BorderRadius.circular(15),
                   boxShadow: [BoxShadow(blurRadius: 4, color: Colors.black26)],
@@ -499,7 +554,7 @@ class _CategoryList extends StatelessWidget {
                       cat.name,
                       style: TextStyle(
                         fontSize: 25,
-                        color: Colors.white, // テキストは白
+                        color: Colors.white,
                       ),
                     ),
                   ],
@@ -513,11 +568,12 @@ class _CategoryList extends StatelessWidget {
 
 
 
+
 class _Footer extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
         padding: EdgeInsets.only(bottom: 12),
-        child: Text('Updated 2025/07/22', style: TextStyle(fontSize: 12, color: Colors.white70)),
+        child: Text('Updated 2025/08/08', style: TextStyle(fontSize: 20, color: Colors.black)),
       );
 }
 
@@ -652,35 +708,34 @@ class _VideoCategoryList extends StatelessWidget {
                       width: 48,
                       height: 27,
                     ),
-                    title: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                    title: Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 10,
+                      runSpacing: 5,
                       children: [
-                        Flexible(
+                        Container(
+                          constraints: BoxConstraints(
+                            maxWidth: MediaQuery.of(context).size.width - 150,
+                          ),
                           child: Text(
                             v.title,
-                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(fontSize: 16),
                           ),
                         ),
-                        if (v.isSmartPhoneOnly == true) ...[
-                          SizedBox(width: 10), // タイトルと画像の隙間
+                        if (v.isSmartPhoneOnly == true)
                           Image.asset(
                             'assets/others/smartPhoneOnly.gif',
                             width: 68,
                             height: 45,
                             fit: BoxFit.contain,
                           ),
-                        ],
-                        if (v.isNew == true) ...[
-                          SizedBox(width: 10), // タイトルと画像の隙間
+                        if (v.isNew == true)
                           Image.asset(
                             'assets/others/new.gif',
                             width: 60,
                             height: 40,
                             fit: BoxFit.contain,
                           ),
-                        ],
                       ],
                     ),
                     trailing: Text(
@@ -712,6 +767,8 @@ class _VideoCategoryList extends StatelessWidget {
         }).toList(),
       );
 }
+
+
 class _FormulaList extends StatelessWidget {
   final Map<String, List<FormulaEntry>> groupedFormulas;
   _FormulaList({required this.groupedFormulas});
@@ -830,8 +887,6 @@ class _FormulaList extends StatelessWidget {
         }).toList(),
       );
 }
-
-
 class VideoDetailView extends StatelessWidget {
   final Video video;
   const VideoDetailView({required this.video, Key? key}) : super(key: key);
@@ -845,28 +900,39 @@ class VideoDetailView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ✅ 実験ウィジェットがある場合だけ表示
             if (video.experimentWidget != null)
               Padding(
                 padding: const EdgeInsets.only(top: 16),
-                child: video.experimentWidget!,
-            ),
+                child: SizedBox(
+                  height: 450,  // 実験ウィジェットの高さ調整
+                  width: double.infinity,
+                  child: video.experimentWidget,
+                ),
+              ),
+
             if (video.videoURL.isNotEmpty)
-              YouTubeWebView(videoURL: video.videoURL),
+              Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: SizedBox(
+                  height: 200,  // YouTube埋め込みの高さ調整
+                  width: double.infinity,
+                  child: YouTubeWebView(videoURL: video.videoURL),
+                ),
+              ),
 
             if (video.equipment.isNotEmpty)
-              EquipmentListView(equipment: video.equipment),
+              Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: EquipmentListView(equipment: video.equipment),
+              ),
 
             if (video.latex != null)
               Padding(
                 padding: const EdgeInsets.only(top: 16),
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    return SizedBox(
-                      width: constraints.maxWidth,
-                      child: LatexWebView(latexHtml: video.latex!),
-                    );
-                  },
+                child: SizedBox(
+                  height: 300,  // Latex表示の高さ調整
+                  width: double.infinity,
+                  child: LatexWebView(latexHtml: video.latex!),
                 ),
               ),
           ],
@@ -875,7 +941,6 @@ class VideoDetailView extends StatelessWidget {
     );
   }
 }
-
 
 
 class CostLegendSection extends StatelessWidget {
@@ -1165,6 +1230,55 @@ class _LatexWebViewState extends State<LatexWebView> {
       width: double.infinity,
       height: webViewHeight,
       child: WebViewWidget(controller: _controller),
+    );
+  }
+}
+
+class SensorListView extends StatelessWidget {
+  final List<Map<String, dynamic>> sensors = [
+    {
+      'name': '加速度センサー',
+      'icon': Icons.speed,
+      'widget': AccelerometerExperimentWidget(), // 例: 実装済みのウィジェット
+    },
+    {
+      'name': '光センサー',
+      'icon': Icons.wb_sunny,
+      'widget': LuxMeasurementWidget(),
+    },
+    {
+      'name': '磁場センサー',
+      'icon': Icons.sensors,
+      'widget': MagnetometerExperimentWidget(),
+    },
+    {
+      'name': '気圧センサー',
+      'icon': Icons.compress,
+      'widget': BarometerExperimentWidget(),
+    },
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('センサーを使う')),
+      body: ListView.separated(
+        itemCount: sensors.length,
+        separatorBuilder: (_, __) => Divider(),
+        itemBuilder: (context, index) {
+          final sensor = sensors[index];
+          return ListTile(
+            leading: Icon(sensor['icon']),
+            title: Text(sensor['name']),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => sensor['widget']),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }

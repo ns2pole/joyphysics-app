@@ -16,6 +16,8 @@ export './dynamics/staticFriction.dart';
 export './dynamics/verticalSpringOscillation.dart';
 export './dynamics/barometer.dart';
 export './dynamics/accelerometer.dart';
+export './dynamics/AccelerometerExperimentWidget.dart';
+export './dynamics/BarometerExperimentWidget.dart';
 
 // electroMagnetism
 export './electroMagnetism/ampereLawTorque.dart';
@@ -42,6 +44,8 @@ export './electroMagnetism/seriesResistance.dart';
 export './electroMagnetism/solenoidSelfInductance.dart';
 export './electroMagnetism/ohmsLaw.dart';
 export './electroMagnetism/magnetometer.dart';
+export './electroMagnetism/magnetometer.dart';
+export './electroMagnetism/MagnetometerExperimentWidget.dart';
 
 
 // thermoDynamics
@@ -53,3 +57,7 @@ export './waves/diffractionGrating.dart';
 export './waves/openPipeResonance.swift.dart';
 export './waves/spectroscopy.dart';
 export './waves/beat.dart';
+export './waves/doppler.dart';
+export './waves/dopplerObserverMoving.dart';
+export './waves/luxMeasurement.dart';
+export './waves/LuxMeasurementWidget.dart';

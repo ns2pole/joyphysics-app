@@ -35,6 +35,9 @@ dependencies:
   cached_network_image: ^3.2.3
   flutter_sound: ^9.2.13  # ←バージョン番号は最新を確認
   sensors_plus: ^6.1.1
+  light: ^4.1.0
+  just_audio: ^0.9.40  # 最新版を確認して入れてください
+  # flutter_fft: ^1.0.2  # check pub.dev for the latest version
   # ここまで
 
   # 他のパッケージ…

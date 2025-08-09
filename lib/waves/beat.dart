@@ -3,6 +3,7 @@ import '../model.dart'; // Videoクラス定義が別ならインポート
 
 final beat = Video(
   isSmartPhoneOnly: true,
+  isNew: true,
   category: 'waves',
   iconName: "beat",
   title: "うなり",

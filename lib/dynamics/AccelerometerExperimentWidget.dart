@@ -1,25 +1,28 @@
 import 'dart:async';
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 
 class AccelerometerExperimentWidget extends StatefulWidget {
+  const AccelerometerExperimentWidget({Key? key}) : super(key: key);
+
   @override
   State<AccelerometerExperimentWidget> createState() => _AccelerometerExperimentWidgetState();
 }
 
 class _AccelerometerExperimentWidgetState extends State<AccelerometerExperimentWidget> {
-  StreamSubscription<AccelerometerEvent>? _subscription;
-  double _x = 0, _y = 0, _z = 0;
+  double x = 0.0;
+  double y = 0.0;
+  double z = 0.0;
+  StreamSubscription<UserAccelerometerEvent>? _subscription;
 
   @override
   void initState() {
     super.initState();
-    _subscription = accelerometerEventStream().listen((AccelerometerEvent event) {
+    _subscription = userAccelerometerEvents.listen((event) {
       setState(() {
-        _x = event.x;
-        _y = event.y;
-        _z = event.z;
+        x = event.x;
+        y = event.y;
+        z = event.z;
       });
     });
   }
@@ -30,27 +33,48 @@ class _AccelerometerExperimentWidgetState extends State<AccelerometerExperimentW
     super.dispose();
   }
 
+  Widget _buildAxisColumn(String label, double value) {
+    return Expanded(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(label, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black)),
+          const SizedBox(height: 8),
+          Text(value.toStringAsFixed(2), style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Colors.black)),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final magnitude = sqrt(_x * _x + _y * _y + _z * _z);
-
-    return Card(
-      margin: const EdgeInsets.all(12),
-      elevation: 4,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text("現在の加速度", style: TextStyle(fontSize: 18)),
-            const SizedBox(height: 8),
-            Text("X: ${_x.toStringAsFixed(2)} m/s²"),
-            Text("Y: ${_y.toStringAsFixed(2)} m/s²"),
-            Text("Z: ${_z.toStringAsFixed(2)} m/s²"),
-            const SizedBox(height: 8),
-            Text("加速度の大きさ: ${magnitude.toStringAsFixed(2)} m/s²",
-                style: const TextStyle(fontWeight: FontWeight.bold)),
-          ],
+    return Scaffold(
+      backgroundColor: Colors.white, // 画面全体の背景を白に
+      body: Center(
+        child: Card(
+          margin: const EdgeInsets.all(24),
+          elevation: 6,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'ユーザー加速度センサーの値 (m/s²)',
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black),
+                ),
+                const SizedBox(height: 32),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildAxisColumn('X軸', x),
+                    _buildAxisColumn('Y軸', y),
+                    _buildAxisColumn('Z軸', z),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

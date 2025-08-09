@@ -1,5 +1,7 @@
 PODS:
   - Flutter (1.0.0)
+  - flutter_fft (0.0.1):
+    - Flutter
   - flutter_sound (9.28.0):
     - Flutter
     - flutter_sound_core (= 9.28.0)
@@ -18,6 +20,7 @@ PODS:
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
+  - flutter_fft (from `.symlinks/plugins/flutter_fft/ios`)
   - flutter_sound (from `.symlinks/plugins/flutter_sound/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - sensors_plus (from `.symlinks/plugins/sensors_plus/ios`)
@@ -31,6 +34,8 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   Flutter:
     :path: Flutter
+  flutter_fft:
+    :path: ".symlinks/plugins/flutter_fft/ios"
   flutter_sound:
     :path: ".symlinks/plugins/flutter_sound/ios"
   path_provider_foundation:
@@ -44,6 +49,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  flutter_fft: a6019b922e94e2899fcb216331d091c3d1ce3f51
   flutter_sound: b9236a5875299aaa4cef1690afd2f01d52a3f890
   flutter_sound_core: 427465f72d07ab8c3edbe8ffdde709ddacd3763c
   path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
