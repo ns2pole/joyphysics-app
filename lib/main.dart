@@ -186,6 +186,7 @@ final categories = <Category>[
       Subcategory(
         name: '音波',
         videos: [
+          frequencyMeasurement,
           closedPipeResonance,
           openPipeResonance,
           beat,
