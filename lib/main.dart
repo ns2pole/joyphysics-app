@@ -1,4 +1,6 @@
 // main.dart
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
@@ -199,9 +201,9 @@ final categories = <Category>[
         videos: [
           diffractionGrating,
           spectroscopy,
-          luxMeasurement
+          if (!(kIsWeb || Platform.isIOS)) luxMeasurement,
         ],
-      ),
+      )
     ],
   ),
 
@@ -1253,11 +1255,13 @@ class SensorListView extends StatelessWidget {
       'icon': Icons.graphic_eq,
       'widget': FrequencyMeasureWidget(),
     },
-    {
-      'name': '光センサー',
-      'icon': Icons.wb_sunny,
-      'widget': LuxMeasurementWidget(),
-    },
+    // WebではPlatformが使えないので先に判定
+    if (!(kIsWeb || Platform.isIOS))
+      {
+        'name': '光センサー',
+        'icon': Icons.wb_sunny,
+        'widget': LuxMeasurementWidget(),
+      },
   ];
 
   @override
