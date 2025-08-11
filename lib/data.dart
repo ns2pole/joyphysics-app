@@ -62,3 +62,4 @@ export './waves/dopplerObserverMoving.dart';
 export './waves/luxMeasurement.dart';
 export './waves/LuxMeasurementWidget.dart';
 export './waves/frequencyMeasurement.dart';
+export './waves/FrequencyMeasureWidget.dart';

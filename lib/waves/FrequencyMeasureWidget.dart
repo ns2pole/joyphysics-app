@@ -112,12 +112,48 @@ class _FrequencyMeasureWidgetState extends State<FrequencyMeasureWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        _frequency == null
-            ? '周波数計測中...'
-            : '周波数: ${_frequency!.toStringAsFixed(1)} Hz',
-        style: const TextStyle(fontSize: 24),
+    return Scaffold(
+      backgroundColor: Colors.white, // LuxMeasurementWidget に合わせる
+      body: Center(
+        child: Card(
+          margin: const EdgeInsets.all(24),
+          elevation: 6,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+            child: _frequency == null
+                ? Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 16),
+                      Text(
+                        "周波数計測中...",
+                        style: TextStyle(fontSize: 18, color: Colors.black),
+                      ),
+                    ],
+                  )
+                : Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        "現在の周波数",
+                        style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black),
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        "${_frequency!.toStringAsFixed(1)} Hz",
+                        style: const TextStyle(
+                            fontSize: 36,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black),
+                      ),
+                    ],
+                  ),
+          ),
+        ),
       ),
     );
   }

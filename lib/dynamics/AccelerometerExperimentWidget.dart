@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 
@@ -33,23 +34,12 @@ class _AccelerometerExperimentWidgetState extends State<AccelerometerExperimentW
     super.dispose();
   }
 
-  Widget _buildAxisColumn(String label, double value) {
-    return Expanded(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(label, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black)),
-          const SizedBox(height: 8),
-          Text(value.toStringAsFixed(2), style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Colors.black)),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+    final magnitude = sqrt(x * x + y * y + z * z);
+
     return Scaffold(
-      backgroundColor: Colors.white, // 画面全体の背景を白に
+      backgroundColor: Colors.white, // 全体背景白
       body: Center(
         child: Card(
           margin: const EdgeInsets.all(24),
@@ -63,14 +53,17 @@ class _AccelerometerExperimentWidgetState extends State<AccelerometerExperimentW
                   'ユーザー加速度センサーの値 (m/s²)',
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black),
                 ),
-                const SizedBox(height: 32),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildAxisColumn('X軸', x),
-                    _buildAxisColumn('Y軸', y),
-                    _buildAxisColumn('Z軸', z),
-                  ],
+                const SizedBox(height: 24),
+                Text("X: ${x.toStringAsFixed(2)}",
+                    style: const TextStyle(fontSize: 18, color: Colors.black)),
+                Text("Y: ${y.toStringAsFixed(2)}",
+                    style: const TextStyle(fontSize: 18, color: Colors.black)),
+                Text("Z: ${z.toStringAsFixed(2)}",
+                    style: const TextStyle(fontSize: 18, color: Colors.black)),
+                const SizedBox(height: 24),
+                Text(
+                  "合成加速度: ${magnitude.toStringAsFixed(2)} m/s²",
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black),
                 ),
               ],
             ),

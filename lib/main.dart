@@ -7,10 +7,11 @@ import 'package:joyphysics/data.dart';
 import 'package:joyphysics/model.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
-import 'package:joyphysics/waves/LuxMeasurementWidget.dart';
 import 'package:joyphysics/dynamics/AccelerometerExperimentWidget.dart';
-import 'package:joyphysics/electroMagnetism/MagnetometerExperimentWidget.dart';
 import 'package:joyphysics/dynamics/BarometerExperimentWidget.dart';
+import 'package:joyphysics/electroMagnetism/MagnetometerExperimentWidget.dart';
+import 'package:joyphysics/waves/LuxMeasurementWidget.dart';
+import 'package:joyphysics/waves/FrequencyMeasureWidget.dart';
 
 // 色コードからColor生成拡張
 extension HexColor on Color {
@@ -1238,19 +1239,24 @@ class SensorListView extends StatelessWidget {
       'widget': AccelerometerExperimentWidget(), // 例: 実装済みのウィジェット
     },
     {
-      'name': '光センサー',
-      'icon': Icons.wb_sunny,
-      'widget': LuxMeasurementWidget(),
+      'name': '気圧センサー',
+      'icon': Icons.compress,
+      'widget': BarometerExperimentWidget(),
     },
     {
-      'name': '磁場センサー',
+      'name': '磁気センサー',
       'icon': Icons.sensors,
       'widget': MagnetometerExperimentWidget(),
     },
     {
-      'name': '気圧センサー',
-      'icon': Icons.compress,
-      'widget': BarometerExperimentWidget(),
+      'name': '周波数センサー(音波)',
+      'icon': Icons.graphic_eq,
+      'widget': FrequencyMeasureWidget(),
+    },
+    {
+      'name': '光センサー',
+      'icon': Icons.wb_sunny,
+      'widget': LuxMeasurementWidget(),
     },
   ];
 
