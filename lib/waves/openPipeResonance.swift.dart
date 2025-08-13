@@ -1,10 +1,11 @@
+import './FrequencyMeasureWidget.dart';
 import '../model.dart'; // Videoクラス定義が別ならインポート
 final openPipeResonance = Video(
     category: 'waves', // ← 追加
     iconName: "openPipeResonance",
     title: "気柱の振動(開管)",
     videoURL: "08SRSu2SoGI",
-    equipment: ["サランラップ", "水差し", "スマホアプリ（Spectroid）"],
+    equipment: ["サランラップ", "水差し", "スマホ"],
     costRating: "★☆☆", latex: """
     <<div class="common-box">ポイント</div>
 <ul style="line-height:1.6;">
@@ -82,5 +83,6 @@ final openPipeResonance = Video(
     </ul>
     <p>理論値と測定値は、開口端補正を加えることでより正確に予測できる。</p>
 <br>
-"""
+""",
+  experimentWidget: FrequencyMeasureWidget(),
 );

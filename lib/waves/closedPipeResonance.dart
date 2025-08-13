@@ -1,10 +1,11 @@
+import './FrequencyMeasureWidget.dart';
 import '../model.dart'; // Videoクラス定義が別ならインポート
 final closedPipeResonance = Video(
     category: 'waves', // ← 追加
     iconName: "closedPipeResonance",
     title: "気柱の振動(閉管)",
     videoURL: "fWCKCO0WTFA",
-    equipment: ["ガラス管", "水差し", "スマホアプリ（Spectroid）"],
+    equipment: ["ガラス管", "水差し", "スマホ"],
     costRating: "★☆☆", latex: """
         <ul style="line-height:1.6;">
           <li>一端が閉じた管（閉管）では、定常波が形成される際、閉じた端が節、開いた端が腹となる。</li>
@@ -81,5 +82,6 @@ final closedPipeResonance = Video(
         </ul>
     <p>理論値と測定値は、開口端補正を加えることでより正確に予測できる。</p>
 <br>
-"""
+""",
+  experimentWidget: FrequencyMeasureWidget(),
 );

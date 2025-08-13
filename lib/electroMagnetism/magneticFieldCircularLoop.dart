@@ -1,4 +1,6 @@
+import './MagnetometerExperimentWidget.dart';
 import '../model.dart'; // Videoクラス定義が別ならインポート
+
 final magneticFieldCircularLoop = Video(
     category: 'electroMagnetism', // ← 追加
     iconName: "magneticFieldCircularLoop",

@@ -193,7 +193,8 @@ final categories = <Category>[
           closedPipeResonance,
           openPipeResonance,
           beat,
-          // doppler
+          doppler,
+          dopplerObserverMoving
         ],
       ),
       Subcategory(
@@ -391,13 +392,13 @@ final List<FormulaEntry> formulaList = [
   ),
   FormulaEntry(
     latex: "f' = f \cdot \frac{v \pm v_{\text{観測者}}}{v}",
-      relatedVideo: doppler,
-      categoryName: "ドップラー効果（観測者が動く場合）",
+      relatedVideo: dopplerObserverMoving,
+      categoryName: "ドップラー効果（音源が動く場合）",
   ),
   FormulaEntry(
     latex: "f' = f \cdot \frac{v}{v \mp v_{\text{音源}}} \quad (v: 音速, \quad v_{\text{音源}}: 音源の速度)",
       relatedVideo: doppler,
-      categoryName: "ドップラー効果（音源が動く場合）",
+      categoryName: "ドップラー効果（観測者が動く場合）",
   ),
   FormulaEntry(
     latex: "d \\sin\\theta = n\\lambda",

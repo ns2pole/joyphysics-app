@@ -6,9 +6,9 @@ final doppler = Video(
   isNew: true,
   category: 'waves',
   iconName: "doppler1",  // assets に追加
-  title: "ドップラー効果（歩行速度で3000Hzの音源が動く時）",
+  title: "ドップラー効果（音源が動く時）",
   videoURL: "", // 実験動画のURLがある場合はここに
-  equipment: ["スマホ（マイク付き）", "音源（ブザーやメトロノーム等）"],
+  equipment: ["スマホ2台"],
   costRating: "★☆☆",
   latex: """
 <div class="common-box">ドップラー効果とは？</div>
@@ -17,9 +17,9 @@ final doppler = Video(
 
 <div class="common-box">実験：歩く速度で3000Hzの音源を動かして観測</div>
 <ol>
-  <li>スマホに <b>ドップラー観測アプリ</b> を起動し、周波数をリアルタイムで表示させる</li>
-  <li>3000Hzの一定周波数を発するブザーやメトロノームを用意する</li>
-  <li>音源をスマホの前で歩く速度（約1.5 m/s）でゆっくり近づけたり遠ざけたりする</li>
+  <li>スマホ1台に周波数をリアルタイムで表示させる</li>
+  <li>スマホ1台に3000Hzの一定周波数を発生させる(うなりの項目に音源機能あり)</li>
+  <li>音源をでゆっくり近づけたり遠ざけたりする</li>
   <li>周波数が変化する様子を観察する</li>
 </ol>
 
@@ -31,16 +31,16 @@ final doppler = Video(
 </ul>
 
 <div class="common-box">理論：周波数の変化の計算例</div>
-<p>音速を約 <i>v = 340 \text{ m/s}</i>、歩行速度を <i>v_{\text{音源}} = 1.5 \text{ m/s}</i>、音源の周波数を <i>f = 3000 \text{ Hz}</i> とすると、</p>
+<p>音速を約 \$v = 340 \\text{ m/s}\$、歩行速度を \$v_{\\text{音源}} = 1.5 \\text{ m/s}\$、音源の周波数を \$f = 3000 \\text{ Hz}\$ とすると、</p>
 
 <p>近づく場合の周波数は：</p>
 \\[
-f' = f \\times \\frac{v}{v - v_{\text{音源}}} = 3000 \\times \\frac{340}{340 - 1.5} \\approx 3013 \text{ Hz}
+f' = f \\times \\frac{v}{v - v_{\\text{音源}}} = 3000 \\times \\frac{340}{340 - 1.5} \\approx 3013 \\text{ Hz}
 \\]
 
 <p>遠ざかる場合の周波数は：</p>
 \\[
-f' = f \\times \\frac{v}{v + v_{\text{音源}}} = 3000 \\times \\frac{340}{340 + 1.5} \\approx 2987 \text{ Hz}
+f' = f \\times \\frac{v}{v + v_{\\text{音源}}} = 3000 \\times \\frac{340}{340 + 1.5} \\approx 2987 \\text{ Hz}
 \\]
 
 <div class="common-box">注意点</div>
@@ -50,5 +50,5 @@ f' = f \\times \\frac{v}{v + v_{\text{音源}}} = 3000 \\times \\frac{340}{340 +
   <li>歩行速度程度でも十分にドップラー効果を体感できる変化量（約 ±13Hz）がある</li>
 </ul>
 """,
-  // experimentWidget: FrequencyMeasureWidget(), // ドップラー効果用ウィジェット
+  experimentWidget: FrequencyMeasureWidget(), // ドップラー効果用ウィジェット
 );

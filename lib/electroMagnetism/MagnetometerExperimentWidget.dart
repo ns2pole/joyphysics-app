@@ -11,7 +11,7 @@ class MagnetometerExperimentWidget extends StatefulWidget {
 class _MagnetometerExperimentWidgetState extends State<MagnetometerExperimentWidget> {
   StreamSubscription<MagnetometerEvent>? _subscription;
   double _x = 0, _y = 0, _z = 0;
-
+  
   @override
   void initState() {
     super.initState();
@@ -24,6 +24,30 @@ class _MagnetometerExperimentWidgetState extends State<MagnetometerExperimentWid
     });
   }
 
+  Color getColorByMagnitude(double mag) {
+    if (mag < 200) {
+      return Colors.green;
+    } else if (mag < 500) {
+      return Colors.yellow.shade700;
+    } else if (mag < 2000) {
+      return Colors.orange;
+    } else {
+      return Colors.red;
+    }
+  }
+
+  String getWarningText(double mag) {
+    if (mag < 200) {
+      return "磁場は正常範囲内です。";
+    } else if (mag < 500) {
+      return "やや強い磁場を検知しています。";
+    } else if (mag < 2000) {
+      return "強力な磁場です。";
+    } else {
+      return "非常に強い磁場です！端末への影響にご注意ください。";
+    }
+  }
+
   @override
   void dispose() {
     _subscription?.cancel();
@@ -33,9 +57,11 @@ class _MagnetometerExperimentWidgetState extends State<MagnetometerExperimentWid
   @override
   Widget build(BuildContext context) {
     final magnitude = sqrt(_x * _x + _y * _y + _z * _z);
+    final color = getColorByMagnitude(magnitude);
+    final warningText = getWarningText(magnitude);
 
     return Scaffold(
-      backgroundColor: Colors.white,  // 画面全体白背景
+      backgroundColor: Colors.white,
       body: Center(
         child: Card(
           margin: const EdgeInsets.all(24),
@@ -62,10 +88,15 @@ class _MagnetometerExperimentWidgetState extends State<MagnetometerExperimentWid
                 const SizedBox(height: 24),
                 Text(
                   "合成磁場: ${magnitude.toStringAsFixed(1)} μT",
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black),
+                      color: color),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  warningText,
+                  style: TextStyle(fontSize: 16, color: color),
                 ),
               ],
             ),
