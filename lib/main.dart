@@ -57,6 +57,11 @@ class CategoryList extends StatelessWidget {
     // ホームに追加したい理論ボタン
     final theoryButtons = [
       {
+        'name': '物理のための数学',
+        'gif': 'assets/init/number.gif',
+        'page': TheoryListView(categoryName: '物理のための数学'),
+      },
+      {
         'name': '力学理論',
         'gif': 'assets/init/dynamics.gif',
         'page': TheoryListView(categoryName: '力学理論'),

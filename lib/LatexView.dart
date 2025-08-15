@@ -110,29 +110,77 @@ class _LatexWebViewState extends State<LatexWebView> {
       margin: 0px 0;
       border-radius: 4px;
     }
-    .math-box {
-      width: 100%;
-      padding: 0px 0px;
-      box-sizing: border-box;
-      white-space: normal;
-      overflow-wrap: break-word;
-      word-break: break-word;
-      overflow-x: hidden;
-      -webkit-overflow-scrolling: touch;
+    ..math-box {
+    width: 100%;
+    padding: 0;
+    box-sizing: border-box;
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    /* 親で隠さない。子要素（表示式）をスクロールさせる */
+    overflow-x: visible;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* 画像・表は従来どおり最大幅に抑える */
+  .math-box img,
+  .math-box table {
+    max-width: 90%;
+    height: auto;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .math-box table td,
+  .math-box table th {
+    word-wrap: break-word;
+    white-space: normal;
+  }
+
+  /* --- ここから MathJax（表示式）対応 --- */
+
+  /* ブロック表示の MathJax 出力を横スクロール可能にする */
+  /* MathJax のバージョン/出力形式に依ってクラス名が変わるため複数を指定 */
+  .math-box .MathJax_Display,
+  .math-box .mjx-block,
+  .math-box .MathJax_Display * {
+    /* ブロック数式領域を横スクロール用の領域にする */
+    display: block;
+    overflow-x: auto;                 /* ← 横スクロールを許可 */
+    -webkit-overflow-scrolling: touch; /* スムーズスクロール（iOS） */
+    white-space: nowrap;               /* 数式全体を折り返さず横に並べる */
+    padding: 6px 0;                    /* 任意：見た目の余白 */
+    margin: 6px 0;
+    box-sizing: border-box;
+  }
+
+  /* MathJax が生成する SVG / 内部コンテナを切られないようにする */
+  .math-box .MathJax_Display .MathJax,
+  .math-box .MathJax_Display .mjx-svg-hbox,
+  .math-box .MathJax_Display svg,
+  .math-box .MathJax_Display mjx-container,
+  .math-box .mjx-block svg {
+    display: inline-block;
+    max-width: none !important; /* 親の max-width 制限を解除 */
+    height: auto !important;
+    vertical-align: middle;
+  }
+
+  /* CHTML 出力にも対応（もし出力モードが HTML/CSS なら） */
+  .math-box .MathJax_Chunk, 
+  .math-box .MathJax_SVG,
+  .math-box .mjx-chtml {
+    max-width: none !important;
+    overflow: visible !important;
+  }
+
+  /* 小さい画面での見栄え調整（任意） */
+  @media (max-width: 480px) {
+    .math-box .MathJax_Display {
+      padding: 4px 0;
     }
-    .math-box img,
-    .math-box table {
-      max-width: 90%;
-      height: auto;
-      display: block;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    .math-box table td,
-    .math-box table th {
-      word-wrap: break-word;
-      white-space: normal;
-    }
+  }
   </style>
   <script>
     window.MathJax = {
