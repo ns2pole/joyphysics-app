@@ -9,36 +9,36 @@ final Map<String, List<TheorySubcategory>> theoryData = {
         vectorComponent,
       ],
     ),
-    TheorySubcategory(
-      name: '微分方程式',
-      topics: [
-        harmonic,
-      ],
-    ),
+    // TheorySubcategory(
+    //   name: '微分方程式',
+    //   topics: [
+    //     harmonic,
+    //   ],
+    // ),
   ],
-  '力学理論': [
-    TheorySubcategory(
-      name: '力学の三法則',
-      topics: [
-        lawOfActionAndReaction,
-        eqOfMotion,
-      ],
-    ),
-  ],
+  // '力学理論': [
+  //   TheorySubcategory(
+  //     name: '力学の三法則',
+  //     topics: [
+  //       // lawOfActionAndReaction,
+  //       eqOfMotion,
+  //     ],
+  //   ),
+  // ],
   '電磁気学理論': [
-    TheorySubcategory(
-      name: '電場と電位',
-      topics: [
-        gaussLaw,
-      ],
-    ),
+  //   // TheorySubcategory(
+  //   //   name: '電場と電位',
+  //   //   topics: [
+  //   //     gaussLaw,
+  //   //   ],
+  //   // ),
     TheorySubcategory(
       name: '磁場と電流',
       topics: [
-        ampereLaw,
+        // ampereLaw,
         lorentzForceAndCircleMove,
-        infiniteStraightCurrentHFieldNoFlux,
-        sorenoidMagneticField
+        // infiniteStraightCurrentHFieldNoFlux,
+        // sorenoidMagneticField
       ],
     ),
   ],

@@ -64,7 +64,17 @@ export './experiment/waves/LuxMeasurementWidget.dart';
 export './experiment/waves/frequencyMeasurement.dart';
 export './experiment/waves/FrequencyMeasureWidget.dart';
 
-//experiment/electroMagnetismTheory
-export './theory/electroMagnetismTheory/ampereLaw.dart';
-export './theory/electroMagnetismTheory/lorentzForceAndCircleMove.dart';
-export './theory/electroMagnetismTheory/infiniteStraightCurrentHFieldNoFlux.dart';
+// theory/mathematics
+export './theory/mathematics/harmonic.dart';
+export './theory/mathematics/vectorComponent.dart';
+
+// theory/dynamics
+export './theory/dynamics/lawOfActionAndReaction.dart';
+export './theory/dynamics/eqOfMotion.dart';
+
+// theory/electroMagnetism
+export './theory/electroMagnetism/gaussLaw.dart';
+export './theory/electroMagnetism/ampereLaw.dart';
+export './theory/electroMagnetism/lorentzForceAndCircleMove.dart';
+export './theory/electroMagnetism/infiniteStraightCurrentHFieldNoFlux.dart';
+export './theory/electroMagnetism/sorenoidMagneticField.dart';

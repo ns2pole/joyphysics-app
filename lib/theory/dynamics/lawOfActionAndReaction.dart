@@ -1,6 +1,6 @@
 import '../../model.dart';
 
-final ampereLaw = TheoryTopic(
+final lawOfActionAndReaction = TheoryTopic(
   title: 'アンペールの法則（真空中、Hで表記）',
   latexContent: """
 <div class="common-box">ポイント</div>
@@ -12,7 +12,7 @@ final ampereLaw = TheoryTopic(
 <li>\\(\\overrightarrow{B}\\) ：磁束密度（磁場の物理的強さ）</li>
 <li>\\(I_{\\mathrm{free, enclosed}}\\) ：閉曲線が貫く面を流れる自由電流の総和</li>
 <li>\\(C\\) ：線積分を行う閉曲線</li>
-<li>\\(d\\overrightarrow{l}\\) ：線素ベクトル</li>
+<li>\\(d\\ov  errightarrow{l}\\) ：線素ベクトル</li>
 <li>\\(\\mu_0\\) ：真空の透磁率 \\(4\\pi \\times 10^{-7} \\ \\mathrm{T \\cdot m / A}\\)</li>
 <li>1 Wb ：磁荷の単位（磁場による仕事を測る基準）</li>
 </ul>

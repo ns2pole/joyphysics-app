@@ -105,7 +105,13 @@ class _LatexWebViewState extends State<LatexWebView> {
       line-height: 1.75;  /* ← 行間を少し広く */
     }
     .common-box {
-      background: #eee;
+      background: #cfc;
+      padding: 8px 16px;
+      margin: 0px 0;
+      border-radius: 4px;
+    }
+    .proof-box {
+      background: #ffe5b4;
       padding: 8px 16px;
       margin: 0px 0;
       border-radius: 4px;

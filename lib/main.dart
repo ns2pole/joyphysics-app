@@ -44,7 +44,7 @@ class _Footer extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
         padding: EdgeInsets.only(bottom: 12),
-        child: Text('Updated 2025/08/14', style: TextStyle(fontSize: 20, color: Colors.black)),
+        child: Text('Updated 2025/08/14', style: TextStyle(fontSize: 22, color: Colors.black)),
       );
 }
 
@@ -61,15 +61,15 @@ class CategoryList extends StatelessWidget {
         'gif': 'assets/init/number.gif',
         'page': TheoryListView(categoryName: '物理のための数学'),
       },
+      // {
+      //   'name': '力学理論',
+      //   'gif': 'assets/init/dynamics.gif',
+      //   'page': TheoryListView(categoryName: '力学理論'),
+      // },
       {
-        'name': '力学理論',
-        'gif': 'assets/init/dynamics.gif',
-        'page': TheoryListView(categoryName: '力学理論'),
-      },
-      {
-        'name': '電磁気理論',
+        'name': '電磁気学理論',
         'gif': 'assets/init/electromag.gif',
-        'page': TheoryListView(categoryName: '電磁気理論'),
+        'page': TheoryListView(categoryName: '電磁気学理論'),
       },
     ];
 
@@ -104,7 +104,7 @@ class CategoryList extends StatelessWidget {
                     Text(
                       tb['name'] as String,
                       style: TextStyle(
-                        fontSize: 25,
+                        fontSize: 22,
                         color: Colors.white,
                       ),
                     ),
@@ -139,7 +139,7 @@ class CategoryList extends StatelessWidget {
                     Text(
                       'センサーを使う！',
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 22,
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                       ),
@@ -175,7 +175,7 @@ class CategoryList extends StatelessWidget {
                     Text(
                       'アプリについて',
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 22,
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                       ),
@@ -211,7 +211,7 @@ class CategoryList extends StatelessWidget {
                   Text(
                     cat.name,
                     style: TextStyle(
-                      fontSize: 25,
+                      fontSize: 22,
                       color: Colors.white,
                     ),
                   ),

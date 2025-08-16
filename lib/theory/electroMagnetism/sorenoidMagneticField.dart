@@ -1,6 +1,6 @@
 import '../../model.dart';
 
-final ampereLaw = TheoryTopic(
+final sorenoidMagneticField = TheoryTopic(
   title: 'アンペールの法則（真空中、Hで表記）',
   latexContent: """
 <div class="common-box">ポイント</div>
