@@ -3,7 +3,6 @@ import '../../model.dart'; // Videoクラスが定義されている場合
 
 final barometer = Video(
   isSmartPhoneOnly: true,
-  isNew: true,
   category: 'dynamics',
   iconName: "barometer",
   title: "大気圧の測定",
@@ -38,5 +37,5 @@ final barometer = Video(
   <li>気圧データは周囲の気温や気流の影響を受けるため、安定した状態で測定してください。</li>
 </ul>
 """,
-  experimentWidget: BarometerExperimentWidget(),
+  experimentWidgets: [BarometerExperimentWidget()],
 );

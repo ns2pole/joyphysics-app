@@ -17,10 +17,10 @@ final dopplerObserverMoving = Video(
 
 <div class="common-box">実験：観測者が歩く速度で動いて周波数を観測</div>
 <ol>
-  <li>スマホに <b>ドップラー観測アプリ</b> を起動し、周波数をリアルタイムで表示させる</li>
-  <li>3000Hzの一定周波数を発する音源を用意する</li>
-  <li>音源の前で、スマホを持ったまま歩く速度（約1.5 m/s）で近づいたり遠ざかったりする</li>
-  <li>周波数の変化を観察する</li>
+  <li>スマホ1台に周波数をリアルタイムで表示させる</li>
+  <li>スマホ1台に3000Hzの一定周波数を発生させる</li>
+  <li>音源の方のスマホを、周波数観測の方のスマホにゆっくり近づけたり遠ざけたりする</li>
+  <li>周波数が変化する様子を観察する</li>
 </ol>
 
 <div class="common-box">観察ポイント</div>
@@ -50,5 +50,5 @@ f' = f \\times \\frac{v - v_{\\text{観測者}}}{v} = 3000 \\times \\frac{340 - 
   <li>歩行速度でも十分ドップラー効果の変化が見られる</li>
 </ul>
 """,
-  experimentWidget: FrequencyMeasureWidget(),
+  experimentWidgets: [FrequencyMeasureWidget()],
 );

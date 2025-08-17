@@ -4,7 +4,9 @@ import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class FrequencyMeasureWidget extends StatefulWidget {
-  const FrequencyMeasureWidget({Key? key}) : super(key: key);
+  final double height; // 追加
+
+  const FrequencyMeasureWidget({Key? key, this.height = 400}) : super(key: key);
 
   @override
   State<FrequencyMeasureWidget> createState() => _FrequencyMeasureWidgetState();
@@ -112,9 +114,9 @@ class _FrequencyMeasureWidgetState extends State<FrequencyMeasureWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white, // LuxMeasurementWidget に合わせる
-      body: Center(
+    return SizedBox(
+      height: widget.height, // 高さ調整
+      child: Center(
         child: Card(
           margin: const EdgeInsets.all(24),
           elevation: 6,
@@ -133,25 +135,29 @@ class _FrequencyMeasureWidgetState extends State<FrequencyMeasureWidget> {
                     ],
                   )
                 : Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text(
-                        "現在の周波数",
-                        style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black),
-                      ),
-                      const SizedBox(height: 24),
-                      Text(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      "現在の周波数",
+                      style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black),
+                    ),
+                    const SizedBox(height: 24),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16), // ←左右に16px余白
+                      child: Text(
                         "${_frequency!.toStringAsFixed(1)} Hz",
                         style: const TextStyle(
                             fontSize: 36,
                             fontWeight: FontWeight.bold,
                             color: Colors.black),
+                        textAlign: TextAlign.center, // 中央寄せ
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
+                ),
           ),
         ),
       ),

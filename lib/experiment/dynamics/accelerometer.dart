@@ -3,7 +3,6 @@ import '../../model.dart';
 
 final accelerometer = Video(
   isSmartPhoneOnly: true,
-  isNew: true,
   category: 'dynamics',
   iconName: "accelerometer",  // gravity.png などを assets に追加
   title: "加速度の測定",
@@ -42,5 +41,5 @@ final accelerometer = Video(
   <li>加速度の値は一時的なノイズやブレもあるため、何度か測定して傾向を見るとよい。</li>
 </ul>
 """,
-  experimentWidget: AccelerometerExperimentWidget(),
+  experimentWidgets: [AccelerometerExperimentWidget()],
 );

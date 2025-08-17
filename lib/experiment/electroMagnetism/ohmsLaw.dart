@@ -1,7 +1,6 @@
 import '../../model.dart'; // Videoクラス定義が別ならインポート
 
 final ohmsLaw = Video(
-  isNew: true,
   category: 'electroMagnetism', // または 'electricCircuit' でも可
   iconName: "ohmsLaw",
   title: "オームの法則",

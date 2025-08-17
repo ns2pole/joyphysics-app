@@ -63,6 +63,9 @@ export './experiment/waves/luxMeasurement.dart';
 export './experiment/waves/LuxMeasurementWidget.dart';
 export './experiment/waves/frequencyMeasurement.dart';
 export './experiment/waves/FrequencyMeasureWidget.dart';
+export './experiment/waves/ToneGeneratorWidget.dart';
+export './experiment/waves/frequencyAndDoReMi.dart';
+export './experiment/waves/PianoWidget.dart';
 
 // theory/mathematics
 export './theory/mathematics/harmonic.dart';

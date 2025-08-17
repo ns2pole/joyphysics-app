@@ -1,9 +1,12 @@
 import './BeatExperimentWidget.dart';
+import './FrequencyMeasureWidget.dart';
+import './ToneGeneratorWidget.dart';
+
 import '../../model.dart'; // Videoクラス定義が別ならインポート
 
 final beat = Video(
   isSmartPhoneOnly: true,
-  isNew: true,
+
   category: 'waves',
   iconName: "beat",
   title: "うなり",
@@ -40,5 +43,5 @@ f_{\\text{うなり}} = \\bigl| f_1 - f_2 \\bigr|
   <li>周波数差を変えて聴き比べることで、うなり周波数と聞こえ方の関係を学ぶ</li>
 </ol>
 """,
-  experimentWidget: BeatExperimentWidget(),
+  experimentWidgets: [FrequencyMeasureWidget(height: 70), ToneGeneratorWidget(initialFreq: 340, height: 50),  ToneGeneratorWidget(initialFreq: 344, height: 50)],
 );

@@ -13,5 +13,5 @@ final frequencyMeasurement = Video(
   latex: """
 <p>マイクから入力した音声の周波数をリアルタイムで測定します。</p>
 """,
-  experimentWidget: const FrequencyMeasureWidget(),
+  experimentWidgets: [FrequencyMeasureWidget()],
 );

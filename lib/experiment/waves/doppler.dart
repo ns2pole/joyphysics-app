@@ -18,8 +18,8 @@ final doppler = Video(
 <div class="common-box">実験：歩く速度で3000Hzの音源を動かして観測</div>
 <ol>
   <li>スマホ1台に周波数をリアルタイムで表示させる</li>
-  <li>スマホ1台に3000Hzの一定周波数を発生させる(うなりの項目に音源機能あり)</li>
-  <li>音源をでゆっくり近づけたり遠ざけたりする</li>
+  <li>スマホ1台に3000Hzの一定周波数を発生させる</li>
+  <li>周波数観測の方のスマホを、音源の方のスマホにゆっくり近づけたり遠ざけたりする</li>
   <li>周波数が変化する様子を観察する</li>
 </ol>
 
@@ -50,5 +50,5 @@ f' = f \\times \\frac{v}{v + v_{\\text{音源}}} = 3000 \\times \\frac{340}{340 
   <li>歩行速度程度でも十分にドップラー効果を体感できる変化量（約 ±13Hz）がある</li>
 </ul>
 """,
-  experimentWidget: FrequencyMeasureWidget(), // ドップラー効果用ウィジェット
+  experimentWidgets: [FrequencyMeasureWidget()], // ドップラー効果用ウィジェット
 );

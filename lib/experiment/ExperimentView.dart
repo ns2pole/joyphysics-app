@@ -180,7 +180,6 @@ class _VideoCategoryList extends StatelessWidget {
       );
 }
 
-
 class VideoDetailView extends StatelessWidget {
   final Video video;
   const VideoDetailView({required this.video, Key? key}) : super(key: key);
@@ -194,15 +193,16 @@ class VideoDetailView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (video.experimentWidget != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 16),
-                child: SizedBox(
-                  height: 450,
-                  width: double.infinity,
-                  child: video.experimentWidget!,
-                ),
-              ),
+            // 複数ウィジェット対応
+            if (video.experimentWidgets != null && video.experimentWidgets!.isNotEmpty)
+              ...video.experimentWidgets!.map((w) => Padding(
+                    padding: const EdgeInsets.only(top: 16),
+                    child: SizedBox(
+                      height: 220,
+                      width: double.infinity,
+                      child: w,
+                    ),
+                  )),
 
             if (video.videoURL.isNotEmpty)
               Padding(
@@ -231,6 +231,7 @@ class VideoDetailView extends StatelessWidget {
     );
   }
 }
+
 
 class FormulaList extends StatelessWidget {
   final Map<String, List<FormulaEntry>> groupedFormulas;

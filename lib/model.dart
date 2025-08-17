@@ -11,7 +11,7 @@ class Video {
   final String costRating;
   final bool? isSmartPhoneOnly;
   final String? latex;
-  final Widget? experimentWidget;
+  final List<Widget>? experimentWidgets; // 複数のWidgetを許可
 
   Video({
     this.isNew,
@@ -23,7 +23,7 @@ class Video {
     required this.costRating,
     this.isSmartPhoneOnly,
     this.latex,
-    this.experimentWidget,  // ← named, optional, default null
+    this.experimentWidgets, // ← optional, default null
   });
 
   String get assetPath => 'assets/$category/$iconName.png';

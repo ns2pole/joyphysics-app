@@ -3,7 +3,6 @@ import '../../model.dart'; // Videoクラスが定義されている場合
 
 final magnetometer = Video(
   isSmartPhoneOnly: true,
-  isNew: true,
   category: 'electroMagnetism',
   iconName: "magnet",
   title: "磁場の測定",
@@ -50,5 +49,5 @@ final magnetometer = Video(
   <li>スマホの向きに応じて地磁気ベクトルが変化する様子を体験できる</li>
 </ol>
 """,
-  experimentWidget: MagnetometerExperimentWidget(),
+  experimentWidgets: [MagnetometerExperimentWidget()],
 );

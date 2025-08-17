@@ -140,6 +140,7 @@ final categoriesData = <Category>[
           openPipeResonance,
           beat,
           doppler,
+          frequencyAndDoReMi,
           dopplerObserverMoving
         ],
       ),
