@@ -25,7 +25,7 @@ final vectorComponent = TheoryTopic(
     <div style="text-align:center; margin:1em 0;">
       <img src="assets/dynamicsTheory/vect2.png"
            alt="データ一覧"
-           style="max-width:70%; height:auto;" />
+           style="max-width:80%; height:auto;" />
     </div>
 <ul>
 <li>\$\\overrightarrow{A}\$と同じ向きを正方向とする軸 → 成分は \\(+5\\)</li>
@@ -33,12 +33,12 @@ final vectorComponent = TheoryTopic(
 </ul>
 <div class="common-box">2次元の例</div>
 <p><b>例2：</b> 大きさ \\(5\\) のベクトル \\(\\overrightarrow{A}\\) を考えます。軸のとり方によって次のように成分が変わります。</p>
-<ul>
     <div style="text-align:center; margin:1em 0;">
       <img src="assets/dynamicsTheory/vect3.png"
            alt="データ一覧"
            style="max-width:70%; height:auto;" />
-    </div>
+</div>
+<ul>
 <li>水平右向きを \\(x\\) 軸、上向きを \\(y\\) 軸とする  
 → 成分は(3, 4)（ピタゴラスの定理で長さ 5）</li>
 <li>ベクトルの向きに \\(x\\) 軸を合わせ、垂直方向を \\(y\\) 軸とする  

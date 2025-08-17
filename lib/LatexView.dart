@@ -111,10 +111,10 @@ class _LatexWebViewState extends State<LatexWebView> {
       border-radius: 4px;
     }
     .proof-box {
-      background: #ffe5b4;
-      padding: 8px 16px;
-      margin: 0px 0;
-      border-radius: 4px;
+      padding: 2px 2px;   /* 少し広めに */
+      border-radius: 6px;   /* 丸みも少し強調 */
+      font-size: 1.1em;     /* フォントを少し大きめに */
+      font-weight: bold;    /* 太字 */
     }
     ..math-box {
     width: 100%;

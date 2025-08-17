@@ -44,7 +44,7 @@ class _Footer extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
         padding: EdgeInsets.only(bottom: 12),
-        child: Text('Updated 2025/08/14', style: TextStyle(fontSize: 22, color: Colors.black)),
+        child: Text('Updated: 2025/08/17  Version 2.1.0', style: TextStyle(fontSize: 20, color: Colors.black)),
       );
 }
 
