@@ -161,6 +161,8 @@ class _LatexWebViewState extends State<LatexWebView> {
     display: block;
     margin-left: auto;
     margin-right: auto;
+    border-radius: 12px;   /* ← 角丸 */
+    overflow: hidden;      /* 丸角からはみ出さないように */
   }
 
   .math-box table td,

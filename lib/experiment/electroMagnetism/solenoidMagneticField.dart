@@ -36,9 +36,9 @@ B &= 4\\pi \\times 10^{-7} \\cdot \\frac{210}{0.39} \\cdot 1.05 \\\\
 \$\$</p>
 
 <div style="text-align:center; margin:1em 0;">
-  <img src="assets/electroMagnetismDetail/solenoidMagneticField.png"
+  <img src="assets/electroMagnetismDetail/solenoidMag.png"
        alt="ソレノイド内部の磁場"
-       style="max-width:50%; height:auto;" />
+       style="max-width:75%; height:auto;" />
 </div>
 
 <ul>

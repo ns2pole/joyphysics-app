@@ -1,7 +1,7 @@
 import '../../model.dart';
 
 final infiniteStraightCurrent = TheoryTopic(
-  title: '無限に長い直線電流の磁場(真空中)  \$ \\displaystyle H = \\frac {I} {2 \\pi r}\$',
+  title: '無限に長い直線電流の磁場(真空中)  \\(  \\displaystyle H = \\frac {I} {2 \\pi r} \\)',
   latexContent: """
   <div style="text-align:center; margin:1em 0;">
   <img src="assets/electroMagnetismTheory/infiniteStraightCurrent.png"
@@ -21,7 +21,7 @@ final infiniteStraightCurrent = TheoryTopic(
 </ul>
   <div style="text-align:center; margin:1em 0;">
     <img src="assets/electroMagnetismTheory/infiniteStraightCurrent0.png"
-      alt="データ一覧"
+      alt=""
       style="max-width:70%; height:auto;" />
   </div>
 <div class="theorem-box">

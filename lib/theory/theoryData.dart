@@ -37,7 +37,7 @@ final Map<String, List<TheorySubcategory>> theoryData = {
         // ampereLaw,
         lorentzForceAndCircleMove,
         infiniteStraightCurrent,
-        // sorenoidMagneticField
+        solenoidMagneticFieldProp
       ],
     ),
   ],

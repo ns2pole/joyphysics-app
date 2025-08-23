@@ -82,4 +82,4 @@ export './theory/electroMagnetism/gaussLaw.dart';
 export './theory/electroMagnetism/ampereLaw.dart';
 export './theory/electroMagnetism/lorentzForceAndCircleMove.dart';
 export './theory/electroMagnetism/infiniteStraightCurrent.dart';
-export './theory/electroMagnetism/sorenoidMagneticField.dart';
+export './theory/electroMagnetism/solenoidMagneticFieldProp.dart';
