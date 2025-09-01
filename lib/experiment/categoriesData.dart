@@ -35,6 +35,12 @@ final categoriesData = <Category>[
         ],
       ),
       Subcategory(
+        name: '円運動',
+        videos: [
+          centripetalForceDisappears
+        ],
+      ),
+      Subcategory(
         name: '保存則',
         videos: [
           elasticCollision1D,
@@ -139,15 +145,16 @@ final categoriesData = <Category>[
       //   ],
       // ),
       // Subcategory(
-      //   name: '音の干渉',
+      //   name: '音波の生成',
       //   videos: [
       //     beat,
       //   ],
       // ),
 
       Subcategory(
-        name: '音の共鳴',
+        name: '音波',
         videos: [
+          soundGenerate,
           closedPipeResonance,
           openPipeResonance,
         ],
@@ -164,7 +171,6 @@ final categoriesData = <Category>[
         videos: [
           diffractionGrating,
           spectroscopy,
-          // if (!(kIsWeb || Platform.isIOS)) luxMeasurement,
         ],
       )
     ],

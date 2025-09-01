@@ -6,6 +6,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:joyphysics/experiment/formulaListData.dart';
 import 'package:joyphysics/experiment/HexColor.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
+import 'package:flutter/services.dart'; // rootBundle 用
 
 // 表示モード
 enum VideoViewMode { byCategory, byFormula }
@@ -86,6 +87,29 @@ class _VideoListViewState extends State<VideoListView> {
   }
 }
 
+// キャッシュ（アイコンパス解決結果を保持）
+final Map<String, String> _assetPathCache = {};
+
+Future<String> resolveAssetPath(String category, String iconName) async {
+  final key = '$category/$iconName';
+  if (_assetPathCache.containsKey(key)) {
+    return _assetPathCache[key]!;
+  }
+
+  final pngPath = 'assets/$category/$iconName.png';
+  final gifPath = 'assets/$category/$iconName.gif';
+
+  try {
+    await rootBundle.load(pngPath); // PNG 存在チェック
+    _assetPathCache[key] = pngPath;
+    return pngPath;
+  } catch (_) {
+    _assetPathCache[key] = gifPath;
+    return gifPath;
+  }
+}
+
+// ---- あなたのウィジェット ----
 class _VideoCategoryList extends StatelessWidget {
   final List<Subcategory> subcategories;
   _VideoCategoryList({required this.subcategories});
@@ -114,10 +138,19 @@ class _VideoCategoryList extends StatelessWidget {
               return Column(
                 children: [
                   ListTile(
-                    leading: Image.asset(
-                      'assets/${v.category}/${v.iconName}.png',
-                      width: 48,
-                      height: 27,
+                    leading: FutureBuilder<String>(
+                      future: resolveAssetPath(v.category, v.iconName),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return SizedBox(width: 48, height: 27); // ローディング中
+                        }
+                        return Image.asset(
+                          snapshot.data!,
+                          width: 48,
+                          height: 27,
+                          fit: BoxFit.contain,
+                        );
+                      },
                     ),
                     title: Wrap(
                       crossAxisAlignment: WrapCrossAlignment.center,
@@ -133,13 +166,15 @@ class _VideoCategoryList extends StatelessWidget {
                             style: TextStyle(fontSize: 16),
                           ),
                         ),
-                        // if (v.isSmartPhoneOnly == true)
-                        //   Image.asset(
-                        //     'assets/others/smartPhoneOnly.gif',
-                        //     width: 68,
-                        //     height: 45,
-                        //     fit: BoxFit.contain,
-                        //   ),
+                        if (v.isSmartPhoneOnly == true) ...[
+                          SizedBox(width: 10), // タイトルと画像の隙間
+                          Image.asset(
+                            'assets/others/smartPhoneOnly.gif',
+                            width: 60,
+                            height: 40,
+                            fit: BoxFit.contain,
+                          ),
+                        ],
                         if (v.isNew == true)
                           Image.asset(
                             'assets/others/new.gif',
@@ -159,7 +194,8 @@ class _VideoCategoryList extends StatelessWidget {
                     ),
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => VideoDetailView(video: v)),
+                      MaterialPageRoute(
+                          builder: (_) => VideoDetailView(video: v)),
                     ),
                   ),
                   if (!isLast)

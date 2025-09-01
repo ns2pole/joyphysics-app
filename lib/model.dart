@@ -32,13 +32,16 @@ class Video {
 }
 
 
-
-// サンプルデータ用のモデル
 class TheoryTopic {
   final String title;
   final String latexContent;
+  final bool isNew;
 
-  TheoryTopic({required this.title, required this.latexContent});
+  TheoryTopic({
+    required this.title,
+    required this.latexContent,
+    this.isNew = false,
+  });
 }
 
 class TheorySubcategory {

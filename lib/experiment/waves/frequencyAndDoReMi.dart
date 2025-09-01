@@ -4,7 +4,7 @@ import '../../model.dart'; // Videoクラス定義が別ならインポート
 
 final frequencyAndDoReMi = Video(
   isSmartPhoneOnly: true,
-  isNew: true,
+  isNew: false,
   category: 'waves',
   iconName: "doremi",
   title: "ドレミの周波数測定",

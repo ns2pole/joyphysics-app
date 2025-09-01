@@ -10,7 +10,7 @@ final beat = Video(
   category: 'waves',
   iconName: "beat",
   title: "うなり",
-  videoURL: "",
+  videoURL: "mlSLhdJq7bk",
   equipment: ["スマホ"],  // スマホだけで実験
   costRating: "★☆☆",
   latex: """
@@ -28,11 +28,11 @@ f_{\\text{うなり}} = \\bigl| f_1 - f_2 \\bigr|
   <li>スマホアプリで 350 Hz と 351 Hz のトーンを同時再生し、1 秒間に 1 回のゆっくりとした強弱変化を体感する。</li>
 </ul>
 
-<div class="common-box">実験２：350 Hz vs 354 Hz</div>
+<div class="common-box">実験２：340 Hz vs 344 Hz</div>
 <ul>
-  <li>設定周波数：\$f_1 = 350\\,\!\\mathrm{Hz}\$, \$f_2 = 354\\,\\mathrm{Hz}\$</li>
-  <li>うなり周波数：\$|354 - 350| = 4\\,\\mathrm{Hz}\$</li>
-  <li>スマホアプリで 350 Hz と 354 Hz のトーンを同時再生し、1 秒間に 4 回の速い強弱変化を体感する。</li>
+  <li>設定周波数：\$f_1 = 340\\,\!\\mathrm{Hz}\$, \$f_2 = 344\\,\\mathrm{Hz}\$</li>
+  <li>うなり周波数：\$|344 - 344| = 4\\,\\mathrm{Hz}\$</li>
+  <li>スマホアプリで 340 Hz と 344 Hz のトーンを同時再生し、1 秒間に 4 回の速い強弱変化を体感する。</li>
 </ul>
 
 <div class="common-box">実験手順</div>

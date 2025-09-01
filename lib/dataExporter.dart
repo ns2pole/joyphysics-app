@@ -20,6 +20,8 @@ export './experiment/dynamics/barometer.dart';
 export './experiment/dynamics/accelerometer.dart';
 export './experiment/dynamics/AccelerometerExperimentWidget.dart';
 export './experiment/dynamics/BarometerExperimentWidget.dart';
+export './experiment/dynamics/centripetalForceDisappears.dart';
+
 
 // electroMagnetism
 export './experiment/electroMagnetism/ampereLawTorque.dart';
@@ -67,6 +69,8 @@ export './experiment/waves/FrequencyMeasureWidget.dart';
 export './experiment/waves/ToneGeneratorWidget.dart';
 export './experiment/waves/frequencyAndDoReMi.dart';
 export './experiment/waves/PianoWidget.dart';
+export './experiment/waves/soundGenerate.dart';
+
 
 // theory/mathematics
 export './theory/mathematics/harmonic.dart';
@@ -76,6 +80,7 @@ export './theory/mathematics/vectorComponent.dart';
 export './theory/dynamics/lawOfActionAndReaction.dart';
 export './theory/dynamics/uniformAcceleration.dart';
 export './theory/dynamics/eqOfMotion.dart';
+export './theory/dynamics/kepler-first-law.dart';
 
 // theory/electroMagnetism
 export './theory/electroMagnetism/gaussLaw.dart';

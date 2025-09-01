@@ -119,6 +119,14 @@ class _LatexWebViewState extends State<LatexWebView> {
     li {
       margin-bottom: 0.5em; /* 好みで調整 */
     }
+    . {
+      border: 2px solid #333;   /* 枠線 */
+      border-radius: 6px;       /* 角を丸くする */
+      padding: 8px 12px;        /* 内側の余白 */
+      margin: 8px 0;            /* 上下の間隔 */
+      display: inline-block;    /* 横幅を中身に合わせる */
+      background-color: #f9f9f9; /* 薄い背景色 */
+    }
     .common-box {
       background: #cfc;
       padding: 8px 16px;
