@@ -21,7 +21,10 @@ final Map<String, List<TheorySubcategory>> theoryData = {
       name: '等加速度直線運動',
       topics: [
         uniformAcceleration,
+        universalGravitationEnergyConserv,
         keplerFirstLaw,
+        keplerSecondLaw,
+        keplerThirdLaw,
       ],
     ),
   ],

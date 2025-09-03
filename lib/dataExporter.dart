@@ -81,6 +81,9 @@ export './theory/dynamics/lawOfActionAndReaction.dart';
 export './theory/dynamics/uniformAcceleration.dart';
 export './theory/dynamics/eqOfMotion.dart';
 export './theory/dynamics/kepler-first-law.dart';
+export './theory/dynamics/kepler-second-law.dart';
+export './theory/dynamics/kepler-third-law.dart';
+export './theory/dynamics/universal-gravitation-energy-conserv.dart';
 
 // theory/electroMagnetism
 export './theory/electroMagnetism/gaussLaw.dart';
