@@ -3,10 +3,10 @@ import '../../model.dart';
 final ampereLaw = TheoryTopic(
   title: 'アンペールの法則（真空中、Hで表記）',
   latexContent: """
-<div class="common-box">ポイント</div>
+<div class="theory-common-box">ポイント</div>
 <p>アンペールの法則は、自由電流が磁場を生じることを表す法則です。真空中では、磁場強度 \\(\\overrightarrow{H}\\) を用いて簡潔に表せます。</p>
 
-<div class="common-box">記号の定義</div>
+<div class="theory-common-box">記号の定義</div>
 <ul>
 <li>\\(\\overrightarrow{H}\\) ：磁場強度（磁荷に対して仕事をする場）</li>
 <li>\\(\\overrightarrow{B}\\) ：磁束密度（磁場の物理的強さ）</li>
@@ -17,11 +17,11 @@ final ampereLaw = TheoryTopic(
 <li>1 Wb ：磁荷の単位（磁場による仕事を測る基準）</li>
 </ul>
 
-<div class="common-box">理論（積分形式）</div>
+<div class="theory-common-box">理論（積分形式）</div>
 <p>閉曲線 \\(C\\) に沿った磁場の線積分は、曲線が貫く面を流れる自由電流量に等しい：</p>
 <p>\$\$\\oint_C \\overrightarrow{H} \\cdot d\\overrightarrow{l} = I_{\\mathrm{free, enclosed}} \$\$</p>
 
-<div class="common-box">磁束密度との関係</div>
+<div class="theory-common-box">磁束密度との関係</div>
 <p>真空中では、磁束密度 \\(\\overrightarrow{B}\\) と磁場強度 \\(\\overrightarrow{H}\\) は比例関係にあります：</p>
 <p>\$\$\\overrightarrow{B} = \\mu_0 \\overrightarrow{H}\$\$</p>
 """

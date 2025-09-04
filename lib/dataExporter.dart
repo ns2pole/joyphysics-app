@@ -80,6 +80,8 @@ export './theory/mathematics/vectorComponent.dart';
 export './theory/dynamics/lawOfActionAndReaction.dart';
 export './theory/dynamics/uniformAcceleration.dart';
 export './theory/dynamics/eqOfMotion.dart';
+export './theory/dynamics/momentum.dart';
+export './theory/dynamics/workAndEnergy.dart';
 export './theory/dynamics/kepler-first-law.dart';
 export './theory/dynamics/kepler-second-law.dart';
 export './theory/dynamics/kepler-third-law.dart';

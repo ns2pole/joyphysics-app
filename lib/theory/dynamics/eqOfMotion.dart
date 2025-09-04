@@ -1,28 +1,42 @@
 import '../../model.dart';
 
 final eqOfMotion = TheoryTopic(
-  title: 'アンペールの法則（真空中、Hで表記）',
-  latexContent: """
-<div class="common-box">ポイント</div>
-<p>アンペールの法則は、自由電流が磁場を生じることを表す法則です。真空中では、磁場強度 \\(\\overrightarrow{H}\\) を用いて簡潔に表せます。</p>
+  title: '質点の運動について',
+  latexContent: r"""
 
-<div class="common-box">記号の定義</div>
+<div class="theory-common-box">用語の定義（簡潔）</div>
 <ul>
-<li>\\(\\overrightarrow{H}\\) ：磁場強度（磁荷に対して仕事をする場）</li>
-<li>\\(\\overrightarrow{B}\\) ：磁束密度（磁場の物理的強さ）</li>
-<li>\\(I_{\\mathrm{free, enclosed}}\\) ：閉曲線が貫く面を流れる自由電流の総和</li>
-<li>\\(C\\) ：線積分を行う閉曲線</li>
-<li>\\(d\\overrightarrow{l}\\) ：線素ベクトル</li>
-<li>\\(\\mu_0\\) ：真空の透磁率 \\(4\\pi \\times 10^{-7} \\ \\mathrm{T \\cdot m / A}\\)</li>
-<li>1 Wb ：磁荷の単位（磁場による仕事を測る基準）</li>
+  <li><strong>慣性</strong>：物体がその運動状態（静止または等速直線運動）を維持しようとする性質。</li>
+  <li><strong>質量</strong>：物体の慣性の大きさを表す量。運動の変化に対する抵抗の尺度で、単位は kg。</li>
+  <li><strong>質点</strong>：物体の形状や大きさを無視して1点で代表させ、ここに物体の全質量があると考えた時の点。</li>
+  <li><strong>力</strong>：物体の運動を変化させる原因となるベクトル量。</li>
+  <li><strong>慣性系</strong>：ニュートンの第一法則が成り立つ座標系。</li>
+  <li><strong>代数方程式</strong>：未知数についての方程式。</li>
+  <li><strong>関数方程式</strong>：未知関数についての方程式。</li>
+  <li><strong>微分方程式</strong>：未知関数とその微分を含む関数方程式。</li>
 </ul>
 
-<div class="common-box">理論（積分形式）</div>
-<p>閉曲線 \\(C\\) に沿った磁場の線積分は、曲線が貫く面を流れる自由電流量に等しい：</p>
-<p>\$\$\\oint_C \\overrightarrow{H} \\cdot d\\overrightarrow{l} = I_{\\mathrm{free, enclosed}} \$\$</p>
+<div class="theory-common-box">ニュートンの第一法則（慣性の法則）</div>
+<p>
+質点は、その質点に働く力の総和が$\ \vec 0\ $ならば静止または等速直線運動を続ける。
+</p>
+$$
+\sum_{i=1}^{n} \vec{F}_i = \vec{0}
+\ \ \Rightarrow \ \ 
+\vec{a} = \vec{0}
+\quad (\text{即ち速度}\vec{v}\text{ は一定})
+$$
 
-<div class="common-box">磁束密度との関係</div>
-<p>真空中では、磁束密度 \\(\\overrightarrow{B}\\) と磁場強度 \\(\\overrightarrow{H}\\) は比例関係にあります：</p>
-<p>\$\$\\overrightarrow{B} = \\mu_0 \\overrightarrow{H}\$\$</p>
+<div class="theory-common-box">ニュートンの第二法則（運動方程式）</div>
+<p>
+質量$m$の質点に力 \(\vec{F_i}\ (i=1\cdots n)\) が作用するとき、その質点の加速度 \(\vec{a}\) は
+$\displaystyle m \vec{a} = \sum_{i=1}^{n} \vec{F}_i$で与えられる。
+</p>
+<div class="theory-common-box">ニュートンの第三法則（作用反作用の法則）</div>
+<p>
+二つの質点 1, 2 の間に相互に力が働くとき、質点 2 が質点 1 に及ぼす力 
+\(\vec{F}_{{1} \leftarrow {2}} \) と、質点 1 が質点 2 に及ぼす力 \(\vec{F}_{{2} \leftarrow {1}}\) は大きさが等しく逆向きである：
+$\displaystyle \vec{F}_{{2} \leftarrow {1}} = -\vec{F}_{{1} \leftarrow {2}} $
+</p>
 """
 );

@@ -45,7 +45,7 @@ class _Footer extends StatelessWidget {
         padding: EdgeInsets.symmetric(vertical: 12),
         child: Center(
           child: Text(
-            'Updated: 2025/09/01  Version 2.2.12',
+            'Updated: 2025/09/03  Version 2.2.13',
             style: TextStyle(fontSize: 16, color: Colors.black54),
           ),
         ),
