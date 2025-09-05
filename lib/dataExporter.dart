@@ -86,6 +86,9 @@ export './theory/dynamics/kepler-second-law.dart';
 export './theory/dynamics/kepler-third-law.dart';
 export './theory/dynamics/universal-gravitation-energy-conserv.dart';
 export './theory/dynamics/conservativeForce.dart';
+export './theory/dynamics/simplePendulum.dart';
+export './theory/dynamics/inertialForceParallel.dart';
+export './theory/dynamics/inertialForceRotation.dart';
 
 // theory/electroMagnetism
 export './theory/electroMagnetism/gaussLaw.dart';

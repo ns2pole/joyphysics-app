@@ -2,6 +2,7 @@ import '../../model.dart';
 
 final conservativeForce = TheoryTopic(
   title: '保存力',
+  isNew: true,
   latexContent: r"""
 
 <div class="theory-common-box">保存力の定義</div>
@@ -81,7 +82,7 @@ Q.E.D.
 W_{\rm fr}&=-\mu_{k}N\int_{t_0}^{t_1}\frac{\overrightarrow v}{|\overrightarrow v|}\cdot\overrightarrow v\,dt\\[6pt]
 &=-\mu_{k}N\int_{t_0}^{t_1}|\overrightarrow v|\,dt
 \end{aligned}
-となる。ここで $\displaystyle \int_{t_0}^{t_1}\|\overrightarrow v\|\,dt$ は$\overrightarrow a$から$\overrightarrow b$までの道のりの長さなので、始点・終点だけでは一意に定まらない。したがって動摩擦力は保存力ではない。Q.E.D
+となる。ここで $\displaystyle \int_{t_0}^{t_1}|\overrightarrow v|\,dt$ は$\overrightarrow a$から$\overrightarrow b$までの道のりの長さなので、始点・終点だけでは一意に定まらない。したがって動摩擦力は保存力ではない。Q.E.D
 
 </p>
 """

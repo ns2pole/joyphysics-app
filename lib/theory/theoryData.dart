@@ -43,6 +43,19 @@ final Map<String, List<TheorySubcategory>> theoryData = {
       ],
     ),
     TheorySubcategory(
+      name: '円運動',
+      topics: [
+        simplePendulum,
+      ],
+    ),
+    TheorySubcategory(
+      name: '慣性力',
+      topics: [
+        inertialForceParallel,
+        inertialForceRotation
+      ],
+    ),
+    TheorySubcategory(
       name: 'ケプラー問題',
       topics: [
         universalGravitationEnergyConserv,
