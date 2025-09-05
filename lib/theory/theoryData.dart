@@ -33,6 +33,7 @@ final Map<String, List<TheorySubcategory>> theoryData = {
       name: '仕事とエネルギー',
       topics: [
         workAndEnergy,
+        conservativeForce,
       ],
     ),
     TheorySubcategory(

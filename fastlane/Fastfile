@@ -12,6 +12,11 @@ platform :ios do
     pub_version = pubspec["version"]       # 例: "2.2.5+31"
     version_number, build_number = pub_version.split("+")
 
+    uses_non_exempt = get_info_plist_value(
+      path: "ios/Runner/Info.plist",
+      key: "ITSAppUsesNonExemptEncryption"
+    )
+
     UI.message("versionName: #{version_number}, versionCode: #{build_number}")
         #####################
     # Flutter ビルド（iOS/Android 共通）
@@ -44,10 +49,6 @@ platform :ios do
       export_method: "app-store"
     )
     
-    uses_non_exempt = get_info_plist_value(
-      path: "ios/Runner/Info.plist",
-      key: "ITSAppUsesNonExemptEncryption"
-    )
     
     deliver(
       username: "syunsukerunrun0306@yahoo.co.jp",
@@ -57,6 +58,7 @@ platform :ios do
       release_notes: { "ja" => release_note },
       skip_metadata: false,
       skip_screenshots: true,
+      app_store_promotional_text: { "ja" => "スマホセンサーを用いて、無料で物理実験を体験できます。また、実験動画と理論解説で、物理現象の理解に活用していただけます。" },  # ← 追加
       submission_information: {
         export_compliance_uses_encryption: uses_non_exempt || false,
         export_compliance_uses_non_exempt_encryption: uses_non_exempt || false,
@@ -65,6 +67,9 @@ platform :ios do
         add_id_info_uses_idfa: false
       }
     )
+    rescue => e
+      UI.important("⚠️ deliver failed, but continuing: #{e}")
+    end
 
     #####################
     # Android changelog 自動生成
