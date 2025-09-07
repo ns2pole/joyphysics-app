@@ -2,7 +2,7 @@ import '../../model.dart';
 
 final universalGravitationEnergyConserv = TheoryTopic(
   title: '万有引力エネルギー保存',
-  isNew: true,
+  isNew: false,
   latexContent: r"""
   
 <div class="theory-common-box">

@@ -2,7 +2,7 @@ import '../../model.dart';
 
 final keplerFirstLaw = TheoryTopic(
   title: 'ケプラー第一法則',
-  isNew: true,
+  isNew: false,
   latexContent: """
 <div class="theory-common-box">
 設定・記法

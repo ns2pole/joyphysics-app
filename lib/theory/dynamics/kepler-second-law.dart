@@ -2,7 +2,7 @@ import '../../model.dart';
 
 final keplerSecondLaw = TheoryTopic(
   title: 'ケプラー第二法則',
-  isNew: true,
+  isNew: false,
   latexContent: r"""
 <div class="theory-common-box">
 設定・記法

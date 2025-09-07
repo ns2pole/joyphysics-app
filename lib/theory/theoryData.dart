@@ -21,6 +21,13 @@ final Map<String, List<TheorySubcategory>> theoryData = {
       name: '運動方程式',
       topics: [
         eqOfMotion,
+        simpleHarmonicMotionSolution
+      ],
+    ),
+    TheorySubcategory(
+      name: '剛体のつり合い',
+      topics: [
+        rigidBodyBalanceOfForces,
       ],
     ),
     TheorySubcategory(
@@ -39,7 +46,16 @@ final Map<String, List<TheorySubcategory>> theoryData = {
       name: '仕事とエネルギー',
       topics: [
         workAndEnergy,
+      ],
+    ),
+    TheorySubcategory(
+      name: 'エネルギー保存則',
+      topics: [
         conservativeForce,
+        surfaceGravityEnergyConservation,
+        fookEnergyConservation,
+        surfaceGravAndFookEnergyConservation,
+        universalGravitationEnergyConserv
       ],
     ),
     TheorySubcategory(
@@ -52,6 +68,15 @@ final Map<String, List<TheorySubcategory>> theoryData = {
       name: '円運動',
       topics: [
         simplePendulum,
+        conicalPendulum
+      ],
+    ),
+    TheorySubcategory(
+      name: '極座標',
+      topics: [
+        uniformCircularMotion,
+        nonUniformCircularMotion,
+        twoDimPolarCoordinatesEqOfMotion,
       ],
     ),
     TheorySubcategory(
@@ -77,9 +102,8 @@ final Map<String, List<TheorySubcategory>> theoryData = {
       ],
     ),
     TheorySubcategory(
-      name: 'ケプラー問題',
+      name: 'ケプラーの三法則',
       topics: [
-        universalGravitationEnergyConserv,
         keplerFirstLaw,
         keplerSecondLaw,
         keplerThirdLaw,

@@ -2,7 +2,7 @@ import '../../model.dart';
 
 final keplerThirdLaw= TheoryTopic(
   title: 'ケプラー第三法則',
-  isNew: true,
+  isNew: false,
   latexContent: r"""
   <div class="theory-common-box">
 記号の定義

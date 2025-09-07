@@ -2,7 +2,7 @@ import '../../model.dart';
 
 final doubleMassPointEnergy = TheoryTopic(
   title: '2質点系のエネルギーについての命題',
-  isNew: true,
+  isNew: false,
   latexContent: r"""
 
 <div class="theory-common-box">記法,記号の定義</div>

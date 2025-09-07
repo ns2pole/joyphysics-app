@@ -2,7 +2,7 @@ import '../../model.dart';
 
 final conservativeForce = TheoryTopic(
   title: '保存力',
-  isNew: true,
+  isNew: false,
   latexContent: r"""
 
 <div class="theory-common-box">保存力の定義</div>

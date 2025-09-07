@@ -1,7 +1,7 @@
 import '../../model.dart';
 
 final centripetalForceDisappears = Video(
-  isNew: true,
+  isNew: false,
   category: 'dynamics',
   iconName: "centripetalForceDisappears",
   title: "向心力が無くなった場合の物体の運動",

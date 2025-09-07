@@ -1,7 +1,7 @@
 import '../../model.dart';
 
 final inertialForceRotation = TheoryTopic(
-  isNew: true,
+  isNew: false,
   title: '慣性系に対し一定の角速度で回転する座標系から見た時の慣性力',
   latexContent: r"""
 

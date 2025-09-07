@@ -1,8 +1,8 @@
 import '../../model.dart';
 
 final momentum = TheoryTopic(
-  title: '質点の運動量について',
-  isNew: true,
+  title: '質点における運動量と力積',
+  isNew: false,
   latexContent: r"""
 
 <div class="theory-common-box">運動量の定義</div>

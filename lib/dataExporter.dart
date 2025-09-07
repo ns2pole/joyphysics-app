@@ -94,6 +94,15 @@ export './theory/dynamics/collisionConservation.dart';
 export './theory/dynamics/doubleMassPointEnergy.dart';
 export './theory/dynamics/angularMomentumAndTorque.dart';
 export './theory/dynamics/systemsOfParticles.dart';
+export './theory/dynamics/conicalPendulum.dart';
+export './theory/dynamics/nonUniformCircularMotion.dart';
+export './theory/dynamics/uniformCircularMotion.dart';
+export './theory/dynamics/simpleHarmonicMotionSolution.dart';
+export './theory/dynamics/fookEnergyConservation.dart';
+export './theory/dynamics/surfaceGravityEnergyConservation.dart';
+export './theory/dynamics/surfaceGravAndFookEnergyConservation.dart';
+export './theory/dynamics/twoDimPolarCoordinatesEqOfMotion.dart';
+export './theory/dynamics/rigidBodyBalanceOfForces.dart';
 
 // theory/electroMagnetism
 export './theory/electroMagnetism/gaussLaw.dart';

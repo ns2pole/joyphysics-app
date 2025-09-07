@@ -2,7 +2,7 @@ import '../../model.dart';
 
 final collisionConservation = TheoryTopic(
   title: '衝突における運動量保存',
-  isNew: true,
+  isNew: false,
   latexContent: r"""
 
 <div class="theory-common-box">記法,記号の定義</div>

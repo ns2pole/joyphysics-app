@@ -8,7 +8,7 @@ import '../../model.dart'; // Videoクラス定義が別ならインポート
 
 final soundGenerate = Video(
   isSmartPhoneOnly: true,
-  isNew: true,
+  isNew: false,
   category: 'waves',
   iconName: "megaphone",
   title: "スマホによる音波の生成",

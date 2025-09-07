@@ -2,7 +2,7 @@ import '../../model.dart';
 
 final eqOfMotion = TheoryTopic(
   title: '質点の運動について',
-  isNew: true,
+  isNew: false,
   latexContent: r"""
 
 <div class="theory-common-box">用語の定義（簡潔）</div>

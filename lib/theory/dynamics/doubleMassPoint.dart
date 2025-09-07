@@ -2,7 +2,7 @@ import '../../model.dart';
 
 final doubleMassPoint = TheoryTopic(
   title: '2質点系における諸命題',
-  isNew: true,
+  isNew: false,
   latexContent: r"""
 <div class="theory-common-box">定義：2質点のみが登場する問題を二体問題という。</div>
 <br>
