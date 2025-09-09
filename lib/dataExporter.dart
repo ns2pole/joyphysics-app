@@ -103,10 +103,17 @@ export './theory/dynamics/surfaceGravityEnergyConservation.dart';
 export './theory/dynamics/surfaceGravAndFookEnergyConservation.dart';
 export './theory/dynamics/twoDimPolarCoordinatesEqOfMotion.dart';
 export './theory/dynamics/rigidBodyBalanceOfForces.dart';
+export './theory/dynamics/workAndLineIntegral.dart';
 
 // theory/electroMagnetism
-export './theory/electroMagnetism/gaussLaw.dart';
+export './theory/electroMagnetism/electoricGaussLaw.dart';
 export './theory/electroMagnetism/ampereLaw.dart';
 export './theory/electroMagnetism/lorentzForceAndCircleMove.dart';
 export './theory/electroMagnetism/infiniteStraightCurrent.dart';
 export './theory/electroMagnetism/solenoidMagneticFieldProp.dart';
+export './theory/electroMagnetism/fluxAndAreaIntegral.dart';
+export './theory/electroMagnetism/magneticGaussLaw.dart';
+export './theory/electroMagnetism/electromagneticInductionLaw.dart';
+export './theory/electroMagnetism/ampereMaxwellLaw.dart';
+export './theory/electroMagnetism/permittivity.dart';
+export './theory/electroMagnetism/permeability.dart';

@@ -43,14 +43,15 @@ final Map<String, List<TheorySubcategory>> theoryData = {
       ],
     ),
     TheorySubcategory(
-      name: '仕事とエネルギー',
+      name: '仕事と線積分',
       topics: [
-        workAndEnergy,
+        workAndLineIntegral
       ],
     ),
     TheorySubcategory(
       name: 'エネルギー保存則',
       topics: [
+        workAndEnergy,
         conservativeForce,
         surfaceGravityEnergyConservation,
         fookEnergyConservation,
@@ -111,12 +112,28 @@ final Map<String, List<TheorySubcategory>> theoryData = {
     ),
   ],
   '電磁気学理論': [
-  //   // TheorySubcategory(
-  //   //   name: '電場と電位',
-  //   //   topics: [
-  //   //     gaussLaw,
-  //   //   ],
-  //   // ),
+    TheorySubcategory(
+      name: '流束と面積分',
+      topics: [
+        fluxAndAreaIntegral,
+      ],
+    ),
+    TheorySubcategory(
+      name: '媒質中の電磁波',
+      topics: [
+        permittivity,
+        permeability,
+      ],
+    ),
+    TheorySubcategory(
+      name: 'マックスウェル方程式',
+      topics: [
+        electoricGaussLaw,
+        magneticGaussLaw,
+        electromagneticInductionLaw,
+        ampereMaxwellLaw
+      ],
+    ),
     TheorySubcategory(
       name: '磁場と電流',
       topics: [
