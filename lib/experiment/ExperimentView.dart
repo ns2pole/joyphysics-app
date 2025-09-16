@@ -220,29 +220,33 @@ class _VideoCategoryList extends StatelessWidget {
 }
 
 
-
 class VideoDetailView extends StatelessWidget {
   final Video video;
   const VideoDetailView({required this.video, Key? key}) : super(key: key);
 
-  // --- ここに _wrapTexWithTags を入れる ---
+  // -----------------------------
+  // LaTeX を <tex> タグに変換
+  // -----------------------------
   String _wrapTexWithTags(String html) {
-    // 1) $$...$$ を display
-    final displayRe = RegExp(r'\$\$([\s\S]*?)\$\$', multiLine: true);
+    // display math
+    final displayRe = RegExp(r'\$\$(.*?)\$\$', dotAll: true);
     html = html.replaceAllMapped(displayRe, (m) {
-      final inner = m[1]!;
-      return '<tex display="true">${inner}</tex>';
+      String inner = m[1]!;
+      inner = inner.replaceAll('&', '%%AMP%%'); // プレースホルダー
+      return '<tex display="true">$inner</tex>';
     });
 
-    // 2) $...$ を inline
+    // inline math
     final inlineRe = RegExp(r'\$([^\$]+?)\$');
     html = html.replaceAllMapped(inlineRe, (m) {
-      final inner = m[1]!;
-      return '<tex>${inner}</tex>';
+      String inner = m[1]!;
+      inner = inner.replaceAll('&', '%%AMP%%'); // プレースホルダー
+      return '<tex>$inner</tex>';
     });
 
     return html;
   }
+
   @override
   Widget build(BuildContext context) {
     final processedHtml = video.latex != null ? _wrapTexWithTags(video.latex!) : '';
@@ -252,9 +256,9 @@ class VideoDetailView extends StatelessWidget {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(6),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // 動画プレイヤー（既存）
+            // 動画プレイヤー
             if (video.videoURL.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 16),
@@ -265,44 +269,187 @@ class VideoDetailView extends StatelessWidget {
                 ),
               ),
 
-            // 装置リスト（既存）
+            // 装置リスト
             if (video.equipment.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 16),
                 child: EquipmentListView(equipment: video.equipment),
               ),
 
-            // HTML + LaTeX（flutter_html v3 の extensions を使う）
+            // HTML + LaTeX
             if (processedHtml.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 16),
                 child: Html(
                   data: processedHtml,
-                  onLinkTap: (url, attributes, element) { // ✅3個
-                    if (url != null) {
-                      _handleVideoLink(context, url);
-                    }
+                  onLinkTap: (url, attributes, element) {
+                    if (url != null) _handleVideoLink(context, url);
                   },
-                  // extensions に <tex> を登録して Math.tex で描く
                   extensions: [
+                    // ① LaTeX 用 <tex>
                     TagExtension(
                       tagsToExtend: {"tex"},
-                      builder: (extensionContext) {
-                        final texString = extensionContext.innerHtml; // タグ中身
-                        final isDisplay = extensionContext.styledElement?.attributes['display'] == 'true';
-
-                        return Math.tex(
+                      builder: (extCtx) {
+                        String texString = extCtx.innerHtml.replaceAll('%%AMP%%', '&');
+                        final isDisplay = extCtx.styledElement?.attributes['display'] == 'true';
+                        final mathWidget = Math.tex(
                           texString,
                           mathStyle: isDisplay ? MathStyle.display : MathStyle.text,
-                          textStyle: extensionContext.styledElement?.style.generateTextStyle() ??
-                              const TextStyle(fontSize: 16),
-                          // エラー時のフォールバック（任意）
-                          onErrorFallback: (FlutterMathException e) {
-                            return Text('LaTeX parse error: ${e.message}');
-                          },
+                          textStyle: TextStyle(fontSize: isDisplay ? 22 : 18),
+                          onErrorFallback: (e) => Text('LaTeX parse error: ${e.message}'),
                         );
+                        return isDisplay
+                            ? Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                child: Center(child: mathWidget),
+                              )
+                            : mathWidget;
                       },
                     ),
+
+                    // ② CSS互換 <div> タグ
+                    TagExtension(
+                      tagsToExtend: {"div"},
+                      builder: (extCtx) {
+                        final className = extCtx.element?.classes.join(' ');
+                        final textContent = extCtx.element?.text;
+
+                        final textWidget = Text(
+                          textContent!,
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontFamily: 'KeiFont',
+                          ),
+                        );
+
+                        // まず共通スタイルを定義しておくと便利
+                        const TextStyle keiFontStyle = TextStyle(
+                          fontFamily: 'KeiFont',
+                          fontSize: 18,
+                        );
+
+                        switch (className) {
+                          case 'common-box':
+                            return Container(
+                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                              margin: EdgeInsets.zero,
+                              decoration: BoxDecoration(
+                                color: const Color(0xffccffcc), // #cfc
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(width: 1.0, color: Colors.black),
+                              ),
+                              child: DefaultTextStyle.merge(
+                                style: keiFontStyle,
+                                child: textWidget,
+                              ),
+                            );
+
+                          case 'theory-common-box':
+                            return Container(
+                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                              margin: EdgeInsets.zero,
+                              decoration: BoxDecoration(
+                                color: const Color(0xffccffcc),
+                                border: Border.all(width: 1.0, color: Colors.black),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: DefaultTextStyle.merge(
+                                style: keiFontStyle,
+                                child: textWidget,
+                              ),
+                            );
+
+                          case 'theorem-box':
+                            return Container(
+                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                              margin: EdgeInsets.zero,
+                              decoration: BoxDecoration(
+                                color: const Color(0xfffbdfa2),
+                                border: Border.all(width: 1.0, color: Colors.black),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: DefaultTextStyle.merge(
+                                style: keiFontStyle,
+                                child: textWidget,
+                              ),
+                            );
+
+                          case 'proof-box':
+                            return Container(
+                              padding: const EdgeInsets.all(2),
+                              margin: EdgeInsets.zero,
+                              decoration: BoxDecoration(
+                                color: Colors.transparent,
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(width: 1.0, color: Colors.black),
+                              ),
+                              child: Text(
+                                textContent,
+                                style: keiFontStyle.copyWith(
+                                  fontSize: 20, // 1.1em 相当
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            );
+
+                          case 'remark-box':
+                            return IntrinsicWidth(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+                                margin: const EdgeInsets.symmetric(vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.transparent,
+                                  border: Border.all(width: 1.0, color: Colors.black),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  textContent,
+                                  style: keiFontStyle.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            );
+
+                          case 'condition-box':
+                            return Container(
+                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                              margin: EdgeInsets.zero,
+                              decoration: BoxDecoration(
+                                color: const Color(0xffffa5f4),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(width: 1.0, color: Colors.black),
+                              ),
+                              child: DefaultTextStyle.merge(
+                                style: keiFontStyle,
+                                child: textWidget,
+                              ),
+                            );
+
+                          case 'paragraph-box':
+                            return Container(
+                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                              margin: const EdgeInsets.symmetric(vertical: 8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xfff9f9f9),
+                                border: Border.all(width: 2.0, color: Colors.black), // CSS は 2px
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: DefaultTextStyle.merge(
+                                style: keiFontStyle,
+                                child: textWidget,
+                              ),
+                            );
+
+                          default:
+                            return DefaultTextStyle.merge(
+                              style: keiFontStyle,
+                              child: textWidget,
+                            );
+                        }
+                      }
+                      )
+
                   ],
                 ),
               ),
@@ -312,26 +459,12 @@ class VideoDetailView extends StatelessWidget {
     );
   }
 
-  // URL を解析して遷移（例: app://topic?video=rcCircuit）
   void _handleVideoLink(BuildContext context, String url) {
-    final uri = Uri.parse(url);
-    final videoKey = uri.queryParameters['video'];
-
-    TheoryTopic? targetTopic;
-    if (videoKey == 'rcCircuit') targetTopic = rcCircuitTheory;
-    // ここに他の videoKey -> topic の紐付けを追加
-
-    if (targetTopic != null) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => TopicDetailPage(topic: targetTopic!)),
-      );
-    } else {
-      // デバッグ用にログ出しておくと良い
-      debugPrint('No topic found for videoKey=$videoKey from url=$url');
-    }
+    debugPrint('Tapped URL: $url');
   }
 }
+
+
 
 
 // class VideoDetailView extends StatelessWidget {

@@ -32,6 +32,7 @@ dependencies:
     sdk: flutter
   webview_flutter: ^4.2.0
   flutter_html: ^3.0.0
+  
   flutter_math_fork: ^0.7.0
   cached_network_image: ^3.2.3
   flutter_sound: ^9.2.13  # ←バージョン番号は最新を確認
@@ -78,9 +79,16 @@ flutter_launcher_icons:
 # The following section is specific to Flutter packages.
 flutter:
   fonts:
-    - family: Quicksand
+    - family: KeiFont
       fonts:
         - asset: assets/fonts/keifont.ttf
+    - family: Quicksand
+      fonts:
+        - asset: assets/fonts/Quicksand-Regular.ttf
+        - asset: assets/fonts/Quicksand-Bold.ttf
+          weight: 700
+
+    
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

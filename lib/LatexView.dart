@@ -171,6 +171,7 @@ class _LatexWebViewState extends State<LatexWebView> {
       display: inline-block;    /* 横幅を中身に合わせる */
       background-color: #f9f9f9; /* 薄い背景色 */
     }
+    
     .common-box {
       background: #cfc;
       padding: 8px 16px;

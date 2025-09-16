@@ -18,8 +18,12 @@ class JoyPhysicsApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         title: '実験で学ぶ高校物理',
         theme: ThemeData(
-          fontFamily: 'Quicksand',
+          fontFamily: 'KeiFont', // ここで全体のデフォルトフォントを KeiFont に
           primarySwatch: Colors.blue,
+          textTheme: const TextTheme(
+            bodyMedium: TextStyle(fontSize: 18),
+            // primarySwatch: Colors.blue,
+          ),
         ),
         home: ContentView(),
       );
