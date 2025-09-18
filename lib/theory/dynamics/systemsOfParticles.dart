@@ -3,6 +3,7 @@ import '../../model.dart';
 final systemsOfParticles = TheoryTopic(
   title: '質点系の力学の諸命題',
   isNew: false,
+  imageAsset: 'assets/mindMap/forTopics/systemsOfParticles.png', // 実際の画像パス
   latexContent: r"""
 <div class="theory-common-box">定義（質点系）</div>
 <p>2個以上の質点の集合を質点系という。</p>

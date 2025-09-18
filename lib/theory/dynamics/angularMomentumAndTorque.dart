@@ -3,6 +3,7 @@ import '../../model.dart';
 final angularMomentumAndTorque = TheoryTopic(
   title: '質点の角運動量ベクトルと力のモーメント',
   isNew: false,
+  imageAsset: 'assets/mindMap/forTopics/angularMomentumAndTorque.png', // 実際の画像パス
   latexContent: r"""
 <div class="theory-common-box">定義(質点の原点回りの角運動量ベクトル)</div>
 <p>

@@ -2,6 +2,7 @@ import '../../model.dart';
 
 final uniformAcceleration = TheoryTopic(
   title: '等加速度直線運動',
+  imageAsset: 'assets/mindMap/forTopics/uniformAcceleration.png',
   latexContent: r"""
 <div class="theory-common-box">命題1（1次元運動の運動方程式）：質量 $m$ の質点に一定の力 $F$ が、直線上に働くとする。このとき運動方程式は
 $

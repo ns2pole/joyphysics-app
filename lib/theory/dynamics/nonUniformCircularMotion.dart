@@ -3,6 +3,8 @@ import '../../model.dart';
 final nonUniformCircularMotion = TheoryTopic(
   title: '非等速円運動の運動方程式',
   isNew: false,
+  imageAsset: 'assets/mindMap/forTopics/nonUniformCircularMotion.png',
+
   latexContent: r"""
 <p class="theory-common-box">記号の定義</p>
   <p>

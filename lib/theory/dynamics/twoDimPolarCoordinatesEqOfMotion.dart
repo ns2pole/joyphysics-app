@@ -3,6 +3,7 @@ import '../../model.dart';
 final twoDimPolarCoordinatesEqOfMotion = TheoryTopic(
   title: '極座標運動方程式(2次元）',
   isNew: true,
+  imageAsset: 'assets/mindMap/forTopics/twoDimPolarCoordinatesEqOfMotion.png',
   latexContent: r"""
 <div class="theory-common-box">記号の定義</div>
   <div style="margin-left: 22px; line-height: 1.5;">

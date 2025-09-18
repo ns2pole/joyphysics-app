@@ -3,6 +3,8 @@ import '../../model.dart';
 final simplePendulum = TheoryTopic(
   title: '単振り子の周期',
   isNew: false,
+  imageAsset: 'assets/mindMap/forTopics/simplePendulum.png',
+
   latexContent: r"""
 
 <div class="theory-common-box">命題(単振り子の周期)：振れ角$\theta(t)$ が十分小さい時、紐の長さが$L$の振り子の周期周期 $T$ は下記で近似できる。

@@ -3,6 +3,7 @@ import '../../model.dart';
 final keplerThirdLaw= TheoryTopic(
   title: 'ケプラー第三法則',
   isNew: false,
+  imageAsset: 'assets/mindMap/forTopics/keplerThirdLaw.png', // 実際の画像パス
   latexContent: r"""
   <div class="theory-common-box">
 記号の定義

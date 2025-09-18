@@ -3,6 +3,7 @@ import '../../model.dart';
 final doubleMassPointEnergy = TheoryTopic(
   title: '2質点系のエネルギーについての命題',
   isNew: false,
+  imageAsset: 'assets/mindMap/forTopics/doubleMassPointEnergy.png', // 実際の画像パス
   latexContent: r"""
 
 <div class="theory-common-box">記法,記号の定義</div>

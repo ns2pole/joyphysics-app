@@ -3,6 +3,7 @@ import '../../model.dart';
 final inertialForceParallel = TheoryTopic(
   title: '慣性系に対し加速運動する座標系から見た時の慣性力',
   isNew: false,
+  imageAsset: 'assets/mindMap/forTopics/inertialForceParallel.png', // 実際の画像パス
   latexContent: r"""
 <div class="theory-common-box">慣性系の原点に対して非慣性系の原点が $\vec{R}(t)$ で運動しているとする。この時、非慣性系から見た物体の位置ベクトルを $\vec{\tilde{r}}(t)$ とすると、次の運動方程式が成り立つ。
 $$

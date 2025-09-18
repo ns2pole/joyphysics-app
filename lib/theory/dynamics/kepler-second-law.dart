@@ -3,6 +3,7 @@ import '../../model.dart';
 final keplerSecondLaw = TheoryTopic(
   title: 'ケプラー第二法則',
   isNew: false,
+  imageAsset: 'assets/mindMap/forTopics/keplerSecondLaw.png', // 実際の画像パス
   latexContent: r"""
 <div class="theory-common-box">
 設定・記法

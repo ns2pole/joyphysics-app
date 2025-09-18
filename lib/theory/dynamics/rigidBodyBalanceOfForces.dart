@@ -3,6 +3,7 @@ import '../../model.dart';
 final rigidBodyBalanceOfForces = TheoryTopic(
   title: '剛体のつり合いに関する諸命題',
   isNew: false,
+  imageAsset: 'assets/mindMap/forTopics/rigidBodyBalanceOfForces.png', // 実際の画像パス
   latexContent: r"""
 <div class="theory-common-box">命題（力のつり合い）：剛体が静止しているならば、剛体に働く外力の総和は$\overrightarrow 0$である。</div>
 <p><div class="proof-box">証明</div>

@@ -2,7 +2,8 @@ import '../../model.dart';
 
 final inertialForceRotation = TheoryTopic(
   isNew: false,
-  title: '慣性系に対し一定の角速度で回転する座標系から見た時の慣性力',
+  title: '慣性系に対し一定の角速度で回転する座標系から見た時の慣性力(遠心力,コリオリ力)',
+  imageAsset: 'assets/mindMap/forTopics/inertialForceRotation.png', // 実際の画像パス
   latexContent: r"""
 
 <div class="theory-common-box">命題：一定の角速度 $\omega$ で回転する座標系で見たときの質量 $m$ の質点の座標を $(\tilde{x}(t), \tilde{y}(t))$,質点に働く力の成分を$(\tilde{F}_x(t), \tilde{F}_y(t))$とすると、この座標系で成立する運動方程式は下記の通り。

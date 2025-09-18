@@ -3,6 +3,7 @@ import '../../model.dart';
 final collisionConservation = TheoryTopic(
   title: '衝突における運動量保存',
   isNew: false,
+  imageAsset: 'assets/mindMap/forTopics/collisionConservation.png', // 実際の画像パス
   latexContent: r"""
 
 <div class="theory-common-box">記法,記号の定義</div>

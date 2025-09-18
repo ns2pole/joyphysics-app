@@ -3,8 +3,8 @@ import '../../model.dart';
 final universalGravitationEnergyConserv = TheoryTopic(
   title: '万有引力エネルギー保存',
   isNew: false,
+  imageAsset: 'assets/mindMap/forTopics/universalGravitationEnergyConserv.png',
   latexContent: r"""
-  
 <div class="theory-common-box">
   前提および記号の定義</div>
 </div>

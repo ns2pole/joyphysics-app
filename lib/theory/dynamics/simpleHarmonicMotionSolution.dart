@@ -3,6 +3,7 @@ import '../../model.dart';
 final simpleHarmonicMotionSolution = TheoryTopic(
   title: '単振動の運動方程式の解',
   isNew: true,
+  imageAsset: 'assets/mindMap/forTopics/simpleHarmonicMotionSolution.png',
   latexContent: r"""
 <div class="theory-common-box">命題（単振動の運動方程式の解）：
 運動方程式$mx''(t)= -kx(t)$の解は下記である。

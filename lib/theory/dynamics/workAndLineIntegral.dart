@@ -2,6 +2,8 @@ import '../../model.dart';
 
 final workAndLineIntegral = TheoryTopic(
   title :  '定義および命題',
+  imageAsset: 'assets/mindMap/forTopics/workAndLineIntegral.png',
+
   latexContent :  r"""
 <div class="theory-common-box">一定の力かつ直線的な動きの場合の仕事の定義</div>
 

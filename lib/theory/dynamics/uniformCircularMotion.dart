@@ -3,6 +3,7 @@ import '../../model.dart';
 final uniformCircularMotion = TheoryTopic(
   title: '等速円運動の運動方程式',
   isNew: false,
+  imageAsset: 'assets/mindMap/forTopics/uniformCircularMotion.png',
   latexContent: r"""
 <div class="theory-common-box">記号の定義</div>
   <div style="margin-left: 22px; line-height: 1.5;">
