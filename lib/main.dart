@@ -37,9 +37,16 @@ class _Header extends StatelessWidget {
         children: [
           Image.asset('assets/init/profile_arrange.png', width: 90, height: 60),
           SizedBox(height: 4),
-          Text('実験と理論で学ぶ高校物理',
+          Text('実験と理論で学ぶ',
               style: TextStyle(
-                  fontSize: 34, fontWeight: FontWeight.bold, color: Colors.black)),
+                      fontFamily: 'KeiFont',fontSize: 34,  color: Colors.black
+                  ),),
+          Text('高校物理',
+          style: TextStyle(
+                  fontFamily: 'KeiFont',fontSize: 34, color: Colors.black,
+                  height: 1.0, // 行間を揃える
+                  )),
+
         ],
       );
 }
@@ -171,7 +178,6 @@ class CategoryList extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 20,
                     color: Colors.white,
-                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
@@ -222,7 +228,6 @@ class CategoryList extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 22,
                     color: Colors.white,
-                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
@@ -320,7 +325,6 @@ class CategoryList extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 22,
                     color: Colors.white,
-                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
