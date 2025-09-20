@@ -12,7 +12,7 @@ class ProductListPage extends StatelessWidget {
     Product(
       title: 'オシロスコープ',
       url: 'https://amzn.to/4gy0h9l',
-      imageUrl: 'assets/dynamicsDetail/planets.webp',
+      imageUrl: 'assets/goods/oscilloscope.png',
       price: '約4,000円',
       rating: 2,
       description: '数千円するが波形を観測できる。回路の実験で活躍する。',
@@ -21,7 +21,7 @@ class ProductListPage extends StatelessWidget {
     Product(
       title: 'ニュートンメーター',
       url: 'https://amzn.to/4nwclL7',
-      imageUrl: 'assets/dynamicsDetail/planets.webp',
+      imageUrl: 'assets/goods/newtonmeter.png',
       price: '約5,000円',
       rating: 2,
       description: '力を測れる。グラム表示も可能。',
@@ -30,7 +30,7 @@ class ProductListPage extends StatelessWidget {
     Product(
       title: '磁場測定器',
       url: 'https://amzn.to/4mmRVmb',
-      imageUrl: null,
+      imageUrl: 'assets/goods/teslameter.png',
       price: '約13,000円',
       rating: 1,
       description: '磁場(磁束密度B)が測れる。スマホで測ると壊れそうな磁場でもこれで測れる。',
@@ -76,105 +76,137 @@ class ProductListPage extends StatelessWidget {
     );
   }
 
-  // _buildProductImage を Image + 出典を返すウィジェットに変更
-  Widget _buildProductImageWithAttribution(String? imageUrl, String? attribution, String? sourceUrl) {
-    const double w = 120, h = 135;
-    Widget image;
-    if (imageUrl == null || imageUrl.trim().isEmpty) {
-      image = Container(
+Widget _buildProductImageWithAttribution(String? imageUrl, String? attribution, String? sourceUrl) {
+  const double w = 120, h = 135;
+  // 見た目調整用：外枠半径と内側パディング
+  final outerRadius = BorderRadius.circular(12);
+  const double inset = 4.0; // ← ここを大きくすると画像が内側に縮まり、元画像の四角い余白が見えにくくなる
+
+  Widget imageBox;
+  if (imageUrl == null || imageUrl.trim().isEmpty) {
+    // プレースホルダも同じ構造にする
+    imageBox = ClipRRect(
+      borderRadius: outerRadius,
+      child: Container(
         width: w,
         height: h,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: Colors.grey.shade200,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: const Icon(Icons.image_not_supported, size: 36, color: Colors.grey),
-      );
-    } else {
-      final trimmed = imageUrl.trim();
-      final lower = trimmed.toLowerCase();
-      if (lower.startsWith('http://') || lower.startsWith('https://')) {
-        image = ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: Image.network(
-            trimmed,
-            width: w,
-            height: h,
-            fit: BoxFit.cover,
-            errorBuilder: (BuildContext context, Object error, StackTrace? stackTrace) {
-              return Container(
-                width: w,
-                height: h,
-                color: Colors.grey.shade200,
-                child: const Icon(Icons.broken_image, size: 36, color: Colors.grey),
-              );
-            },
-          ),
-        );
-      } else {
-        image = ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: Image.asset(
-            trimmed,
-            width: w,
-            height: h,
-            fit: BoxFit.cover,
-            errorBuilder: (BuildContext context, Object error, StackTrace? stackTrace) {
-              return Container(
-                width: w,
-                height: h,
-                color: Colors.grey.shade200,
-                child: const Icon(Icons.broken_image, size: 36, color: Colors.grey),
-              );
-            },
-          ),
-        );
-      }
-    }
-
-    // Attribution テキスト（あまり目立たないように小さく表示）
-    Widget attributionWidget = const SizedBox.shrink();
-    if ((attribution ?? '').isNotEmpty || (sourceUrl ?? '').isNotEmpty) {
-      attributionWidget = Padding(
-        padding: const EdgeInsets.only(top: 6.0),
-        child: GestureDetector(
-          onTap: () {
-            if ((sourceUrl ?? '').isNotEmpty) {
-              launchUrl(Uri.parse(sourceUrl!)); // エラーハンドリングは省略してますが _openExternalUrl を使うのがベター
-            }
-          },
-          child: RichText(
-            text: TextSpan(
-              children: [
-                if ((attribution ?? '').isNotEmpty)
-                  TextSpan(
-                    text: attribution,
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
-                  ),
-                if ((attribution ?? '').isNotEmpty && (sourceUrl ?? '').isNotEmpty)
-                  const TextSpan(text: '  '),
-                if ((sourceUrl ?? '').isNotEmpty)
-                  TextSpan(
-                    text: '(出典)',
-                    style: TextStyle(fontSize: 12, color: Colors.blue.shade700, decoration: TextDecoration.underline),
-                  ),
-              ],
+        color: Colors.transparent,
+        child: Padding(
+          padding: const EdgeInsets.all(inset),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(outerRadius.topLeft.x - inset),
+            child: Container(
+              color: Colors.grey.shade200,
+              alignment: Alignment.center,
+              child: const Icon(Icons.image_not_supported, size: 36, color: Colors.grey),
             ),
           ),
         ),
+      ),
+    );
+  } else {
+    final trimmed = imageUrl.trim();
+    final lower = trimmed.toLowerCase();
+    Widget inner;
+    if (lower.startsWith('http://') || lower.startsWith('https://')) {
+      inner = Image.network(
+        trimmed,
+        width: w - inset * 2,
+        height: h - inset * 2,
+        fit: BoxFit.cover, // 重要：必ずボックスを埋める
+        loadingBuilder: (context, child, progress) {
+          if (progress == null) return child;
+          return Container(
+            color: Colors.grey.shade200,
+            alignment: Alignment.center,
+            child: const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+          );
+        },
+        errorBuilder: (context, error, stack) {
+          return Container(
+            color: Colors.grey.shade200,
+            alignment: Alignment.center,
+            child: const Icon(Icons.broken_image, size: 36, color: Colors.grey),
+          );
+        },
+      );
+    } else {
+      inner = Image.asset(
+        trimmed,
+        width: w - inset * 2,
+        height: h - inset * 2,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stack) {
+          return Container(
+            color: Colors.grey.shade200,
+            alignment: Alignment.center,
+            child: const Icon(Icons.broken_image, size: 36, color: Colors.grey),
+          );
+        },
       );
     }
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        image,
-        attributionWidget,
-      ],
+    imageBox = ClipRRect(
+      borderRadius: outerRadius,
+      child: Container(
+        width: w,
+        height: h,
+        color: Colors.transparent, // 親カードの背景に馴染ませたい場合は Colors.white ではなく transparent に
+        child: Padding(
+          padding: const EdgeInsets.all(inset),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12 - inset),
+            child: SizedBox(
+              width: w - inset * 2,
+              height: h - inset * 2,
+              child: inner,
+            ),
+          ),
+        ),
+      ),
     );
   }
+
+  // Attribution は元のまま
+  Widget attributionWidget = const SizedBox.shrink();
+  if ((attribution ?? '').isNotEmpty || (sourceUrl ?? '').isNotEmpty) {
+    attributionWidget = Padding(
+      padding: const EdgeInsets.only(top: 6.0),
+      child: GestureDetector(
+        onTap: () {
+          if ((sourceUrl ?? '').isNotEmpty) launchUrl(Uri.parse(sourceUrl!));
+        },
+        child: RichText(
+          text: TextSpan(
+            children: [
+              if ((attribution ?? '').isNotEmpty)
+                TextSpan(
+                  text: attribution,
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+                ),
+              if ((attribution ?? '').isNotEmpty && (sourceUrl ?? '').isNotEmpty)
+                const TextSpan(text: '  '),
+              if ((sourceUrl ?? '').isNotEmpty)
+                TextSpan(
+                  text: '(出典)',
+                  style: TextStyle(fontSize: 12, color: Colors.blue.shade700, decoration: TextDecoration.underline),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  return Column(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      imageBox,
+      attributionWidget,
+    ],
+  );
+}
 
   void _onVideoTap(BuildContext context, dynamic item) {
     try {

@@ -6,19 +6,18 @@ final rcCircuitDischarge = TheoryTopic(
   latexContent: r"""
 
 <div class="theory-common-box">設定,記号の定義</div>
-・抵抗 ${R}$ とコンデンサー ${C}$ を直列につないだ回路において，コンデンサーがあらかじめ電荷を蓄えており（初期電圧 ${\displaystyle V_c(0)=V_0}$），外部の電源が取り除かれた（短絡またはスイッチで閉路が形成された）ときに起こる電圧・電流の時間変化を「放電」と呼ぶ。<br>
-・放電ではコンデンサーに蓄えられた電荷が抵抗を通じて放出され，コンデンサー電圧は時間とともに減衰する。<br>
   <div style="text-align:center; margin:1em 0;">
     <img src="assets/electroMagnetismTheory/rcCircuitDischarge.png"
          alt=""
          style="max-width:75%; height:auto;" />
   </div>
-
-<div class="theory-common-box">記号と符号規約</div>
-・${V_0}$：放電開始直前のコンデンサー電圧（初期電圧）${\displaystyle V_c(0)=V_0}$。<br>
+・$C$：コンデンサの電気容量<br>
+・$R$：電気抵抗の大きさ<br>
+・${V_0}$：放電開始直前のコンデンサー電圧（初期電圧）${\displaystyle V_c(0)=V_0}$<br>
+・${Q_0}$：放電開始直前のコンデンサー充電電気量。${\displaystyle Q_0=Q(0)=CV_0}$<br>
 ・${V_c(t)}$：コンデンサーの電圧（正板と負板の電位差）。<br>
 ・${I(t)}$：回路を流れる電流。符号は「抵抗からコンデンサーに向かう方向（充電時と同じ向き）」を正と定義する（この符号規約により放電では${I(t)}$は負となる）。<br>
-・${Q(t)}$：コンデンサーに蓄えられた電荷（正板の電荷）。${\displaystyle Q(t)=C\,V_c(t)}$ が成り立つ（符号は上記の向きに合わせる）。<br>
+・${Q(t)}$：コンデンサーに蓄えられた電荷（正板の電荷）${\ \displaystyle Q(t)=C\,V_c(t)}$ が成り立つ（符号は上記の向きに合わせる）<br>
 
 <div class="theory-common-box">命題 1（基礎方程式の導出）：コンデンサーに蓄えられた電荷の時間発展は次の微分方程式で記述される：
 $$\begin{aligned}
@@ -62,7 +61,7 @@ Q(t)=Q_0 e^{-\frac{t}{RC}}
 $$\begin{aligned}
 I(t)= -\frac{V_0}{R}\,e^{-\frac{t}{RC}}
 \end{aligned}$$
-※ s特に初期電流は ${\displaystyle I(0)=-\frac{V_0}{R}}$ であり，符号は定義した正方向に対して逆向きであることを意味する。
+※ 特に初期電流は ${\displaystyle I(0)=-\frac{V_0}{R}}$ であり，符号は定義した正方向に対して逆向きであることを意味する。
 </div>
 
 <div class="proof-box">証明</div><p>
@@ -101,8 +100,8 @@ V_c(\tau) = V_0\,e^{-1} \fallingdotseq 0.368\,V_0
 すなわち初期値の約 $36.8\%$ に減衰する。電流の絶対値も同様の指数減衰を示す。
 
 <div class="theory-common-box">まとめ</div>
-・放電ではコンデンサー電荷は指数関数的に減衰し，$Q(t)=Q_0 e^{-t/RC}$ が成り立つ。結果としてコンデンサー電圧は $V_c(t)=V_0 e^{-t/RC}$ となる。<br>
-・回路電流は $I(t)=-\dfrac{V_0}{R}e^{-t/RC}$ であり，定義した正方向に対しては負（すなわち実際の流れは逆向き）である。<br>
+・放電ではコンデンサー電荷は指数関数的に減衰し，$Q(t)=Q_0 e^{-\frac{t}{RC}}$ が成り立つ。結果としてコンデンサー電圧は $V_c(t)=V_0 e^{-\frac{t}{RC}}$ となる。<br>
+・回路電流は $I(t)=-\dfrac{V_0}{R}e^{-\frac{t}{RC}}$ であり，定義した正方向に対しては負（すなわち実際の流れは逆向き）である。<br>
 ・時定数 $\tau=RC$ が放電の速さを決める。<br>
 ・方程式は一階線形常微分方程式であり，任意の初期条件に対して解は一意に存在する。
 

@@ -120,6 +120,7 @@ flutter:
     - assets/icon/
     - assets/fonts/
     - assets/others/
+    - assets/goods/
     # - images/a_dot_burr.jpeg
     # - images/a_dot_ham.jpeg
 
