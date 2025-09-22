@@ -4,11 +4,38 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:joyphysics/experiment/ExperimentView.dart';
 import 'package:joyphysics/dataExporter.dart';
 
-
-class ProductListPage extends StatelessWidget {
+class ProductListPage extends StatefulWidget {
   ProductListPage({super.key});
 
+  @override
+  State<ProductListPage> createState() => _ProductListPageState();
+}
+
+class _ProductListPageState extends State<ProductListPage> {
+  // 選択中カテゴリ（null = 全表示）
+  String? _selectedCategory;
+
   final List<Product> products = [
+    Product(
+      title: 'ニュートンメーター',
+      url: 'https://amzn.to/4nwclL7',
+      imageUrl: 'assets/goods/newtonmeter.png',
+      price: '約5,000円',
+      rating: 3,
+      description: '力を測れる。グラム表示も可能。',
+      videos: [fook],
+      category: '力学',
+    ),
+    Product(
+      title: '錘セット',
+      url: 'https://amzn.to/3K7kDKB',
+      imageUrl: 'assets/goods/weight.png',
+      price: '約2,000円',
+      rating: 2,
+      description: '',
+      videos: [],
+      category: '力学',
+    ),
     Product(
       title: 'オシロスコープ',
       url: 'https://amzn.to/4gy0h9l',
@@ -17,15 +44,7 @@ class ProductListPage extends StatelessWidget {
       rating: 2,
       description: '数千円するが波形を観測できる。回路の実験で活躍する。',
       videos: [rcCircuit],
-    ),
-    Product(
-      title: 'ニュートンメーター',
-      url: 'https://amzn.to/4nwclL7',
-      imageUrl: 'assets/goods/newtonmeter.png',
-      price: '約5,000円',
-      rating: 2,
-      description: '力を測れる。グラム表示も可能。',
-      videos: [fook],
+      category: '波動',
     ),
     Product(
       title: '磁場測定器',
@@ -33,10 +52,74 @@ class ProductListPage extends StatelessWidget {
       imageUrl: 'assets/goods/teslameter.png',
       price: '約13,000円',
       rating: 1,
-      description: '磁場(磁束密度B)が測れる。スマホで測ると壊れそうな磁場でもこれで測れる。',
+      description: '磁場(磁束密度B)が測れる。スマホで測ると壊れそうな磁場でもこれで測れる。高校物理の実験で使うコスパ的に星1つ。',
       videos: [neodymiumMagnetFieldMeasurement, magneticFieldCircularLoop, solenoidMagneticField],
+      category: '電磁気',
+    ),
+    Product(
+      title: '抵抗セット',
+      url: 'https://amzn.to/4279dwl',
+      imageUrl: 'assets/goods/resistance.jpg',
+      price: '約1,000円',
+      rating: 3,
+      description: '',
+      videos: [],
+      category: '電磁気',
+    ),
+    Product(
+      title: 'マルチメータ(アナログ)',
+      url: 'https://amzn.to/47UEB54',
+      imageUrl: 'assets/goods/multimeter_analog.png',
+      price: '約7,500円',
+      rating: 3,
+      description: '',
+      videos: [],
+      category: '電磁気',
+    ),
+    Product(
+      title: 'マルチメータ(デジタル)',
+      url: 'https://amzn.to/4pwP90s',
+      imageUrl: 'assets/goods/multimeter_digital.png',
+      price: '約3,300円',
+      rating: 3,
+      description: '',
+      videos: [],
+      category: '電磁気',
+    ),
+    Product(
+      title: 'LCRメーター',
+      url: 'https://amzn.to/3Kf8piT',
+      imageUrl: 'assets/goods/lcmeter.png',
+      price: '約4,000円',
+      rating: 2,
+      description: '',
+      videos: [],
+      category: '電磁気',
+    ),
+    Product(
+      title: 'コンデンサセット',
+      url: 'https://amzn.to/42Ff1xe',
+      imageUrl: 'assets/goods/capacitor.png',
+      price: '約1,000円',
+      rating: 3,
+      description: '',
+      videos: [],
+      category: '電磁気',
+    ),
+    Product(
+      title: '分光器',
+      url: 'https://amzn.to/46gEGif',
+      imageUrl: 'assets/goods/spectrum.png',
+      price: '約4,000円',
+      rating: 1,
+      description: '',
+      videos: [],
+      category: '原子',
     ),
   ];
+
+  // 表示するカテゴリボタン（ここに追加すれば自動でボタンが増える）
+  final List<String> _filterButtons = ['力学', '電磁気', '原子'];
 
   Future<void> _openExternalUrl(BuildContext context, String url) async {
     final uri = Uri.parse(url);
@@ -76,137 +159,137 @@ class ProductListPage extends StatelessWidget {
     );
   }
 
-Widget _buildProductImageWithAttribution(String? imageUrl, String? attribution, String? sourceUrl) {
-  const double w = 120, h = 135;
-  // 見た目調整用：外枠半径と内側パディング
-  final outerRadius = BorderRadius.circular(12);
-  const double inset = 4.0; // ← ここを大きくすると画像が内側に縮まり、元画像の四角い余白が見えにくくなる
+  Widget _buildProductImageWithAttribution(String? imageUrl, String? attribution, String? sourceUrl) {
+    const double w = 120, h = 135;
+    // 見た目調整用：外枠半径と内側パディング
+    final outerRadius = BorderRadius.circular(12);
+    const double inset = 4.0; // ← ここを大きくすると画像が内側に縮まり、元画像の四角い余白が見えにくくなる
 
-  Widget imageBox;
-  if (imageUrl == null || imageUrl.trim().isEmpty) {
-    // プレースホルダも同じ構造にする
-    imageBox = ClipRRect(
-      borderRadius: outerRadius,
-      child: Container(
-        width: w,
-        height: h,
-        color: Colors.transparent,
-        child: Padding(
-          padding: const EdgeInsets.all(inset),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(outerRadius.topLeft.x - inset),
-            child: Container(
-              color: Colors.grey.shade200,
-              alignment: Alignment.center,
-              child: const Icon(Icons.image_not_supported, size: 36, color: Colors.grey),
+    Widget imageBox;
+    if (imageUrl == null || imageUrl.trim().isEmpty) {
+      // プレースホルダも同じ構造にする
+      imageBox = ClipRRect(
+        borderRadius: outerRadius,
+        child: Container(
+          width: w,
+          height: h,
+          color: Colors.transparent,
+          child: Padding(
+            padding: const EdgeInsets.all(inset),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(outerRadius.topLeft.x - inset),
+              child: Container(
+                color: Colors.grey.shade200,
+                alignment: Alignment.center,
+                child: const Icon(Icons.image_not_supported, size: 36, color: Colors.grey),
+              ),
             ),
           ),
         ),
-      ),
-    );
-  } else {
-    final trimmed = imageUrl.trim();
-    final lower = trimmed.toLowerCase();
-    Widget inner;
-    if (lower.startsWith('http://') || lower.startsWith('https://')) {
-      inner = Image.network(
-        trimmed,
-        width: w - inset * 2,
-        height: h - inset * 2,
-        fit: BoxFit.cover, // 重要：必ずボックスを埋める
-        loadingBuilder: (context, child, progress) {
-          if (progress == null) return child;
-          return Container(
-            color: Colors.grey.shade200,
-            alignment: Alignment.center,
-            child: const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
-          );
-        },
-        errorBuilder: (context, error, stack) {
-          return Container(
-            color: Colors.grey.shade200,
-            alignment: Alignment.center,
-            child: const Icon(Icons.broken_image, size: 36, color: Colors.grey),
-          );
-        },
       );
     } else {
-      inner = Image.asset(
-        trimmed,
-        width: w - inset * 2,
-        height: h - inset * 2,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stack) {
-          return Container(
-            color: Colors.grey.shade200,
-            alignment: Alignment.center,
-            child: const Icon(Icons.broken_image, size: 36, color: Colors.grey),
-          );
-        },
+      final trimmed = imageUrl.trim();
+      final lower = trimmed.toLowerCase();
+      Widget inner;
+      if (lower.startsWith('http://') || lower.startsWith('https://')) {
+        inner = Image.network(
+          trimmed,
+          width: w - inset * 2,
+          height: h - inset * 2,
+          fit: BoxFit.cover, // 重要：必ずボックスを埋める
+          loadingBuilder: (context, child, progress) {
+            if (progress == null) return child;
+            return Container(
+              color: Colors.grey.shade200,
+              alignment: Alignment.center,
+              child: const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+            );
+          },
+          errorBuilder: (context, error, stack) {
+            return Container(
+              color: Colors.grey.shade200,
+              alignment: Alignment.center,
+              child: const Icon(Icons.broken_image, size: 36, color: Colors.grey),
+            );
+          },
+        );
+      } else {
+        inner = Image.asset(
+          trimmed,
+          width: w - inset * 2,
+          height: h - inset * 2,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stack) {
+            return Container(
+              color: Colors.grey.shade200,
+              alignment: Alignment.center,
+              child: const Icon(Icons.broken_image, size: 36, color: Colors.grey),
+            );
+          },
+        );
+      }
+
+      imageBox = ClipRRect(
+        borderRadius: outerRadius,
+        child: Container(
+          width: w,
+          height: h,
+          color: Colors.transparent, // 親カードの背景に馴染ませたい場合は Colors.white ではなく transparent に
+          child: Padding(
+            padding: const EdgeInsets.all(inset),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12 - inset),
+              child: SizedBox(
+                width: w - inset * 2,
+                height: h - inset * 2,
+                child: inner,
+              ),
+            ),
+          ),
+        ),
       );
     }
 
-    imageBox = ClipRRect(
-      borderRadius: outerRadius,
-      child: Container(
-        width: w,
-        height: h,
-        color: Colors.transparent, // 親カードの背景に馴染ませたい場合は Colors.white ではなく transparent に
-        child: Padding(
-          padding: const EdgeInsets.all(inset),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12 - inset),
-            child: SizedBox(
-              width: w - inset * 2,
-              height: h - inset * 2,
-              child: inner,
+    // Attribution は元のまま
+    Widget attributionWidget = const SizedBox.shrink();
+    if ((attribution ?? '').isNotEmpty || (sourceUrl ?? '').isNotEmpty) {
+      attributionWidget = Padding(
+        padding: const EdgeInsets.only(top: 6.0),
+        child: GestureDetector(
+          onTap: () {
+            if ((sourceUrl ?? '').isNotEmpty) launchUrl(Uri.parse(sourceUrl!));
+          },
+          child: RichText(
+            text: TextSpan(
+              children: [
+                if ((attribution ?? '').isNotEmpty)
+                  TextSpan(
+                    text: attribution,
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+                  ),
+                if ((attribution ?? '').isNotEmpty && (sourceUrl ?? '').isNotEmpty)
+                  const TextSpan(text: '  '),
+                if ((sourceUrl ?? '').isNotEmpty)
+                  TextSpan(
+                    text: '(出典)',
+                    style: TextStyle(fontSize: 12, color: Colors.blue.shade700, decoration: TextDecoration.underline),
+                  ),
+              ],
             ),
           ),
         ),
-      ),
+      );
+    }
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        imageBox,
+        attributionWidget,
+      ],
     );
   }
-
-  // Attribution は元のまま
-  Widget attributionWidget = const SizedBox.shrink();
-  if ((attribution ?? '').isNotEmpty || (sourceUrl ?? '').isNotEmpty) {
-    attributionWidget = Padding(
-      padding: const EdgeInsets.only(top: 6.0),
-      child: GestureDetector(
-        onTap: () {
-          if ((sourceUrl ?? '').isNotEmpty) launchUrl(Uri.parse(sourceUrl!));
-        },
-        child: RichText(
-          text: TextSpan(
-            children: [
-              if ((attribution ?? '').isNotEmpty)
-                TextSpan(
-                  text: attribution,
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
-                ),
-              if ((attribution ?? '').isNotEmpty && (sourceUrl ?? '').isNotEmpty)
-                const TextSpan(text: '  '),
-              if ((sourceUrl ?? '').isNotEmpty)
-                TextSpan(
-                  text: '(出典)',
-                  style: TextStyle(fontSize: 12, color: Colors.blue.shade700, decoration: TextDecoration.underline),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  return Column(
-    mainAxisSize: MainAxisSize.min,
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      imageBox,
-      attributionWidget,
-    ],
-  );
-}
 
   void _onVideoTap(BuildContext context, dynamic item) {
     try {
@@ -250,8 +333,154 @@ Widget _buildProductImageWithAttribution(String? imageUrl, String? attribution, 
     return '動画';
   }
 
+  // 商品カードを作る共通化（既存の Card 部分を切り出し）
+  Widget _buildProductCard(BuildContext context, Product p) {
+    final videos = (p.videos is List) ? (p.videos as List).cast<dynamic>() : <dynamic>[];
+
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // --- 上段: 画像 + タイトル/価格/評価/Amazonボタン
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildProductImageWithAttribution(p.imageUrl, p.imageAttribution, p.imageSourceUrl),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(p.title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const Text('おすすめ度', style: TextStyle(fontSize: 14)),
+                          const SizedBox(width: 8),
+                          _buildRatingStars(p.rating),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          if (p.price != null) Text(p.price!, style: const TextStyle(fontSize: 18)),
+                          const Spacer(),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              icon: const Icon(Icons.shopping_cart_outlined),
+                              label: const Text('Amazonで見る'),
+                              onPressed: () {
+                                if (p.url.isNotEmpty) _openExternalUrl(context, p.url);
+                              },
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            // --- 商品説明タイトル（角丸枠）
+            if ((p.description ?? '').isNotEmpty)
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.grey.shade400, width: 1),
+                ),
+                child: const Text(
+                  '商品説明',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+
+            // --- 商品説明本文
+            if ((p.description ?? '').isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text(
+                p.description!,
+                style: const TextStyle(fontSize: 17, color: Colors.black87, height: 1.4),
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+
+            // --- 関連実験動画タイトル（角丸枠）
+            if (videos.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.grey.shade400, width: 1),
+                ),
+                child: const Text(
+                  '関連実験動画',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(height: 4),
+
+              // --- 動画ボタン
+              LayoutBuilder(builder: (context, constraints) {
+                final available = constraints.maxWidth;
+                final buttonWidth = available * 0.9;
+                return Wrap(
+                  spacing: 8,
+                  runSpacing: 6,
+                  children: videos.map((videoItem) {
+                    final label = _videoLabel(videoItem);
+                    return SizedBox(
+                      width: buttonWidth,
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.play_circle_outline),
+                        label: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 2.0),
+                          child: Text(label, overflow: TextOverflow.ellipsis, maxLines: 1, style: const TextStyle(fontSize: 16)),
+                        ),
+                        onPressed: () => _onVideoTap(context, videoItem),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                          alignment: Alignment.centerLeft,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                );
+              }),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    // 選択中カテゴリで絞り込む（null => 全件）
+    final filtered = (_selectedCategory == null)
+        ? products
+        : products.where((p) => p.category == _selectedCategory).toList();
+
     return Scaffold(
       appBar: AppBar(title: const Text('おすすめ実験グッズ')),
       body: Column(
@@ -262,22 +491,66 @@ Widget _buildProductImageWithAttribution(String? imageUrl, String? attribution, 
             padding: const EdgeInsets.all(10),
             margin: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-                  color: Colors.yellow.shade50, // ←薄め
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.yellow.shade300), // ←柔らかめの枠
+              color: Colors.yellow.shade50, // ←薄め
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.yellow.shade300), // ←柔らかめの枠
             ),
             child: const Text(
               '※このページのリンクはアフィリエイトです。購入されると運営者に報酬が入ります。',
               style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
             ),
           ),
-          // --- 残りは既存の ListView.builder
+
+          // --- カテゴリボタン群（力学/電磁気/原子）
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: _filterButtons.map((cat) {
+                  final selected = _selectedCategory == cat;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: OutlinedButton(
+                      onPressed: () {
+                        setState(() {
+                          // 同じボタンを押したらトグルで解除（全表示）
+                          if (_selectedCategory == cat) {
+                            _selectedCategory = null;
+                          } else {
+                            _selectedCategory = cat;
+                          }
+                        });
+                      },
+                      style: OutlinedButton.styleFrom(
+                        backgroundColor: selected ? Colors.blue.shade50 : null,
+                        side: BorderSide(color: selected ? Colors.blue : Colors.grey.shade300),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                      ),
+                      child: Text(
+                        cat,
+                        style: TextStyle(
+                          color: selected ? Colors.blue.shade700 : Colors.black87,
+                          fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 8),
+
+          // --- 残りは既存の ListView.builder（ただし filtered を使う）
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.all(16),
-              itemCount: products.length,
+              itemCount: filtered.length,
               itemBuilder: (context, index) {
-                final p = products[index];
+                final p = filtered[index];
                 final videos = (p.videos is List) ? (p.videos as List).cast<dynamic>() : <dynamic>[];
 
                 // ここから下は既存のコードをそのまま

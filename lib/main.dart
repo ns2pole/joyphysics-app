@@ -181,7 +181,7 @@ class CategoryList extends StatelessWidget {
               Icon(Icons.shopping_basket_outlined, color: Colors.white, size: 28),
               SizedBox(width: 10),
               Text(
-                'おすすめ実験グッズ',
+                '実験グッズ',
                 style: TextStyle(
                   fontSize: 20,
                   color: Colors.white,

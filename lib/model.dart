@@ -93,6 +93,7 @@ class Product {
   final String? description; // ← 商品説明を追加
   final String? imageAttribution;
   final String? imageSourceUrl;
+  final String? category;
 
   Product({
     required this.title,
@@ -104,6 +105,7 @@ class Product {
     this.description,
     this.imageAttribution,
     this.imageSourceUrl,
+    this.category
   });
 
   // Optional: Map から作るヘルパー（既存のデータから移行する際に便利）
