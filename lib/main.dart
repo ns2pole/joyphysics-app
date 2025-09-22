@@ -183,7 +183,7 @@ class CategoryList extends StatelessWidget {
               Text(
                 '実験グッズ',
                 style: TextStyle(
-                  fontSize: 20,
+                  fontSize: 22,
                   color: Colors.white,
                 ),
               ),
