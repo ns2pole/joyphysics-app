@@ -1,125 +1,119 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
-import 'package:joyphysics/experiment/HasHeight.dart';
-import 'package:joyphysics/model.dart';
-import '../../../PhysicsAnimationScaffold.dart';
+import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import '../fields/wave_fields.dart';
 import '../painters/wave_surface_painter.dart';
 import '../widgets/wave_slider.dart';
 import 'dart:math' as math;
 
-final circularInterference = Video(
-  category: 'waves',
-  iconName: "wave",
+final circularInterference = createWaveVideo(
   title: "円形波干渉",
-  videoURL: "",
-  equipment: [],
-  costRating: "★",
   latex: r"""
   <div class="common-box">ポイント</div>
   <p>2つの波源からの距離の差が、波長の整数倍なら強め合い、半波長の奇数倍なら弱め合います。</p>
   <p>強め合いの条件: $|r_1 - r_2| = m\lambda$</p>
   <p>弱め合いの条件: $|r_1 - r_2| = (m + 1/2)\lambda$</p>
   """,
-  experimentWidgets: [
-    const CircularInterference(),
-  ],
+  simulation: CircularInterferenceSimulation(),
 );
 
-class CircularInterference extends StatefulWidget with HasHeight {
-  const CircularInterference({super.key});
-
-  @override
-  double get widgetHeight => 550;
-
-  @override
-  State<CircularInterference> createState() => _CircularInterferenceState();
-}
-
-class _CircularInterferenceState extends State<CircularInterference> {
-  double _lambda = 2.0;
-  double _periodT = 1.0;
-  double _a = 2.0;
-  double _phi = 0.0;
-  Set<String> _activeIds = {'combined'};
-
-  @override
-  Widget build(BuildContext context) {
-    return PhysicsAnimationScaffold(
-      title: '円形波干渉',
-      is3D: true,
-      formula: Math.tex(
-        r'|r_1 - r_2| = m\lambda',
-        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-      ),
-      sliders: [
-        Text(
-          'λ = ${_lambda.toStringAsFixed(2)}  a = ${_a.toStringAsFixed(2)}  φ = ${(_phi / math.pi).toStringAsFixed(2)}π',
-          style: const TextStyle(fontSize: 12),
-        ),
-        LambdaSlider(
-          value: _lambda,
-          onChanged: (v) => setState(() => _lambda = v),
-        ),
-        PeriodTSlider(
-          value: _periodT,
-          onChanged: (v) => setState(() => _periodT = v),
-        ),
-        ThicknessLSlider(
-          label: 'a',
-          value: _a,
-          onChanged: (v) => setState(() => _a = v),
-        ),
-        PhiSlider(
-          value: _phi,
-          onChanged: (v) => setState(() => _phi = v),
-        ),
-      ],
-      extraControls: Wrap(
-        spacing: 8,
-        children: [
-          _buildChip('波1', 'wave1', Colors.purpleAccent),
-          _buildChip('波2', 'wave2', Colors.greenAccent),
-          _buildChip('合成', 'combined', Colors.blueAccent),
-        ],
-      ),
-      animationBuilder: (context, time, azimuth, tilt) {
-        final field = CircularInterferenceField(
-          lambda: _lambda,
-          periodT: _periodT,
-          a: _a,
-          phi: _phi,
-          amplitude: 0.3,
-        );
-        return CustomPaint(
-          size: Size.infinite,
-          painter: WaveSurfacePainter(
-            time: time,
-            field: field,
-            azimuth: azimuth,
-            tilt: tilt,
-            activeComponentIds: _activeIds,
-            markers: [
-              math.Point(0.0, _a),
-              math.Point(0.0, -_a),
-            ],
+class CircularInterferenceSimulation extends PhysicsSimulation {
+  CircularInterferenceSimulation()
+      : super(
+          title: "円形波干渉",
+          is3D: true,
+          formula: Math.tex(
+            r'|r_1 - r_2| = m\lambda',
+            textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
         );
-      },
+
+  @override
+  Map<String, double> get initialParameters => {
+        'lambda': 2.0,
+        'periodT': 1.0,
+        'a': 2.0,
+        'phi': 0.0,
+      };
+
+  @override
+  Set<String> get initialActiveIds => {'combined'};
+
+  @override
+  List<Widget> buildControls(context, params, updateParam) {
+    return [
+      Text(
+        'λ = ${params['lambda']!.toStringAsFixed(2)}  a = ${params['a']!.toStringAsFixed(2)}  φ = ${(params['phi']! / math.pi).toStringAsFixed(2)}π',
+        style: const TextStyle(fontSize: 12),
+      ),
+      LambdaSlider(
+        value: params['lambda']!,
+        onChanged: (v) => updateParam('lambda', v),
+      ),
+      PeriodTSlider(
+        value: params['periodT']!,
+        onChanged: (v) => updateParam('periodT', v),
+      ),
+      ThicknessLSlider(
+        label: 'a',
+        value: params['a']!,
+        onChanged: (v) => updateParam('a', v),
+      ),
+      PhiSlider(
+        value: params['phi']!,
+        onChanged: (v) => updateParam('phi', v),
+      ),
+    ];
+  }
+
+  @override
+  Widget buildExtraControls(context, activeIds, updateActiveIds) {
+    return Wrap(
+      spacing: 8,
+      children: [
+        _buildChip('波1', 'wave1', Colors.purpleAccent, activeIds, updateActiveIds),
+        _buildChip('波2', 'wave2', Colors.greenAccent, activeIds, updateActiveIds),
+        _buildChip('合成', 'combined', Colors.blueAccent, activeIds, updateActiveIds),
+      ],
     );
   }
 
-  Widget _buildChip(String label, String id, Color color) {
+  Widget _buildChip(String label, String id, Color color, Set<String> activeIds, void Function(Set<String>) update) {
     return FilterChip(
       label: Text(label, style: const TextStyle(fontSize: 12)),
-      selected: _activeIds.contains(id),
-      onSelected: (val) => setState(() {
-        _activeIds = Set.from(_activeIds);
-        val ? _activeIds.add(id) : _activeIds.remove(id);
-      }),
+      selected: activeIds.contains(id),
+      onSelected: (val) {
+        final next = Set<String>.from(activeIds);
+        val ? next.add(id) : next.remove(id);
+        update(next);
+      },
       selectedColor: color.withOpacity(0.3),
       checkmarkColor: color,
     );
   }
-}
 
+  @override
+  Widget buildAnimation(context, time, azimuth, tilt, params, activeIds) {
+    final field = CircularInterferenceField(
+      lambda: params['lambda']!,
+      periodT: params['periodT']!,
+      a: params['a']!,
+      phi: params['phi']!,
+      amplitude: 0.3,
+    );
+    return CustomPaint(
+      size: Size.infinite,
+      painter: WaveSurfacePainter(
+        time: time,
+        field: field,
+        azimuth: azimuth,
+        tilt: tilt,
+        activeComponentIds: activeIds,
+        markers: [
+          math.Point(0.0, params['a']!),
+          math.Point(0.0, -params['a']!),
+        ],
+      ),
+    );
+  }
+}

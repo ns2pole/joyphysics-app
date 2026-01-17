@@ -178,27 +178,27 @@ final categoriesData = <Category>[
         ],
       ),
       Subcategory(
-        name: '波動の性質 (1次元)',
+        name: '反射',
         videos: [
           fixedEndReflection1D,
-          fixedEndReflectionLine,
           freeEndReflection1D,
-          freeEndReflectionLine,
-          refraction1D,
-          thinFilmInterference1D,
+          reflectionLaw2D,
+          fixedReflection2D,
         ],
       ),
       Subcategory(
-        name: '波動の性質 (2次元)',
+        name: '屈折',
+        videos: [
+          refraction1D,
+          refractionLaw,
+        ],
+      ),
+      Subcategory(
+        name: '2次元波(平面円形)',
         videos: [
           planeWave,
           circularWave,
-          refractionLaw,
-          reflectionLaw2D,
-          fixedReflection2D,
-          thinFilmInterference2D,
           circularInterference,
-          youngDoubleSlit,
         ],
       ),
       // Subcategory(
@@ -213,6 +213,9 @@ final categoriesData = <Category>[
         videos: [
           diffractionGrating,
           spectroscopy,
+          thinFilmInterference1D,
+          thinFilmInterference2D,
+          youngDoubleSlit,
         ],
       )
     ],

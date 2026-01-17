@@ -1,6 +1,9 @@
 import 'dart:math' as math;
+import 'dart:typed_data';
+import 'dart:ui';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Column, Vertices;
+import 'package:flutter/material.dart' as material;
 
 import '../fields/wave_fields.dart';
 
@@ -84,13 +87,17 @@ class WaveSurfacePainter extends CustomPainter {
     const cos45 = 0.7071;
     final sTilt = math.sin(tilt);
     final cTilt = math.cos(tilt);
+    final cAzimuth = math.cos(azimuth);
+    final sAzimuth = math.sin(azimuth);
+    final cos45Scale = cos45 * unitScale;
+    final cos45STiltScale = cos45Scale * sTilt;
+    final cTiltScale = cTilt * unitScale;
     
     Offset worldToScreen(double x, double y, double z) {
-      final xr = x * math.cos(azimuth) - y * math.sin(azimuth);
-      final yr = x * math.sin(azimuth) + y * math.cos(azimuth);
-      final px = center.dx + (yr - xr) * cos45 * unitScale;
-      final py =
-          center.dy + (xr + yr) * cos45 * sTilt * unitScale - z * cTilt * unitScale;
+      final xr = x * cAzimuth - y * sAzimuth;
+      final yr = x * sAzimuth + y * cAzimuth;
+      final px = center.dx + (yr - xr) * cos45Scale;
+      final py = center.dy + (xr + yr) * cos45STiltScale - z * cTiltScale;
       return Offset(px, py);
     }
 
@@ -110,132 +117,108 @@ class WaveSurfacePainter extends CustomPainter {
     }
 
     const range = 10.0;
-    const div = 140;
+    const div = 90;
     const step = (range * 2) / div;
 
-    void drawWaveSurface({required bool onlyAbove}) {
-      final compsForCount = getComponents(0, 0);
-      final numComps = compsForCount.length;
+    // Pre-calculate grid points and wave components
+    final numPoints = div + 1;
+    // Base screen coordinates without Z-axis contribution
+    final gridPxBase = List.generate(numPoints, (i) => Float64List(numPoints));
+    final gridPyBase = List.generate(numPoints, (i) => Float64List(numPoints));
+    
+    // Wave components at each grid point
+    final gridComps = List.generate(
+      numPoints,
+      (i) => List<List<WaveComponent>>.filled(numPoints, []),
+    );
 
-      // セレクタが指定されているのに何も選択されていない場合は描画しない
+    for (int i = 0; i < numPoints; i++) {
+      final x = -range + i * step;
+      for (int j = 0; j < numPoints; j++) {
+        final y = -range + j * step;
+        
+        final xr = x * cAzimuth - y * sAzimuth;
+        final yr = x * sAzimuth + y * cAzimuth;
+        gridPxBase[i][j] = center.dx + (yr - xr) * cos45Scale;
+        gridPyBase[i][j] = center.dy + (xr + yr) * cos45STiltScale;
+        
+        gridComps[i][j] = getComponents(x, y);
+      }
+    }
+
+    // Grid points for total wave (used for mesh lines and slab)
+    final gridPoints = List.generate(
+      numPoints,
+      (i) => List<Offset>.filled(numPoints, Offset.zero),
+    );
+    for (int i = 0; i < numPoints; i++) {
+      for (int j = 0; j < numPoints; j++) {
+        final x = -range + i * step;
+        final y = -range + j * step;
+        final z = field.z(x, y, time);
+        gridPoints[i][j] = Offset(gridPxBase[i][j], gridPyBase[i][j] - z * cTiltScale);
+      }
+    }
+
+    void drawWaveSurface({required bool onlyAbove}) {
       if (activeComponentIds != null && activeComponentIds!.isEmpty) return;
 
-      for (int compIdx = 0; compIdx < numComps; compIdx++) {
-        final surfacePaintBase = Paint()
-          ..style = PaintingStyle.fill
-          ..isAntiAlias = true;
+      final compsSample = gridComps[0][0];
+      final numComps = compsSample.length;
 
-        final surfacePaintAbove = Paint()
-          ..style = PaintingStyle.fill
-          ..isAntiAlias = true;
+      for (int compIdx = 0; compIdx < numComps; compIdx++) {
+        final vertices = <Offset>[];
+        final colors = <Color>[];
+        final indices = <int>[];
+
+        final baseColor = compsSample[compIdx].color;
+        final aboveColor = baseColor.withOpacity(0.8);
+        final belowColor = baseColor.withOpacity(0.3);
 
         for (int i = 0; i < div; i++) {
           for (int j = 0; j < div; j++) {
-            final x1 = -range + i * step;
-            final y1 = -range + j * step;
-            final x2 = x1 + step;
-            final y2 = y1 + step;
+            final c1 = gridComps[i][j];
+            final c2 = gridComps[i + 1][j];
+            final c3 = gridComps[i + 1][j + 1];
+            final c4 = gridComps[i][j + 1];
 
-            final comps1 = getComponents(x1, y1);
-            final comps2 = getComponents(x2, y1);
-            final comps3 = getComponents(x2, y2);
-            final comps4 = getComponents(x1, y2);
+            if (compIdx >= c1.length ||
+                compIdx >= c2.length ||
+                compIdx >= c3.length ||
+                compIdx >= c4.length) continue;
 
-            final double z1, z2, z3, z4;
-            final Color c;
-            if (comps1.isNotEmpty && compIdx < comps1.length) {
-              z1 = comps1[compIdx].value;
-              z2 = comps2[compIdx].value;
-              z3 = comps3[compIdx].value;
-              z4 = comps4[compIdx].value;
-              c = comps1[compIdx].color;
-            } else {
-              continue;
-            }
-
-            surfacePaintBase.color = c.withOpacity(0.3);
-            surfacePaintAbove.color = c.withOpacity(0.8);
+            final z1 = c1[compIdx].value;
+            final z2 = c2[compIdx].value;
+            final z3 = c3[compIdx].value;
+            final z4 = c4[compIdx].value;
 
             if (onlyAbove && z1 <= 0 && z2 <= 0 && z3 <= 0 && z4 <= 0) continue;
 
-            final crossesZero = (z1 > 0) != (z2 > 0) ||
-                (z2 > 0) != (z3 > 0) ||
-                (z3 > 0) != (z4 > 0) ||
-                (z4 > 0) != (z1 > 0);
-            final minAbsZ = math.min(
-              math.min(z1.abs(), z2.abs()),
-              math.min(z3.abs(), z4.abs()),
-            );
+            final p1 = Offset(gridPxBase[i][j], gridPyBase[i][j] - z1 * cTiltScale);
+            final p2 = Offset(gridPxBase[i+1][j], gridPyBase[i+1][j] - z2 * cTiltScale);
+            final p3 = Offset(gridPxBase[i+1][j+1], gridPyBase[i+1][j+1] - z3 * cTiltScale);
+            final p4 = Offset(gridPxBase[i][j+1], gridPyBase[i][j+1] - z4 * cTiltScale);
 
-            if (crossesZero || minAbsZ < 0.06) {
-              const sub = 4;
-              final dx = (x2 - x1) / sub;
-              final dy = (y2 - y1) / sub;
+            final color = onlyAbove ? aboveColor : belowColor;
 
-              for (int si = 0; si < sub; si++) {
-                for (int sj = 0; sj < sub; sj++) {
-                  final ax1 = x1 + si * dx;
-                  final ay1 = y1 + sj * dy;
-                  final ax2 = ax1 + dx;
-                  final ay2 = ay1 + dy;
-
-                  final aComps1 = getComponents(ax1, ay1);
-                  final aComps2 = getComponents(ax2, ay1);
-                  final aComps3 = getComponents(ax2, ay2);
-                  final aComps4 = getComponents(ax1, ay2);
-
-                  final double az1, az2, az3, az4;
-                  if (aComps1.isNotEmpty && compIdx < aComps1.length) {
-                    az1 = aComps1[compIdx].value;
-                    az2 = aComps2[compIdx].value;
-                    az3 = aComps3[compIdx].value;
-                    az4 = aComps4[compIdx].value;
-                  } else {
-                    continue;
-                  }
-
-                  if (onlyAbove &&
-                      az1 <= 0 &&
-                      az2 <= 0 &&
-                      az3 <= 0 &&
-                      az4 <= 0) {
-                    continue;
-                  }
-
-                  final ap1 = worldToScreen(ax1, ay1, az1);
-                  final ap2 = worldToScreen(ax2, ay1, az2);
-                  final ap3 = worldToScreen(ax2, ay2, az3);
-                  final ap4 = worldToScreen(ax1, ay2, az4);
-
-                  final path = Path()
-                    ..moveTo(ap1.dx, ap1.dy)
-                    ..lineTo(ap2.dx, ap2.dy)
-                    ..lineTo(ap3.dx, ap3.dy)
-                    ..lineTo(ap4.dx, ap4.dy)
-                    ..close();
-                  canvas.drawPath(
-                    path,
-                    onlyAbove ? surfacePaintAbove : surfacePaintBase,
-                  );
-                }
-              }
-              continue;
-            }
-
-            final p1 = worldToScreen(x1, y1, z1);
-            final p2 = worldToScreen(x2, y1, z2);
-            final p3 = worldToScreen(x2, y2, z3);
-            final p4 = worldToScreen(x1, y2, z4);
-
-            final path = Path()
-              ..moveTo(p1.dx, p1.dy)
-              ..lineTo(p2.dx, p2.dy)
-              ..lineTo(p3.dx, p3.dy)
-              ..lineTo(p4.dx, p4.dy)
-              ..close();
-
-            canvas.drawPath(path, onlyAbove ? surfacePaintAbove : surfacePaintBase);
+            final int startIdx = vertices.length;
+            vertices.addAll([p1, p2, p3, p4]);
+            colors.addAll([color, color, color, color]);
+            indices.addAll([
+              startIdx, startIdx + 1, startIdx + 2,
+              startIdx, startIdx + 2, startIdx + 3,
+            ]);
           }
+        }
+
+        if (vertices.isNotEmpty) {
+          final v = Vertices(
+            VertexMode.triangles,
+            vertices,
+            colors: colors,
+            indices: indices,
+          );
+          canvas.drawVertices(v, BlendMode.srcOver, Paint());
         }
       }
     }
@@ -323,9 +306,10 @@ class WaveSurfacePainter extends CustomPainter {
       canvas.drawPath(Path()..moveTo(s1.dx, s1.dy)..lineTo(s2.dx, s2.dy)..lineTo(s3.dx, s3.dy)..lineTo(s4.dx, s4.dy)..close(), screenPaint);
 
       // 3. Interference pattern on the screen (x=screenX)
-      final patternPaint = Paint()
-        ..strokeWidth = 2.0
-        ..style = PaintingStyle.stroke;
+      // Since screenX is often 8.0, and with div=90, range=10, 
+      // the index for x=8.0 is exactly 81.
+      final screenIdx = ((screenX + 10) * div / 20).round();
+      final useGridForScreen = (screenIdx >= 0 && screenIdx <= div);
 
       // 4. Thick purple intersection line for amplitude on screen
       final intersectionPaint = Paint()
@@ -349,18 +333,19 @@ class WaveSurfacePainter extends CustomPainter {
       final b2 = worldToScreen(screenX, range, 0);
       canvas.drawLine(b1, b2, baseLinePaint);
 
-      final compsForCount = getComponents(screenX, 0);
-      final numComps = compsForCount.length;
-
       // Draw intersection line independently if requested
       if (showIntersectionLine) {
         final intersectionPath = Path();
         bool isFirst = true;
         for (int j = 0; j <= div; j++) {
-          final y = -range + j * step;
-          // Intersection line is for the total z value (combined)
-          final z = field.z(screenX, y, time);
-          final p = worldToScreen(screenX, y, z);
+          final Offset p;
+          if (useGridForScreen) {
+            p = gridPoints[screenIdx][j];
+          } else {
+            final y = -range + j * step;
+            final z = field.z(screenX, y, time);
+            p = worldToScreen(screenX, y, z);
+          }
           if (isFirst) {
             intersectionPath.moveTo(p.dx, p.dy);
             isFirst = false;
@@ -376,8 +361,14 @@ class WaveSurfacePainter extends CustomPainter {
         final intensityPath = Path();
         bool isFirst = true;
         for (int j = 0; j <= div; j++) {
-          final y = -range + j * step;
-          final z = field.z(screenX, y, time);
+          final double z;
+          final double y = -range + j * step;
+          if (useGridForScreen) {
+            // Need to get the total z, which might be different from individual components
+            z = field.z(screenX, y, time);
+          } else {
+            z = field.z(screenX, y, time);
+          }
           // 2乗をスケールして表示
           final intensityZ = z * z * 4.0; 
           final p = worldToScreen(screenX, y, intensityZ);
@@ -391,20 +382,33 @@ class WaveSurfacePainter extends CustomPainter {
         canvas.drawPath(intensityPath, intensityPaint);
       }
 
+      final compsSample = gridComps[0][0];
+      final numComps = compsSample.length;
+
       if (numComps > 0 && (activeComponentIds == null || activeComponentIds!.isNotEmpty)) {
+        final patternPaint = Paint()
+          ..strokeWidth = 2.0
+          ..style = PaintingStyle.stroke;
+
         for (int compIdx = 0; compIdx < numComps; compIdx++) {
           final path = Path();
           bool isFirst = true;
 
           for (int j = 0; j <= div; j++) {
-            final y = -range + j * step;
-            final comps = getComponents(screenX, y);
+            final double z;
+            final List<WaveComponent> comps;
+            if (useGridForScreen) {
+              comps = gridComps[screenIdx][j];
+            } else {
+              final y = -range + j * step;
+              comps = getComponents(screenX, y);
+            }
+            
             if (compIdx >= comps.length) continue;
             
-            final double z = comps[compIdx].value;
-            final Color c = comps[compIdx].color;
+            z = comps[compIdx].value;
+            final p = worldToScreen(screenX, -range + j * step, z);
             
-            final p = worldToScreen(screenX, y, z);
             if (isFirst) {
               path.moveTo(p.dx, p.dy);
               isFirst = false;
@@ -412,7 +416,7 @@ class WaveSurfacePainter extends CustomPainter {
               path.lineTo(p.dx, p.dy);
             }
           }
-          final compsAtEnd = getComponents(screenX, range);
+          final compsAtEnd = useGridForScreen ? gridComps[screenIdx][div] : getComponents(screenX, range);
           if (compIdx < compsAtEnd.length) {
             canvas.drawPath(path, patternPaint..color = compsAtEnd[compIdx].color);
           }
@@ -430,18 +434,20 @@ class WaveSurfacePainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
 
     const intRange = 10;
-    const meshSamplePoints = 300;
+    // We can't easily use gridPoints for mesh lines because mesh lines are at integer coordinates
+    // while gridPoints are at div steps. However, since range=10 and div=90, 
+    // step = 20/90 = 2/9. Integer coordinates like -10, -9... 10 are at i = (x+10)/step
+    // (x+10)/(2/9) = (x+10)*9/2. 
+    // For x=-10, i=0. For x=-8, i=9. For x=0, i=45. For x=10, i=90.
+    // All integer coordinates from -10 to 10 are included in the 90-div grid!
+    // So we can use gridPoints directly.
 
     for (int xInt = -intRange; xInt <= intRange; xInt++) {
-      final x = xInt.toDouble();
+      final i = ((xInt + 10) * div / 20).round();
       final path = Path();
       bool isFirst = true;
-      for (int k = 0; k <= meshSamplePoints; k++) {
-        final y = -range + (k / meshSamplePoints) * (range * 2);
-        final comps = getComponents(x, y);
-        if (comps.isEmpty) continue;
-        final double z = comps.last.value;
-        final p = worldToScreen(x, y, z);
+      for (int j = 0; j <= div; j++) {
+        final p = gridPoints[i][j];
         if (isFirst) {
           path.moveTo(p.dx, p.dy);
           isFirst = false;
@@ -453,15 +459,11 @@ class WaveSurfacePainter extends CustomPainter {
     }
 
     for (int yInt = -intRange; yInt <= intRange; yInt++) {
-      final y = yInt.toDouble();
+      final j = ((yInt + 10) * div / 20).round();
       final path = Path();
       bool isFirst = true;
-      for (int k = 0; k <= meshSamplePoints; k++) {
-        final x = -range + (k / meshSamplePoints) * (range * 2);
-        final comps = getComponents(x, y);
-        if (comps.isEmpty) continue;
-        final double z = comps.last.value;
-        final p = worldToScreen(x, y, z);
+      for (int i = 0; i <= div; i++) {
+        final p = gridPoints[i][j];
         if (isFirst) {
           path.moveTo(p.dx, p.dy);
           isFirst = false;
@@ -482,14 +484,10 @@ class WaveSurfacePainter extends CustomPainter {
         final x = -range + i * step;
         for (int j = 0; j < div; j++) {
           final y1 = -range + j * step;
-          final y2 = y1 + step;
           final phase1 = getPhase(x, y1);
           if (math.sin(phase1) > 0.98) {
-            final comps = getComponents(x, y1);
-            if (comps.isEmpty) continue;
-            final double z = comps.last.value;
-            final p1 = worldToScreen(x, y1, z);
-            final p2 = worldToScreen(x, y2, z);
+            final p1 = gridPoints[i][j];
+            final p2 = gridPoints[i][j+1];
             canvas.drawLine(p1, p2, peakPaint);
           }
         }

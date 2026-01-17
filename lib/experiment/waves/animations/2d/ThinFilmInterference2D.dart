@@ -1,148 +1,142 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
-import 'package:joyphysics/experiment/HasHeight.dart';
-import 'package:joyphysics/model.dart';
-import '../../../PhysicsAnimationScaffold.dart';
+import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import '../fields/wave_fields.dart';
 import '../painters/wave_surface_painter.dart';
 import '../widgets/wave_slider.dart';
 import 'dart:math' as math;
 
-final thinFilmInterference2D = Video(
-  category: 'waves',
-  iconName: "wave",
+final thinFilmInterference2D = createWaveVideo(
   title: "薄膜干渉 (2次元)",
-  videoURL: "",
-  equipment: [],
-  costRating: "★",
   latex: r"""
   <div class="common-box">ポイント</div>
   <p>光路差: $\Delta = 2nd \cos \theta_2$</p>
   <p>反射時に位相がずれる条件（固定端・自由端）に注意して、強め合い・弱め合いの条件が決まります。</p>
   """,
-  experimentWidgets: [
-    const ThinFilmInterference2D(),
-  ],
+  simulation: ThinFilmInterference2DSimulation(),
 );
 
-class ThinFilmInterference2D extends StatefulWidget with HasHeight {
-  const ThinFilmInterference2D({super.key});
+class ThinFilmInterference2DSimulation extends PhysicsSimulation {
+  ThinFilmInterference2DSimulation()
+      : super(
+          title: "薄膜干渉 (2次元)",
+          is3D: true,
+          formula: Column(
+            children: [
+              Math.tex(
+                r'\Delta = 2nd \cos \theta_2',
+                textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+        );
 
   @override
-  double get widgetHeight => 550;
+  Map<String, double> get initialParameters => {
+        'theta': 30 * math.pi / 180,
+        'lambda': 2.0,
+        'periodT': 1.0,
+        'n': 1.5,
+        'thicknessL': 2.0,
+      };
 
   @override
-  State<ThinFilmInterference2D> createState() => _ThinFilmInterference2DState();
-}
-
-class _ThinFilmInterference2DState extends State<ThinFilmInterference2D> {
-  double _theta = 30 * math.pi / 180;
-  double _lambda = 2.0;
-  double _periodT = 1.0;
-  double _n = 1.5;
-  double _thicknessL = 2.0;
-  Set<String> _activeIds = {'incident', 'reflected1', 'reflected2', 'combined'};
+  Set<String> get initialActiveIds => {'incident', 'reflected1', 'reflected2', 'combined'};
 
   @override
-  Widget build(BuildContext context) {
-    final thetaDeg = (_theta * 180 / math.pi);
-    final sinTheta2 = math.sin(_theta) / _n;
+  List<Widget> buildControls(context, params, updateParam) {
+    final thetaDeg = (params['theta']! * 180 / math.pi);
+    final sinTheta2 = math.sin(params['theta']!) / params['n']!;
     final cosTheta2 = math.sqrt(math.max(0.0, 1.0 - sinTheta2 * sinTheta2));
-    final opd = 2 * _n * _thicknessL * cosTheta2;
+    final opd = 2 * params['n']! * params['thicknessL']! * cosTheta2;
 
-    return PhysicsAnimationScaffold(
-      title: '薄膜干渉 (2次元)',
-      is3D: true,
-      formula: Column(
-        children: [
-          Math.tex(
-            r'\Delta = 2nd \cos \theta_2',
-            textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-        ],
+    return [
+      Text(
+        'θ = ${thetaDeg.toStringAsFixed(0)}°  λ = ${params['lambda']!.toStringAsFixed(2)}  n = ${params['n']!.toStringAsFixed(2)}  L = ${params['thicknessL']!.toStringAsFixed(2)}',
+        style: const TextStyle(fontSize: 11),
       ),
-      sliders: [
-        Text(
-          'θ = ${thetaDeg.toStringAsFixed(0)}°  λ = ${_lambda.toStringAsFixed(2)}  n = ${_n.toStringAsFixed(2)}  L = ${_thicknessL.toStringAsFixed(2)}',
-          style: const TextStyle(fontSize: 11),
-        ),
-        Text(
-          '2nd cos θ₂ = ${opd.toStringAsFixed(3)}',
-          style: const TextStyle(fontSize: 11),
-        ),
-        ThetaSlider(
-          value: _theta,
-          maxDeg: 80,
-          onChanged: (v) => setState(() => _theta = v),
-        ),
-        LambdaSlider(
-          value: _lambda,
-          onChanged: (v) => setState(() => _lambda = v),
-        ),
-        PeriodTSlider(
-          value: _periodT,
-          onChanged: (v) => setState(() => _periodT = v),
-        ),
-        RefractiveIndexSlider(
-          value: _n,
-          onChanged: (v) => setState(() => _n = v),
-        ),
-        ThicknessLSlider(
-          value: _thicknessL,
-          onChanged: (v) => setState(() => _thicknessL = v),
-        ),
+      Text(
+        '2nd cos θ₂ = ${opd.toStringAsFixed(3)}',
+        style: const TextStyle(fontSize: 11),
+      ),
+      ThetaSlider(
+        value: params['theta']!,
+        maxDeg: 80,
+        onChanged: (v) => updateParam('theta', v),
+      ),
+      LambdaSlider(
+        value: params['lambda']!,
+        onChanged: (v) => updateParam('lambda', v),
+      ),
+      PeriodTSlider(
+        value: params['periodT']!,
+        onChanged: (v) => updateParam('periodT', v),
+      ),
+      RefractiveIndexSlider(
+        value: params['n']!,
+        onChanged: (v) => updateParam('n', v),
+      ),
+      ThicknessLSlider(
+        value: params['thicknessL']!,
+        onChanged: (v) => updateParam('thicknessL', v),
+      ),
+    ];
+  }
+
+  @override
+  Widget buildExtraControls(context, activeIds, updateActiveIds) {
+    return Wrap(
+      spacing: 4,
+      runSpacing: 4,
+      children: [
+        _buildChip('入射', 'incident', Colors.purpleAccent, activeIds, updateActiveIds),
+        _buildChip('反射1', 'reflected1', Colors.greenAccent, activeIds, updateActiveIds),
+        _buildChip('反射2', 'reflected2', Colors.orangeAccent, activeIds, updateActiveIds),
+        _buildChip('合成', 'combined', Colors.blueAccent, activeIds, updateActiveIds),
       ],
-      extraControls: Wrap(
-        spacing: 4,
-        runSpacing: 4,
-        children: [
-          _buildChip('入射', 'incident', Colors.purpleAccent),
-          _buildChip('反射1', 'reflected1', Colors.greenAccent),
-          _buildChip('反射2', 'reflected2', Colors.orangeAccent),
-          _buildChip('合成', 'combined', Colors.blueAccent),
-        ],
-      ),
-      animationBuilder: (context, time, azimuth, tilt) {
-        final field = ThinFilmInterference2DField(
-          theta: _theta,
-          lambda: _lambda,
-          periodT: _periodT,
-          n: _n,
-          thicknessL: _thicknessL,
-          amplitude: 0.4,
-        );
-        return CustomPaint(
-          size: Size.infinite,
-          painter: WaveSurfacePainter(
-            time: time,
-            field: field,
-            azimuth: azimuth,
-            tilt: tilt,
-            activeComponentIds: _activeIds,
-            mediumSlab: MediumSlabOverlay(
-              xStart: 0.0,
-              xEnd: _thicknessL,
-              color: Colors.yellow,
-              opacity: 0.3,
-            ),
-          ),
-        );
-      },
     );
   }
 
-  Widget _buildChip(String label, String id, Color color) {
+  Widget _buildChip(String label, String id, Color color, Set<String> activeIds, void Function(Set<String>) update) {
     return FilterChip(
       label: Text(label, style: const TextStyle(fontSize: 10)),
-      selected: _activeIds.contains(id),
-      onSelected: (val) => setState(() {
-        _activeIds = Set.from(_activeIds);
-        val ? _activeIds.add(id) : _activeIds.remove(id);
-      }),
+      selected: activeIds.contains(id),
+      onSelected: (val) {
+        final next = Set<String>.from(activeIds);
+        val ? next.add(id) : next.remove(id);
+        update(next);
+      },
       selectedColor: color.withOpacity(0.3),
       checkmarkColor: color,
       padding: EdgeInsets.zero,
     );
   }
-}
 
+  @override
+  Widget buildAnimation(context, time, azimuth, tilt, params, activeIds) {
+    final field = ThinFilmInterference2DField(
+      theta: params['theta']!,
+      lambda: params['lambda']!,
+      periodT: params['periodT']!,
+      n: params['n']!,
+      thicknessL: params['thicknessL']!,
+      amplitude: 0.4,
+    );
+    return CustomPaint(
+      size: Size.infinite,
+      painter: WaveSurfacePainter(
+        time: time,
+        field: field,
+        azimuth: azimuth,
+        tilt: tilt,
+        activeComponentIds: activeIds,
+        mediumSlab: MediumSlabOverlay(
+          xStart: 0.0,
+          xEnd: params['thicknessL']!,
+          color: Colors.yellow,
+          opacity: 0.3,
+        ),
+      ),
+    );
+  }
+}
