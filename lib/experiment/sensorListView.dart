@@ -91,6 +91,7 @@ class SensorListView extends StatelessWidget {
         'センサー実験\ 解説記事一覧',
         style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
       ),
+      initiallyExpanded: true,
       children: articlesByCategory.entries.map((entry) {
         final categoryName = entry.key;
         final videos = entry.value;

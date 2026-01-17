@@ -327,19 +327,22 @@ class _VideoCategoryList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final allItems = subcategories.expand((sub) {
-      // 動画URLがあるもののみをフィルタリング（空文字列や「（動画URLをここに）」を除外）
-      final actives = sub.videos.where((v) => 
-        v.inPreparation != true && 
-        v.videoURL.isNotEmpty && 
-        v.videoURL.trim() != "（動画URLをここに）" &&
-        !v.videoURL.contains("（動画URL")
-      ).toList();
-      final preps = sub.videos.where((v) => 
-        v.inPreparation == true && 
-        v.videoURL.isNotEmpty && 
-        v.videoURL.trim() != "（動画URLをここに）" &&
-        !v.videoURL.contains("（動画URL")
-      ).toList();
+      // 動画URL または 実験Widget があるもののみをフィルタリング
+      final actives = sub.videos.where((v) {
+        final hasVideo = v.videoURL.isNotEmpty && 
+                         v.videoURL.trim() != "（動画URLをここに）" &&
+                         !v.videoURL.contains("（動画URL");
+        final hasWidget = v.experimentWidgets != null && v.experimentWidgets!.isNotEmpty;
+        return v.inPreparation != true && (hasVideo || hasWidget);
+      }).toList();
+
+      final preps = sub.videos.where((v) {
+        final hasVideo = v.videoURL.isNotEmpty && 
+                         v.videoURL.trim() != "（動画URLをここに）" &&
+                         !v.videoURL.contains("（動画URL");
+        final hasWidget = v.experimentWidgets != null && v.experimentWidgets!.isNotEmpty;
+        return v.inPreparation == true && (hasVideo || hasWidget);
+      }).toList();
 
       final widgets = <Widget>[];
 
@@ -449,12 +452,15 @@ class FormulaList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final allItems = groupedFormulas.entries.expand((entry) {
-      // 動画URLがあるもののみをフィルタリング（空文字列や「（動画URLをここに）」を除外）
-      final formulas = entry.value.where((f) => 
-        f.relatedVideo.videoURL.isNotEmpty && 
-        f.relatedVideo.videoURL.trim() != "（動画URLをここに）" &&
-        !f.relatedVideo.videoURL.contains("（動画URL")
-      ).toList();
+      // 動画URL または 実験Widget があるもののみをフィルタリング
+      final formulas = entry.value.where((f) {
+        final v = f.relatedVideo;
+        final hasVideo = v.videoURL.isNotEmpty && 
+                         v.videoURL.trim() != "（動画URLをここに）" &&
+                         !v.videoURL.contains("（動画URL");
+        final hasWidget = v.experimentWidgets != null && v.experimentWidgets!.isNotEmpty;
+        return hasVideo || hasWidget;
+      }).toList();
       
       if (formulas.isEmpty) {
         return <Widget>[];

@@ -189,7 +189,7 @@ class CategoryList extends StatelessWidget {
               Text(
                 '実験グッズ',
                 style: TextStyle(
-                  fontSize: 22,
+                  fontSize: 24,
                   color: Colors.white,
                 ),
               ),
@@ -239,7 +239,7 @@ class CategoryList extends StatelessWidget {
                 Text(
                   'センサーを使う！',
                   style: TextStyle(
-                    fontSize: 22,
+                    fontSize: 24,
                     color: Colors.white,
                   ),
                 ),
@@ -271,7 +271,7 @@ class CategoryList extends StatelessWidget {
                 Text(
                   cat.name,
                   style: TextStyle(
-                    fontSize: 22,
+                    fontSize: 24,
                     color: Colors.white,
                   ),
                 ),
@@ -304,7 +304,7 @@ class CategoryList extends StatelessWidget {
                 Text(
                   tb['name'] as String,
                   style: TextStyle(
-                    fontSize: 22,
+                    fontSize: 24,
                     color: Colors.white,
                   ),
                 ),
@@ -336,7 +336,7 @@ class CategoryList extends StatelessWidget {
                 Text(
                   'アプリについて',
                   style: TextStyle(
-                    fontSize: 22,
+                    fontSize: 24,
                     color: Colors.white,
                   ),
                 ),

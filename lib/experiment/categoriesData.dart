@@ -177,6 +177,30 @@ final categoriesData = <Category>[
           openPipeResonance,
         ],
       ),
+      Subcategory(
+        name: '波動の性質 (1次元)',
+        videos: [
+          fixedEndReflection1D,
+          fixedEndReflectionLine,
+          freeEndReflection1D,
+          freeEndReflectionLine,
+          refraction1D,
+          thinFilmInterference1D,
+        ],
+      ),
+      Subcategory(
+        name: '波動の性質 (2次元)',
+        videos: [
+          planeWave,
+          circularWave,
+          refractionLaw,
+          reflectionLaw2D,
+          fixedReflection2D,
+          thinFilmInterference2D,
+          circularInterference,
+          youngDoubleSlit,
+        ],
+      ),
       // Subcategory(
       //   name: '音波のドップラー効果',
       //   videos: [
