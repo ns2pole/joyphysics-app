@@ -6,6 +6,7 @@ import 'package:joyphysics/LatexView.dart';
 import 'package:joyphysics/model.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 // ─────────────────────────────
 // TheoryListView
@@ -456,6 +457,40 @@ Widget parseTextWithMath(String input, {bool isNew = false}) {
 
 
 
+/// YouTube動画IDを抽出する関数
+/// フルURL（https://youtube.com/watch?v=...）や短縮URL（https://youtu.be/...）から動画IDを抽出
+/// 既に動画IDのみの場合はそのまま返す
+String extractVideoId(String videoUrl) {
+  if (videoUrl.isEmpty) return '';
+  
+  // 既に動画IDのみの場合（短い文字列で特殊文字が含まれていない）
+  if (!videoUrl.contains('http') && !videoUrl.contains('/') && !videoUrl.contains('?')) {
+    return videoUrl;
+  }
+  
+  // youtube.com/watch?v= 形式
+  final watchMatch = RegExp(r'(?:youtube\.com/watch\?v=|youtu\.be/)([a-zA-Z0-9_-]{11})').firstMatch(videoUrl);
+  if (watchMatch != null) {
+    return watchMatch.group(1)!;
+  }
+  
+  // embed形式から抽出
+  final embedMatch = RegExp(r'youtube\.com/embed/([a-zA-Z0-9_-]{11})').firstMatch(videoUrl);
+  if (embedMatch != null) {
+    return embedMatch.group(1)!;
+  }
+  
+  // それでも見つからない場合は、末尾の11文字を試す（動画IDは通常11文字）
+  if (videoUrl.length >= 11) {
+    final last11 = videoUrl.substring(videoUrl.length - 11);
+    if (RegExp(r'^[a-zA-Z0-9_-]{11}$').hasMatch(last11)) {
+      return last11;
+    }
+  }
+  
+  return videoUrl; // フォールバック: 元の文字列を返す
+}
+
 class TheoryYouTubeWebView extends StatefulWidget {
   final String? videoURL;
   const TheoryYouTubeWebView({super.key, required this.videoURL});
@@ -465,22 +500,38 @@ class TheoryYouTubeWebView extends StatefulWidget {
 }
 
 class _TheoryYouTubeWebViewState extends State<TheoryYouTubeWebView> {
-  late final WebViewController _controller;
+  YoutubePlayerController? _controller;
 
   @override
   void initState() {
     super.initState();
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..loadRequest(
-        Uri.parse('https://www.youtube-nocookie.com/embed/${widget.videoURL}?autoplay=0'),
+    if (widget.videoURL != null && widget.videoURL!.isNotEmpty) {
+      final videoId = extractVideoId(widget.videoURL!);
+      _controller = YoutubePlayerController.fromVideoId(
+        videoId: videoId,
+        params: const YoutubePlayerParams(
+          showControls: true,
+          showFullscreenButton: true,
+          origin: 'https://www.youtube-nocookie.com',
+        ),
       );
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller?.close();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // SizedBoxは外側で管理するので不要
-    return WebViewWidget(controller: _controller);
+    if (_controller == null) {
+      return const SizedBox.shrink();
+    }
+    return YoutubePlayer(
+      controller: _controller!,
+    );
   }
 }
 

@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 final categoriesData = <Category>[
   // 力学
   Category(
-    name: '力学実験',
+    name: '力学',
     gifUrl: 'assets/init/dynamics.gif',
     subcategories: [
       // Subcategory(        
@@ -67,7 +67,7 @@ final categoriesData = <Category>[
 
   // 電磁気学
   Category(
-    name: '電磁気学実験',
+    name: '電磁気学',
     gifUrl: 'assets/init/electromag.gif',
     subcategories: [
       Subcategory(
@@ -153,7 +153,7 @@ final categoriesData = <Category>[
 
   // 波動
   Category(
-    name: '波動実験',
+    name: '波動',
     gifUrl: 'assets/init/wave.gif',
     subcategories: [
       // Subcategory(
@@ -196,7 +196,7 @@ final categoriesData = <Category>[
 
   // 熱力学
   Category(
-    name: '熱力学実験',
+    name: '熱力学',
     gifUrl: 'assets/init/fire.gif',
     subcategories: [
       Subcategory(

@@ -37,7 +37,7 @@ class JoyPhysicsApp extends StatelessWidget {
   Widget build(BuildContext context) => MaterialApp(
         navigatorKey: appNavigatorKey, // ← 同じキーを MaterialApp に渡す
         debugShowCheckedModeBanner: false,
-        title: '実験と理論で学ぶ高校物理',
+        title: 'アニメと実験で学ぶ高校物理',
         theme: ThemeData(
           fontFamily: 'KeiFont',
           primarySwatch: Colors.blue,
@@ -55,7 +55,7 @@ class _Header extends StatelessWidget {
         children: [
           Image.asset('assets/init/profile_arrange.png', width: 90, height: 60),
           SizedBox(height: 4),
-          Text('実験と理論で学ぶ',
+          Text('アニメと実験で学ぶ',
               style: TextStyle(
                       fontFamily: 'KeiFont',fontSize: 34,  color: Colors.black
                   ),),
@@ -69,19 +69,6 @@ class _Header extends StatelessWidget {
       );
 }
 
-/// フッター（更新日情報）
-class _Footer extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) => Padding(
-        padding: EdgeInsets.symmetric(vertical: 12),
-        child: Center(
-          child: Text(
-            'Updated: 2025/09/12  Version 2.4.0',
-            style: TextStyle(fontSize: 17, color: Colors.black54),
-          ),
-        ),
-      );
-}
 
 class CategoryList extends StatelessWidget {
   final List<Category> categories;
@@ -89,57 +76,64 @@ class CategoryList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theoryButtons = [
-      {
-        'name': '物理のための数学',
-        'gif': 'assets/init/number.gif',
-        'page': TheoryListView(categoryName: '物理のための数学'),
-      },
-      {
-        'name': '力学理論',
-        'gif': 'assets/init/dynamics.gif',
-        'page': TheoryListView(categoryName: '力学理論'),
-      },
-      {
-        'name': '電磁気学理論',
-        'gif': 'assets/init/electromag.gif',
-        'page': TheoryListView(categoryName: '電磁気学理論'),
-      },
-      {
-        'name': '熱力学理論',
-        'gif': 'assets/init/fire.gif',
-        'page': TheoryListView(categoryName: '熱力学理論'),
-      },
-    ];
+    // final theoryButtons = [
+    //   {
+    //     'name': '物理のための数学',
+    //     'gif': 'assets/init/number.gif',
+    //     'page': TheoryListView(categoryName: '物理のための数学'),
+    //   },
+    //   {
+    //     'name': '力学理論',
+    //     'gif': 'assets/init/dynamics.gif',
+    //     'page': TheoryListView(categoryName: '力学理論'),
+    //   },
+    //   {
+    //     'name': '電磁気学理論',
+    //     'gif': 'assets/init/electromag.gif',
+    //     'page': TheoryListView(categoryName: '電磁気学理論'),
+    //   },
+    //   {
+    //     'name': '熱力学理論',
+    //     'gif': 'assets/init/fire.gif',
+    //     'page': TheoryListView(categoryName: '熱力学理論'),
+    //   },
+    // ];
 
+    // +1 = ヘッダー
     // +3 = (スマホセンサー記事のテキスト, 解説記事のテキスト, 理論記事のテキスト)
     // +1 = 物販ボタン
-    // +1 = アプリについてボタン
-    // +1 = フッター
-    final totalCount = categories.length + theoryButtons.length + 6;
+    // アプリについてボタンは非表示
+    final totalCount = categories.length + 0 + 5; // theoryButtons.length を 0 に変更、アプリについてボタンを非表示
 
     return ListView.builder(
       padding: EdgeInsets.zero,
       itemCount: totalCount,
       itemBuilder: (context, index) {
-        // ---------- 先頭部分 ----------
+        // ---------- ヘッダー ----------
         if (index == 0) {
-          return _buildInfoText('スマホでできる実験記事\n8本掲載中！');
+          return Padding(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child: _Header(),
+          );
         }
+        // ---------- 先頭部分 ----------
         if (index == 1) {
-          return _buildSensorButton(context);
+          return _buildInfoText('スマホセンサーを活用！');
         }
         if (index == 2) {
-          return _buildInfoText('実験&解説記事 46本掲載中！');
+          return _buildSensorButton(context);
+        }
+        if (index == 3) {
+          return _buildInfoText('実験&アニメーション記事');
         }
 
-        final adjustedIndex = index - 3;
+        final adjustedIndex = index - 4;
 
         // ---------- 実験カテゴリ ----------
         if (adjustedIndex < categories.length) {
           final cat = categories[adjustedIndex];
-          // 「熱力学実験」の場合は下に物販ボタンを追加
-          if (cat.name == '熱力学実験') {
+          // 「熱力学」の場合は下に物販ボタンを追加
+          if (cat.name == '熱力学') {
             return Column(
               children: [
                 _buildCategoryButton(context, cat),
@@ -152,22 +146,22 @@ class CategoryList extends StatelessWidget {
         }
 
         // ---------- 理論記事 ----------
-        final theoryIndex = adjustedIndex - categories.length;
-        if (theoryIndex == 0) {
-          return _buildInfoText('理論記事45本 掲載中！');
-        }
-        if (theoryIndex >= 1 && theoryIndex <= theoryButtons.length) {
-          final tb = theoryButtons[theoryIndex - 1];
-          return _buildTheoryButton(context, tb);
-        }
+        // final theoryIndex = adjustedIndex - categories.length;
+        // if (theoryIndex == 0) {
+        //   return _buildInfoText('理論記事45本 掲載中！');
+        // }
+        // if (theoryIndex >= 1 && theoryIndex <= theoryButtons.length) {
+        //   final tb = theoryButtons[theoryIndex - 1];
+        //   return _buildTheoryButton(context, tb);
+        // }
 
         // ---------- アプリについて ----------
-        if (index == totalCount - 2) {
-          return _buildAboutButton(context);
-        }
+        // アプリについてボタンは非表示
+        // if (index == totalCount - 1) {
+        //   return _buildAboutButton(context);
+        // }
 
-        // ---------- フッター ----------
-        return _Footer();
+        return SizedBox.shrink();
       },
     );
   }
@@ -364,16 +358,7 @@ class ContentView extends StatelessWidget {
             Positioned.fill(
                 child: Container(color: Colors.white.withOpacity(0.7))),
             SafeArea(
-              child: Column(
-                children: [
-                  SizedBox(height: 20),
-                  _Header(),
-                  Expanded(
-                    child: CategoryList(categories: categoriesData),
-                  ),
-                  // ← Footer は削除
-                ],
-              ),
+              child: CategoryList(categories: categoriesData),
             ),
           ],
         ),
