@@ -1,8 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:light/light.dart';
 import 'dart:async';
+import 'package:joyphysics/experiment/HasHeight.dart';
+import 'package:joyphysics/shared_components.dart';
 
-class LuxMeasurementWidget extends StatefulWidget {
+class LuxMeasurementWidget extends StatefulWidget with HasHeight {
+  final double height;
+  final bool useScaffold;
+
+  const LuxMeasurementWidget({
+    Key? key,
+    this.height = 400,
+    this.useScaffold = true,
+  }) : super(key: key);
+
+  @override
+  double get widgetHeight => height;
+
   @override
   _LuxMeasurementWidgetState createState() => _LuxMeasurementWidgetState();
 }
@@ -16,6 +30,7 @@ class _LuxMeasurementWidgetState extends State<LuxMeasurementWidget> {
   void initState() {
     super.initState();
     _subscription = _light.lightSensorStream.listen((luxValue) {
+      if (!mounted) return;
       setState(() {
         lux = luxValue.toDouble();
       });
@@ -30,49 +45,42 @@ class _LuxMeasurementWidgetState extends State<LuxMeasurementWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final content = SensorDisplayCard(
+      title: "現在の照度",
+      height: widget.height,
+      children: lux == null
+          ? [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 16),
+              const Text(
+                "照度測定中...",
+                style: TextStyle(fontSize: 18, color: Colors.black),
+              ),
+            ]
+          : [
+              Text(
+                "${lux!.toStringAsFixed(1)} lx",
+                style: const TextStyle(
+                    fontSize: 36,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black),
+              ),
+            ],
+    );
+
+    if (!widget.useScaffold) {
+      return content;
+    }
+
     return Scaffold(
-      backgroundColor: Colors.white, // 画面全体の背景白
-      body: Center(
-        child: Card(
-          margin: const EdgeInsets.all(24),
-          elevation: 6,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
-            child: lux == null
-                ? Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: const [
-                      CircularProgressIndicator(),
-                      SizedBox(height: 16),
-                      Text(
-                        "照度測定中...",
-                        style: TextStyle(fontSize: 18, color: Colors.black),
-                      ),
-                    ],
-                  )
-                : Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text(
-                        "現在の照度",
-                        style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black),
-                      ),
-                      const SizedBox(height: 24),
-                      Text(
-                        "${lux!.toStringAsFixed(1)} lx",
-                        style: const TextStyle(
-                            fontSize: 36,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black),
-                      ),
-                    ],
-                  ),
-          ),
-        ),
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text('光センサー'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
       ),
+      body: content,
     );
   }
 }

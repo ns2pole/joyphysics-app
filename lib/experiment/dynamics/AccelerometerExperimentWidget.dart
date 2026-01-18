@@ -4,11 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:google_fonts/google_fonts.dart'; // 等幅フォント
 import 'package:joyphysics/experiment/HasHeight.dart';
+import 'package:joyphysics/shared_components.dart';
 
 class AccelerometerExperimentWidget extends StatefulWidget with HasHeight {
   final double height;
+  final bool useScaffold;
 
-  const AccelerometerExperimentWidget({Key? key, this.height = 400}) : super(key: key);
+  const AccelerometerExperimentWidget({
+    Key? key,
+    this.height = 400,
+    this.useScaffold = true,
+  }) : super(key: key);
 
   @override
   double get widgetHeight => height;
@@ -27,6 +33,7 @@ class _AccelerometerExperimentWidgetState extends State<AccelerometerExperimentW
   void initState() {
     super.initState();
     _subscription = userAccelerometerEvents.listen((event) {
+      if (!mounted) return;
       setState(() {
         x = event.x;
         y = event.y;
@@ -51,57 +58,51 @@ class _AccelerometerExperimentWidgetState extends State<AccelerometerExperimentW
   Widget build(BuildContext context) {
     final magnitude = sqrt(x * x + y * y + z * z);
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: Card(
-          margin: const EdgeInsets.all(24),
-          elevation: 6,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  '加速度センサーの値',
-                  style: TextStyle(
-                      fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black),
-                ),
-                const SizedBox(height: 24),
-                Text("X: ${formatValue(x)} (m/s²)",
-                    style: GoogleFonts.robotoMono(fontSize: 22, color: Colors.black)),
-                Text("Y: ${formatValue(y)} (m/s²)",
-                    style: GoogleFonts.robotoMono(fontSize: 22, color: Colors.black)),
-                Text("Z: ${formatValue(z)} (m/s²)",
-                    style: GoogleFonts.robotoMono(fontSize: 22, color: Colors.black)),
-                const SizedBox(height: 24),
-                Column(
-                  children: [
-                    const Text(
-                      "合成加速度", // 元のフォント
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      "${formatValueMag(magnitude)} m/s²",
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.robotoMono(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+    final content = SensorDisplayCard(
+      title: '加速度センサーの値',
+      height: widget.height,
+      children: [
+        Text("X: ${formatValue(x)} (m/s²)",
+            style: GoogleFonts.robotoMono(fontSize: 22, color: Colors.black)),
+        Text("Y: ${formatValue(y)} (m/s²)",
+            style: GoogleFonts.robotoMono(fontSize: 22, color: Colors.black)),
+        Text("Z: ${formatValue(z)} (m/s²)",
+            style: GoogleFonts.robotoMono(fontSize: 22, color: Colors.black)),
+        const SizedBox(height: 24),
+        const Text(
+          "合成加速度",
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
           ),
         ),
+        const SizedBox(height: 8),
+        Text(
+          "${formatValueMag(magnitude)} m/s²",
+          textAlign: TextAlign.center,
+          style: GoogleFonts.robotoMono(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+        ),
+      ],
+    );
+
+    if (!widget.useScaffold) {
+      return content;
+    }
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text('加速度センサー'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
       ),
+      body: content,
     );
   }
 }

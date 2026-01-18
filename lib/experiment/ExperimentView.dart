@@ -12,7 +12,7 @@ import 'package:flutter_html/flutter_html.dart';
 import 'package:joyphysics/dataExporter.dart';
 import 'package:joyphysics/theory/TheoryView.dart'; //画面遷移用
 import 'package:html/dom.dart' as dom; // ← これが重要
-import 'package:youtube_player_iframe/youtube_player_iframe.dart';
+import 'package:joyphysics/shared_components.dart';
 
 // 表示モード
 enum VideoViewMode { byCategory, byFormula }
@@ -40,22 +40,7 @@ class _VideoListViewState extends State<VideoListView> {
       groupMap.putIfAbsent(f.categoryName, () => []).add(f);
     }
 
-    // カテゴリ名に応じて全体像画像のパスを決定
-    String? getOverallImageAsset() {
-      final categoryName = widget.category.name;
-      if (categoryName == '力学') {
-        return 'assets/mindMap/dynamicsLandScope.jpeg';
-      } else if (categoryName == '電磁気学') {
-        return 'assets/mindMap/emTheoryLandScope.jpeg';
-      } else if (categoryName == '熱力学') {
-        return 'assets/mindMap/thermoDynamicsLandScope.jpeg';
-      } else if (categoryName == '波動') {
-        return 'assets/mindMap/waveLandScope.jpeg';
-      }
-      return null;
-    }
-
-    final overallImageAsset = getOverallImageAsset();
+    final overallImageAsset = widget.category.getMindMapAsset();
 
     return Scaffold(
       appBar: AppBar(title: Text(widget.category.name)),
@@ -71,7 +56,7 @@ class _VideoListViewState extends State<VideoListView> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => FullscreenImagePage(
+                        builder: (_) => PhysicsFullscreenImagePage(
                           imageAsset: overallImageAsset,
                         ),
                       ),
@@ -100,14 +85,7 @@ class _VideoListViewState extends State<VideoListView> {
                           ),
                           const SizedBox(height: 4), // 画像と文字の間隔
                           Text(
-                            // ラベルをカテゴリで切り替え
-                            widget.category.name == '力学'
-                                ? '力学全体像'
-                                : widget.category.name == '電磁気学'
-                                    ? '電磁気学全体像'
-                                    : widget.category.name == '熱力学'
-                                        ? '熱力学全体像'
-                                        : '波動全体像',
+                            widget.category.getMindMapLabel(),
                             style: const TextStyle(
                               fontSize: 14,
                               color: Colors.black54,
@@ -189,23 +167,6 @@ class _VideoCategoryList extends StatelessWidget {
   final List<Subcategory> subcategories;
   const _VideoCategoryList({required this.subcategories});
 
-  // サブカテゴリ見出し帯（TheoryListView と同テイスト + 準備中表示）
-  Widget _subHeader(String name, {bool disabled = false}) {
-    return Container(
-      width: double.infinity,
-      color: disabled ? Colors.grey[200] : Colors.grey[300],
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      child: Text(
-        disabled ? '$name（準備中）' : name,
-        style: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          color: disabled ? Colors.black45 : Colors.black87,
-        ),
-      ),
-    );
-  }
-
   // 1件分のタイル（disabled = 準備中）
   Widget _videoTile(BuildContext context, Video v,
       {bool disabled = false, bool isLast = false}) {
@@ -247,49 +208,13 @@ class _VideoCategoryList extends StatelessWidget {
               overflow: TextOverflow.ellipsis, // 3行目以降は省略
             ),
           ),
-          // スマートフォン専用記事（isSmartPhoneOnlyフラグ）にsmartphone_only.pngを表示
-          if (v.isSmartPhoneOnly == true)
-            Opacity(
-              opacity: disabled ? 0.6 : 1.0,
-              child: Image.asset(
-                'assets/icon/smartphone_only.png',
-                width: 60,
-                height: 40,
-                fit: BoxFit.contain,
-              ),
-            ),
-          // シミュレーション・アニメーション記事（isSimulationフラグ）にanime.pngを表示
-          if (v.isSimulation == true)
-            Opacity(
-              opacity: disabled ? 0.6 : 1.0,
-              child: Image.asset(
-                'assets/icon/anime.png',
-                width: 60,
-                height: 40,
-                fit: BoxFit.contain,
-              ),
-            ),
-          // 実験記事（isExperimentフラグ）にexperiment.pngを表示
-          if (v.isExperiment == true)
-            Opacity(
-              opacity: disabled ? 0.6 : 1.0,
-              child: Image.asset(
-                'assets/icon/experiment.png',
-                width: 60,
-                height: 40,
-                fit: BoxFit.contain,
-              ),
-            ),
-          if (v.isNew == true)
-            Opacity(
-              opacity: disabled ? 0.6 : 1.0,
-              child: Image.asset(
-                'assets/others/new.gif',
-                width: 45,
-                height: 30,
-                fit: BoxFit.contain,
-              ),
-            ),
+          PhysicsBadge(
+            isNew: v.isNew ?? false,
+            isSimulation: v.isSimulation ?? false,
+            isExperiment: v.isExperiment ?? false,
+            isSmartPhoneOnly: v.isSmartPhoneOnly ?? false,
+            opacity: disabled ? 0.6 : 1.0,
+          ),
         ],
       ),
       onTap: disabled
@@ -321,28 +246,7 @@ class _VideoCategoryList extends StatelessWidget {
     return Stack(
       children: [
         Container(color: Colors.grey[200], child: row),
-        Positioned.fill(
-          child: IgnorePointer(
-            ignoring: true,
-            child: Center(
-              child: Transform.rotate(
-                angle: -math.pi / 12,
-                child: Opacity(
-                  opacity: 0.18,
-                  child: Text(
-                    '準備中',
-                    style: TextStyle(
-                      fontSize: 40,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey[700],
-                      letterSpacing: 4,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
+        const PreparationWatermark(),
       ],
     );
   }
@@ -371,7 +275,7 @@ class _VideoCategoryList extends StatelessWidget {
 
       // フェーズ1：公開中
       if (actives.isNotEmpty) {
-        widgets.add(_subHeader(sub.name, disabled: false));
+        widgets.add(SectionHeader(name: sub.name, disabled: false));
         widgets.add(const SizedBox(height: 4)); // 見出し直下の白い余白
 
         for (var i = 0; i < actives.length; i++) {
@@ -387,7 +291,7 @@ class _VideoCategoryList extends StatelessWidget {
 
       // フェーズ2：準備中
       if (preps.isNotEmpty) {
-        widgets.add(_subHeader(sub.name, disabled: true));
+        widgets.add(SectionHeader(name: sub.name, disabled: true));
         widgets.add(const SizedBox(height: 4)); // 見出し直下の白い余白
 
         for (var i = 0; i < preps.length; i++) {
@@ -440,7 +344,7 @@ class VideoDetailView extends StatelessWidget {
                 child: SizedBox(
                   height: 200,
                   width: double.infinity,
-                  child: YouTubeWebView(videoURL: video.videoURL),
+                  child: PhysicsYouTubePlayer(videoURL: video.videoURL),
                 ),
               ),
             // 3. 解説・ポイント
@@ -540,44 +444,15 @@ class FormulaList extends StatelessWidget {
                                     overflow: TextOverflow.ellipsis, // 3行目以降は省略
                                   ),
                                 ),
-                                if (f.relatedVideo.isSmartPhoneOnly == true) ...[
-                                  const SizedBox(width: 10),
-                                  Image.asset(
-                                    'assets/icon/smartphone_only.png',
-                                    width: 68,
-                                    height: 45,
-                                    fit: BoxFit.contain,
-                                  ),
-                                ],
-                                if (f.relatedVideo.isNew == true) ...[
-                                  const SizedBox(width: 10),
-                                  Image.asset(
-                                    'assets/others/new.gif',
-                                    width: 45,
-                                    height: 30,
-                                    fit: BoxFit.contain,
-                                  ),
-                                ],
-                                // シミュレーション・アニメーション記事（isSimulationフラグ）にanime.pngを表示
-                                if (f.relatedVideo.isSimulation == true) ...[
-                                  const SizedBox(width: 10),
-                                  Image.asset(
-                                    'assets/icon/anime.png',
-                                    width: 68,
-                                    height: 45,
-                                    fit: BoxFit.contain,
-                                  ),
-                                ],
-                                // 実験記事（isExperimentフラグ）にexperiment.pngを表示
-                                if (f.relatedVideo.isExperiment == true) ...[
-                                  const SizedBox(width: 10),
-                                  Image.asset(
-                                    'assets/icon/experiment.png',
-                                    width: 68,
-                                    height: 45,
-                                    fit: BoxFit.contain,
-                                  ),
-                                ],
+                                const SizedBox(width: 10),
+                                PhysicsBadge(
+                                  isNew: f.relatedVideo.isNew ?? false,
+                                  isSimulation: f.relatedVideo.isSimulation ?? false,
+                                  isExperiment: f.relatedVideo.isExperiment ?? false,
+                                  isSmartPhoneOnly: f.relatedVideo.isSmartPhoneOnly ?? false,
+                                  width: 68,
+                                  height: 45,
+                                ),
                               ],
                             ),
                             const SizedBox(height: 4),
@@ -649,84 +524,4 @@ class EquipmentListView extends StatelessWidget {
           ],
         ),
       );
-}
-
-/// YouTube動画IDを抽出する関数
-/// フルURL（https://youtube.com/watch?v=...）や短縮URL（https://youtu.be/...）から動画IDを抽出
-/// 既に動画IDのみの場合はそのまま返す
-String extractVideoId(String videoUrl) {
-  if (videoUrl.isEmpty) return '';
-  
-  // 既に動画IDのみの場合（短い文字列で特殊文字が含まれていない）
-  if (!videoUrl.contains('http') && !videoUrl.contains('/') && !videoUrl.contains('?')) {
-    return videoUrl;
-  }
-  
-  // youtube.com/watch?v= 形式
-  final watchMatch = RegExp(r'(?:youtube\.com/watch\?v=|youtu\.be/)([a-zA-Z0-9_-]{11})').firstMatch(videoUrl);
-  if (watchMatch != null) {
-    return watchMatch.group(1)!;
-  }
-  
-  // embed形式から抽出
-  final embedMatch = RegExp(r'youtube\.com/embed/([a-zA-Z0-9_-]{11})').firstMatch(videoUrl);
-  if (embedMatch != null) {
-    return embedMatch.group(1)!;
-  }
-  
-  // それでも見つからない場合は、末尾の11文字を試す（動画IDは通常11文字）
-  if (videoUrl.length >= 11) {
-    final last11 = videoUrl.substring(videoUrl.length - 11);
-    if (RegExp(r'^[a-zA-Z0-9_-]{11}$').hasMatch(last11)) {
-      return last11;
-    }
-  }
-  
-  return videoUrl; // フォールバック: 元の文字列を返す
-}
-
-class YouTubeWebView extends StatefulWidget {
-  final String videoURL;
-  const YouTubeWebView({super.key, required this.videoURL});
-
-  @override
-  State<YouTubeWebView> createState() => _YouTubeWebViewState();
-}
-
-class _YouTubeWebViewState extends State<YouTubeWebView> {
-  YoutubePlayerController? _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.videoURL.isNotEmpty) {
-      final videoId = extractVideoId(widget.videoURL);
-      if (videoId.isNotEmpty) {
-        _controller = YoutubePlayerController.fromVideoId(
-          videoId: videoId,
-          params: const YoutubePlayerParams(
-            showControls: true,
-            showFullscreenButton: true,
-            origin: 'https://www.youtube-nocookie.com',
-          ),
-        );
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller?.close();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_controller == null) {
-      return const SizedBox.shrink();
-    }
-    return YoutubePlayer(
-      controller: _controller!,
-    );
-  }
 }

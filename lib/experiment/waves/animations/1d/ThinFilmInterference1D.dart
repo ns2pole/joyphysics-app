@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
 import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
@@ -17,28 +18,33 @@ final thinFilmInterference1D = createWaveVideo(
   simulation: ThinFilmInterference1DSimulation(),
 );
 
-class ThinFilmInterference1DSimulation extends PhysicsSimulation {
+class ThinFilmInterference1DSimulation extends WaveSimulation {
   ThinFilmInterference1DSimulation()
       : super(
           title: "薄膜干渉 (1次元)",
           is3D: false,
           formula: const Column(
             children: [
-              FormulaDisplay(r'\color{#B38CFF}{z_i = A \sin\left(2\pi\left(\frac{t}{T} - \frac{x}{\lambda_1}\right)\right)}'),
-              FormulaDisplay(r'\color{#8CFFB3}{z_{r1} = -A \sin\left(2\pi\left(\frac{t}{T} + \frac{x}{\lambda_1}\right)\right)}'),
-              FormulaDisplay(r'\color{#FFB38C}{z_{r2} = A \sin\left(2\pi\left(\frac{t}{T} + \frac{x - 2nL}{\lambda_1}\right)\right)}'),
+              FormulaDisplay(
+                  r'\color{#B38CFF}{z_i = A \sin\left(2\pi\left(\frac{t}{T} - \frac{x}{\lambda_1}\right)\right)}'),
+              FormulaDisplay(
+                  r'\color{#8CFFB3}{z_{r1} = -A \sin\left(2\pi\left(\frac{t}{T} + \frac{x}{\lambda_1}\right)\right)}'),
+              FormulaDisplay(
+                  r'\color{#FFB38C}{z_{r2} = A \sin\left(2\pi\left(\frac{t}{T} + \frac{x - 2nL}{\lambda_1}\right)\right)}'),
             ],
           ),
         );
 
   @override
-  Map<String, double> get initialParameters => {
-        'lambda': 2.0,
-        'periodT': 1.0,
-        'n': 1.5,
-        'thicknessL': 1.0,
-        'obsX': 2.0,
-      };
+  Map<String, double> get initialParameters => getInitialParamsWithObs(
+        baseParams: {
+          'lambda': 2.0,
+          'periodT': 1.0,
+          'n': 1.5,
+          'thicknessL': 1.0,
+        },
+        obsX: 2.0,
+      );
 
   @override
   Set<String> get initialActiveIds => {'incident', 'combinedReflected'};
@@ -67,15 +73,7 @@ class ThinFilmInterference1DSimulation extends PhysicsSimulation {
         value: params['thicknessL']!,
         onChanged: (v) => updateParam('thicknessL', v),
       ),
-      const Divider(),
-      const Text('観測点 a', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-      WaveParameterSlider(
-        label: 'a',
-        value: params['obsX']!,
-        min: -5.0,
-        max: 5.0,
-        onChanged: (v) => updateParam('obsX', v),
-      ),
+      ...buildObsSliders(params, updateParam, is2D: false),
     ];
   }
 
@@ -84,28 +82,25 @@ class ThinFilmInterference1DSimulation extends PhysicsSimulation {
     return Wrap(
       spacing: 8,
       children: [
-        _buildModeButton('入射波', 'incident', activeIds, updateActiveIds),
-        _buildModeButton('反射1', 'reflected1', activeIds, updateActiveIds),
-        _buildModeButton('反射2', 'reflected2', activeIds, updateActiveIds),
-        _buildModeButton('合成反射', 'combinedReflected', activeIds, updateActiveIds),
+        buildChip('入射波', 'incident', Colors.purpleAccent, activeIds,
+            updateActiveIds,
+            fontSize: 12),
+        buildChip('反射1', 'reflected1', Colors.greenAccent, activeIds,
+            updateActiveIds,
+            fontSize: 12),
+        buildChip('反射2', 'reflected2', Colors.orangeAccent, activeIds,
+            updateActiveIds,
+            fontSize: 12),
+        buildChip('合成反射', 'combinedReflected', Colors.blueAccent, activeIds,
+            updateActiveIds,
+            fontSize: 12),
       ],
     );
   }
 
-  Widget _buildModeButton(String label, String id, Set<String> activeIds, void Function(Set<String>) update) {
-    return FilterChip(
-      label: Text(label, style: const TextStyle(fontSize: 12)),
-      selected: activeIds.contains(id),
-      onSelected: (selected) {
-        final next = Set<String>.from(activeIds);
-        selected ? next.add(id) : next.remove(id);
-        update(next);
-      },
-    );
-  }
-
   @override
-  Widget buildAnimation(context, time, azimuth, tilt, scale, params, activeIds) {
+  Widget buildAnimation(
+      context, time, azimuth, tilt, scale, params, activeIds) {
     final field = ThinFilmInterferenceField(
       lambda: params['lambda']!,
       periodT: params['periodT']!,
@@ -125,7 +120,7 @@ class ThinFilmInterference1DSimulation extends PhysicsSimulation {
         activeComponentIds: activeIds,
         scale: scale,
         markers: [
-          WaveMarker(point: math.Point(params['obsX']!, 0.0), color: Colors.red),
+          getObsMarker(params, label: '合成波の観測点'),
         ],
         mediumSlab: MediumSlabOverlay(
           xStart: 0.0,

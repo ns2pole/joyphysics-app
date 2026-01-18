@@ -2,11 +2,21 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:joyphysics/experiment/HasHeight.dart';
+import 'package:joyphysics/shared_components.dart';
 
-class FrequencyMeasureWidget extends StatefulWidget {
+class FrequencyMeasureWidget extends StatefulWidget with HasHeight {
   final double height;
+  final bool useScaffold;
 
-  const FrequencyMeasureWidget({Key? key, this.height = 400}) : super(key: key);
+  const FrequencyMeasureWidget({
+    Key? key,
+    this.height = 400,
+    this.useScaffold = true,
+  }) : super(key: key);
+
+  @override
+  double get widgetHeight => height;
 
   @override
   State<FrequencyMeasureWidget> createState() => _FrequencyMeasureWidgetState();
@@ -95,6 +105,7 @@ class _FrequencyMeasureWidgetState extends State<FrequencyMeasureWidget> {
     try {
       await _frequencyChannel.invokeMethod('start');
       _timer = Timer.periodic(const Duration(milliseconds: 100), (_) async {
+        if (!mounted) return;
         final freq = await _frequencyChannel.invokeMethod('getFrequency');
         setState(() {
           _frequency = (freq as double?) ?? 0.0;
@@ -114,54 +125,43 @@ class _FrequencyMeasureWidgetState extends State<FrequencyMeasureWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white, // ←背景を白に設定
+    final content = SensorDisplayCard(
+      title: "現在の周波数",
       height: widget.height,
-      child: Center(
-        child: Card(
-          margin: const EdgeInsets.all(12),
-          elevation: 6,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-            child: _frequency == null
-                ? Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: const [
-                      CircularProgressIndicator(),
-                      SizedBox(height: 16),
-                      Text(
-                        "周波数計測中...",
-                        style: TextStyle(fontSize: 18, color: Colors.black),
-                      ),
-                    ],
-                  )
-                : Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text(
-                        "現在の周波数",
-                        style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black),
-                      ),
-                      const SizedBox(height: 24),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Text(
-                          "${_frequency!.toStringAsFixed(1)} Hz",
-                          style: const TextStyle(
-                              fontSize: 36,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ],
-                  ),
-          ),
-        ),
+      children: _frequency == null
+          ? [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 16),
+              const Text(
+                "周波数計測中...",
+                style: TextStyle(fontSize: 18, color: Colors.black),
+              ),
+            ]
+          : [
+              Text(
+                "${_frequency!.toStringAsFixed(1)} Hz",
+                style: const TextStyle(
+                    fontSize: 36,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black),
+                textAlign: TextAlign.center,
+              ),
+            ],
+    );
+
+    if (!widget.useScaffold) {
+      return content;
+    }
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text('周波数センサー'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
       ),
+      body: content,
     );
   }
 }

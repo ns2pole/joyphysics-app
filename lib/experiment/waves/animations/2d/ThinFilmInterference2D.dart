@@ -16,7 +16,7 @@ final thinFilmInterference2D = createWaveVideo(
   simulation: ThinFilmInterference2DSimulation(),
 );
 
-class ThinFilmInterference2DSimulation extends PhysicsSimulation {
+class ThinFilmInterference2DSimulation extends WaveSimulation {
   ThinFilmInterference2DSimulation()
       : super(
           title: "薄膜干渉 (2次元)",
@@ -25,16 +25,21 @@ class ThinFilmInterference2DSimulation extends PhysicsSimulation {
         );
 
   @override
-  Map<String, double> get initialParameters => {
-        'theta': 30 * math.pi / 180,
-        'lambda': 2.0,
-        'periodT': 1.0,
-        'n': 1.5,
-        'thicknessL': 2.0,
-      };
+  Map<String, double> get initialParameters => getInitialParamsWithObs(
+        baseParams: {
+          'theta': 30 * math.pi / 180,
+          'lambda': 2.0,
+          'periodT': 1.0,
+          'n': 1.5,
+          'thicknessL': 2.0,
+        },
+        obsX: 2.0,
+        obsY: 0.0,
+      );
 
   @override
-  Set<String> get initialActiveIds => {'incident', 'reflected1', 'reflected2', 'combined'};
+  Set<String> get initialActiveIds =>
+      {'incident', 'reflected1', 'reflected2', 'combined'};
 
   @override
   List<Widget> buildControls(context, params, updateParam) {
@@ -73,6 +78,7 @@ class ThinFilmInterference2DSimulation extends PhysicsSimulation {
         value: params['thicknessL']!,
         onChanged: (v) => updateParam('thicknessL', v),
       ),
+      ...buildObsSliders(params, updateParam),
     ];
   }
 
@@ -82,31 +88,25 @@ class ThinFilmInterference2DSimulation extends PhysicsSimulation {
       spacing: 4,
       runSpacing: 4,
       children: [
-        _buildChip('入射', 'incident', Colors.purpleAccent, activeIds, updateActiveIds),
-        _buildChip('反射1', 'reflected1', Colors.greenAccent, activeIds, updateActiveIds),
-        _buildChip('反射2', 'reflected2', Colors.orangeAccent, activeIds, updateActiveIds),
-        _buildChip('合成', 'combined', Colors.blueAccent, activeIds, updateActiveIds),
+        buildChip('入射', 'incident', Colors.purpleAccent, activeIds,
+            updateActiveIds,
+            fontSize: 10),
+        buildChip('反射1', 'reflected1', Colors.greenAccent, activeIds,
+            updateActiveIds,
+            fontSize: 10),
+        buildChip('反射2', 'reflected2', Colors.orangeAccent, activeIds,
+            updateActiveIds,
+            fontSize: 10),
+        buildChip('合成', 'combined', Colors.blueAccent, activeIds,
+            updateActiveIds,
+            fontSize: 10),
       ],
     );
   }
 
-  Widget _buildChip(String label, String id, Color color, Set<String> activeIds, void Function(Set<String>) update) {
-    return FilterChip(
-      label: Text(label, style: const TextStyle(fontSize: 10)),
-      selected: activeIds.contains(id),
-      onSelected: (val) {
-        final next = Set<String>.from(activeIds);
-        val ? next.add(id) : next.remove(id);
-        update(next);
-      },
-      selectedColor: color.withOpacity(0.3),
-      checkmarkColor: color,
-      padding: EdgeInsets.zero,
-    );
-  }
-
   @override
-  Widget buildAnimation(context, time, azimuth, tilt, scale, params, activeIds) {
+  Widget buildAnimation(
+      context, time, azimuth, tilt, scale, params, activeIds) {
     final field = ThinFilmInterference2DField(
       theta: params['theta']!,
       lambda: params['lambda']!,
@@ -124,6 +124,9 @@ class ThinFilmInterference2DSimulation extends PhysicsSimulation {
         tilt: tilt,
         activeComponentIds: activeIds,
         scale: scale,
+        markers: [
+          getObsMarker(params, label: '合成波の観測点'),
+        ],
         mediumSlab: MediumSlabOverlay(
           xStart: 0.0,
           xEnd: params['thicknessL']!,

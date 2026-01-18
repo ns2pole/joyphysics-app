@@ -9,8 +9,7 @@ import 'package:joyphysics/experiment/dynamics/BarometerExperimentWidget.dart';
 import 'package:joyphysics/experiment/electroMagnetism/MagnetometerExperimentWidget.dart';
 import 'package:joyphysics/experiment/waves/LuxMeasurementWidget.dart';
 import 'package:joyphysics/experiment/waves/FrequencyMeasureWidget.dart';
-
-
+import 'package:joyphysics/shared_components.dart';
 
 import 'package:flutter/services.dart';
 
@@ -172,19 +171,7 @@ class _SensorListViewState extends State<SensorListView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          width: double.infinity,
-          color: isAvailable ? Colors.grey[300] : Colors.grey[200],
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-          child: Text(
-            categoryName,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: isAvailable ? Colors.black87 : Colors.grey,
-            ),
-          ),
-        ),
+        SectionHeader(name: categoryName, disabled: !isAvailable, fontSize: 16),
         ...videos.map((video) {
           return Padding(
             padding: EdgeInsets.symmetric(horizontal: 32, vertical: 2),

@@ -19,7 +19,7 @@ final dopplerEffectObserverMoving = createWaveVideo(
   simulation: DopplerEffectObserverMovingSimulation(),
 );
 
-class DopplerEffectObserverMovingSimulation extends PhysicsSimulation {
+class DopplerEffectObserverMovingSimulation extends WaveSimulation {
   DopplerEffectObserverMovingSimulation()
       : super(
           title: "2次元ドップラー効果(観測者移動)",
@@ -67,7 +67,8 @@ class DopplerEffectObserverMovingSimulation extends PhysicsSimulation {
   }
 
   @override
-  Widget buildAnimation(context, time, azimuth, tilt, params, activeIds) {
+  Widget buildAnimation(
+      context, time, azimuth, tilt, scale, params, activeIds) {
     final field = DopplerEffectObserverMovingField(
       lambda: params['lambda']!,
       periodT: params['periodT']!,
@@ -85,11 +86,13 @@ class DopplerEffectObserverMovingSimulation extends PhysicsSimulation {
         azimuth: azimuth,
         tilt: tilt,
         activeComponentIds: activeIds,
+        scale: scale,
         markers: [
           // 音源は原点に固定 (黄色)
           const WaveMarker(point: math.Point(0.0, 0.0), color: Colors.yellow),
           // 観測者が移動 (赤色)
-          WaveMarker(point: math.Point(obsX, 0.0), color: Colors.red),
+          WaveMarker(
+              point: math.Point(obsX, 0.0), color: Colors.red, label: '観測者'),
         ],
       ),
     );

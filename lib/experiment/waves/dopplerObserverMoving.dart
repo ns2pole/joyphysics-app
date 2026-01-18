@@ -49,5 +49,5 @@ $$
   <li>歩行速度でも十分ドップラー効果の変化が見られる</li>
 </ul>
 """,
-  experimentWidgets: [FrequencyMeasureWidget()],
+  experimentWidgets: [FrequencyMeasureWidget(useScaffold: false)],
 );

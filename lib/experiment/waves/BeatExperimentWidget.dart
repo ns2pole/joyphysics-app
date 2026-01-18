@@ -6,6 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 
 class BeatExperimentWidget extends StatefulWidget {
+  final bool useScaffold;
+  const BeatExperimentWidget({Key? key, this.useScaffold = true}) : super(key: key);
+
   @override
   _BeatExperimentWidgetState createState() => _BeatExperimentWidgetState();
 }
@@ -59,7 +62,7 @@ class _BeatExperimentWidgetState extends State<BeatExperimentWidget> {
 
   Future<void> playSound1(double freq) async {
     if (isPlaying1) return;
-    setState(() => isPlaying1 = true);
+    if (mounted) setState(() => isPlaying1 = true);
 
     final data = generateSineWave(freq);
     await _player1!.startPlayer(
@@ -68,7 +71,7 @@ class _BeatExperimentWidgetState extends State<BeatExperimentWidget> {
       sampleRate: sampleRate,
       numChannels: 1,
       whenFinished: () {
-        setState(() => isPlaying1 = false);
+        if (mounted) setState(() => isPlaying1 = false);
       },
     );
   }
@@ -76,13 +79,13 @@ class _BeatExperimentWidgetState extends State<BeatExperimentWidget> {
   Future<void> stopSound1() async {
     if (isPlaying1) {
       await _player1!.stopPlayer();
-      setState(() => isPlaying1 = false);
+      if (mounted) setState(() => isPlaying1 = false);
     }
   }
 
   Future<void> playSound2(double freq) async {
     if (isPlaying2) return;
-    setState(() => isPlaying2 = true);
+    if (mounted) setState(() => isPlaying2 = true);
 
     final data = generateSineWave(freq);
     await _player2!.startPlayer(
@@ -91,7 +94,7 @@ class _BeatExperimentWidgetState extends State<BeatExperimentWidget> {
       sampleRate: sampleRate,
       numChannels: 1,
       whenFinished: () {
-        setState(() => isPlaying2 = false);
+        if (mounted) setState(() => isPlaying2 = false);
       },
     );
   }
@@ -99,7 +102,7 @@ class _BeatExperimentWidgetState extends State<BeatExperimentWidget> {
   Future<void> stopSound2() async {
     if (isPlaying2) {
       await _player2!.stopPlayer();
-      setState(() => isPlaying2 = false);
+      if (mounted) setState(() => isPlaying2 = false);
     }
   }
 
@@ -107,75 +110,85 @@ class _BeatExperimentWidgetState extends State<BeatExperimentWidget> {
   Widget build(BuildContext context) {
     double beatFreq = (freq1 - freq2).abs();
 
-    return Scaffold(
-      appBar: AppBar(title: Text('Beat Experiment')),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                "ビート周波数: ${beatFreq.toStringAsFixed(2)} Hz",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 20),
+    final content = SafeArea(
+      child: SingleChildScrollView(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              "ビート周波数: ${beatFreq.toStringAsFixed(2)} Hz",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 20),
 
-              // Sound1 Controls
-              Text("Sound1 周波数: ${freq1.toStringAsFixed(1)} Hz"),
-              Slider(
-                value: freq1,
-                min: 100,
-                max: 3000,
-                divisions: 2900,
-                label: freq1.toStringAsFixed(1),
-                onChanged: (v) => setState(() => freq1 = v),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton(
-                    onPressed: isPlaying1 ? null : () => playSound1(freq1),
-                    child: Text(isPlaying1 ? 'Sound1 再生中' : 'Sound1 再生'),
-                  ),
-                  SizedBox(width: 12),
-                  ElevatedButton(
-                    onPressed: isPlaying1 ? stopSound1 : null,
-                    child: Text('Sound1 停止'),
-                  ),
-                ],
-              ),
+            // Sound1 Controls
+            Text("Sound1 周波数: ${freq1.toStringAsFixed(1)} Hz"),
+            Slider(
+              value: freq1,
+              min: 100,
+              max: 3000,
+              divisions: 2900,
+              label: freq1.toStringAsFixed(1),
+              onChanged: (v) {
+                if (mounted) setState(() => freq1 = v);
+              },
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(
+                  onPressed: isPlaying1 ? null : () => playSound1(freq1),
+                  child: Text(isPlaying1 ? 'Sound1 再生中' : 'Sound1 再生'),
+                ),
+                SizedBox(width: 12),
+                ElevatedButton(
+                  onPressed: isPlaying1 ? stopSound1 : null,
+                  child: Text('Sound1 停止'),
+                ),
+              ],
+            ),
 
-              SizedBox(height: 30),
+            SizedBox(height: 30),
 
-              // Sound2 Controls
-              Text("Sound2 周波数: ${freq2.toStringAsFixed(1)} Hz"),
-              Slider(
-                value: freq2,
-                min: 100,
-                max: 3000,
-                divisions: 2900,
-                label: freq2.toStringAsFixed(1),
-                onChanged: (v) => setState(() => freq2 = v),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton(
-                    onPressed: isPlaying2 ? null : () => playSound2(freq2),
-                    child: Text(isPlaying2 ? 'Sound2 再生中' : 'Sound2 再生'),
-                  ),
-                  SizedBox(width: 12),
-                  ElevatedButton(
-                    onPressed: isPlaying2 ? stopSound2 : null,
-                    child: Text('Sound2 停止'),
-                  ),
-                ],
-              ),
-            ],
-          ),
+            // Sound2 Controls
+            Text("Sound2 周波数: ${freq2.toStringAsFixed(1)} Hz"),
+            Slider(
+              value: freq2,
+              min: 100,
+              max: 3000,
+              divisions: 2900,
+              label: freq2.toStringAsFixed(1),
+              onChanged: (v) {
+                if (mounted) setState(() => freq2 = v);
+              },
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(
+                  onPressed: isPlaying2 ? null : () => playSound2(freq2),
+                  child: Text(isPlaying2 ? 'Sound2 再生中' : 'Sound2 再生'),
+                ),
+                SizedBox(width: 12),
+                ElevatedButton(
+                  onPressed: isPlaying2 ? stopSound2 : null,
+                  child: Text('Sound2 停止'),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
+    );
+
+    if (!widget.useScaffold) {
+      return content;
+    }
+
+    return Scaffold(
+      appBar: AppBar(title: Text('Beat Experiment')),
+      body: content,
     );
   }
 }

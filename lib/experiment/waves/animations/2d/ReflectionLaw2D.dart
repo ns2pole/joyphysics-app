@@ -16,20 +16,25 @@ final reflectionLaw2D = createWaveVideo(
   simulation: ReflectionLaw2DSimulation(),
 );
 
-class ReflectionLaw2DSimulation extends PhysicsSimulation {
+class ReflectionLaw2DSimulation extends WaveSimulation {
   ReflectionLaw2DSimulation()
       : super(
           title: "反射の法則 (自由端)",
           is3D: true,
-          formula: const FormulaDisplay(r'\theta_{incident} = \theta_{reflected}'),
+          formula:
+              const FormulaDisplay(r'\theta_{incident} = \theta_{reflected}'),
         );
 
   @override
-  Map<String, double> get initialParameters => {
-        'theta': 30 * math.pi / 180,
-        'lambda': 2.5,
-        'periodT': 1.0,
-      };
+  Map<String, double> get initialParameters => getInitialParamsWithObs(
+        baseParams: {
+          'theta': 30 * math.pi / 180,
+          'lambda': 2.5,
+          'periodT': 1.0,
+        },
+        obsX: -2.0,
+        obsY: 0.0,
+      );
 
   @override
   Set<String> get initialActiveIds => {'incident', 'reflected', 'combined'};
@@ -55,6 +60,7 @@ class ReflectionLaw2DSimulation extends PhysicsSimulation {
         value: params['periodT']!,
         onChanged: (v) => updateParam('periodT', v),
       ),
+      ...buildObsSliders(params, updateParam),
     ];
   }
 
@@ -66,32 +72,18 @@ class ReflectionLaw2DSimulation extends PhysicsSimulation {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _buildChip('入射', 'incident', incidentColor, activeIds, updateActiveIds),
+        buildChip('入射', 'incident', incidentColor, activeIds, updateActiveIds),
         const SizedBox(width: 4),
-        _buildChip('反射', 'reflected', reflectedColor, activeIds, updateActiveIds),
+        buildChip('反射', 'reflected', reflectedColor, activeIds, updateActiveIds),
         const SizedBox(width: 4),
-        _buildChip('合成', 'combined', combinedColor, activeIds, updateActiveIds),
+        buildChip('合成', 'combined', combinedColor, activeIds, updateActiveIds),
       ],
     );
   }
 
-  Widget _buildChip(String label, String id, Color color, Set<String> activeIds, void Function(Set<String>) update) {
-    return FilterChip(
-      label: Text(label, style: const TextStyle(fontSize: 11)),
-      selected: activeIds.contains(id),
-      onSelected: (val) {
-        final next = Set<String>.from(activeIds);
-        val ? next.add(id) : next.remove(id);
-        update(next);
-      },
-      selectedColor: color.withOpacity(0.3),
-      checkmarkColor: color,
-      padding: EdgeInsets.zero,
-    );
-  }
-
   @override
-  Widget buildAnimation(context, time, azimuth, tilt, scale, params, activeIds) {
+  Widget buildAnimation(
+      context, time, azimuth, tilt, scale, params, activeIds) {
     final field = ReflectionWaveField(
       theta: params['theta']!,
       lambda: params['lambda']!,
@@ -109,6 +101,9 @@ class ReflectionLaw2DSimulation extends PhysicsSimulation {
         tilt: tilt,
         activeComponentIds: activeIds,
         scale: scale,
+        markers: [
+          getObsMarker(params, label: '合成波の観測点'),
+        ],
         mediumSlab: const MediumSlabOverlay(
           xStart: 0.0,
           xEnd: 5.0,

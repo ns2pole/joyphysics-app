@@ -3,11 +3,17 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:joyphysics/experiment/HasHeight.dart';
+import 'package:joyphysics/shared_components.dart';
 
 class MagnetometerExperimentWidget extends StatefulWidget with HasHeight {
   final double height;
+  final bool useScaffold;
 
-  const MagnetometerExperimentWidget({Key? key, this.height = 400}) : super(key: key);
+  const MagnetometerExperimentWidget({
+    Key? key,
+    this.height = 400,
+    this.useScaffold = true,
+  }) : super(key: key);
 
   @override
   double get widgetHeight => height;
@@ -24,6 +30,7 @@ class _MagnetometerExperimentWidgetState extends State<MagnetometerExperimentWid
   void initState() {
     super.initState();
     _subscription = magnetometerEventStream().listen((event) {
+      if (!mounted) return;
       setState(() {
         _x = event.x;
         _y = event.y;
@@ -58,53 +65,46 @@ class _MagnetometerExperimentWidgetState extends State<MagnetometerExperimentWid
     final color = getColorByMagnitude(magnitude);
     final warningText = getWarningText(magnitude);
 
+    final content = SensorDisplayCard(
+      title: "現在の磁場強度",
+      height: widget.height,
+      children: [
+        Text("X: ${_x.toStringAsFixed(1)} μT",
+            style: const TextStyle(fontSize: 24, color: Colors.black)),
+        Text("Y: ${_y.toStringAsFixed(1)} μT",
+            style: const TextStyle(fontSize: 24, color: Colors.black)),
+        Text("Z: ${_z.toStringAsFixed(1)} μT",
+            style: const TextStyle(fontSize: 24, color: Colors.black)),
+        const SizedBox(height: 24),
+        Text(
+          "合成磁場: ${magnitude.toStringAsFixed(1)} μT",
+          style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: color),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          warningText,
+          style: TextStyle(fontSize: 16, color: color),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+
+    if (!widget.useScaffold) {
+      return content;
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Center(
-        child: Container(
-          height: widget.height, // ←高さを反映
-          width: double.infinity,
-          child: Card(
-            margin: const EdgeInsets.all(28),
-            elevation: 6,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    "現在の磁場強度",
-                    style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black),
-                  ),
-                  const SizedBox(height: 24),
-                  Text("X: ${_x.toStringAsFixed(1)} μT",
-                      style: const TextStyle(fontSize: 24, color: Colors.black)),
-                  Text("Y: ${_y.toStringAsFixed(1)} μT",
-                      style: const TextStyle(fontSize: 24, color: Colors.black)),
-                  Text("Z: ${_z.toStringAsFixed(1)} μT",
-                      style: const TextStyle(fontSize: 24, color: Colors.black)),
-                  const SizedBox(height: 24),
-                  Text(
-                    "合成磁場: ${magnitude.toStringAsFixed(1)} μT",
-                    style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: color),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    warningText,
-                    style: TextStyle(fontSize: 16, color: color),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
+      appBar: AppBar(
+        title: const Text('磁気センサー'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
       ),
+      body: content,
     );
   }
 }

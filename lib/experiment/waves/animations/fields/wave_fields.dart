@@ -19,10 +19,12 @@ class WaveComponent {
 class WaveMarker {
   final math.Point<double> point;
   final Color color;
+  final String? label;
 
   const WaveMarker({
     required this.point,
     this.color = Colors.yellow,
+    this.label,
   });
 }
 
@@ -520,15 +522,17 @@ class OneDimensionSlabRefractionField extends WaveField {
       tReach = (slabStart - xSource) / v1 + (slabEnd - slabStart) / v2 + (x - slabEnd) / v1;
     }
 
-    if (t < tReach) return [];
-
-    double localPhase = 0.0;
-    if (x < slabStart) {
-      localPhase = omega * t - k1 * (x - xSource);
-    } else if (x <= slabEnd) {
-      localPhase = omega * t - k1 * (slabStart - xSource) - k2 * (x - slabStart);
-    } else {
-      localPhase = omega * t - k1 * (slabStart - xSource) - k2 * (slabEnd - slabStart) - k1 * (x - slabEnd);
+    double val = 0.0;
+    if (t >= tReach) {
+      double localPhase = 0.0;
+      if (x < slabStart) {
+        localPhase = omega * t - k1 * (x - xSource);
+      } else if (x <= slabEnd) {
+        localPhase = omega * t - k1 * (slabStart - xSource) - k2 * (x - slabStart);
+      } else {
+        localPhase = omega * t - k1 * (slabStart - xSource) - k2 * (slabEnd - slabStart) - k1 * (x - slabEnd);
+      }
+      val = amplitude * math.sin(localPhase);
     }
 
     if (activeIds.contains('total')) {
@@ -537,7 +541,7 @@ class OneDimensionSlabRefractionField extends WaveField {
           id: 'total',
           label: '合成波',
           color: Colors.blueAccent,
-          value: amplitude * math.sin(localPhase),
+          value: val,
         ),
       ];
     }
@@ -1376,7 +1380,12 @@ class DopplerEffect2DField extends WaveField {
     }
 
     final a = V * V - v * v;
-    if (a.abs() < 1e-10) return 0.0;
+    if (a.abs() < 1e-6) {
+      if ((x - V * t).abs() < 1e-6) return 0.0;
+      final tau = (x * x + y * y - V * V * t * t) / (2 * V * (x - V * t));
+      if (tau < 0 || tau > t) return 0.0;
+      return 2 * math.pi * (tau / periodT);
+    }
 
     final termInsideSqrt = V * V * math.pow(v * t - x, 2) + a * y * y;
     if (termInsideSqrt < 0) return 0.0;
@@ -1427,6 +1436,107 @@ class DopplerEffect2DField extends WaveField {
 
   @override
   int get hashCode => Object.hash(lambda, periodT, vSource, amplitude);
+}
+
+class DopplerEffect1DField extends WaveField {
+  const DopplerEffect1DField({
+    required this.lambda,
+    required this.periodT,
+    required this.vSource,
+    this.amplitude = 0.4,
+  });
+
+  final double lambda;
+  final double periodT;
+  final double vSource;
+  final double amplitude;
+
+  @override
+  double phase(double x, double y, double t) {
+    final V = lambda / periodT;
+    final v = vSource;
+
+    if (v == 0) {
+      return 2 * math.pi * (t / periodT - x.abs() / lambda);
+    }
+
+    final v2_V2 = v * v - V * V;
+    if (v2_V2.abs() < 1e-6) {
+      double tau = 0.0;
+      if (v > 0) {
+        // v = V
+        if (x > V * t) return 0.0;
+        tau = (V * t + x) / (2 * V);
+      } else {
+        // v = -V
+        if (x < -V * t) return 0.0;
+        tau = (V * t - x) / (2 * V);
+      }
+      if (tau < 0 || tau > t) return 0.0;
+      return 2 * math.pi * (tau / periodT);
+    }
+
+    final diff = v * t - x;
+    final tau = (V * V * t - v * x - V * diff.abs()) / (V * V - v * v);
+
+    if (tau < 0 || tau > t) return 0.0;
+    return 2 * math.pi * (tau / periodT);
+  }
+
+  @override
+  double z(double x, double y, double t) {
+    final V = lambda / periodT;
+    if (x.abs() > V * t + 0.1) return 0.0; // Wave front
+
+    return amplitude * math.sin(phase(x, y, t));
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is DopplerEffect1DField &&
+        other.lambda == lambda &&
+        other.periodT == periodT &&
+        other.vSource == vSource &&
+        other.amplitude == amplitude;
+  }
+
+  @override
+  int get hashCode => Object.hash(lambda, periodT, vSource, amplitude);
+}
+
+class StaticSource1DField extends WaveField {
+  const StaticSource1DField({
+    required this.lambda,
+    required this.periodT,
+    this.amplitude = 0.4,
+  });
+
+  final double lambda;
+  final double periodT;
+  final double amplitude;
+
+  @override
+  double phase(double x, double y, double t) {
+    return 2 * math.pi * (t / periodT - x.abs() / lambda);
+  }
+
+  @override
+  double z(double x, double y, double t) {
+    final V = lambda / periodT;
+    if (x.abs() > V * t + 0.1) return 0.0;
+    return amplitude * math.sin(phase(x, y, t));
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is StaticSource1DField &&
+        other.lambda == lambda &&
+        other.periodT == periodT &&
+        other.amplitude == amplitude;
+  }
+
+  @override
+  int get hashCode => Object.hash(lambda, periodT, amplitude);
 }
 
 class DopplerEffectObserverMovingField extends WaveField {
@@ -1480,5 +1590,105 @@ class DopplerEffectObserverMovingField extends WaveField {
 
   @override
   int get hashCode => Object.hash(lambda, periodT, amplitude);
+}
+
+class MovingReflectorField extends WaveField {
+  final double lambda;
+  final double periodT;
+  final double v;
+  final double x0;
+  final bool isFixedEnd;
+  final double amplitude;
+
+  const MovingReflectorField({
+    required this.lambda,
+    required this.periodT,
+    required this.v,
+    required this.x0,
+    required this.isFixedEnd,
+    this.amplitude = 0.6,
+  });
+
+  @override
+  double phase(double x, double y, double t) {
+    // 基本的な入射波の位相
+    return 2 * math.pi * (x / lambda - t / periodT);
+  }
+
+  @override
+  double z(double x, double y, double t) {
+    // 反射体の位置 x_m = x0 + v*t
+    final xm = x0 + v * t;
+    if (x > xm) return 0.0;
+
+    final c = lambda / periodT;
+    final k = 2 * math.pi / lambda;
+    final omega = 2 * math.pi / periodT;
+
+    // 反射時刻 tau の計算: c(t - tau) = xm(tau) - x = x0 + v*tau - x
+    // tau(c + v) = ct + x - x0
+    final tau = (c * t + x - x0) / (c + v);
+
+    // 入射波
+    final phaseIn = k * x - omega * t;
+    final yi = amplitude * math.sin(phaseIn);
+
+    // 反射波 (反射時の位相を保持)
+    final phaseRefAtTau = k * (x0 + v * tau) - omega * tau;
+    double yr = amplitude * math.sin(phaseRefAtTau);
+    if (isFixedEnd) yr = -yr;
+
+    return yi + yr;
+  }
+
+  @override
+  List<WaveComponent> getComponents(
+      double x, double y, double t, Set<String> activeIds) {
+    final xm = x0 + v * t;
+    if (x > xm) return [];
+
+    final c = lambda / periodT;
+    final k = 2 * math.pi / lambda;
+    final omega = 2 * math.pi / periodT;
+    final tau = (c * t + x - x0) / (c + v);
+
+    final List<WaveComponent> res = [];
+    if (activeIds.contains('incident')) {
+      final phaseIn = k * x - omega * t;
+      res.add(WaveComponent(
+        id: 'incident',
+        label: '入射波',
+        color: Colors.purpleAccent,
+        value: amplitude * math.sin(phaseIn),
+      ));
+    }
+    if (activeIds.contains('reflected')) {
+      final phaseRefAtTau = k * (x0 + v * tau) - omega * tau;
+      double val = amplitude * math.sin(phaseRefAtTau);
+      if (isFixedEnd) val = -val;
+      res.add(WaveComponent(
+        id: 'reflected',
+        label: '反射波',
+        color: Colors.greenAccent,
+        value: val,
+      ));
+    }
+    return res;
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is MovingReflectorField &&
+        other.lambda == lambda &&
+        other.periodT == periodT &&
+        other.v == v &&
+        other.x0 == x0 &&
+        other.isFixedEnd == isFixedEnd &&
+        other.amplitude == amplitude;
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(lambda, periodT, v, x0, isFixedEnd, amplitude);
 }
 

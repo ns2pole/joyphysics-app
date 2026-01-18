@@ -16,7 +16,7 @@ final refractionLaw = createWaveVideo(
   simulation: RefractionLawSimulation(),
 );
 
-class RefractionLawSimulation extends PhysicsSimulation {
+class RefractionLawSimulation extends WaveSimulation {
   RefractionLawSimulation()
       : super(
           title: "2次元波動 (屈折の法則)",
@@ -25,13 +25,17 @@ class RefractionLawSimulation extends PhysicsSimulation {
         );
 
   @override
-  Map<String, double> get initialParameters => {
-        'theta': 25 * math.pi / 180,
-        'lambda': 2.0,
-        'periodT': 1.0,
-        'n2': 1.5,
-        'slabWidth': 1.0,
-      };
+  Map<String, double> get initialParameters => getInitialParamsWithObs(
+        baseParams: {
+          'theta': 25 * math.pi / 180,
+          'lambda': 2.0,
+          'periodT': 1.0,
+          'n2': 1.5,
+          'slabWidth': 1.0,
+        },
+        obsX: 2.0,
+        obsY: 0.0,
+      );
 
   @override
   List<Widget> buildControls(context, params, updateParam) {
@@ -61,11 +65,13 @@ class RefractionLawSimulation extends PhysicsSimulation {
         value: params['slabWidth']!,
         onChanged: (v) => updateParam('slabWidth', v),
       ),
+      ...buildObsSliders(params, updateParam),
     ];
   }
 
   @override
-  Widget buildAnimation(context, time, azimuth, tilt, scale, params, activeIds) {
+  Widget buildAnimation(
+      context, time, azimuth, tilt, scale, params, activeIds) {
     final field = SlabRefractionWaveField(
       theta: params['theta']!,
       lambda: params['lambda']!,
@@ -83,6 +89,9 @@ class RefractionLawSimulation extends PhysicsSimulation {
         tilt: tilt,
         activeComponentIds: activeIds,
         scale: scale,
+        markers: [
+          getObsMarker(params, label: '観測点 (a, b)'),
+        ],
         mediumSlab: MediumSlabOverlay(
           xStart: 0.0,
           xEnd: params['slabWidth']!,

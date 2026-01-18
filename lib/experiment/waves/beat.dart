@@ -44,7 +44,7 @@ $$</p>
 </ol>
 """,
   experimentWidgets: [
-    FrequencyMeasureWidget(height: 180),
+    FrequencyMeasureWidget(height: 180, useScaffold: false),
     ToneGeneratorWidget(initialFreq: 340, height: 180),
     ToneGeneratorWidget(initialFreq: 344, height: 180)
   ],

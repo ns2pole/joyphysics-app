@@ -1,8 +1,11 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
 import 'package:joyphysics/model.dart';
 import 'package:joyphysics/experiment/HasHeight.dart';
 import 'PhysicsAnimationScaffold.dart';
+import 'waves/animations/fields/wave_fields.dart';
+import 'waves/animations/widgets/wave_slider.dart';
 
 /// 数式表示用の共通スタイル
 const TextStyle commonFormulaStyle = TextStyle(
@@ -61,7 +64,8 @@ abstract class PhysicsSimulation {
     BuildContext context,
     Set<String> activeIds,
     void Function(Set<String> ids) updateActiveIds,
-  ) => null;
+  ) =>
+      null;
 
   /// アニメーション本体を構築
   Widget buildAnimation(
@@ -73,6 +77,93 @@ abstract class PhysicsSimulation {
     Map<String, double> parameters,
     Set<String> activeIds,
   );
+
+  /// FilterChipを生成する共通ヘルパー
+  Widget buildChip(
+    String label,
+    String id,
+    Color color,
+    Set<String> activeIds,
+    void Function(Set<String>) update, {
+    double fontSize = 11,
+  }) {
+    return FilterChip(
+      label: Text(label, style: TextStyle(fontSize: fontSize)),
+      selected: activeIds.contains(id),
+      onSelected: (val) {
+        final next = Set<String>.from(activeIds);
+        val ? next.add(id) : next.remove(id);
+        update(next);
+      },
+      selectedColor: color.withOpacity(0.3),
+      checkmarkColor: color,
+      padding: EdgeInsets.zero,
+    );
+  }
+}
+
+/// 波動シミュレーション用の共通基盤クラス
+abstract class WaveSimulation extends PhysicsSimulation {
+  WaveSimulation({
+    required super.title,
+    super.latex,
+    super.formula,
+    super.is3D = false,
+  });
+
+  /// 観測点位置を含む初期パラメータを生成するヘルパー
+  Map<String, double> getInitialParamsWithObs({
+    required Map<String, double> baseParams,
+    double obsX = 2.0,
+    double obsY = 0.0,
+  }) {
+    return {
+      ...baseParams,
+      'obsX': obsX,
+      'obsY': obsY,
+    };
+  }
+
+  /// 観測点位置調整用のスライダーを構築するヘルパー
+  List<Widget> buildObsSliders(
+    Map<String, double> params,
+    void Function(String key, double value) updateParam, {
+    bool is2D = true,
+    String labelX = 'a',
+    String labelY = 'b',
+  }) {
+    return [
+      const Divider(),
+      Text(
+        is2D ? '観測点 ($labelX, $labelY)' : '観測点 $labelX',
+        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+      ),
+      WaveParameterSlider(
+        label: labelX,
+        value: params['obsX']!,
+        min: -5.0,
+        max: 5.0,
+        onChanged: (v) => updateParam('obsX', v),
+      ),
+      if (is2D)
+        WaveParameterSlider(
+          label: labelY,
+          value: params['obsY']!,
+          min: -5.0,
+          max: 5.0,
+          onChanged: (v) => updateParam('obsY', v),
+        ),
+    ];
+  }
+
+  /// 観測点を示す WaveMarker を生成するヘルパー
+  WaveMarker getObsMarker(Map<String, double> params, {String? label}) {
+    return WaveMarker(
+      point: math.Point(params['obsX']!, params['obsY'] ?? 0.0),
+      color: Colors.red,
+      label: label,
+    );
+  }
 }
 
 /// 共通のシミュレーション表示ウィジェット

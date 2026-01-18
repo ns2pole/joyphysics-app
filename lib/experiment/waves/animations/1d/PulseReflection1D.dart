@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import '../fields/wave_fields.dart';
@@ -17,7 +18,7 @@ final pulseReflection1D = createWaveVideo(
   simulation: PulseReflection1DSimulation(),
 );
 
-class PulseReflection1DSimulation extends PhysicsSimulation {
+class PulseReflection1DSimulation extends WaveSimulation {
   PulseReflection1DSimulation()
       : super(
           title: "1次元パルスの反射",
@@ -30,14 +31,16 @@ class PulseReflection1DSimulation extends PhysicsSimulation {
         );
 
   @override
-  Map<String, double> get initialParameters => {
-        'lambda': 2.0,
-        'periodT': 1.0,
-        'pulseWidth': 2.0,
-        'isFixedEnd': 1.0, // 1 for fixed, 0 for free
-        'shapeType': 0.0, // 0: sine(half), 1: sine(full), 2: triangle
-        'obsX': 0.0,
-      };
+  Map<String, double> get initialParameters => getInitialParamsWithObs(
+        baseParams: {
+          'lambda': 2.0,
+          'periodT': 1.0,
+          'pulseWidth': 2.0,
+          'isFixedEnd': 1.0, // 1 for fixed, 0 for free
+          'shapeType': 0.0, // 0: sine(half), 1: sine(full), 2: triangle
+        },
+        obsX: 0.0,
+      );
 
   @override
   Set<String> get initialActiveIds => {'incident', 'reflected', 'combined'};
@@ -106,15 +109,7 @@ class PulseReflection1DSimulation extends PhysicsSimulation {
           ),
         ],
       ),
-      const Divider(),
-      const Text('観測点 a', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-      WaveParameterSlider(
-        label: 'a',
-        value: params['obsX']!,
-        min: -5.0,
-        max: 5.0,
-        onChanged: (v) => updateParam('obsX', v),
-      ),
+      ...buildObsSliders(params, updateParam, is2D: false),
     ];
   }
 
@@ -123,31 +118,22 @@ class PulseReflection1DSimulation extends PhysicsSimulation {
     return Wrap(
       spacing: 8,
       children: [
-        _buildChip('入射', 'incident', Colors.purpleAccent, activeIds, updateActiveIds),
-        _buildChip('反射', 'reflected', Colors.greenAccent, activeIds, updateActiveIds),
-        _buildChip('合成', 'combined', Colors.blueAccent, activeIds, updateActiveIds),
+        buildChip('入射', 'incident', Colors.purpleAccent, activeIds,
+            updateActiveIds,
+            fontSize: 14),
+        buildChip('反射', 'reflected', Colors.greenAccent, activeIds,
+            updateActiveIds,
+            fontSize: 14),
+        buildChip('合成', 'combined', Colors.blueAccent, activeIds,
+            updateActiveIds,
+            fontSize: 14),
       ],
     );
   }
 
-  Widget _buildChip(String label, String id, Color color, Set<String> activeIds, void Function(Set<String>) update) {
-    return FilterChip(
-      label: Text(label, style: const TextStyle(fontSize: 14)),
-      selected: activeIds.contains(id),
-      onSelected: (val) {
-        final next = Set<String>.from(activeIds);
-        val ? next.add(id) : next.remove(id);
-        update(next);
-      },
-      selectedColor: color.withOpacity(0.3),
-      checkmarkColor: color,
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
-      labelPadding: const EdgeInsets.symmetric(horizontal: 4),
-    );
-  }
-
   @override
-  Widget buildAnimation(context, time, azimuth, tilt, scale, params, activeIds) {
+  Widget buildAnimation(
+      context, time, azimuth, tilt, scale, params, activeIds) {
     PulseShape shape;
     if (params['shapeType'] == 0.0) {
       shape = PulseShape.sine;
@@ -178,7 +164,7 @@ class PulseReflection1DSimulation extends PhysicsSimulation {
         activeComponentIds: activeIds,
         scale: scale,
         markers: [
-          WaveMarker(point: math.Point(params['obsX']!, 0.0), color: Colors.red),
+          getObsMarker(params, label: '合成波の観測点'),
         ],
       ),
     );

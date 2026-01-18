@@ -26,5 +26,5 @@ final accelerometer = Video(
   <li>自由落下や衝撃実験は機器破損のおそれがある。必ず安全対策をすること。</li>
 </ul>
 """,
-  experimentWidgets: [AccelerometerExperimentWidget()],
+  experimentWidgets: [AccelerometerExperimentWidget(useScaffold: false)],
 );

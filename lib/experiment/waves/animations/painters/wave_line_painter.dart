@@ -160,6 +160,20 @@ class WaveLinePainter extends CustomPainter {
         ..style = PaintingStyle.fill;
       canvas.drawCircle(p, 6.0, markerPaint);
       canvas.drawCircle(p, 6.0, markerStroke);
+
+      if (m.label != null) {
+        final span = TextSpan(
+          style: TextStyle(
+              color: m.color.withOpacity(0.8),
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              backgroundColor: Colors.white70),
+          text: m.label,
+        );
+        final tp = TextPainter(text: span, textDirection: TextDirection.ltr)
+          ..layout();
+        tp.paint(canvas, p + const Offset(8, -20));
+      }
     }
   }
 

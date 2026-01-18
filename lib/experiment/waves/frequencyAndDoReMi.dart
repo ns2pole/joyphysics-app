@@ -57,7 +57,7 @@ C5（1オクターブ上のド）の周波数は C4 のちょうど2倍です。
 </ol>
 """,
   experimentWidgets: [
-    FrequencyMeasureWidget(),
+    FrequencyMeasureWidget(useScaffold: false),
     PianoWidget(),
   ],
 );

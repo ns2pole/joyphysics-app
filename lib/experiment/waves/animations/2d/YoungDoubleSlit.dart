@@ -17,7 +17,7 @@ final youngDoubleSlit = createWaveVideo(
   simulation: YoungDoubleSlitSimulation(),
 );
 
-class YoungDoubleSlitSimulation extends PhysicsSimulation {
+class YoungDoubleSlitSimulation extends WaveSimulation {
   YoungDoubleSlitSimulation()
       : super(
           title: "ヤングの実験",
@@ -26,16 +26,18 @@ class YoungDoubleSlitSimulation extends PhysicsSimulation {
         );
 
   @override
-  Map<String, double> get initialParameters => {
-        'lambda': 0.8,
-        'periodT': 1.0,
-        'a': 1.0,
-        'phi': 0.0,
-        'showIntersectionLine': 1.0, // 1.0 for true, 0.0 for false
-        'showIntensityLine': 0.0,
-        'obsX': 2.0,
-        'obsY': 0.0,
-      };
+  Map<String, double> get initialParameters => getInitialParamsWithObs(
+        baseParams: {
+          'lambda': 0.8,
+          'periodT': 1.0,
+          'a': 1.0,
+          'phi': 0.0,
+          'showIntersectionLine': 1.0, // 1.0 for true, 0.0 for false
+          'showIntensityLine': 0.0,
+        },
+        obsX: 2.0,
+        obsY: 0.0,
+      );
 
   @override
   Set<String> get initialActiveIds => {'combined', 'showIntersectionLine'};
@@ -64,61 +66,38 @@ class YoungDoubleSlitSimulation extends PhysicsSimulation {
         value: params['phi']!,
         onChanged: (val) => updateParam('phi', val),
       ),
-      const Divider(),
-      const Text('観測点 (a, b)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-      WaveParameterSlider(
-        label: 'a',
-        value: params['obsX']!,
-        min: -5.0,
-        max: 5.0,
-        onChanged: (v) => updateParam('obsX', v),
-      ),
-      WaveParameterSlider(
-        label: 'b',
-        value: params['obsY']!,
-        min: -5.0,
-        max: 5.0,
-        onChanged: (v) => updateParam('obsY', v),
-      ),
+      ...buildObsSliders(params, updateParam),
     ];
   }
 
   @override
   Widget buildExtraControls(context, activeIds, updateActiveIds) {
-    // Note: We need to access parameters here to toggle lines. 
-    // Since buildExtraControls only provides activeIds, we handle show flags via state in actual use,
-    // but for this generic refactor, we can use activeIds for visual toggles too if needed,
-    // or just pass them as IDs. Let's use specific IDs for the lines.
     return Wrap(
       spacing: 4,
       runSpacing: 4,
       children: [
-        _buildChip('波1', 'wave1', Colors.purpleAccent, activeIds, updateActiveIds),
-        _buildChip('波2', 'wave2', Colors.greenAccent, activeIds, updateActiveIds),
-        _buildChip('合成', 'combined', Colors.yellow, activeIds, updateActiveIds),
+        buildChip('波1', 'wave1', Colors.purpleAccent, activeIds, updateActiveIds,
+            fontSize: 10),
+        buildChip('波2', 'wave2', Colors.greenAccent, activeIds, updateActiveIds,
+            fontSize: 10),
+        buildChip('合成', 'combined', Colors.yellow, activeIds, updateActiveIds,
+            fontSize: 10),
         const SizedBox(width: 8),
-        _buildIconButton(Icons.show_chart, 'showIntersectionLine', activeIds, updateActiveIds, '交線', Colors.deepPurple),
-        _buildIconButton(Icons.bar_chart, 'showIntensityLine', activeIds, updateActiveIds, '強度', Colors.green),
+        _buildIconButton(Icons.show_chart, 'showIntersectionLine', activeIds,
+            updateActiveIds, '交線', Colors.deepPurple),
+        _buildIconButton(Icons.bar_chart, 'showIntensityLine', activeIds,
+            updateActiveIds, '強度', Colors.green),
       ],
     );
   }
 
-  Widget _buildChip(String label, String id, Color color, Set<String> activeIds, void Function(Set<String>) update) {
-    return FilterChip(
-      label: Text(label, style: const TextStyle(fontSize: 10)),
-      selected: activeIds.contains(id),
-      onSelected: (val) {
-        final next = Set<String>.from(activeIds);
-        val ? next.add(id) : next.remove(id);
-        update(next);
-      },
-      selectedColor: color.withOpacity(0.3),
-      checkmarkColor: color,
-      padding: EdgeInsets.zero,
-    );
-  }
-
-  Widget _buildIconButton(IconData icon, String id, Set<String> activeIds, void Function(Set<String>) update, String tooltip, Color activeColor) {
+  Widget _buildIconButton(
+      IconData icon,
+      String id,
+      Set<String> activeIds,
+      void Function(Set<String>) update,
+      String tooltip,
+      Color activeColor) {
     final isActive = activeIds.contains(id);
     return IconButton(
       icon: Icon(icon, size: 20),
@@ -133,7 +112,8 @@ class YoungDoubleSlitSimulation extends PhysicsSimulation {
   }
 
   @override
-  Widget buildAnimation(context, time, azimuth, tilt, scale, params, activeIds) {
+  Widget buildAnimation(
+      context, time, azimuth, tilt, scale, params, activeIds) {
     final field = YoungDoubleSlitField(
       lambda: params['lambda']!,
       periodT: params['periodT']!,
@@ -151,8 +131,9 @@ class YoungDoubleSlitSimulation extends PhysicsSimulation {
         scale: scale,
         markers: [
           WaveMarker(point: math.Point(-4.0, params['a']!), color: Colors.yellow),
-          WaveMarker(point: math.Point(-4.0, -params['a']!), color: Colors.yellow),
-          WaveMarker(point: math.Point(params['obsX']!, params['obsY']!), color: Colors.red),
+          WaveMarker(
+              point: math.Point(-4.0, -params['a']!), color: Colors.yellow),
+          getObsMarker(params, label: '合成波の観測点'),
         ],
         showYoungDoubleSlitExtras: true,
         slitA: params['a']!,

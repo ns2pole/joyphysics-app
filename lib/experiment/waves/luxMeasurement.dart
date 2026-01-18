@@ -46,5 +46,5 @@ final luxMeasurement = Video(
   <li>急激な光の変化に対して反応が遅れる場合がある</li>
 </ul>
 """,
-  experimentWidgets: [LuxMeasurementWidget()], // 実際の測定ウィジェットを用意したらここに指定
+  experimentWidgets: [LuxMeasurementWidget(useScaffold: false)], // 実際の測定ウィジェットを用意したらここに指定
 );

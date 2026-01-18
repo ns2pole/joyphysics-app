@@ -85,6 +85,63 @@ class Category {
   final String gifUrl;
   final List<Subcategory> subcategories;
   Category({required this.name, required this.gifUrl, required this.subcategories});
+
+  String? getMindMapAsset() => Category.getMindMapAssetByName(name);
+
+  String getMindMapLabel() => Category.getMindMapLabelByName(name);
+
+  static String? getMindMapAssetByName(String name) {
+    if (name == '力学' || name == '力学理論') {
+      return 'assets/mindMap/dynamicsLandScope.jpeg';
+    } else if (name == '電磁気学' || name == '電磁気学理論') {
+      return 'assets/mindMap/emTheoryLandScope.jpeg';
+    } else if (name == '熱力学' || name == '熱力学理論') {
+      return 'assets/mindMap/thermoDynamicsLandScope.jpeg';
+    } else if (name == '波動') {
+      return 'assets/mindMap/waveLandScope.jpeg';
+    }
+    return null;
+  }
+
+  static String getMindMapLabelByName(String name) {
+    if (name == '力学' || name == '力学理論') return '力学全体像';
+    if (name == '電磁気学' || name == '電磁気学理論') return '電磁気学全体像';
+    if (name == '熱力学' || name == '熱力学理論') return '熱力学全体像';
+    if (name == '波動') return '波動全体像';
+    return '';
+  }
+}
+
+/// YouTube URLから動画IDを抽出する共通関数
+String extractVideoId(String videoUrl) {
+  if (videoUrl.isEmpty) return '';
+  
+  // 既に動画IDのみの場合（短い文字列で特殊文字が含まれていない）
+  if (!videoUrl.contains('http') && !videoUrl.contains('/') && !videoUrl.contains('?')) {
+    return videoUrl;
+  }
+  
+  // youtube.com/watch?v= 形式
+  final watchMatch = RegExp(r'(?:youtube\.com/watch\?v=|youtu\.be/)([a-zA-Z0-9_-]{11})').firstMatch(videoUrl);
+  if (watchMatch != null) {
+    return watchMatch.group(1)!;
+  }
+  
+  // embed形式から抽出
+  final embedMatch = RegExp(r'youtube\.com/embed/([a-zA-Z0-9_-]{11})').firstMatch(videoUrl);
+  if (embedMatch != null) {
+    return embedMatch.group(1)!;
+  }
+  
+  // それでも見つからない場合は、末尾の11文字を試す（動画IDは通常11文字）
+  if (videoUrl.length >= 11) {
+    final last11 = videoUrl.substring(videoUrl.length - 11);
+    if (RegExp(r'^[a-zA-Z0-9_-]{11}$').hasMatch(last11)) {
+      return last11;
+    }
+  }
+  
+  return videoUrl; // フォールバック: 元の文字列を返す
 }
 
 

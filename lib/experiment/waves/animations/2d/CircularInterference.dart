@@ -17,16 +17,18 @@ final circularInterference = createWaveVideo(
   simulation: CircularInterferenceSimulation(),
 );
 
-class CircularInterferenceSimulation extends PhysicsSimulation {
+class CircularInterferenceSimulation extends WaveSimulation {
   CircularInterferenceSimulation()
       : super(
           title: "円形波干渉",
           is3D: true,
           formula: const Column(
             children: [
-              FormulaDisplay(r'\color{#B38CFF}{z_1 = A \sin\left(2\pi\left(\frac{t}{T} - \frac{r_1}{\lambda}\right)\right)}'),
+              FormulaDisplay(
+                  r'\color{#B38CFF}{z_1 = A \sin\left(2\pi\left(\frac{t}{T} - \frac{r_1}{\lambda}\right)\right)}'),
               SizedBox(height: 4),
-              FormulaDisplay(r'\color{#8CFFB3}{z_2 = A \sin\left(2\pi\left(\frac{t}{T} - \frac{r_2}{\lambda}\right) + \phi\right)}'),
+              FormulaDisplay(
+                  r'\color{#8CFFB3}{z_2 = A \sin\left(2\pi\left(\frac{t}{T} - \frac{r_2}{\lambda}\right) + \phi\right)}'),
               SizedBox(height: 4),
               FormulaDisplay(r'\color{#00BFFF}{z = z_1 + z_2}'),
             ],
@@ -34,14 +36,16 @@ class CircularInterferenceSimulation extends PhysicsSimulation {
         );
 
   @override
-  Map<String, double> get initialParameters => {
-        'lambda': 2.0,
-        'periodT': 1.0,
-        'a': 2.0,
-        'phi': 0.0,
-        'obsX': 2.0,
-        'obsY': 0.0,
-      };
+  Map<String, double> get initialParameters => getInitialParamsWithObs(
+        baseParams: {
+          'lambda': 2.0,
+          'periodT': 1.0,
+          'a': 2.0,
+          'phi': 0.0,
+        },
+        obsX: 2.0,
+        obsY: 0.0,
+      );
 
   @override
   Set<String> get initialActiveIds => {'combined'};
@@ -70,22 +74,7 @@ class CircularInterferenceSimulation extends PhysicsSimulation {
         value: params['phi']!,
         onChanged: (v) => updateParam('phi', v),
       ),
-      const Divider(),
-      const Text('観測点 (a, b)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-      WaveParameterSlider(
-        label: 'a',
-        value: params['obsX']!,
-        min: -5.0,
-        max: 5.0,
-        onChanged: (v) => updateParam('obsX', v),
-      ),
-      WaveParameterSlider(
-        label: 'b',
-        value: params['obsY']!,
-        min: -5.0,
-        max: 5.0,
-        onChanged: (v) => updateParam('obsY', v),
-      ),
+      ...buildObsSliders(params, updateParam),
     ];
   }
 
@@ -94,29 +83,19 @@ class CircularInterferenceSimulation extends PhysicsSimulation {
     return Wrap(
       spacing: 8,
       children: [
-        _buildChip('波1', 'wave1', Colors.purpleAccent, activeIds, updateActiveIds),
-        _buildChip('波2', 'wave2', Colors.greenAccent, activeIds, updateActiveIds),
-        _buildChip('合成', 'combined', Colors.blueAccent, activeIds, updateActiveIds),
+        buildChip('波1', 'wave1', Colors.purpleAccent, activeIds, updateActiveIds,
+            fontSize: 12),
+        buildChip('波2', 'wave2', Colors.greenAccent, activeIds, updateActiveIds,
+            fontSize: 12),
+        buildChip('合成', 'combined', Colors.blueAccent, activeIds, updateActiveIds,
+            fontSize: 12),
       ],
     );
   }
 
-  Widget _buildChip(String label, String id, Color color, Set<String> activeIds, void Function(Set<String>) update) {
-    return FilterChip(
-      label: Text(label, style: const TextStyle(fontSize: 12)),
-      selected: activeIds.contains(id),
-      onSelected: (val) {
-        final next = Set<String>.from(activeIds);
-        val ? next.add(id) : next.remove(id);
-        update(next);
-      },
-      selectedColor: color.withOpacity(0.3),
-      checkmarkColor: color,
-    );
-  }
-
   @override
-  Widget buildAnimation(context, time, azimuth, tilt, scale, params, activeIds) {
+  Widget buildAnimation(
+      context, time, azimuth, tilt, scale, params, activeIds) {
     final field = CircularInterferenceField(
       lambda: params['lambda']!,
       periodT: params['periodT']!,
@@ -135,8 +114,9 @@ class CircularInterferenceSimulation extends PhysicsSimulation {
         scale: scale,
         markers: [
           WaveMarker(point: math.Point(0.0, params['a']!), color: Colors.yellow),
-          WaveMarker(point: math.Point(0.0, -params['a']!), color: Colors.yellow),
-          WaveMarker(point: math.Point(params['obsX']!, params['obsY']!), color: Colors.red),
+          WaveMarker(
+              point: math.Point(0.0, -params['a']!), color: Colors.yellow),
+          getObsMarker(params, label: '合成波の観測点'),
         ],
       ),
     );

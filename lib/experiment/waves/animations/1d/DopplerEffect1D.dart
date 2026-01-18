@@ -2,33 +2,36 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import '../fields/wave_fields.dart';
-import '../painters/wave_surface_painter.dart';
+import '../painters/wave_line_painter.dart';
 import '../widgets/wave_slider.dart';
 
-final dopplerEffect2D = createWaveVideo(
-  title: "2次元ドップラー効果(音源移動)",
+final dopplerEffect1D = createWaveVideo(
+  title: "1次元ドップラー効果(音源移動)",
   latex: r"""
-  <div class="common-box">ドップラー効果 (2次元)</div>
+  <div class="common-box">ドップラー効果 (1次元)</div>
   <p>音源が移動しながら波を放出すると、音源の進行方向では波長が短くなり（周波数が高くなり）、逆方向では波長が長くなります（周波数が低くなります）。</p>
-  <p>時刻 $t$、位置 $(x, y)$ で観測される波は、それより前の時刻 $\tau$（放射時刻：retarded time）に音源から放出されたものです。</p>
-  <p>この $\tau$ は以下の関係式を満たします：</p>
-  <p>$$t - \tau = \frac{\sqrt{(x - v\tau)^2 + y^2}}{V}$$</p>
-  <p>ここで $V = \lambda / T$ は波の速さ、$v$ は音源の速度です。このシミュレーションでは、音源が原点を出発して $x$ 軸上を正の向きに移動する様子を描いています。</p>
+  <p>音速を $V$、音源の速度を $v$、音源の周波数を $f_0$ とすると、音源の進行方向で観測される周波数 $f$ は：</p>
+  <p>$$f = \frac{V}{V - v} f_0$$</p>
+  <p>となります。</p>
   """,
-  simulation: DopplerEffect2DSimulation(),
+  simulation: DopplerEffect1DSimulation(),
 );
 
-class DopplerEffect2DSimulation extends WaveSimulation {
-  DopplerEffect2DSimulation()
+class DopplerEffect1DSimulation extends WaveSimulation {
+  DopplerEffect1DSimulation()
       : super(
-          title: "2次元ドップラー効果(音源移動)",
-          is3D: true,
+          title: "1次元ドップラー効果(音源移動)",
+          is3D: false,
           formula: const Column(
             children: [
-              FormulaDisplay(r'z(x, y, t) = A \sin(\omega_0 \tau(x, y, t))'),
-              SizedBox(height: 4),
               FormulaDisplay(
-                  r't - \tau = \frac{\sqrt{(x - v\tau)^2 + y^2}}{V}'),
+                  r'y = A \sin \left\{ 2\pi \left( f_\pm t \mp \frac{x}{\lambda_\pm} \right) \right\}'),
+              SizedBox(height: 8),
+              FormulaDisplay(
+                  r'f_\pm = \frac{V}{V \mp v} f_0, \quad \lambda_\pm = \frac{V \mp v}{V} \lambda_0'),
+              SizedBox(height: 4),
+              Text('(複号：進行方向の前方で上、後方で下)',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
             ],
           ),
         );
@@ -41,22 +44,18 @@ class DopplerEffect2DSimulation extends WaveSimulation {
           'vSource': 0.8,
         },
         obsX: 2.0,
-        obsY: 0.0,
       );
 
   @override
   List<Widget> buildControls(context, params, updateParam) {
     final V = params['lambda']! / params['periodT']!;
     
-    // 音源速度が音速を超えないように調整
     void safeUpdateParam(String key, double value) {
       updateParam(key, value);
-      
-      // λやTが変わって音速Vが小さくなった場合、vSourceを制限する
       if (key == 'lambda' || key == 'periodT') {
         final newV = params['lambda']! / params['periodT']!;
-        if (params['vSource']! > newV) {
-          updateParam('vSource', newV);
+        if (params['vSource']!.abs() > newV) {
+          updateParam('vSource', params['vSource']!.sign * newV);
         }
       }
     }
@@ -79,18 +78,18 @@ class DopplerEffect2DSimulation extends WaveSimulation {
       WaveParameterSlider(
         label: '音源速度 v',
         value: params['vSource']!,
-        min: 0.0,
-        max: V, // 音速までに制限
+        min: -V,
+        max: V,
         onChanged: (v) => updateParam('vSource', v),
       ),
-      ...buildObsSliders(params, updateParam),
+      ...buildObsSliders(params, updateParam, is2D: false, labelX: 'a'),
     ];
   }
 
   @override
   Widget buildAnimation(
       context, time, azimuth, tilt, scale, params, activeIds) {
-    final field = DopplerEffect2DField(
+    final field = DopplerEffect1DField(
       lambda: params['lambda']!,
       periodT: params['periodT']!,
       vSource: params['vSource']!,
@@ -101,16 +100,15 @@ class DopplerEffect2DSimulation extends WaveSimulation {
 
     return CustomPaint(
       size: Size.infinite,
-      painter: WaveSurfacePainter(
+      painter: WaveLinePainter(
         time: time,
         field: field,
-        azimuth: azimuth,
-        tilt: tilt,
-        activeComponentIds: activeIds,
+        surfaceColor: Colors.blue,
+        showTicks: true,
         scale: scale,
         markers: [
-          WaveMarker(point: math.Point(sourceX, 0.0), color: Colors.yellow),
-          getObsMarker(params, label: '観測点 (a, b)'),
+          WaveMarker(point: math.Point(sourceX, 0.0), color: Colors.yellow, label: '音源'),
+          getObsMarker(params, label: '観測点 a'),
         ],
       ),
     );

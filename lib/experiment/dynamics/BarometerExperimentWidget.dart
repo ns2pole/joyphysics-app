@@ -2,8 +2,22 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:sensors_plus/sensors_plus.dart';
+import 'package:joyphysics/experiment/HasHeight.dart';
+import 'package:joyphysics/shared_components.dart';
 
-class BarometerExperimentWidget extends StatefulWidget {
+class BarometerExperimentWidget extends StatefulWidget with HasHeight {
+  final double height;
+  final bool useScaffold;
+
+  const BarometerExperimentWidget({
+    Key? key,
+    this.height = 400,
+    this.useScaffold = true,
+  }) : super(key: key);
+
+  @override
+  double get widgetHeight => height;
+
   @override
   State<BarometerExperimentWidget> createState() => _BarometerExperimentWidgetState();
 }
@@ -17,6 +31,7 @@ class _BarometerExperimentWidgetState extends State<BarometerExperimentWidget> {
     super.initState();
     if (Platform.isAndroid || Platform.isIOS) {
       _pressureSub = barometerEventStream().listen((BarometerEvent event) {
+        if (!mounted) return;
         setState(() {
           _pressure = event.pressure;
         });
@@ -36,53 +51,39 @@ class _BarometerExperimentWidgetState extends State<BarometerExperimentWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white, // 画面全体の背景白
-      body: Center(
-        child: Card(
-          elevation: 6,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
-            child: _pressure == null
-                ? Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: const [
-                      CircularProgressIndicator(),
-                      SizedBox(height: 16),
-                      Text(
-                        "気圧データを取得中...",
-                        style: TextStyle(fontSize: 18, color: Colors.black),
-                      ),
-                    ],
-                  )
-                : Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text(
-                        "現在の大気圧",
-                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black),
-                      ),
-                      const SizedBox(height: 24),
-                      Text(
-                        "${_pressure!.toStringAsFixed(2)} hPa",
-                        style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Colors.black),
-                      ),
-                      // 推定標高差が必要なら復活してください
-                      // const SizedBox(height: 8),
-                      // Text(
-                      //   _estimateAltitude(_pressure!),
-                      //   style: const TextStyle(fontSize: 16, color: Colors.grey),
-                      // ),
-                    ],
-                  ),
-          ),
-        ),
-      ),
+    final content = SensorDisplayCard(
+      title: "現在の大気圧",
+      height: widget.height,
+      children: _pressure == null
+          ? [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 16),
+              const Text(
+                "気圧データを取得中...",
+                style: TextStyle(fontSize: 18, color: Colors.black),
+              ),
+            ]
+          : [
+              Text(
+                "${_pressure!.toStringAsFixed(2)} hPa",
+                style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Colors.black),
+              ),
+            ],
     );
-  }
 
-  String _estimateAltitude(double p) {
-    final h = (1013.25 - p) * 8.3;
-    return "推定標高差: 約 ${h.toStringAsFixed(1)} m";
+    if (!widget.useScaffold) {
+      return content;
+    }
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text('気圧センサー'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
+      ),
+      body: content,
+    );
   }
 }

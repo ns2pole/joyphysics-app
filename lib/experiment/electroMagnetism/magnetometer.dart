@@ -53,5 +53,5 @@ H &= \sqrt{B_x^2 + B_y^2} = \sqrt{25^2 + 15^2} \\[6pt]
   <li>スマホの向きに応じて地磁気ベクトルが変化する様子を体験できる</li>
 </ol>
 """,
-  experimentWidgets: [MagnetometerExperimentWidget(height: 380)],
+  experimentWidgets: [MagnetometerExperimentWidget(height: 380, useScaffold: false)],
 );

@@ -168,9 +168,17 @@ final categoriesData = <Category>[
         videos: [
           planeWave,
           circularWave,
+          circularInterference,
+        ],
+      ),
+      Subcategory(
+        name: 'ドップラー効果',
+        videos: [
+          dopplerEffect1D,
+          dopplerEffectObserverMoving1D,
           dopplerEffect2D,
           dopplerEffectObserverMoving,
-          circularInterference,
+          movingReflector1D,
         ],
       ),
       Subcategory(

@@ -68,5 +68,5 @@ $$
   <li>気圧変化は小さいため、気流やセンサーの誤差の影響を受けやすい。</li>
 </ul>
 """,
-  experimentWidgets: [BarometerExperimentWidget()],
+  experimentWidgets: [BarometerExperimentWidget(useScaffold: false)],
 );

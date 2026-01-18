@@ -47,5 +47,5 @@ $$
   <li>歩行速度程度でも十分にドップラー効果を体感できる変化量（約 ±13Hz）がある</li>
 </ul>
 """,
-  experimentWidgets: [FrequencyMeasureWidget()], // ドップラー効果用ウィジェット
+  experimentWidgets: [FrequencyMeasureWidget(useScaffold: false)], // ドップラー効果用ウィジェット
 );

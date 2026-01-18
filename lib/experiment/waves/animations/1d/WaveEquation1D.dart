@@ -16,25 +16,28 @@ final waveEquation1D = createWaveVideo(
   simulation: WaveEquationSimulation(),
 );
 
-class WaveEquationSimulation extends PhysicsSimulation {
+class WaveEquationSimulation extends WaveSimulation {
   WaveEquationSimulation()
       : super(
           title: "波の式",
           formula: const Column(
             children: [
-              FormulaDisplay(r'y = A \sin\left\{ 2\pi \left( \frac{t}{T} - \frac{x}{\lambda} \right) + \phi \right\}'),
+              FormulaDisplay(
+                  r'y = A \sin\left\{ 2\pi \left( \frac{t}{T} - \frac{x}{\lambda} \right) + \phi \right\}'),
             ],
           ),
         );
 
   @override
-  Map<String, double> get initialParameters => {
-        'amplitude': 0.6,
-        'initialPhase': 0.0,
-        'lambda': 4.0,
-        'periodT': 2.0,
-        'positionA': 0.0,
-      };
+  Map<String, double> get initialParameters => getInitialParamsWithObs(
+        baseParams: {
+          'amplitude': 0.6,
+          'initialPhase': 0.0,
+          'lambda': 4.0,
+          'periodT': 2.0,
+        },
+        obsX: 0.0,
+      );
 
   @override
   List<Widget> buildControls(context, params, updateParam) {
@@ -67,18 +70,13 @@ class WaveEquationSimulation extends PhysicsSimulation {
         max: 2 * math.pi,
         onChanged: (v) => updateParam('initialPhase', v),
       ),
-      WaveParameterSlider(
-        label: '場所 a',
-        value: params['positionA']!,
-        min: -5.0,
-        max: 5.0,
-        onChanged: (v) => updateParam('positionA', v),
-      ),
+      ...buildObsSliders(params, updateParam, is2D: false, labelX: 'a'),
     ];
   }
 
   @override
-  Widget buildAnimation(context, time, azimuth, tilt, scale, params, activeIds) {
+  Widget buildAnimation(
+      context, time, azimuth, tilt, scale, params, activeIds) {
     final field = WaveEquationField(
       amplitude: params['amplitude']!,
       lambda: params['lambda']!,
@@ -100,14 +98,14 @@ class WaveEquationSimulation extends PhysicsSimulation {
                   showTicks: true,
                   scale: scale,
                   markers: [
-                    WaveMarker(point: math.Point(params['positionA']!, 0.0), color: Colors.red),
+                    getObsMarker(params, label: '観測点 a'),
                   ],
                 ),
               ),
               CustomPaint(
                 size: Size.infinite,
                 painter: PositionIndicatorPainter(
-                  positionA: params['positionA']!,
+                  positionA: params['obsX']!,
                   scale: scale,
                 ),
               ),
@@ -115,10 +113,12 @@ class WaveEquationSimulation extends PhysicsSimulation {
                 top: 5,
                 left: 5,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                   color: Colors.white70,
-                  child: const Text('y-x グラフ (時刻 t での波の形)', 
-                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                  child: const Text('y-x グラフ (時刻 t での波の形)',
+                      style:
+                          TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
@@ -132,7 +132,7 @@ class WaveEquationSimulation extends PhysicsSimulation {
                 size: Size.infinite,
                 painter: WaveTimePainter(
                   currentTime: time,
-                  positionA: params['positionA']!,
+                  positionA: params['obsX']!,
                   field: field,
                   scale: scale,
                 ),
@@ -141,10 +141,12 @@ class WaveEquationSimulation extends PhysicsSimulation {
                 top: 5,
                 left: 5,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                   color: Colors.white70,
-                  child: const Text('y-t グラフ (場所 x=a での媒質の動き)', 
-                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                  child: const Text('y-t グラフ (場所 x=a での媒質の動き)',
+                      style:
+                          TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
@@ -205,12 +207,6 @@ class PositionIndicatorPainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
     
     canvas.drawLine(Offset(xPos, 0), Offset(xPos, size.height), paint);
-    
-    final textPainter = TextPainter(
-      text: const TextSpan(text: 'x=a', style: TextStyle(color: Colors.red, fontSize: 10, fontWeight: FontWeight.bold)),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    textPainter.paint(canvas, Offset(xPos + 5, 20));
   }
 
   @override

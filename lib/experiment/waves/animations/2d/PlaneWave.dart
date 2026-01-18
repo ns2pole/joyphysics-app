@@ -15,22 +15,25 @@ final planeWave = createWaveVideo(
   simulation: PlaneWaveSimulation(),
 );
 
-class PlaneWaveSimulation extends PhysicsSimulation {
+class PlaneWaveSimulation extends WaveSimulation {
   PlaneWaveSimulation()
       : super(
           title: "平面波",
           is3D: true,
-          formula: const FormulaDisplay(r'z(x,y,t)=A\sin\left(2\pi\left(\frac{t}{T} - \frac{x\cos\theta+y\sin\theta}{\lambda}\right)\right)'),
+          formula: const FormulaDisplay(
+              r'z(x,y,t)=A\sin\left(2\pi\left(\frac{t}{T} - \frac{x\cos\theta+y\sin\theta}{\lambda}\right)\right)'),
         );
 
   @override
-  Map<String, double> get initialParameters => {
-        'theta': 0.0,
-        'lambda': 2.0,
-        'periodT': 1.0,
-        'obsX': 0.0,
-        'obsY': 0.0,
-      };
+  Map<String, double> get initialParameters => getInitialParamsWithObs(
+        baseParams: {
+          'theta': 0.0,
+          'lambda': 2.0,
+          'periodT': 1.0,
+        },
+        obsX: 0.0,
+        obsY: 0.0,
+      );
 
   @override
   List<Widget> buildControls(context, params, updateParam) {
@@ -53,27 +56,13 @@ class PlaneWaveSimulation extends PhysicsSimulation {
         value: params['periodT']!,
         onChanged: (v) => updateParam('periodT', v),
       ),
-      const Divider(),
-      const Text('観測点 (a, b)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-      WaveParameterSlider(
-        label: 'a',
-        value: params['obsX']!,
-        min: -5.0,
-        max: 5.0,
-        onChanged: (v) => updateParam('obsX', v),
-      ),
-      WaveParameterSlider(
-        label: 'b',
-        value: params['obsY']!,
-        min: -5.0,
-        max: 5.0,
-        onChanged: (v) => updateParam('obsY', v),
-      ),
+      ...buildObsSliders(params, updateParam),
     ];
   }
 
   @override
-  Widget buildAnimation(context, time, azimuth, tilt, scale, params, activeIds) {
+  Widget buildAnimation(
+      context, time, azimuth, tilt, scale, params, activeIds) {
     final field = PlaneWaveField(
       theta: params['theta']!,
       lambda: params['lambda']!,
@@ -90,7 +79,7 @@ class PlaneWaveSimulation extends PhysicsSimulation {
         activeComponentIds: activeIds,
         scale: scale,
         markers: [
-          WaveMarker(point: math.Point(params['obsX']!, params['obsY']!), color: Colors.red),
+          getObsMarker(params, label: '観測点 (a, b)'),
         ],
       ),
     );

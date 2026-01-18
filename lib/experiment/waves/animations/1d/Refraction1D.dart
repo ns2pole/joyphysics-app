@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
 import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
@@ -16,28 +17,32 @@ final refraction1D = createWaveVideo(
   simulation: Refraction1DSimulation(),
 );
 
-class Refraction1DSimulation extends PhysicsSimulation {
+class Refraction1DSimulation extends WaveSimulation {
   Refraction1DSimulation()
       : super(
           title: "1次元波動",
           is3D: false,
           formula: const Column(
             children: [
-              FormulaDisplay(r'\color{#B38CFF}{z_1 = A \sin\left(2\pi\left(\frac{t}{T} - \frac{x}{\lambda_1}\right)\right)}'),
+              FormulaDisplay(
+                  r'\color{#B38CFF}{z_1 = A \sin\left(2\pi\left(\frac{t}{T} - \frac{x}{\lambda_1}\right)\right)}'),
               SizedBox(height: 4),
-              FormulaDisplay(r'\color{#FFB800}{z_2 = A \sin\left(2\pi\left(\frac{t}{T} - \frac{x}{\lambda_1/n}\right)\right)}'),
+              FormulaDisplay(
+                  r'\color{#FFB800}{z_2 = A \sin\left(2\pi\left(\frac{t}{T} - \frac{x}{\lambda_1/n}\right)\right)}'),
             ],
           ),
         );
 
   @override
-  Map<String, double> get initialParameters => {
-        'lambda': 2.0,
-        'periodT': 1.0,
-        'n': 1.5,
-        'thicknessL': 2.0,
-        'obsX': 2.0,
-      };
+  Map<String, double> get initialParameters => getInitialParamsWithObs(
+        baseParams: {
+          'lambda': 2.0,
+          'periodT': 1.0,
+          'n': 1.5,
+          'thicknessL': 2.0,
+        },
+        obsX: 2.0,
+      );
 
   @override
   Set<String> get initialActiveIds => {'total'};
@@ -65,15 +70,7 @@ class Refraction1DSimulation extends PhysicsSimulation {
         value: params['thicknessL']!,
         onChanged: (v) => updateParam('thicknessL', v),
       ),
-      const Divider(),
-      const Text('観測点 a', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-      WaveParameterSlider(
-        label: 'a',
-        value: params['obsX']!,
-        min: -5.0,
-        max: 5.0,
-        onChanged: (v) => updateParam('obsX', v),
-      ),
+      ...buildObsSliders(params, updateParam, is2D: false),
     ];
   }
 
@@ -82,21 +79,15 @@ class Refraction1DSimulation extends PhysicsSimulation {
     return Wrap(
       spacing: 8,
       children: [
-        FilterChip(
-          label: const Text('波の表示', style: TextStyle(fontSize: 12)),
-          selected: activeIds.contains('total'),
-          onSelected: (selected) {
-            final next = Set<String>.from(activeIds);
-            selected ? next.add('total') : next.remove('total');
-            updateActiveIds(next);
-          },
-        ),
+        buildChip('波の表示', 'total', Colors.blue, activeIds, updateActiveIds,
+            fontSize: 12),
       ],
     );
   }
 
   @override
-  Widget buildAnimation(context, time, azimuth, tilt, scale, params, activeIds) {
+  Widget buildAnimation(
+      context, time, azimuth, tilt, scale, params, activeIds) {
     final thickness = params['thicknessL']!;
     final field = OneDimensionSlabRefractionField(
       lambda: params['lambda']!,
@@ -116,7 +107,7 @@ class Refraction1DSimulation extends PhysicsSimulation {
         activeComponentIds: activeIds,
         scale: scale,
         markers: [
-          WaveMarker(point: math.Point(params['obsX']!, 0.0), color: Colors.red),
+          getObsMarker(params, label: '観測点 a'),
         ],
         mediumSlab: MediumSlabOverlay(
           xStart: 0.0,
