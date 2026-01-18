@@ -12,6 +12,8 @@ class WaveLinePainter extends CustomPainter {
     this.showBoundaryLine = false,
     this.mediumSlab,
     this.activeComponentIds,
+    this.scale = 1.0,
+    this.markers = const [],
   });
 
   final double time;
@@ -22,6 +24,8 @@ class WaveLinePainter extends CustomPainter {
   final bool showBoundaryLine;
   final MediumSlabOverlay? mediumSlab;
   final Set<String>? activeComponentIds;
+  final double scale;
+  final List<WaveMarker> markers;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -30,7 +34,7 @@ class WaveLinePainter extends CustomPainter {
 
     final center = Offset(size.width / 2, size.height / 2);
     // スケール: 1ユニット = 30ピクセル程度 (サイズに合わせて調整)
-    final double unitScale = size.width / 12; 
+    final double unitScale = (size.width / 12) * scale; 
 
     Offset worldToScreen(double x, double y) {
       return Offset(center.dx + x * unitScale, center.dy - y * unitScale * 2); // yは強調表示
@@ -139,6 +143,24 @@ class WaveLinePainter extends CustomPainter {
       }
       canvas.drawPath(path, paint);
     }
+
+    // 4. マーカーの描画
+    final markerStroke = Paint()
+      ..color = Colors.black.withOpacity(0.5)
+      ..strokeWidth = 1.0
+      ..style = PaintingStyle.stroke;
+
+    for (final m in markers) {
+      final comps = getComponents(m.point.x);
+      if (comps.isEmpty) continue;
+      final double mz = comps.last.value;
+      final p = worldToScreen(m.point.x, mz);
+      final markerPaint = Paint()
+        ..color = m.color
+        ..style = PaintingStyle.fill;
+      canvas.drawCircle(p, 6.0, markerPaint);
+      canvas.drawCircle(p, 6.0, markerStroke);
+    }
   }
 
   @override
@@ -149,7 +171,9 @@ class WaveLinePainter extends CustomPainter {
         oldDelegate.boundaryX != boundaryX ||
         oldDelegate.showBoundaryLine != showBoundaryLine ||
         oldDelegate.mediumSlab != mediumSlab ||
-        oldDelegate.activeComponentIds != activeComponentIds;
+        oldDelegate.activeComponentIds != activeComponentIds ||
+        oldDelegate.scale != scale ||
+        oldDelegate.markers != markers;
   }
 }
 

@@ -65,7 +65,7 @@ class RefractionLawSimulation extends PhysicsSimulation {
   }
 
   @override
-  Widget buildAnimation(context, time, azimuth, tilt, params, activeIds) {
+  Widget buildAnimation(context, time, azimuth, tilt, scale, params, activeIds) {
     final field = SlabRefractionWaveField(
       theta: params['theta']!,
       lambda: params['lambda']!,
@@ -82,6 +82,7 @@ class RefractionLawSimulation extends PhysicsSimulation {
         azimuth: azimuth,
         tilt: tilt,
         activeComponentIds: activeIds,
+        scale: scale,
         mediumSlab: MediumSlabOverlay(
           xStart: 0.0,
           xEnd: params['slabWidth']!,

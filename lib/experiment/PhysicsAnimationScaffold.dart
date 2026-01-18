@@ -7,7 +7,7 @@ class PhysicsAnimationScaffold extends StatefulWidget with HasHeight {
   final Widget? formula;
   final List<Widget>? sliders;
   final Widget? extraControls;
-  final Widget Function(BuildContext context, double time, double azimuth, double tilt) animationBuilder;
+  final Widget Function(BuildContext context, double time, double azimuth, double tilt, double scale) animationBuilder;
   final VoidCallback? onReset;
   final double height;
   final bool is3D;
@@ -46,6 +46,8 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
 
   double _azimuth = _defaultAzimuth;
   double _tilt = _defaultTilt;
+  double _scale = 1.0;
+  double _baseScale = 1.0;
 
   @override
   void initState() {
@@ -86,6 +88,8 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
       _time = 0.0;
       _azimuth = _defaultAzimuth;
       _tilt = _defaultTilt;
+      _scale = 1.0;
+      _baseScale = 1.0;
       if (widget.onReset != null) {
         widget.onReset!();
       }
@@ -111,18 +115,26 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
                 LayoutBuilder(
                   builder: (context, constraints) {
                     return GestureDetector(
-                      onPanUpdate: widget.is3D
-                          ? (details) {
-                              setState(() {
-                                _azimuth = (_azimuth + details.delta.dx * 0.01) %
-                                    (2 * math.pi);
-                                _tilt = (_tilt + details.delta.dy * 0.005)
-                                    .clamp(0.0, _tiltMax);
-                              });
-                            }
-                          : null,
+                      onScaleStart: (details) {
+                        _baseScale = _scale;
+                      },
+                      onScaleUpdate: (details) {
+                        setState(() {
+                          // Handle Scaling (Pinch)
+                          _scale = (_baseScale * details.scale).clamp(0.5, 3.0);
+
+                          // Handle Rotation (Pan) - only for 3D
+                          if (widget.is3D) {
+                            _azimuth = (_azimuth + details.focalPointDelta.dx * 0.01) %
+                                (2 * math.pi);
+                            _tilt = (_tilt + details.focalPointDelta.dy * 0.005)
+                                .clamp(0.0, _tiltMax);
+                          }
+                        });
+                      },
                       child: ClipRect(
-                        child: widget.animationBuilder(context, _time, _azimuth, _tilt),
+                        child: widget.animationBuilder(
+                            context, _time, _azimuth, _tilt, _scale),
                       ),
                     );
                   },

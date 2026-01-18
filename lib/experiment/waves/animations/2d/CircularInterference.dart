@@ -22,7 +22,15 @@ class CircularInterferenceSimulation extends PhysicsSimulation {
       : super(
           title: "円形波干渉",
           is3D: true,
-          formula: const FormulaDisplay(r'|r_1 - r_2| = m\lambda'),
+          formula: const Column(
+            children: [
+              FormulaDisplay(r'\color{#B38CFF}{z_1 = A \sin\left(2\pi\left(\frac{t}{T} - \frac{r_1}{\lambda}\right)\right)}'),
+              SizedBox(height: 4),
+              FormulaDisplay(r'\color{#8CFFB3}{z_2 = A \sin\left(2\pi\left(\frac{t}{T} - \frac{r_2}{\lambda}\right) + \phi\right)}'),
+              SizedBox(height: 4),
+              FormulaDisplay(r'\color{#00BFFF}{z = z_1 + z_2}'),
+            ],
+          ),
         );
 
   @override
@@ -31,6 +39,8 @@ class CircularInterferenceSimulation extends PhysicsSimulation {
         'periodT': 1.0,
         'a': 2.0,
         'phi': 0.0,
+        'obsX': 2.0,
+        'obsY': 0.0,
       };
 
   @override
@@ -59,6 +69,22 @@ class CircularInterferenceSimulation extends PhysicsSimulation {
       PhiSlider(
         value: params['phi']!,
         onChanged: (v) => updateParam('phi', v),
+      ),
+      const Divider(),
+      const Text('観測点 (a, b)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+      WaveParameterSlider(
+        label: 'a',
+        value: params['obsX']!,
+        min: -5.0,
+        max: 5.0,
+        onChanged: (v) => updateParam('obsX', v),
+      ),
+      WaveParameterSlider(
+        label: 'b',
+        value: params['obsY']!,
+        min: -5.0,
+        max: 5.0,
+        onChanged: (v) => updateParam('obsY', v),
       ),
     ];
   }
@@ -90,7 +116,7 @@ class CircularInterferenceSimulation extends PhysicsSimulation {
   }
 
   @override
-  Widget buildAnimation(context, time, azimuth, tilt, params, activeIds) {
+  Widget buildAnimation(context, time, azimuth, tilt, scale, params, activeIds) {
     final field = CircularInterferenceField(
       lambda: params['lambda']!,
       periodT: params['periodT']!,
@@ -106,9 +132,11 @@ class CircularInterferenceSimulation extends PhysicsSimulation {
         azimuth: azimuth,
         tilt: tilt,
         activeComponentIds: activeIds,
+        scale: scale,
         markers: [
-          math.Point(0.0, params['a']!),
-          math.Point(0.0, -params['a']!),
+          WaveMarker(point: math.Point(0.0, params['a']!), color: Colors.yellow),
+          WaveMarker(point: math.Point(0.0, -params['a']!), color: Colors.yellow),
+          WaveMarker(point: math.Point(params['obsX']!, params['obsY']!), color: Colors.red),
         ],
       ),
     );

@@ -35,6 +35,8 @@ class Refraction1DSimulation extends PhysicsSimulation {
         'lambda': 2.0,
         'periodT': 1.0,
         'n': 1.5,
+        'thicknessL': 2.0,
+        'obsX': 2.0,
       };
 
   @override
@@ -44,7 +46,7 @@ class Refraction1DSimulation extends PhysicsSimulation {
   List<Widget> buildControls(context, params, updateParam) {
     return [
       Text(
-        'λ = ${params['lambda']!.toStringAsFixed(2)}   T = ${params['periodT']!.toStringAsFixed(2)}   n = ${params['n']!.toStringAsFixed(2)}',
+        'λ = ${params['lambda']!.toStringAsFixed(2)}   T = ${params['periodT']!.toStringAsFixed(2)}   n = ${params['n']!.toStringAsFixed(2)}   L = ${params['thicknessL']!.toStringAsFixed(2)}',
         style: const TextStyle(fontSize: 12),
       ),
       LambdaSlider(
@@ -59,6 +61,19 @@ class Refraction1DSimulation extends PhysicsSimulation {
         value: params['n']!,
         onChanged: (v) => updateParam('n', v),
       ),
+      ThicknessLSlider(
+        value: params['thicknessL']!,
+        onChanged: (v) => updateParam('thicknessL', v),
+      ),
+      const Divider(),
+      const Text('観測点 a', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+      WaveParameterSlider(
+        label: 'a',
+        value: params['obsX']!,
+        min: -5.0,
+        max: 5.0,
+        onChanged: (v) => updateParam('obsX', v),
+      ),
     ];
   }
 
@@ -68,7 +83,7 @@ class Refraction1DSimulation extends PhysicsSimulation {
       spacing: 8,
       children: [
         FilterChip(
-          label: const Text('合成波', style: TextStyle(fontSize: 12)),
+          label: const Text('波の表示', style: TextStyle(fontSize: 12)),
           selected: activeIds.contains('total'),
           onSelected: (selected) {
             final next = Set<String>.from(activeIds);
@@ -81,13 +96,14 @@ class Refraction1DSimulation extends PhysicsSimulation {
   }
 
   @override
-  Widget buildAnimation(context, time, azimuth, tilt, params, activeIds) {
+  Widget buildAnimation(context, time, azimuth, tilt, scale, params, activeIds) {
+    final thickness = params['thicknessL']!;
     final field = OneDimensionSlabRefractionField(
       lambda: params['lambda']!,
       periodT: params['periodT']!,
       n: params['n']!,
       slabStart: 0.0,
-      slabEnd: 5.0,
+      slabEnd: thickness,
       amplitude: 0.6,
     );
     return CustomPaint(
@@ -98,9 +114,13 @@ class Refraction1DSimulation extends PhysicsSimulation {
         surfaceColor: Colors.blue,
         showTicks: true,
         activeComponentIds: activeIds,
-        mediumSlab: const MediumSlabOverlay(
+        scale: scale,
+        markers: [
+          WaveMarker(point: math.Point(params['obsX']!, 0.0), color: Colors.red),
+        ],
+        mediumSlab: MediumSlabOverlay(
           xStart: 0.0,
-          xEnd: 5.0,
+          xEnd: thickness,
           color: Colors.yellow,
           opacity: 0.4,
         ),

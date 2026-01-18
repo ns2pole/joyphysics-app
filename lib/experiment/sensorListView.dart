@@ -12,41 +12,92 @@ import 'package:joyphysics/experiment/waves/FrequencyMeasureWidget.dart';
 
 
 
-class SensorListView extends StatelessWidget {
-  SensorListView({super.key});
+import 'package:flutter/services.dart';
+
+class SensorListView extends StatefulWidget {
+  const SensorListView({super.key});
+
+  @override
+  State<SensorListView> createState() => _SensorListViewState();
+}
+
+class _SensorListViewState extends State<SensorListView> {
+  static const _sensorCheckChannel = MethodChannel('com.joyphysics/sensor_check');
+
+  final Map<String, bool> _availability = {
+    '加速度センサー': true,
+    '気圧センサー': true,
+    '磁気センサー': true,
+    '周波数センサー': true,
+    '光センサー': true,
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAllSensors();
+  }
+
+  Future<void> _checkAllSensors() async {
+    final Map<String, String> sensorKeys = {
+      '加速度センサー': 'accelerometer',
+      '気圧センサー': 'barometer',
+      '磁気センサー': 'magnetometer',
+      '周波数センサー': 'microphone',
+      '光センサー': 'light',
+    };
+
+    for (var entry in sensorKeys.entries) {
+      try {
+        final bool available = await _sensorCheckChannel.invokeMethod(
+          'isSensorAvailable',
+          {'sensorType': entry.value},
+        );
+        if (mounted) {
+          setState(() {
+            _availability[entry.key] = available;
+          });
+        }
+      } catch (e) {
+        debugPrint('Error checking sensor ${entry.key}: $e');
+      }
+    }
+  }
 
   final List<Map<String, dynamic>> sensors = [
     {
       'name': '加速度センサー',
       'icon': Icons.speed,
       'widget': AccelerometerExperimentWidget(),
+      'key': '加速度センサー',
     },
     {
       'name': '気圧センサー',
       'icon': Icons.compress,
       'widget': BarometerExperimentWidget(),
+      'key': '気圧センサー',
     },
     {
       'name': '磁気センサー',
       'icon': Icons.sensors,
       'widget': MagnetometerExperimentWidget(height: 380),
+      'key': '磁気センサー',
     },
     {
       'name': '周波数センサー(音波)',
       'icon': Icons.graphic_eq,
       'widget': FrequencyMeasureWidget(),
+      'key': '周波数センサー',
     },
     if (!(kIsWeb || Platform.isIOS))
       {
         'name': '光センサー',
         'icon': Icons.wb_sunny,
         'widget': LuxMeasurementWidget(),
+        'key': '光センサー',
       },
   ];
 
-  // 既に定義済みの Video オブジェクトをそのまま入れてください（ここは例示）。
-  // --- ここはあなたの既存オブジェクト名をそのまま使う想定です ---
-  // 例: accelerometer, barometer, magnetometer, frequencyAndDoReMi, doppler, dopplerObserverMoving, luxMeasurement
   final Map<String, List<Video>> articlesByCategory = {
     '加速度センサー': [accelerometer],
     '気圧センサー': [barometer],
@@ -65,15 +116,29 @@ class SensorListView extends StatelessWidget {
         itemBuilder: (context, index) {
           if (index < sensors.length) {
             final sensor = sensors[index];
+            final availabilityKey = sensor['key'] as String;
+            final bool isAvailable = _availability[availabilityKey] ?? true;
+
             return ListTile(
-              leading: Icon(sensor['icon']),
-              title: Text(sensor['name']),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => sensor['widget']),
-                );
-              },
+              leading: Icon(
+                sensor['icon'],
+                color: isAvailable ? null : Colors.grey,
+              ),
+              title: Text(
+                isAvailable ? sensor['name'] : '${sensor['name']}(端末非対応)',
+                style: TextStyle(
+                  color: isAvailable ? null : Colors.grey,
+                ),
+              ),
+              enabled: isAvailable,
+              onTap: isAvailable
+                  ? () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => sensor['widget']),
+                      );
+                    }
+                  : null,
             );
           } else {
             // 一番下の「解説記事一覧」
@@ -100,18 +165,24 @@ class SensorListView extends StatelessWidget {
     );
   }
 
+  Widget _buildCategory(
+      BuildContext context, String categoryName, List<Video> videos) {
+    final bool isAvailable = _availability[categoryName] ?? true;
 
-  Widget _buildCategory(BuildContext context, String categoryName, List<Video> videos) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
           width: double.infinity,
-          color: Colors.grey[300],
+          color: isAvailable ? Colors.grey[300] : Colors.grey[200],
           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           child: Text(
             categoryName,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: isAvailable ? Colors.black87 : Colors.grey,
+            ),
           ),
         ),
         ...videos.map((video) {
@@ -119,21 +190,37 @@ class SensorListView extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: 32, vertical: 2),
             child: ListTile(
               contentPadding: EdgeInsets.symmetric(horizontal: 0),
-              leading: Image.asset(
-                'assets/icon/smartphone_only.png',
-                width: 60,
-                height: 40,
-                fit: BoxFit.contain,
+              leading: Opacity(
+                opacity: isAvailable ? 1.0 : 0.5,
+                child: Image.asset(
+                  'assets/icon/smartphone_only.png',
+                  width: 60,
+                  height: 40,
+                  fit: BoxFit.contain,
+                ),
               ),
-              title: Text(video.title, style: TextStyle(fontSize: 15, color: Colors.black87)),
-              tileColor: Colors.blue[50]?.withOpacity(0.1),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => VideoDetailView(video: video)),
-                );
-              },
+              title: Text(
+                video.title,
+                style: TextStyle(
+                  fontSize: 15,
+                  color: isAvailable ? Colors.black87 : Colors.grey,
+                ),
+              ),
+              tileColor: isAvailable
+                  ? Colors.blue[50]?.withOpacity(0.1)
+                  : Colors.grey[100]?.withOpacity(0.1),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+              enabled: isAvailable,
+              onTap: isAvailable
+                  ? () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => VideoDetailView(video: video)),
+                      );
+                    }
+                  : null,
             ),
           );
         }).toList(),

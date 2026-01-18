@@ -24,6 +24,37 @@ import AVFoundation
     let barometerChannel = FlutterEventChannel(name: "barometer_channel", binaryMessenger: controller.binaryMessenger)
     barometerChannel.setStreamHandler(self)
 
+    // センサーチェックチャネル
+    let sensorCheckChannel = FlutterMethodChannel(name: "com.joyphysics/sensor_check", binaryMessenger: controller.binaryMessenger)
+    sensorCheckChannel.setMethodCallHandler { (call: FlutterMethodCall, result: @escaping FlutterResult) in
+      if call.method == "isSensorAvailable" {
+        guard let args = call.arguments as? [String: Any],
+              let sensorType = args["sensorType"] as? String else {
+          result(false)
+          return
+        }
+        
+        let motionManager = CMMotionManager()
+        switch sensorType {
+        case "accelerometer":
+          result(motionManager.isAccelerometerAvailable)
+        case "barometer":
+          result(CMAltimeter.isRelativeAltitudeAvailable())
+        case "magnetometer":
+          result(motionManager.isMagnetometerAvailable)
+        case "light":
+          result(false) // iOSでは一般的に取得不可
+        case "microphone":
+          // iOS端末は通常マイクを搭載している
+          result(true)
+        default:
+          result(false)
+        }
+      } else {
+        result(FlutterMethodNotImplemented)
+      }
+    }
+
     // 周波数メソッドチャネル
     let frequencyChannel = FlutterMethodChannel(name: "com.joyphysics.frequency/mic", binaryMessenger: controller.binaryMessenger)
     frequencyChannel.setMethodCallHandler(handleFrequencyMethodCall)

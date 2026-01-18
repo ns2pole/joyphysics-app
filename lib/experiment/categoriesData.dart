@@ -156,23 +156,20 @@ final categoriesData = <Category>[
     name: '波動',
     gifUrl: 'assets/init/wave.gif',
     subcategories: [
-      // Subcategory(
-      //   name: '周波数センサー',
-      //   videos: [
-      //     frequencyAndDoReMi,
-      //   ],
-      // ),
-      // Subcategory(
-      //   name: '音波の生成',
-      //   videos: [
-      //     beat,
-      //   ],
-      // ),
+      Subcategory(
+        name: '1次元波動',
+        videos: [
+          waveEquation1D,
+          superposition1D,
+        ],
+      ),
       Subcategory(
         name: '2次元空間における波動',
         videos: [
           planeWave,
           circularWave,
+          dopplerEffect2D,
+          dopplerEffectObserverMoving,
           circularInterference,
         ],
       ),
@@ -204,6 +201,7 @@ final categoriesData = <Category>[
       Subcategory(
         name: '異媒質間における反射',
         videos: [
+          pulseReflection1D,
           fixedEndReflection1D,
           freeEndReflection1D,
           reflectionLaw2D,

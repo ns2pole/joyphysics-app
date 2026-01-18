@@ -119,10 +119,10 @@ class _FrequencyMeasureWidgetState extends State<FrequencyMeasureWidget> {
       height: widget.height,
       child: Center(
         child: Card(
-          margin: const EdgeInsets.all(24),
+          margin: const EdgeInsets.all(12),
           elevation: 6,
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
             child: _frequency == null
                 ? Column(
                     mainAxisSize: MainAxisSize.min,

@@ -5,6 +5,10 @@ import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.os.Handler
 import android.os.Looper
+import android.content.Context
+import android.content.pm.PackageManager
+import android.hardware.Sensor
+import android.hardware.SensorManager
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -13,11 +17,33 @@ import org.jtransforms.fft.DoubleFFT_1D
 
 class MainActivity : FlutterActivity() {
     private val CHANNEL = "com.joyphysics.frequency/mic"
+    private val SENSOR_CHECK_CHANNEL = "com.joyphysics/sensor_check"
     private var analyzer: FrequencyAnalyzer? = null
     private var currentFrequency: Double = 0.0
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, SENSOR_CHECK_CHANNEL).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "isSensorAvailable" -> {
+                    val sensorType = call.argument<String>("sensorType")
+                    val sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+                    val available = when (sensorType) {
+                        "accelerometer" -> sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null
+                        "barometer" -> sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE) != null
+                        "magnetometer" -> sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD) != null
+                        "light" -> sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT) != null
+                        "microphone" -> packageManager.hasSystemFeature(PackageManager.FEATURE_MICROPHONE)
+                        else -> false
+                    }
+                    result.success(available)
+                }
+                else -> {
+                    result.notImplemented()
+                }
+            }
+        }
 
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {

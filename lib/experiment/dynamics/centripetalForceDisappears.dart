@@ -5,7 +5,7 @@ final centripetalForceDisappears = Video(
   isNew: false,
   category: 'dynamics',
   iconName: "centripetalForceDisappears",
-  title: "向心力が無くなった場合の物体の運動",
+  title: "向心力が突如消えた時の物体運動",
   videoURL: "csy4Asp_EdA",
   equipment: ["セロハンテープの芯", "10円玉"],
   costRating: "★☆☆",

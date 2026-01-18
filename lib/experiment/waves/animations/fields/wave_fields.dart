@@ -16,6 +16,16 @@ class WaveComponent {
   });
 }
 
+class WaveMarker {
+  final math.Point<double> point;
+  final Color color;
+
+  const WaveMarker({
+    required this.point,
+    this.color = Colors.yellow,
+  });
+}
+
 /// A wave field defines the phase of the wave at (x,y,t).
 /// Units are arbitrary, but consistent with the painter's world coordinates.
 abstract class WaveField {
@@ -1147,5 +1157,328 @@ class YoungDoubleSlitField extends WaveField {
 
   @override
   int get hashCode => Object.hash(lambda, periodT, a, phi, amplitude);
+}
+
+enum PulseShape { sine, fullSine, triangle }
+
+class PulseSuperpositionField extends WaveField {
+  const PulseSuperpositionField({
+    required this.lambda,
+    required this.periodT,
+    this.amplitude = 0.6,
+    this.pulseWidth = 2.0,
+    this.shape = PulseShape.sine,
+  });
+
+  final double lambda;
+  final double periodT;
+  final double amplitude;
+  final double pulseWidth;
+  final PulseShape shape;
+
+  double _pulse(double u) {
+    if (u < 0 || u > pulseWidth) return 0.0;
+    if (shape == PulseShape.sine) {
+      // One positive lobe of sine: 0 to pulseWidth
+      return amplitude * math.sin(math.pi * u / pulseWidth);
+    } else if (shape == PulseShape.fullSine) {
+      // One full period of sine: 0 to pulseWidth
+      return amplitude * math.sin(2 * math.pi * u / pulseWidth);
+    } else {
+      // Triangular pulse
+      final mid = pulseWidth / 2;
+      if (u < mid) return amplitude * (u / mid);
+      return amplitude * (1 - (u - mid) / mid);
+    }
+  }
+
+  @override
+  double phase(double x, double y, double t) => 0.0;
+
+  @override
+  double z(double x, double y, double t) {
+    final v = lambda / periodT;
+    // Initial distance between centers is 10 units.
+    // Meeting point at x=0.
+    // Pulse 1 center at -5.0 + v*t
+    // Pulse 2 center at 5.0 - v*t
+    final z1 = _pulse(x - (-5.0 + v * t - pulseWidth / 2));
+    final z2 = _pulse((5.0 - v * t + pulseWidth / 2) - x);
+    return z1 + z2;
+  }
+
+  @override
+  List<WaveComponent> getComponents(
+      double x, double y, double t, Set<String> activeIds) {
+    final v = lambda / periodT;
+    final z1 = _pulse(x - (-5.0 + v * t - pulseWidth / 2));
+    final z2 = _pulse((5.0 - v * t + pulseWidth / 2) - x);
+
+    final List<WaveComponent> res = [];
+    if (activeIds.contains('wave1')) {
+      res.add(WaveComponent(
+          id: 'wave1', label: '波1', color: Colors.purpleAccent, value: z1));
+    }
+    if (activeIds.contains('wave2')) {
+      res.add(WaveComponent(
+          id: 'wave2', label: '波2', color: Colors.greenAccent, value: z2));
+    }
+    if (activeIds.contains('combined')) {
+      res.add(WaveComponent(
+          id: 'combined',
+          label: '合成波',
+          color: Colors.blueAccent,
+          value: z1 + z2));
+    }
+    return res;
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is PulseSuperpositionField &&
+        other.lambda == lambda &&
+        other.periodT == periodT &&
+        other.amplitude == amplitude &&
+        other.pulseWidth == pulseWidth &&
+        other.shape == shape;
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(lambda, periodT, amplitude, pulseWidth, shape);
+}
+
+class PulseReflectionField extends WaveField {
+  const PulseReflectionField({
+    required this.lambda,
+    required this.periodT,
+    this.amplitude = 0.6,
+    this.pulseWidth = 2.0,
+    this.shape = PulseShape.sine,
+    this.isFixedEnd = true,
+    this.boundaryX = 5.0,
+  });
+
+  final double lambda;
+  final double periodT;
+  final double amplitude;
+  final double pulseWidth;
+  final PulseShape shape;
+  final bool isFixedEnd;
+  final double boundaryX;
+
+  double _pulse(double u) {
+    if (u < 0 || u > pulseWidth) return 0.0;
+    if (shape == PulseShape.sine) {
+      return amplitude * math.sin(math.pi * u / pulseWidth);
+    } else if (shape == PulseShape.fullSine) {
+      return amplitude * math.sin(2 * math.pi * u / pulseWidth);
+    } else {
+      final mid = pulseWidth / 2;
+      if (u < mid) return amplitude * (u / mid);
+      return amplitude * (1 - (u - mid) / mid);
+    }
+  }
+
+  @override
+  double phase(double x, double y, double t) => 0.0;
+
+  @override
+  double z(double x, double y, double t) {
+    if (x > boundaryX) return 0.0;
+    
+    final v = lambda / periodT;
+    const xStart = -7.5;
+    
+    final distI = x - xStart;
+    final distR = (boundaryX - xStart) + (boundaryX - x);
+    
+    final zi = _pulse(v * t - distI);
+    double zr = _pulse(v * t - distR);
+    
+    if (isFixedEnd) zr = -zr;
+    
+    return zi + zr;
+  }
+
+  @override
+  List<WaveComponent> getComponents(
+      double x, double y, double t, Set<String> activeIds) {
+    if (x > boundaryX) return [];
+
+    final v = lambda / periodT;
+    const xStart = -7.5;
+    
+    final distI = x - xStart;
+    final distR = (boundaryX - xStart) + (boundaryX - x);
+    
+    final zi = _pulse(v * t - distI);
+    double zr = _pulse(v * t - distR);
+    if (isFixedEnd) zr = -zr;
+
+    final List<WaveComponent> res = [];
+    if (activeIds.contains('incident')) {
+      res.add(WaveComponent(
+          id: 'incident', label: '入射波', color: Colors.purpleAccent, value: zi));
+    }
+    if (activeIds.contains('reflected')) {
+      res.add(WaveComponent(
+          id: 'reflected', label: '反射波', color: Colors.greenAccent, value: zr));
+    }
+    if (activeIds.contains('combined')) {
+      res.add(WaveComponent(
+          id: 'combined',
+          label: '合成波',
+          color: Colors.blueAccent,
+          value: zi + zr));
+    }
+    return res;
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is PulseReflectionField &&
+        other.lambda == lambda &&
+        other.periodT == periodT &&
+        other.amplitude == amplitude &&
+        other.pulseWidth == pulseWidth &&
+        other.shape == shape &&
+        other.isFixedEnd == isFixedEnd &&
+        other.boundaryX == boundaryX;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      lambda, periodT, amplitude, pulseWidth, shape, isFixedEnd, boundaryX);
+}
+
+class DopplerEffect2DField extends WaveField {
+  const DopplerEffect2DField({
+    required this.lambda,
+    required this.periodT,
+    required this.vSource,
+    this.amplitude = 0.4,
+  });
+
+  final double lambda;
+  final double periodT;
+  final double vSource;
+  final double amplitude;
+
+  @override
+  double phase(double x, double y, double t) {
+    final V = lambda / periodT;
+    final v = vSource;
+
+    if (v == 0) {
+      final r = math.sqrt(x * x + y * y);
+      return 2 * math.pi * (t / periodT - r / lambda);
+    }
+
+    final a = V * V - v * v;
+    if (a.abs() < 1e-10) return 0.0;
+
+    final termInsideSqrt = V * V * math.pow(v * t - x, 2) + a * y * y;
+    if (termInsideSqrt < 0) return 0.0;
+
+    // τ = (V^2*t - v*x - sqrt(V^2(v*t - x)^2 + (V^2 - v^2)y^2)) / (V^2 - v^2)
+    final tau = (V * V * t - v * x - math.sqrt(termInsideSqrt)) / a;
+
+    if (tau < 0) return 0.0;
+
+    return 2 * math.pi * (tau / periodT);
+  }
+
+  @override
+  double z(double x, double y, double t) {
+    final V = lambda / periodT;
+    
+    // 時刻t=0に原点を出発した波の最前線は半径Vtの円
+    if (x * x + y * y > V * V * t * t) return 0.0;
+
+    final p = phase(x, y, t);
+    return amplitude * math.sin(p);
+  }
+
+  @override
+  List<WaveComponent> getComponents(
+      double x, double y, double t, Set<String> activeIds) {
+    if (activeIds.contains('total')) {
+      return [
+        WaveComponent(
+          id: 'total',
+          label: 'ドップラー効果',
+          color: Colors.blueAccent,
+          value: z(x, y, t),
+        ),
+      ];
+    }
+    return [];
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is DopplerEffect2DField &&
+        other.lambda == lambda &&
+        other.periodT == periodT &&
+        other.vSource == vSource &&
+        other.amplitude == amplitude;
+  }
+
+  @override
+  int get hashCode => Object.hash(lambda, periodT, vSource, amplitude);
+}
+
+class DopplerEffectObserverMovingField extends WaveField {
+  const DopplerEffectObserverMovingField({
+    required this.lambda,
+    required this.periodT,
+    this.amplitude = 0.4,
+  });
+
+  final double lambda;
+  final double periodT;
+  final double amplitude;
+
+  @override
+  double phase(double x, double y, double t) {
+    // 静止した音源（原点）からの円形波
+    final r = math.sqrt(x * x + y * y);
+    return 2 * math.pi * (t / periodT - r / lambda);
+  }
+
+  @override
+  double z(double x, double y, double t) {
+    final V = lambda / periodT;
+    if (x * x + y * y > V * V * t * t) return 0.0;
+    return amplitude * math.sin(phase(x, y, t));
+  }
+
+  @override
+  List<WaveComponent> getComponents(
+      double x, double y, double t, Set<String> activeIds) {
+    if (activeIds.contains('total')) {
+      return [
+        WaveComponent(
+          id: 'total',
+          label: 'ドップラー効果(観測者移動)',
+          color: Colors.blueAccent,
+          value: z(x, y, t),
+        ),
+      ];
+    }
+    return [];
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is DopplerEffectObserverMovingField &&
+        other.lambda == lambda &&
+        other.periodT == periodT &&
+        other.amplitude == amplitude;
+  }
+
+  @override
+  int get hashCode => Object.hash(lambda, periodT, amplitude);
 }
 

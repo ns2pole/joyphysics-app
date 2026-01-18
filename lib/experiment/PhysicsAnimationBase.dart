@@ -19,9 +19,12 @@ class FormulaDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Math.tex(
-      tex,
-      textStyle: commonFormulaStyle.merge(style),
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Math.tex(
+        tex,
+        textStyle: commonFormulaStyle.merge(style),
+      ),
     );
   }
 }
@@ -66,6 +69,7 @@ abstract class PhysicsSimulation {
     double time,
     double azimuth,
     double tilt,
+    double scale,
     Map<String, double> parameters,
     Set<String> activeIds,
   );
@@ -121,12 +125,13 @@ class _PhysicsSimulationViewState extends State<PhysicsSimulationView> {
       height: widget.height,
       sliders: widget.simulation.buildControls(context, _parameters, _updateParam),
       extraControls: widget.simulation.buildExtraControls(context, _activeIds, _updateActiveIds),
-      animationBuilder: (context, time, azimuth, tilt) {
+      animationBuilder: (context, time, azimuth, tilt, scale) {
         return widget.simulation.buildAnimation(
           context,
           time,
           azimuth,
           tilt,
+          scale,
           _parameters,
           _activeIds,
         );

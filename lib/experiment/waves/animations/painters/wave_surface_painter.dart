@@ -53,6 +53,7 @@ class WaveSurfacePainter extends CustomPainter {
     this.screenX = 8.0,
     this.showIntersectionLine = false,
     this.showIntensityLine = false,
+    this.scale = 1.0,
   });
 
   final double time;
@@ -66,13 +67,14 @@ class WaveSurfacePainter extends CustomPainter {
   final String xAxisLabel;
   final String yAxisLabel;
   final String zAxisLabel;
-  final List<math.Point<double>> markers;
+  final List<WaveMarker> markers;
   final Set<String>? activeComponentIds;
   final bool showYoungDoubleSlitExtras;
   final double slitA;
   final double screenX;
   final bool showIntersectionLine;
   final bool showIntensityLine;
+  final double scale;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -81,7 +83,7 @@ class WaveSurfacePainter extends CustomPainter {
       Paint()..color = const Color(0xFFF7F7FB),
     );
 
-    const unitScale = 50.0;
+    final unitScale = 50.0 * scale;
     final center = Offset(size.width / 2, size.height / 2);
 
     const cos45 = 0.7071;
@@ -596,19 +598,19 @@ class WaveSurfacePainter extends CustomPainter {
     drawAxis(0, axisLen, 0, Colors.green, yAxisLabel);
     drawAxis(0, 0, 3.5, Colors.blue, zAxisLabel);
 
-    final markerPaint = Paint()
-      ..color = Colors.yellow
-      ..style = PaintingStyle.fill;
     final markerStroke = Paint()
       ..color = Colors.black.withOpacity(0.5)
       ..strokeWidth = 1.0
       ..style = PaintingStyle.stroke;
 
     for (final m in markers) {
-      final comps = getComponents(m.x, m.y);
+      final comps = getComponents(m.point.x, m.point.y);
       if (comps.isEmpty) continue;
       final double mz = comps.last.value;
-      final p = worldToScreen(m.x, m.y, mz);
+      final p = worldToScreen(m.point.x, m.point.y, mz);
+      final markerPaint = Paint()
+        ..color = m.color
+        ..style = PaintingStyle.fill;
       canvas.drawCircle(p, 6.0, markerPaint);
       canvas.drawCircle(p, 6.0, markerStroke);
     }
@@ -633,6 +635,7 @@ class WaveSurfacePainter extends CustomPainter {
         oldDelegate.slitA != slitA ||
         oldDelegate.screenX != screenX ||
         oldDelegate.showIntersectionLine != showIntersectionLine ||
-        oldDelegate.showIntensityLine != showIntensityLine;
+        oldDelegate.showIntensityLine != showIntensityLine ||
+        oldDelegate.scale != scale;
   }
 }

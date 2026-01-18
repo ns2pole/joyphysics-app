@@ -33,6 +33,8 @@ class YoungDoubleSlitSimulation extends PhysicsSimulation {
         'phi': 0.0,
         'showIntersectionLine': 1.0, // 1.0 for true, 0.0 for false
         'showIntensityLine': 0.0,
+        'obsX': 2.0,
+        'obsY': 0.0,
       };
 
   @override
@@ -61,6 +63,22 @@ class YoungDoubleSlitSimulation extends PhysicsSimulation {
       PhiSlider(
         value: params['phi']!,
         onChanged: (val) => updateParam('phi', val),
+      ),
+      const Divider(),
+      const Text('観測点 (a, b)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+      WaveParameterSlider(
+        label: 'a',
+        value: params['obsX']!,
+        min: -5.0,
+        max: 5.0,
+        onChanged: (v) => updateParam('obsX', v),
+      ),
+      WaveParameterSlider(
+        label: 'b',
+        value: params['obsY']!,
+        min: -5.0,
+        max: 5.0,
+        onChanged: (v) => updateParam('obsY', v),
       ),
     ];
   }
@@ -115,7 +133,7 @@ class YoungDoubleSlitSimulation extends PhysicsSimulation {
   }
 
   @override
-  Widget buildAnimation(context, time, azimuth, tilt, params, activeIds) {
+  Widget buildAnimation(context, time, azimuth, tilt, scale, params, activeIds) {
     final field = YoungDoubleSlitField(
       lambda: params['lambda']!,
       periodT: params['periodT']!,
@@ -130,9 +148,11 @@ class YoungDoubleSlitSimulation extends PhysicsSimulation {
         azimuth: azimuth,
         tilt: tilt,
         activeComponentIds: activeIds,
+        scale: scale,
         markers: [
-          math.Point(-4.0, params['a']!),
-          math.Point(-4.0, -params['a']!),
+          WaveMarker(point: math.Point(-4.0, params['a']!), color: Colors.yellow),
+          WaveMarker(point: math.Point(-4.0, -params['a']!), color: Colors.yellow),
+          WaveMarker(point: math.Point(params['obsX']!, params['obsY']!), color: Colors.red),
         ],
         showYoungDoubleSlitExtras: true,
         slitA: params['a']!,

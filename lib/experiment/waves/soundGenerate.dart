@@ -32,5 +32,5 @@ final soundGenerate = Video(
 スマホだけでこれらの現象を手軽に観察できます。ぜひ試してみて下さい。
 </p>
 """,
-  experimentWidgets: [ToneGeneratorWidget(initialFreq: 340, height: 50)],
+  experimentWidgets: [ToneGeneratorWidget(initialFreq: 340, height: 180)],
 );

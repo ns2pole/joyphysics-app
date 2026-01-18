@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
 import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
@@ -26,6 +27,8 @@ class CircularWaveSimulation extends PhysicsSimulation {
   Map<String, double> get initialParameters => {
         'lambda': 2.0,
         'periodT': 1.0,
+        'obsX': 2.0,
+        'obsY': 0.0,
       };
 
   @override
@@ -43,11 +46,27 @@ class CircularWaveSimulation extends PhysicsSimulation {
         value: params['periodT']!,
         onChanged: (v) => updateParam('periodT', v),
       ),
+      const Divider(),
+      const Text('観測点 (a, b)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+      WaveParameterSlider(
+        label: 'a',
+        value: params['obsX']!,
+        min: -5.0,
+        max: 5.0,
+        onChanged: (v) => updateParam('obsX', v),
+      ),
+      WaveParameterSlider(
+        label: 'b',
+        value: params['obsY']!,
+        min: -5.0,
+        max: 5.0,
+        onChanged: (v) => updateParam('obsY', v),
+      ),
     ];
   }
 
   @override
-  Widget buildAnimation(context, time, azimuth, tilt, params, activeIds) {
+  Widget buildAnimation(context, time, azimuth, tilt, scale, params, activeIds) {
     final field = CircularWaveField(
       lambda: params['lambda']!,
       periodT: params['periodT']!,
@@ -61,6 +80,11 @@ class CircularWaveSimulation extends PhysicsSimulation {
         azimuth: azimuth,
         tilt: tilt,
         activeComponentIds: activeIds,
+        scale: scale,
+        markers: [
+          WaveMarker(point: const math.Point(0.0, 0.0), color: Colors.yellow),
+          WaveMarker(point: math.Point(params['obsX']!, params['obsY']!), color: Colors.red),
+        ],
       ),
     );
   }

@@ -91,7 +91,7 @@ class FixedReflection2DSimulation extends PhysicsSimulation {
   }
 
   @override
-  Widget buildAnimation(context, time, azimuth, tilt, params, activeIds) {
+  Widget buildAnimation(context, time, azimuth, tilt, scale, params, activeIds) {
     final field = ReflectionWaveField(
       theta: params['theta']!,
       lambda: params['lambda']!,
@@ -108,6 +108,7 @@ class FixedReflection2DSimulation extends PhysicsSimulation {
         azimuth: azimuth,
         tilt: tilt,
         activeComponentIds: activeIds,
+        scale: scale,
         mediumSlab: const MediumSlabOverlay(
           xStart: 0.0,
           xEnd: 5.0,

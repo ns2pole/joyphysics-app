@@ -93,14 +93,15 @@ class _ToneGeneratorWidgetState extends State<ToneGeneratorWidget> {
         margin: const EdgeInsets.all(4),
         elevation: 4,
         child: Padding(
-          padding: const EdgeInsets.all(4),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 "周波数: ${freq.toStringAsFixed(1)} Hz",
-                style: const TextStyle(fontSize: 24),
+                style: const TextStyle(fontSize: 20),
               ),
+              const SizedBox(height: 8),
               Slider(
                 value: freq,
                 min: widget.minFreq,
@@ -109,7 +110,7 @@ class _ToneGeneratorWidgetState extends State<ToneGeneratorWidget> {
                 label: freq.toStringAsFixed(1),
                 onChanged: (v) => setState(() => freq = v),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

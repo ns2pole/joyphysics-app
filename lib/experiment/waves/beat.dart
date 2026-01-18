@@ -43,5 +43,9 @@ $$</p>
   <li>周波数差を変えて聴き比べることで、うなり周波数と聞こえ方の関係を学ぶ</li>
 </ol>
 """,
-  experimentWidgets: [FrequencyMeasureWidget(height: 70), ToneGeneratorWidget(initialFreq: 340, height: 50),  ToneGeneratorWidget(initialFreq: 344, height: 50)],
+  experimentWidgets: [
+    FrequencyMeasureWidget(height: 180),
+    ToneGeneratorWidget(initialFreq: 340, height: 180),
+    ToneGeneratorWidget(initialFreq: 344, height: 180)
+  ],
 );

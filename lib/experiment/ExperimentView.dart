@@ -425,13 +425,7 @@ class VideoDetailView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. 解説・ポイントを最上部に
-            if (video.latex != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 16),
-                child: LatexWebView(latexHtml: video.latex!),
-              ),
-            // 2. シミュレーション・実験ウィジェット
+            // 1. シミュレーション・実験ウィジェットを最上部に
             if (video.experimentWidgets != null && video.experimentWidgets!.isNotEmpty)
               ...video.experimentWidgets!.map(
                 (w) => Padding(
@@ -439,7 +433,7 @@ class VideoDetailView extends StatelessWidget {
                   child: w,
                 ),
               ),
-            // 3. YouTube動画
+            // 2. YouTube動画（これも視覚モジュールとして上部に配置）
             if (video.videoURL.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 16),
@@ -448,6 +442,12 @@ class VideoDetailView extends StatelessWidget {
                   width: double.infinity,
                   child: YouTubeWebView(videoURL: video.videoURL),
                 ),
+              ),
+            // 3. 解説・ポイント
+            if (video.latex != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: LatexWebView(latexHtml: video.latex!),
               ),
             // 4. 実験道具を最後に
             if (video.equipment.isNotEmpty)

@@ -47,13 +47,21 @@ class WaveParameterSlider extends StatelessWidget {
 }
 
 class LambdaSlider extends WaveParameterSlider {
-  LambdaSlider({super.key, required super.value, required super.onChanged})
-      : super(label: 'λ', min: 0.001, max: 3.0);
+  LambdaSlider({
+    super.key,
+    required super.value,
+    required super.onChanged,
+    String label = 'λ',
+  }) : super(label: label, min: 0.001, max: 3.0);
 }
 
 class PeriodTSlider extends WaveParameterSlider {
-  PeriodTSlider({super.key, required super.value, required super.onChanged})
-      : super(label: 'T', min: 0.001, max: 1.0);
+  PeriodTSlider({
+    super.key,
+    required super.value,
+    required super.onChanged,
+    String label = 'T',
+  }) : super(label: label, min: 0.001, max: 2.0);
 }
 
 class RefractiveIndexSlider extends WaveParameterSlider {
@@ -62,9 +70,14 @@ class RefractiveIndexSlider extends WaveParameterSlider {
 }
 
 class ThicknessLSlider extends WaveParameterSlider {
-  ThicknessLSlider(
-      {super.key, required super.value, required super.onChanged, String label = 'L'})
-      : super(label: label, min: 0.0, max: 5.0);
+  ThicknessLSlider({
+    super.key,
+    required super.value,
+    required super.onChanged,
+    String label = 'L',
+    double min = 0.0,
+    double max = 5.0,
+  }) : super(label: label, min: min, max: max);
 }
 
 class ThetaSlider extends WaveParameterSlider {

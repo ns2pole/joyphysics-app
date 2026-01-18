@@ -28,6 +28,8 @@ class PlaneWaveSimulation extends PhysicsSimulation {
         'theta': 0.0,
         'lambda': 2.0,
         'periodT': 1.0,
+        'obsX': 0.0,
+        'obsY': 0.0,
       };
 
   @override
@@ -51,11 +53,27 @@ class PlaneWaveSimulation extends PhysicsSimulation {
         value: params['periodT']!,
         onChanged: (v) => updateParam('periodT', v),
       ),
+      const Divider(),
+      const Text('観測点 (a, b)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+      WaveParameterSlider(
+        label: 'a',
+        value: params['obsX']!,
+        min: -5.0,
+        max: 5.0,
+        onChanged: (v) => updateParam('obsX', v),
+      ),
+      WaveParameterSlider(
+        label: 'b',
+        value: params['obsY']!,
+        min: -5.0,
+        max: 5.0,
+        onChanged: (v) => updateParam('obsY', v),
+      ),
     ];
   }
 
   @override
-  Widget buildAnimation(context, time, azimuth, tilt, params, activeIds) {
+  Widget buildAnimation(context, time, azimuth, tilt, scale, params, activeIds) {
     final field = PlaneWaveField(
       theta: params['theta']!,
       lambda: params['lambda']!,
@@ -70,6 +88,10 @@ class PlaneWaveSimulation extends PhysicsSimulation {
         azimuth: azimuth,
         tilt: tilt,
         activeComponentIds: activeIds,
+        scale: scale,
+        markers: [
+          WaveMarker(point: math.Point(params['obsX']!, params['obsY']!), color: Colors.red),
+        ],
       ),
     );
   }

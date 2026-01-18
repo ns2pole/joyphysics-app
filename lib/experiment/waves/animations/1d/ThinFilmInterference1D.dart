@@ -37,6 +37,7 @@ class ThinFilmInterference1DSimulation extends PhysicsSimulation {
         'periodT': 1.0,
         'n': 1.5,
         'thicknessL': 1.0,
+        'obsX': 2.0,
       };
 
   @override
@@ -65,6 +66,15 @@ class ThinFilmInterference1DSimulation extends PhysicsSimulation {
       ThicknessLSlider(
         value: params['thicknessL']!,
         onChanged: (v) => updateParam('thicknessL', v),
+      ),
+      const Divider(),
+      const Text('観測点 a', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+      WaveParameterSlider(
+        label: 'a',
+        value: params['obsX']!,
+        min: -5.0,
+        max: 5.0,
+        onChanged: (v) => updateParam('obsX', v),
       ),
     ];
   }
@@ -95,7 +105,7 @@ class ThinFilmInterference1DSimulation extends PhysicsSimulation {
   }
 
   @override
-  Widget buildAnimation(context, time, azimuth, tilt, params, activeIds) {
+  Widget buildAnimation(context, time, azimuth, tilt, scale, params, activeIds) {
     final field = ThinFilmInterferenceField(
       lambda: params['lambda']!,
       periodT: params['periodT']!,
@@ -113,6 +123,10 @@ class ThinFilmInterference1DSimulation extends PhysicsSimulation {
         showTicks: true,
         boundaryX: params['thicknessL']!,
         activeComponentIds: activeIds,
+        scale: scale,
+        markers: [
+          WaveMarker(point: math.Point(params['obsX']!, 0.0), color: Colors.red),
+        ],
         mediumSlab: MediumSlabOverlay(
           xStart: 0.0,
           xEnd: params['thicknessL']!,
