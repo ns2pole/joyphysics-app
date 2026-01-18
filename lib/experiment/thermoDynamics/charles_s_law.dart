@@ -1,5 +1,6 @@
 import '../../model.dart'; // Videoクラス定義が別ならインポート
 final charles_s_law = Video(
+  isExperiment: true,
   category: 'thermodynamics',
   // inPreparation: true,
   iconName: "",

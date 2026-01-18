@@ -1,6 +1,7 @@
 import '../../model.dart'; // Videoクラス定義が別ならインポート
 final diodeIntroduction = Video(
-    category: 'electroMagnetism', // ← 追加
+  isExperiment: true,
+  category: 'electroMagnetism', // ← 追加
     iconName: "diodeIntroduction",
     title: "ダイオードとはどういうものか",
     videoURL: "rnO5LfjFpp4",

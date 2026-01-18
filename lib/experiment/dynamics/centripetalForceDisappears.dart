@@ -1,6 +1,7 @@
 import '../../model.dart';
 
 final centripetalForceDisappears = Video(
+  isExperiment: true,
   isNew: false,
   category: 'dynamics',
   iconName: "centripetalForceDisappears",

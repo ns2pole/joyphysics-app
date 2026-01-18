@@ -1,6 +1,7 @@
 import '../../model.dart'; // Videoクラス定義が別ならインポート
 final staticFriction = Video(
-    category: 'dynamics', // ← 追加
+  isExperiment: true,
+  category: 'dynamics', // ← 追加
     iconName: "staticFriction",
     title: "静止摩擦力と静止摩擦係数",
     videoURL: "nGueclGZVtc",

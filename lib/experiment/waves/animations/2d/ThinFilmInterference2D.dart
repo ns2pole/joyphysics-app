@@ -21,14 +21,7 @@ class ThinFilmInterference2DSimulation extends PhysicsSimulation {
       : super(
           title: "薄膜干渉 (2次元)",
           is3D: true,
-          formula: Column(
-            children: [
-              Math.tex(
-                r'\Delta = 2nd \cos \theta_2',
-                textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
+          formula: const FormulaDisplay(r'\Delta = 2nd \cos \theta_2'),
         );
 
   @override

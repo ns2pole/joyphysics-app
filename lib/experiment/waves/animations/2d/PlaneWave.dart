@@ -20,10 +20,7 @@ class PlaneWaveSimulation extends PhysicsSimulation {
       : super(
           title: "平面波",
           is3D: true,
-          formula: Math.tex(
-            r'z(x,y,t)=A\sin\left(2\pi\left(\frac{t}{T} - \frac{x\cos\theta+y\sin\theta}{\lambda}\right)\right)',
-            textStyle: const TextStyle(fontSize: 14),
-          ),
+          formula: const FormulaDisplay(r'z(x,y,t)=A\sin\left(2\pi\left(\frac{t}{T} - \frac{x\cos\theta+y\sin\theta}{\lambda}\right)\right)'),
         );
 
   @override

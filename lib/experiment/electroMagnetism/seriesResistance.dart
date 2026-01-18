@@ -1,6 +1,7 @@
 import '../../model.dart'; // Videoクラス定義が別ならインポート
 final seriesResistance = Video(
-    category: 'electroMagnetism', // ← 追加
+  isExperiment: true,
+  category: 'electroMagnetism', // ← 追加
     iconName: "seriesResistance",
     title: "抵抗の直列接続",
     videoURL: "4-ZxiXh-xiE",

@@ -247,11 +247,34 @@ class _VideoCategoryList extends StatelessWidget {
               overflow: TextOverflow.ellipsis, // 3行目以降は省略
             ),
           ),
+          // スマートフォン専用記事（isSmartPhoneOnlyフラグ）にsmartphone_only.pngを表示
           if (v.isSmartPhoneOnly == true)
             Opacity(
               opacity: disabled ? 0.6 : 1.0,
               child: Image.asset(
-                'assets/others/smartPhoneOnly.gif',
+                'assets/icon/smartphone_only.png',
+                width: 60,
+                height: 40,
+                fit: BoxFit.contain,
+              ),
+            ),
+          // シミュレーション・アニメーション記事（isSimulationフラグ）にanime.pngを表示
+          if (v.isSimulation == true)
+            Opacity(
+              opacity: disabled ? 0.6 : 1.0,
+              child: Image.asset(
+                'assets/icon/anime.png',
+                width: 60,
+                height: 40,
+                fit: BoxFit.contain,
+              ),
+            ),
+          // 実験記事（isExperimentフラグ）にexperiment.pngを表示
+          if (v.isExperiment == true)
+            Opacity(
+              opacity: disabled ? 0.6 : 1.0,
+              child: Image.asset(
+                'assets/icon/experiment.png',
                 width: 60,
                 height: 40,
                 fit: BoxFit.contain,
@@ -265,8 +288,8 @@ class _VideoCategoryList extends StatelessWidget {
                 width: 45,
                 height: 30,
                 fit: BoxFit.contain,
+              ),
             ),
-          ),
         ],
       ),
       onTap: disabled
@@ -406,11 +429,7 @@ class VideoDetailView extends StatelessWidget {
               ...video.experimentWidgets!.map(
                 (w) => Padding(
                   padding: const EdgeInsets.only(top: 16),
-                  child: SizedBox(
-                    height: (w is HasHeight) ? w.widgetHeight : 220,
-                    width: double.infinity,
-                    child: w,
-                  ),
+                  child: w, // SizedBox による高さの強制を解除
                 ),
               ),
             if (video.videoURL.isNotEmpty)
@@ -520,7 +539,7 @@ class FormulaList extends StatelessWidget {
                                 if (f.relatedVideo.isSmartPhoneOnly == true) ...[
                                   const SizedBox(width: 10),
                                   Image.asset(
-                                    'assets/others/smartPhoneOnly.gif',
+                                    'assets/icon/smartphone_only.png',
                                     width: 68,
                                     height: 45,
                                     fit: BoxFit.contain,
@@ -532,6 +551,26 @@ class FormulaList extends StatelessWidget {
                                     'assets/others/new.gif',
                                     width: 45,
                                     height: 30,
+                                    fit: BoxFit.contain,
+                                  ),
+                                ],
+                                // シミュレーション・アニメーション記事（isSimulationフラグ）にanime.pngを表示
+                                if (f.relatedVideo.isSimulation == true) ...[
+                                  const SizedBox(width: 10),
+                                  Image.asset(
+                                    'assets/icon/anime.png',
+                                    width: 68,
+                                    height: 45,
+                                    fit: BoxFit.contain,
+                                  ),
+                                ],
+                                // 実験記事（isExperimentフラグ）にexperiment.pngを表示
+                                if (f.relatedVideo.isExperiment == true) ...[
+                                  const SizedBox(width: 10),
+                                  Image.asset(
+                                    'assets/icon/experiment.png',
+                                    width: 68,
+                                    height: 45,
                                     fit: BoxFit.contain,
                                   ),
                                 ],

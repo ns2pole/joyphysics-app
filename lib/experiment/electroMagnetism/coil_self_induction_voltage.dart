@@ -1,6 +1,7 @@
 import '../../model.dart'; // Video クラス
 
 final coil_self_induction_voltage = Video(
+  isExperiment: true,
   category: 'electroMagnetism',
   iconName: "", // 空ならUI側で空ボックスで幅確保
   title: "自己誘導：スイッチ開閉によるコイルの高電圧発生（E=3V, R1=47Ω, R2=100Ω, L=5mH）",

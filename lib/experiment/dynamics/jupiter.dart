@@ -2,6 +2,7 @@ import '../../model.dart'; // Videoクラス定義が別ならインポート
 
 //https://www.illust-box.jp/s/sozai/209089/ (quote:画像)
 final jupiter = Video(
+    isExperiment: true,
     category: 'dynamics', // ← 追加
     iconName: "jupiter",
     title: "木星のガリレオ衛星とケプラー第3法則",

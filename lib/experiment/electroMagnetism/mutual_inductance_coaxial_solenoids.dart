@@ -1,6 +1,7 @@
 import '../../model.dart'; // Video クラス
 
 final mutual_inductance_coaxial_solenoids = Video(
+  isExperiment: true,
   category: 'electroMagnetism',
   iconName: "", // アイコン未作成 → 空文字（UI側で空白確保）
   title: "同軸ソレノイド：相互インダクタンスと外側誘導起電力（内側LR, 2V, 70 kHz, R=200Ω／ピーク→RMS, ℓ=0.20 m）",

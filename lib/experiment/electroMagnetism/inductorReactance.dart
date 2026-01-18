@@ -1,5 +1,6 @@
 import '../../model.dart'; // Videoクラス定義が別ならインポート
 final inductorReactance = Video(
+  isExperiment: true,
   category: 'electroMagnetism',
   iconName: "",
   // inPreparation: true,

@@ -21,14 +21,7 @@ class FixedReflection2DSimulation extends PhysicsSimulation {
       : super(
           title: "反射の法則 (固定端)",
           is3D: true,
-          formula: Column(
-            children: [
-              Math.tex(
-                r'z_{reflected} = -z_{incident}(at\ x=0)',
-                textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
+          formula: const FormulaDisplay(r'z_{reflected} = -z_{incident}(at\ x=0)'),
         );
 
   @override
@@ -117,7 +110,7 @@ class FixedReflection2DSimulation extends PhysicsSimulation {
         activeComponentIds: activeIds,
         mediumSlab: const MediumSlabOverlay(
           xStart: 0.0,
-          xEnd: 10.0,
+          xEnd: 5.0,
           color: Colors.yellow,
           opacity: 0.4,
         ),

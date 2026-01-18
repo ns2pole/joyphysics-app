@@ -1,6 +1,7 @@
 import '../../model.dart'; // Videoクラス定義が別ならインポート
 final verticalSpringOscillation = Video(
-    category: 'dynamics', // ← 追加
+  isExperiment: true,
+  category: 'dynamics', // ← 追加
     iconName: "verticalSpringOscillation",
     title: "単振動 (鉛直バネ振り子)",
     videoURL: "W6dxv-MvDxo",

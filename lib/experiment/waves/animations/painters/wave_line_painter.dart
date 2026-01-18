@@ -30,13 +30,13 @@ class WaveLinePainter extends CustomPainter {
 
     final center = Offset(size.width / 2, size.height / 2);
     // スケール: 1ユニット = 30ピクセル程度 (サイズに合わせて調整)
-    final double unitScale = size.width / 24; 
+    final double unitScale = size.width / 12; 
 
     Offset worldToScreen(double x, double y) {
-      return Offset(center.dx + x * unitScale, center.dy - y * unitScale * 4); // yは強調表示
+      return Offset(center.dx + x * unitScale, center.dy - y * unitScale * 2); // yは強調表示
     }
 
-    const range = 10.0;
+    const range = 5.0;
 
     // 0. 媒質背景 (Slab)
     if (mediumSlab != null) {
@@ -58,7 +58,7 @@ class WaveLinePainter extends CustomPainter {
     canvas.drawLine(worldToScreen(0, -2), worldToScreen(0, 2), axisPaint); // y軸
 
     if (showTicks) {
-      for (int i = -10; i <= 10; i++) {
+      for (int i = -5; i <= 5; i++) {
         final p1 = worldToScreen(i.toDouble(), -0.1);
         final p2 = worldToScreen(i.toDouble(), 0.1);
         canvas.drawLine(p1, p2, axisPaint);

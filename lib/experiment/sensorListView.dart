@@ -120,7 +120,7 @@ class SensorListView extends StatelessWidget {
             child: ListTile(
               contentPadding: EdgeInsets.symmetric(horizontal: 0),
               leading: Image.asset(
-                'assets/others/smartPhoneOnly.gif',
+                'assets/icon/smartphone_only.png',
                 width: 60,
                 height: 40,
                 fit: BoxFit.contain,

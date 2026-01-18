@@ -19,24 +19,18 @@ class FreeEndReflectionLineSimulation extends PhysicsSimulation {
       : super(
           title: "自由端反射 (線モデル)",
           is3D: false,
-          formula: Column(
+          formula: const Column(
             children: [
-              Math.tex(
-                r'\color{#B38CFF}{z_i = A \sin\left(2\pi\left(\frac{t}{T} - \frac{x - x_0}{\lambda}\right)\right)}',
-                textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 4),
-              Math.tex(
-                r'\color{#8CFFB3}{z_r = A \sin\left(2\pi\left(\frac{t}{T} - \frac{2L - x - x_0}{\lambda}\right)\right)}',
-                textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-              ),
+              FormulaDisplay(r'\color{#B38CFF}{z_i = A \sin\left(2\pi\left(\frac{t}{T} - \frac{x - x_0}{\lambda}\right)\right)}'),
+              SizedBox(height: 4),
+              FormulaDisplay(r'\color{#8CFFB3}{z_r = A \sin\left(2\pi\left(\frac{t}{T} - \frac{2L - x - x_0}{\lambda}\right)\right)}'),
             ],
           ),
         );
 
   @override
   Map<String, double> get initialParameters => {
-        'lambda': 4.0,
+        'lambda': 2.0,
         'periodT': 1.0,
       };
 

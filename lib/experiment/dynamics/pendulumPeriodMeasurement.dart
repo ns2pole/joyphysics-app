@@ -1,6 +1,7 @@
 import '../../model.dart'; // Videoクラス定義が別ならインポート
 final pendulumPeriodMeasurement = Video(
-    category: 'dynamics', // ← 追加
+  isExperiment: true,
+  category: 'dynamics', // ← 追加
     iconName: "pendulumPeriodMeasurement",
     title: "単振り子の周期",
     videoURL: "kE5I2WbKwJ0",

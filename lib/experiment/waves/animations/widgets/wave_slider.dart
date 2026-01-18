@@ -48,7 +48,7 @@ class WaveParameterSlider extends StatelessWidget {
 
 class LambdaSlider extends WaveParameterSlider {
   LambdaSlider({super.key, required super.value, required super.onChanged})
-      : super(label: 'λ', min: 0.001, max: 1.0);
+      : super(label: 'λ', min: 0.001, max: 3.0);
 }
 
 class PeriodTSlider extends WaveParameterSlider {

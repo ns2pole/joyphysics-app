@@ -1,6 +1,7 @@
 import '../../model.dart'; // Videoクラス定義が別ならインポート
 final oneSideLift = Video(
-    category: 'dynamics', // ← 追加
+  isExperiment: true,
+  category: 'dynamics', // ← 追加
     iconName: "oneSideLift",
     title: "片側持ち上げ",
     videoURL: "wtxRRKArApU",

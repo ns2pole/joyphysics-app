@@ -22,10 +22,7 @@ class YoungDoubleSlitSimulation extends PhysicsSimulation {
       : super(
           title: "ヤングの実験",
           is3D: true,
-          formula: Math.tex(
-            r'\Delta x = \frac{L\lambda}{d}',
-            textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
+          formula: const FormulaDisplay(r'\Delta x = \frac{L\lambda}{d}'),
         );
 
   @override
@@ -134,12 +131,12 @@ class YoungDoubleSlitSimulation extends PhysicsSimulation {
         tilt: tilt,
         activeComponentIds: activeIds,
         markers: [
-          math.Point(-8.0, params['a']!),
-          math.Point(-8.0, -params['a']!),
+          math.Point(-4.0, params['a']!),
+          math.Point(-4.0, -params['a']!),
         ],
         showYoungDoubleSlitExtras: true,
         slitA: params['a']!,
-        screenX: 8.0,
+        screenX: 4.0,
         showIntersectionLine: activeIds.contains('showIntersectionLine'),
         showIntensityLine: activeIds.contains('showIntensityLine'),
       ),

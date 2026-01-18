@@ -19,10 +19,7 @@ class CircularWaveSimulation extends PhysicsSimulation {
       : super(
           title: "円形波",
           is3D: true,
-          formula: Math.tex(
-            r'z(x,y,t)=A\sin\left(2\pi\left(\frac{t}{T} - \frac{\sqrt{x^2+y^2}}{\lambda}\right)\right)',
-            textStyle: const TextStyle(fontSize: 14),
-          ),
+          formula: const FormulaDisplay(r'z(x,y,t)=A\sin\left(2\pi\left(\frac{t}{T} - \frac{\sqrt{x^2+y^2}}{\lambda}\right)\right)'),
         );
 
   @override

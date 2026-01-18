@@ -1,6 +1,7 @@
 import '../../model.dart'; // Videoクラス定義が別ならインポート
 final bismuthDiamagnetism = Video(
-    category: 'electroMagnetism', // ← 追加
+  isExperiment: true,
+  category: 'electroMagnetism', // ← 追加
     iconName: "bismuthDiamagnetism",
     title: "ビスマスの反磁性",
     videoURL: "vi5uhB2IOBI",

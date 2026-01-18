@@ -1,6 +1,7 @@
 import '../../model.dart'; // Videoクラス定義が別ならインポート
 final rcCircuit = Video(
-    category: 'electroMagnetism', // ← 追加
+  isExperiment: true,
+  category: 'electroMagnetism', // ← 追加
     iconName: "rcCircuit",
     title: "RC回路",
     videoURL: "oVY3-umLN14",

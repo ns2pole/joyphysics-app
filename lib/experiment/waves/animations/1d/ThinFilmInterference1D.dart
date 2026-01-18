@@ -22,27 +22,18 @@ class ThinFilmInterference1DSimulation extends PhysicsSimulation {
       : super(
           title: "薄膜干渉 (1次元)",
           is3D: false,
-          formula: Column(
+          formula: const Column(
             children: [
-              Math.tex(
-                r'\color{#B38CFF}{z_i = A \sin\left(2\pi\left(\frac{t}{T} - \frac{x}{\lambda_1}\right)\right)}',
-                textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-              ),
-              Math.tex(
-                r'\color{#8CFFB3}{z_{r1} = -A \sin\left(2\pi\left(\frac{t}{T} + \frac{x}{\lambda_1}\right)\right)}',
-                textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-              ),
-              Math.tex(
-                r'\color{#FFB38C}{z_{r2} = A \sin\left(2\pi\left(\frac{t}{T} + \frac{x - 2nL}{\lambda_1}\right)\right)}',
-                textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-              ),
+              FormulaDisplay(r'\color{#B38CFF}{z_i = A \sin\left(2\pi\left(\frac{t}{T} - \frac{x}{\lambda_1}\right)\right)}'),
+              FormulaDisplay(r'\color{#8CFFB3}{z_{r1} = -A \sin\left(2\pi\left(\frac{t}{T} + \frac{x}{\lambda_1}\right)\right)}'),
+              FormulaDisplay(r'\color{#FFB38C}{z_{r2} = A \sin\left(2\pi\left(\frac{t}{T} + \frac{x - 2nL}{\lambda_1}\right)\right)}'),
             ],
           ),
         );
 
   @override
   Map<String, double> get initialParameters => {
-        'lambda': 4.0,
+        'lambda': 2.0,
         'periodT': 1.0,
         'n': 1.5,
         'thicknessL': 1.0,

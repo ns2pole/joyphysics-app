@@ -116,76 +116,81 @@ class WaveSurfacePainter extends CustomPainter {
       return field.getComponents(x, y, time, activeComponentIds!);
     }
 
-    const range = 10.0;
-    const div = 90;
+    const range = 5.0;
+    const div = 140;
     const step = (range * 2) / div;
 
-    // Pre-calculate grid points and wave components
+    // Pre-calculate grid bases for efficiency
     final numPoints = div + 1;
-    // Base screen coordinates without Z-axis contribution
-    final gridPxBase = List.generate(numPoints, (i) => Float64List(numPoints));
-    final gridPyBase = List.generate(numPoints, (i) => Float64List(numPoints));
+    final gridPxBase = Float64List(numPoints * numPoints);
+    final gridPyBase = Float64List(numPoints * numPoints);
+    final gridZ = Float64List(numPoints * numPoints);
+    final gridComps = List<List<WaveComponent>>.generate(numPoints * numPoints, (_) => []);
     
-    // Wave components at each grid point
-    final gridComps = List.generate(
-      numPoints,
-      (i) => List<List<WaveComponent>>.filled(numPoints, []),
-    );
-
     for (int i = 0; i < numPoints; i++) {
       final x = -range + i * step;
+      final x_cAzimuth = x * cAzimuth;
+      final x_sAzimuth = x * sAzimuth;
       for (int j = 0; j < numPoints; j++) {
         final y = -range + j * step;
+        final xr = x_cAzimuth - y * sAzimuth;
+        final yr = x_sAzimuth + y * cAzimuth;
+        final idx = i * numPoints + j;
+        gridPxBase[idx] = center.dx + (yr - xr) * cos45Scale;
+        gridPyBase[idx] = center.dy + (xr + yr) * cos45STiltScale;
         
-        final xr = x * cAzimuth - y * sAzimuth;
-        final yr = x * sAzimuth + y * cAzimuth;
-        gridPxBase[i][j] = center.dx + (yr - xr) * cos45Scale;
-        gridPyBase[i][j] = center.dy + (xr + yr) * cos45STiltScale;
-        
-        gridComps[i][j] = getComponents(x, y);
+        final comps = getComponents(x, y);
+        gridComps[idx] = comps;
+        if (comps.isNotEmpty) {
+          gridZ[idx] = field.z(x, y, time);
+        }
       }
     }
 
-    // Grid points for total wave (used for mesh lines and slab)
+    // Grid points for total wave (pre-calculated for mesh lines and slab)
     final gridPoints = List.generate(
       numPoints,
       (i) => List<Offset>.filled(numPoints, Offset.zero),
     );
     for (int i = 0; i < numPoints; i++) {
       for (int j = 0; j < numPoints; j++) {
-        final x = -range + i * step;
-        final y = -range + j * step;
-        final z = field.z(x, y, time);
-        gridPoints[i][j] = Offset(gridPxBase[i][j], gridPyBase[i][j] - z * cTiltScale);
+        final idx = i * numPoints + j;
+        gridPoints[i][j] = Offset(gridPxBase[idx], gridPyBase[idx] - gridZ[idx] * cTiltScale);
       }
     }
 
     void drawWaveSurface({required bool onlyAbove}) {
       if (activeComponentIds != null && activeComponentIds!.isEmpty) return;
 
-      final compsSample = gridComps[0][0];
-      final numComps = compsSample.length;
+      final firstComps = gridComps[0];
+      final numComps = firstComps.length;
+      if (numComps == 0) return;
+
+      final paint = Paint()..isAntiAlias = true;
 
       for (int compIdx = 0; compIdx < numComps; compIdx++) {
         final vertices = <Offset>[];
         final colors = <Color>[];
         final indices = <int>[];
 
-        final baseColor = compsSample[compIdx].color;
-        final aboveColor = baseColor.withOpacity(0.8);
-        final belowColor = baseColor.withOpacity(0.3);
+        final baseColor = firstComps[compIdx].color;
+        final colorAbove = baseColor.withOpacity(0.8);
+        final colorBelow = baseColor.withOpacity(0.3);
 
         for (int i = 0; i < div; i++) {
           for (int j = 0; j < div; j++) {
-            final c1 = gridComps[i][j];
-            final c2 = gridComps[i + 1][j];
-            final c3 = gridComps[i + 1][j + 1];
-            final c4 = gridComps[i][j + 1];
+            final idx1 = i * numPoints + j;
+            final idx2 = (i + 1) * numPoints + j;
+            final idx3 = (i + 1) * numPoints + (j + 1);
+            final idx4 = i * numPoints + (j + 1);
 
-            if (compIdx >= c1.length ||
-                compIdx >= c2.length ||
-                compIdx >= c3.length ||
-                compIdx >= c4.length) continue;
+            final c1 = gridComps[idx1];
+            final c2 = gridComps[idx2];
+            final c3 = gridComps[idx3];
+            final c4 = gridComps[idx4];
+
+            if (compIdx >= c1.length || compIdx >= c2.length || 
+                compIdx >= c3.length || compIdx >= c4.length) continue;
 
             final z1 = c1[compIdx].value;
             final z2 = c2[compIdx].value;
@@ -194,13 +199,12 @@ class WaveSurfacePainter extends CustomPainter {
 
             if (onlyAbove && z1 <= 0 && z2 <= 0 && z3 <= 0 && z4 <= 0) continue;
 
-            final p1 = Offset(gridPxBase[i][j], gridPyBase[i][j] - z1 * cTiltScale);
-            final p2 = Offset(gridPxBase[i+1][j], gridPyBase[i+1][j] - z2 * cTiltScale);
-            final p3 = Offset(gridPxBase[i+1][j+1], gridPyBase[i+1][j+1] - z3 * cTiltScale);
-            final p4 = Offset(gridPxBase[i][j+1], gridPyBase[i][j+1] - z4 * cTiltScale);
+            final p1 = Offset(gridPxBase[idx1], gridPyBase[idx1] - z1 * cTiltScale);
+            final p2 = Offset(gridPxBase[idx2], gridPyBase[idx2] - z2 * cTiltScale);
+            final p3 = Offset(gridPxBase[idx3], gridPyBase[idx3] - z3 * cTiltScale);
+            final p4 = Offset(gridPxBase[idx4], gridPyBase[idx4] - z4 * cTiltScale);
 
-            final color = onlyAbove ? aboveColor : belowColor;
-
+            final color = onlyAbove ? colorAbove : colorBelow;
             final int startIdx = vertices.length;
             vertices.addAll([p1, p2, p3, p4]);
             colors.addAll([color, color, color, color]);
@@ -218,7 +222,7 @@ class WaveSurfacePainter extends CustomPainter {
             colors: colors,
             indices: indices,
           );
-          canvas.drawVertices(v, BlendMode.srcOver, Paint());
+          canvas.drawVertices(v, BlendMode.srcOver, paint);
         }
       }
     }
@@ -272,9 +276,9 @@ class WaveSurfacePainter extends CustomPainter {
 
     // Young's Double Slit Extras: Barrier and Screen
     if (showYoungDoubleSlitExtras) {
-      final barrierX = -8.0;
+      final barrierX = -4.0;
 
-      // 1. Barrier at x = -8
+      // 1. Barrier at x = -4
       final barrierPaint = Paint()
         ..color = Colors.black.withOpacity(0.75) // 黒めに
         ..style = PaintingStyle.fill;
@@ -295,7 +299,7 @@ class WaveSurfacePainter extends CustomPainter {
       drawBarrierPart(-slitA + gapSize, slitA - gapSize);
       drawBarrierPart(slitA + gapSize, range);
 
-      // 2. Screen at x=screenX (8.0)
+      // 2. Screen at x=screenX (4.0)
       final screenPaint = Paint()
         ..color = Colors.white.withOpacity(0.4)
         ..style = PaintingStyle.fill;
@@ -306,9 +310,7 @@ class WaveSurfacePainter extends CustomPainter {
       canvas.drawPath(Path()..moveTo(s1.dx, s1.dy)..lineTo(s2.dx, s2.dy)..lineTo(s3.dx, s3.dy)..lineTo(s4.dx, s4.dy)..close(), screenPaint);
 
       // 3. Interference pattern on the screen (x=screenX)
-      // Since screenX is often 8.0, and with div=90, range=10, 
-      // the index for x=8.0 is exactly 81.
-      final screenIdx = ((screenX + 10) * div / 20).round();
+      final screenIdx = ((screenX + 5) * div / 10).round();
       final useGridForScreen = (screenIdx >= 0 && screenIdx <= div);
 
       // 4. Thick purple intersection line for amplitude on screen
@@ -364,12 +366,10 @@ class WaveSurfacePainter extends CustomPainter {
           final double z;
           final double y = -range + j * step;
           if (useGridForScreen) {
-            // Need to get the total z, which might be different from individual components
             z = field.z(screenX, y, time);
           } else {
             z = field.z(screenX, y, time);
           }
-          // 2乗をスケールして表示
           final intensityZ = z * z * 4.0; 
           final p = worldToScreen(screenX, y, intensityZ);
           if (isFirst) {
@@ -382,8 +382,8 @@ class WaveSurfacePainter extends CustomPainter {
         canvas.drawPath(intensityPath, intensityPaint);
       }
 
-      final compsSample = gridComps[0][0];
-      final numComps = compsSample.length;
+      final firstComps = gridComps[0];
+      final numComps = firstComps.length;
 
       if (numComps > 0 && (activeComponentIds == null || activeComponentIds!.isNotEmpty)) {
         final patternPaint = Paint()
@@ -395,10 +395,9 @@ class WaveSurfacePainter extends CustomPainter {
           bool isFirst = true;
 
           for (int j = 0; j <= div; j++) {
-            final double z;
             final List<WaveComponent> comps;
             if (useGridForScreen) {
-              comps = gridComps[screenIdx][j];
+              comps = gridComps[screenIdx * numPoints + j];
             } else {
               final y = -range + j * step;
               comps = getComponents(screenX, y);
@@ -406,7 +405,7 @@ class WaveSurfacePainter extends CustomPainter {
             
             if (compIdx >= comps.length) continue;
             
-            z = comps[compIdx].value;
+            final double z = comps[compIdx].value;
             final p = worldToScreen(screenX, -range + j * step, z);
             
             if (isFirst) {
@@ -416,7 +415,12 @@ class WaveSurfacePainter extends CustomPainter {
               path.lineTo(p.dx, p.dy);
             }
           }
-          final compsAtEnd = useGridForScreen ? gridComps[screenIdx][div] : getComponents(screenX, range);
+          final List<WaveComponent> compsAtEnd;
+          if (useGridForScreen) {
+            compsAtEnd = gridComps[screenIdx * numPoints + div];
+          } else {
+            compsAtEnd = getComponents(screenX, range);
+          }
           if (compIdx < compsAtEnd.length) {
             canvas.drawPath(path, patternPaint..color = compsAtEnd[compIdx].color);
           }
@@ -434,14 +438,6 @@ class WaveSurfacePainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
 
     const intRange = 10;
-    // We can't easily use gridPoints for mesh lines because mesh lines are at integer coordinates
-    // while gridPoints are at div steps. However, since range=10 and div=90, 
-    // step = 20/90 = 2/9. Integer coordinates like -10, -9... 10 are at i = (x+10)/step
-    // (x+10)/(2/9) = (x+10)*9/2. 
-    // For x=-10, i=0. For x=-8, i=9. For x=0, i=45. For x=10, i=90.
-    // All integer coordinates from -10 to 10 are included in the 90-div grid!
-    // So we can use gridPoints directly.
-
     for (int xInt = -intRange; xInt <= intRange; xInt++) {
       final i = ((xInt + 10) * div / 20).round();
       final path = Path();
@@ -483,8 +479,7 @@ class WaveSurfacePainter extends CustomPainter {
       for (int i = 0; i <= div; i++) {
         final x = -range + i * step;
         for (int j = 0; j < div; j++) {
-          final y1 = -range + j * step;
-          final phase1 = getPhase(x, y1);
+          final phase1 = getPhase(x, -range + j * step);
           if (math.sin(phase1) > 0.98) {
             final p1 = gridPoints[i][j];
             final p2 = gridPoints[i][j+1];
@@ -507,8 +502,6 @@ class WaveSurfacePainter extends CustomPainter {
         final tickPaint = Paint()
           ..color = color.withOpacity(0.6)
           ..strokeWidth = 1.5;
-        
-        // Ticks for x-axis from -intRange to intRange
         for (int i = -intRange; i <= intRange; i++) {
           if (i == 0) continue;
           final tx = i.toDouble();
@@ -541,24 +534,22 @@ class WaveSurfacePainter extends CustomPainter {
     void drawXAxis(double len, Color color, String label) {
       final start = worldToScreen(0, 0, 0);
       final posEnd = worldToScreen(len, 0, 0);
-      final negEnd = worldToScreen(-8.0, 0, 0);
+      final negEnd = worldToScreen(-4.0, 0, 0);
       
       final posPaint = Paint()
         ..color = color.withOpacity(0.8)
         ..strokeWidth = 2.5;
       
-      // Positive part: solid line
       canvas.drawLine(start, posEnd, posPaint);
       
-      // Negative part (x < 0): dashed line
       final negPaint = Paint()
         ..color = color.withOpacity(0.6)
         ..strokeWidth = 2.0;
       
       const dashLen = 0.4;
       double curX = 0.0;
-      while (curX > -8.0) {
-        final nextX = math.max(curX - dashLen, -8.0);
+      while (curX > -4.0) {
+        final nextX = math.max(curX - dashLen, -4.0);
         canvas.drawLine(
           worldToScreen(curX, 0, 0),
           worldToScreen(nextX, 0, 0),
@@ -567,12 +558,11 @@ class WaveSurfacePainter extends CustomPainter {
         curX -= dashLen * 2;
       }
 
-      // Ticks for x-axis from -8 to 5
       if (showTicks) {
         final tickPaint = Paint()
           ..color = color.withOpacity(0.6)
           ..strokeWidth = 1.5;
-        for (int i = -8; i <= 5; i++) {
+        for (int i = -4; i <= 5; i++) {
           if (i == 0) continue;
           final tx = i.toDouble();
           final tStart = worldToScreen(tx, -0.2, 0);
@@ -606,7 +596,6 @@ class WaveSurfacePainter extends CustomPainter {
     drawAxis(0, axisLen, 0, Colors.green, yAxisLabel);
     drawAxis(0, 0, 3.5, Colors.blue, zAxisLabel);
 
-    // 4. Markers
     final markerPaint = Paint()
       ..color = Colors.yellow
       ..style = PaintingStyle.fill;
@@ -647,4 +636,3 @@ class WaveSurfacePainter extends CustomPainter {
         oldDelegate.showIntensityLine != showIntensityLine;
   }
 }
-

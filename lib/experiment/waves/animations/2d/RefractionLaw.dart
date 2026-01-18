@@ -21,10 +21,7 @@ class RefractionLawSimulation extends PhysicsSimulation {
       : super(
           title: "屈折の法則 (2次元)",
           is3D: true,
-          formula: Math.tex(
-            r'n_1\sin\theta_1=n_2\sin\theta_2',
-            textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
+          formula: const FormulaDisplay(r'n_1\sin\theta_1=n_2\sin\theta_2'),
         );
 
   @override

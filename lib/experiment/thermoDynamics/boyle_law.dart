@@ -1,6 +1,7 @@
 import '../../model.dart'; // Videoクラス定義が別ならインポート
 final boyleLaw = Video(
-    category: 'thermoDynamics', // ← 追加
+  isExperiment: true,
+  category: 'thermoDynamics', // ← 追加
     iconName: "boyleLaw",
     title: "ボイルの法則",
     videoURL: "tQNsVK5cxEw",

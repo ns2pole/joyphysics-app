@@ -1,6 +1,7 @@
 import '../../model.dart'; // Videoクラス定義が別ならインポート
 final openPipeResonance = Video(
-    category: 'waves', // ← 追加
+  isExperiment: true,
+  category: 'waves', // ← 追加
     iconName: "openPipeResonance",
     title: "気柱の振動(開管)",
     videoURL: "08SRSu2SoGI",

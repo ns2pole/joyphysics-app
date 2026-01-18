@@ -1,6 +1,7 @@
 import '../../model.dart'; // Videoクラス定義が別ならインポート
 final lemonBatteryVoltage = Video(
-    category: 'electroMagnetism', // ← 追加
+  isExperiment: true,
+  category: 'electroMagnetism', // ← 追加
     iconName: "battery",
     title: "レモン電池の電圧",
     videoURL: "qHAulACJGjU",

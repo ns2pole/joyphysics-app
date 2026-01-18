@@ -1,7 +1,8 @@
 //https://www.irasutoya.com/2017/05/blog-post_564.html (quote:画像)
 import '../../model.dart'; // Videoクラス定義が別ならインポート
 final planets = Video(
-    category: 'dynamics', // ← 追加
+  isExperiment: true,
+  category: 'dynamics', // ← 追加
     iconName: "planets",
     title: "太陽系惑星の天文データとケプラー第3法則",
     videoURL: "",

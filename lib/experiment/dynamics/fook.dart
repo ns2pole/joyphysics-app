@@ -1,6 +1,7 @@
 import '../../model.dart'; // Videoクラス定義が別ならインポート
 final fook = Video(
-    category: 'dynamics', // ← 追加
+  isExperiment: true,
+  category: 'dynamics', // ← 追加
     iconName: "fook",
     title: "バネの伸びと弾性力の関係",
     videoURL: "x1iNnA55Jcw",

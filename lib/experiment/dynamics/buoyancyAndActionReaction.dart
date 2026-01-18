@@ -1,5 +1,6 @@
 import '../../model.dart'; // Videoクラス定義が別ならインポート
 final buoyancyAndActionReaction = Video(
+    isExperiment: true,
     category: 'dynamics', // ← 追加
     iconName: "buoyancyAndActionReaction",
     title: "浮力と作用反作用",

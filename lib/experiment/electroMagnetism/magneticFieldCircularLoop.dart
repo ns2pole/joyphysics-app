@@ -2,7 +2,8 @@ import 'package:joyphysics/experiment/electroMagnetism/MagnetometerExperimentWid
 import '../../model.dart'; // Videoクラス定義が別ならインポート
 
 final magneticFieldCircularLoop = Video(
-    category: 'electroMagnetism', // ← 追加
+  isExperiment: true,
+  category: 'electroMagnetism', // ← 追加
     iconName: "magneticFieldCircularLoop",
     title: "円形電流の中心における磁場の大きさ",
     videoURL: "SDrXcpvY4Ac",

@@ -1,6 +1,7 @@
 import '../../model.dart'; // Videoクラス定義が別ならインポート
 final buoyancyComparison = Video(
-    category: 'dynamics', // ← 追加
+  isExperiment: true,
+  category: 'dynamics', // ← 追加
     iconName: "buoyancyComparison",
     title: "浮力（食塩水・普通の水・油での比較）",
     videoURL: "44vPx_0XeO0",

@@ -1,6 +1,7 @@
 import '../../model.dart'; // Videoクラス定義が別ならインポート
 final ampereLawTorque = Video(
-    category: 'electroMagnetism', // ← 追加
+  isExperiment: true,
+  category: 'electroMagnetism', // ← 追加
     iconName: "ampereLawTorque",
     title: "アンペールの法則と直線電流の磁場",
     videoURL: "2gL0ET7XsVU",

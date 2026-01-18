@@ -1,6 +1,7 @@
 import '../../model.dart'; // Videoクラス定義が別ならインポート
 
 final ac_power_generation = Video(
+  isExperiment: true,
   category: 'electroMagnetism',
   iconName: "",
   title: "回転磁石（x軸回り）と30巻コイルの交流起電力：数値代入（r_m=1.5 cm, B̂=0.200 T）",

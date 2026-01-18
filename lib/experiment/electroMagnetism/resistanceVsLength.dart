@@ -1,6 +1,7 @@
 import '../../model.dart'; // Videoクラス定義が別ならインポート
 final resistanceVsLength = Video(
-    category: 'electroMagnetism', // ← 追加
+  isExperiment: true,
+  category: 'electroMagnetism', // ← 追加
     iconName: "resistance",
     title: "抵抗の長さと抵抗値",
     videoURL: "dBMA0r6J6ns",

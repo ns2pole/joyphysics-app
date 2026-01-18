@@ -11,6 +11,8 @@ class Video {
   final List<String> equipment;
   final String costRating;
   final bool? isSmartPhoneOnly;
+  final bool? isSimulation; // シミュレーション・アニメーションかどうか
+  final bool? isExperiment; // 実験かどうか
   final String? latex;
   final List<Widget>? experimentWidgets; // 複数のWidgetを許可
 
@@ -22,8 +24,10 @@ class Video {
     required this.title,
     required this.videoURL,
     required this.equipment,
-    required this.costRating,
+    required     this.costRating,
     this.isSmartPhoneOnly,
+    this.isSimulation,
+    this.isExperiment,
     this.latex,
     this.experimentWidgets, // ← optional, default null
   });

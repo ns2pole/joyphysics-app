@@ -21,24 +21,18 @@ class Refraction1DSimulation extends PhysicsSimulation {
       : super(
           title: "屈折 (1次元)",
           is3D: false,
-          formula: Column(
+          formula: const Column(
             children: [
-              Math.tex(
-                r'\color{#B38CFF}{z_1 = A \sin\left(2\pi\left(\frac{t}{T} - \frac{x}{\lambda_1}\right)\right)}',
-                textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 4),
-              Math.tex(
-                r'\color{#FFB800}{z_2 = A \sin\left(2\pi\left(\frac{t}{T} - \frac{x}{\lambda_2}\right)\right), \quad \lambda_2 = \lambda_1/n}',
-                textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-              ),
+              FormulaDisplay(r'\color{#B38CFF}{z_1 = A \sin\left(2\pi\left(\frac{t}{T} - \frac{x}{\lambda_1}\right)\right)}'),
+              SizedBox(height: 4),
+              FormulaDisplay(r'\color{#FFB800}{z_2 = A \sin\left(2\pi\left(\frac{t}{T} - \frac{x}{\lambda_1/n}\right)\right)}'),
             ],
           ),
         );
 
   @override
   Map<String, double> get initialParameters => {
-        'lambda': 4.0,
+        'lambda': 2.0,
         'periodT': 1.0,
         'n': 1.5,
       };

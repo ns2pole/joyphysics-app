@@ -21,7 +21,7 @@ class PhysicsAnimationScaffold extends StatefulWidget with HasHeight {
     this.extraControls,
     required this.animationBuilder,
     this.onReset,
-    this.height = 550,
+    this.height = 650,
     this.is3D = false,
     this.backgroundColor,
   });
@@ -95,16 +95,17 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: widget.height,
       color: widget.backgroundColor ?? Colors.white,
       child: Column(
+        mainAxisSize: MainAxisSize.min, // コンテンツに合わせて最小限の高さに
         children: [
           if (widget.formula != null)
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: widget.formula!,
             ),
-          Expanded(
+          AspectRatio(
+            aspectRatio: 1.0, // ここで正確に正方形を維持
             child: Stack(
               children: [
                 LayoutBuilder(
@@ -149,6 +150,7 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
               ],
             ),
           ),
+          // 操作パネル部分は Expanded を使わず、そのまま並べる
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
             child: Wrap(

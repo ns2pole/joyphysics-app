@@ -1,6 +1,7 @@
 import '../../model.dart'; // Videoクラス定義が別ならインポート
 final capacitanceSeriesCombination = Video(
-    category: 'electroMagnetism', // ← 追加
+  isExperiment: true,
+  category: 'electroMagnetism', // ← 追加
     iconName: "capacitanceSeriesCombination",
     title: "コンデンサの合成容量(直列)",
     videoURL: "bde6LgMjf2k",

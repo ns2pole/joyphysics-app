@@ -1,5 +1,6 @@
 import '../../model.dart'; // Videoクラス定義が別ならインポート
 final freeFall = Video(
+        isExperiment: true,
         iconName: "freefall",
         category: 'dynamics', // ← 追加
         title: "自由落下",

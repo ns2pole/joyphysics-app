@@ -21,10 +21,7 @@ class ReflectionLaw2DSimulation extends PhysicsSimulation {
       : super(
           title: "反射の法則 (自由端)",
           is3D: true,
-          formula: Math.tex(
-            r'\theta_{incident} = \theta_{reflected}',
-            textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
+          formula: const FormulaDisplay(r'\theta_{incident} = \theta_{reflected}'),
         );
 
   @override
@@ -113,7 +110,7 @@ class ReflectionLaw2DSimulation extends PhysicsSimulation {
         activeComponentIds: activeIds,
         mediumSlab: const MediumSlabOverlay(
           xStart: 0.0,
-          xEnd: 10.0,
+          xEnd: 5.0,
           color: Colors.yellow,
           opacity: 0.4,
         ),

@@ -1,6 +1,7 @@
 import '../../model.dart'; // Videoクラス定義が別ならインポート
 final parallelResistance = Video(
-    category: 'electroMagnetism', // ← 追加
+  isExperiment: true,
+  category: 'electroMagnetism', // ← 追加
     iconName: "parallelResistance",
     title: "抵抗の並列接続",
     videoURL: "bwoeXAa8jt4",

@@ -1,6 +1,7 @@
 import '../../model.dart'; // Videoクラス定義が別ならインポート
 final kineticFriction = Video(
-    category: 'dynamics', // ← 追加
+  isExperiment: true,
+  category: 'dynamics', // ← 追加
     iconName: "kineticFriction",
     title: "動摩擦力と動摩擦係数",
     videoURL: "kAXShjUdJOU",

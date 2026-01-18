@@ -1,6 +1,7 @@
 import '../../model.dart'; // Videoクラス定義が別ならインポート
 
 final ideal_gas_eqation_and_helium_buoyancy = Video(
+  isExperiment: true,
   category: 'thermodynamics',
   // inPreparation: true,
   iconName: "",

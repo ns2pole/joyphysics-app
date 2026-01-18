@@ -1,6 +1,7 @@
 import '../../model.dart'; // Videoクラス定義が別ならインポート
 
 final straight_current_and_geomagnetism = Video(
+  isExperiment: true,
   category: 'electroMagnetism',
   iconName: "",
   title: "直線電流と地磁気の重ね合わせ：方位磁石の向き（arctan回避・矢ベクトル）",

@@ -1,7 +1,8 @@
 //https://marufuuwa.com/archives/5523 (quote:画像)
 import '../../model.dart'; // Videoクラス定義が別ならインポート
 final moonOrbit = Video(
-    category: 'dynamics', // ← 追加
+  isExperiment: true,
+  category: 'dynamics', // ← 追加
     iconName: "moon",
     title: "月までの距離とケプラー第3法則",
     videoURL: "",

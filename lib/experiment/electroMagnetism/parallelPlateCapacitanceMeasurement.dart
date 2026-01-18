@@ -1,6 +1,7 @@
 import '../../model.dart'; // Videoクラス定義が別ならインポート
 final parallelPlateCapacitanceMeasurement = Video(
-    category: 'electroMagnetism', // ← 追加
+  isExperiment: true,
+  category: 'electroMagnetism', // ← 追加
     iconName: "parallelPlateCapacitanceMeasurement",
     title: "平行板コンデンサの電気容量の測定",
     videoURL: "vzdKFnLYhw0",

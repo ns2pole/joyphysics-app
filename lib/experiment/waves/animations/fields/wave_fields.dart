@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
+
 class WaveComponent {
   final String id;
   final String label;
@@ -47,13 +48,10 @@ class PlaneWaveField extends WaveField {
     this.amplitude = 0.4,
   });
 
-  /// Angle of propagation in x-y plane, measured from +x toward +y.
   final double theta;
 
-  /// Wavelength (in world units).
   final double lambda;
 
-  /// Period T (in seconds).
   final double periodT;
 
   final double amplitude;
@@ -67,7 +65,7 @@ class PlaneWaveField extends WaveField {
   @override
   double z(double x, double y, double t) {
     final k1 = 2 * math.pi / lambda;
-    const dOffset = 15.0;
+    const dOffset = 7.5;
     // phase(x,y,t) is (k*path - omega*t)
     final p = -(phase(x, y, t) + k1 * dOffset);
     return (p > 0) ? amplitude * math.sin(p) : 0.0;
@@ -117,7 +115,6 @@ class SlabRefractionWaveField extends WaveField {
     this.amplitude = 0.4,
   });
 
-  /// Incident angle measured from +x (normal to the slab boundary planes).
   final double theta;
 
   final double lambda;
@@ -154,7 +151,7 @@ class SlabRefractionWaveField extends WaveField {
   @override
   double z(double x, double y, double t) {
     final k1 = 2 * math.pi / lambda;
-    const dOffset = 15.0;
+    const dOffset = 7.5;
 
     // phase(x,y,t) is (k*path - omega*t)
     // we want omega*t - (k*path + k*dOffset)
@@ -215,9 +212,11 @@ class ReflectionWaveField extends WaveField {
 
   @override
   double phase(double x, double y, double t) {
-    // This method is less useful for ReflectionWaveField because it has multiple components.
-    // We'll primarily use z().
-    return 0.0;
+    final k = 2 * math.pi / lambda;
+    final omega = 2 * math.pi / periodT;
+    const dOffset = 7.5;
+    final di = x * math.cos(theta) + y * math.sin(theta) + dOffset;
+    return omega * t - k * di;
   }
 
   @override
@@ -227,10 +226,10 @@ class ReflectionWaveField extends WaveField {
     final k = 2 * math.pi / lambda;
     final omega = 2 * math.pi / periodT;
 
-    // We want the wave to start outside the view (range is ~10).
-    // Let's add an offset so at t=0, even at (-10, -10), phase is negative.
-    // d = x*cos + y*sin. Max d for x,y in [-10,10] is ~14.
-    const dOffset = 15.0;
+    // We want the wave to start outside the view (range is ~5).
+    // Let's add an offset so at t=0, even at (-5, -5), phase is negative.
+    // d = x*cos + y*sin. Max d for x,y in [-5,5] is ~7.
+    const dOffset = 7.5;
 
     final di = x * math.cos(theta) + y * math.sin(theta) + dOffset;
     final dr = -x * math.cos(theta) + y * math.sin(theta) + dOffset;
@@ -260,7 +259,7 @@ class ReflectionWaveField extends WaveField {
       double x, double y, double t, Set<String> activeIds) {
     final k = 2 * math.pi / lambda;
     final omega = 2 * math.pi / periodT;
-    const dOffset = 15.0;
+    const dOffset = 7.5;
 
     final di = x * math.cos(theta) + y * math.sin(theta) + dOffset;
     final dr = -x * math.cos(theta) + y * math.sin(theta) + dOffset;
@@ -328,7 +327,9 @@ class OneDimensionReflectionField extends WaveField {
 
   @override
   double phase(double x, double y, double t) {
-    return 0.0;
+    const xStart = -7.5;
+    final distI = x - xStart;
+    return 2 * math.pi * (t / periodT - distI / lambda);
   }
 
   @override
@@ -336,7 +337,7 @@ class OneDimensionReflectionField extends WaveField {
     if (x > boundaryX) return 0.0;
 
     // Start position for the wave (outside the visible range)
-    const xStart = -15.0;
+    const xStart = -7.5;
 
     final distI = x - xStart;
     final distR = (boundaryX - xStart) + (boundaryX - x);
@@ -370,7 +371,7 @@ class OneDimensionReflectionField extends WaveField {
   @override
   List<WaveComponent> getComponents(
       double x, double y, double t, Set<String> activeIds) {
-    const xStart = -15.0;
+    const xStart = -7.5;
     final distI = x - xStart;
     final distR = (boundaryX - xStart) + (boundaryX - x);
     final omega = 2 * math.pi / periodT;
@@ -440,7 +441,18 @@ class OneDimensionSlabRefractionField extends WaveField {
 
   @override
   double phase(double x, double y, double t) {
-    return 0.0; // Primary use is z()
+    const xSource = -7.5;
+    final omega = 2 * math.pi / periodT;
+    final k1 = 2 * math.pi / lambda;
+    final k2 = k1 * n;
+
+    if (x < slabStart) {
+      return omega * t - k1 * (x - xSource);
+    } else if (x <= slabEnd) {
+      return omega * t - k1 * (slabStart - xSource) - k2 * (x - slabStart);
+    } else {
+      return omega * t - k1 * (slabStart - xSource) - k2 * (slabEnd - slabStart) - k1 * (x - slabEnd);
+    }
   }
 
   @override
@@ -450,7 +462,7 @@ class OneDimensionSlabRefractionField extends WaveField {
 
     // Time taken to reach position x
     double tReach = 0.0;
-    const xSource = -15.0; // Start far left
+    const xSource = -7.5; // Start left
 
     if (x < slabStart) {
       tReach = (x - xSource) / v1;
@@ -482,13 +494,40 @@ class OneDimensionSlabRefractionField extends WaveField {
   @override
   List<WaveComponent> getComponents(
       double x, double y, double t, Set<String> activeIds) {
+    const xSource = -7.5;
+    final v1 = lambda / periodT;
+    final v2 = v1 / n;
+    final k1 = 2 * math.pi / lambda;
+    final k2 = k1 * n;
+    final omega = 2 * math.pi / periodT;
+
+    double tReach = 0.0;
+    if (x < slabStart) {
+      tReach = (x - xSource) / v1;
+    } else if (x <= slabEnd) {
+      tReach = (slabStart - xSource) / v1 + (x - slabStart) / v2;
+    } else {
+      tReach = (slabStart - xSource) / v1 + (slabEnd - slabStart) / v2 + (x - slabEnd) / v1;
+    }
+
+    if (t < tReach) return [];
+
+    double localPhase = 0.0;
+    if (x < slabStart) {
+      localPhase = omega * t - k1 * (x - xSource);
+    } else if (x <= slabEnd) {
+      localPhase = omega * t - k1 * (slabStart - xSource) - k2 * (x - slabStart);
+    } else {
+      localPhase = omega * t - k1 * (slabStart - xSource) - k2 * (slabEnd - slabStart) - k1 * (x - slabEnd);
+    }
+
     if (activeIds.contains('total')) {
       return [
         WaveComponent(
           id: 'total',
           label: '合成波',
           color: Colors.blueAccent,
-          value: z(x, y, t),
+          value: amplitude * math.sin(localPhase),
         ),
       ];
     }
@@ -532,7 +571,10 @@ class ThinFilmInterferenceField extends WaveField {
 
   @override
   double phase(double x, double y, double t) {
-    return 0.0;
+    final k1 = 2 * math.pi / lambda;
+    final omega = 2 * math.pi / periodT;
+    const xSource = -7.5;
+    return omega * t - k1 * (x - xSource);
   }
 
   @override
@@ -542,7 +584,7 @@ class ThinFilmInterferenceField extends WaveField {
     final k1 = 2 * math.pi / lambda;
     final k2 = k1 * n;
     final omega = 2 * math.pi / periodT;
-    const xSource = -15.0;
+    const xSource = -7.5;
 
     // 1. Incident Wave (traveling right)
     double zi = 0.0;
@@ -613,7 +655,7 @@ class ThinFilmInterferenceField extends WaveField {
     final k1 = 2 * math.pi / lambda;
     final k2 = k1 * n;
     final omega = 2 * math.pi / periodT;
-    const xSource = -15.0;
+    const xSource = -7.5;
 
     // 1. Incident Wave
     double zi = 0.0;
@@ -731,13 +773,10 @@ class CircularInterferenceField extends WaveField {
 
   @override
   double phase(double x, double y, double t) {
-    // phase() isn't well-defined for interference in terms of a single scalar
-    // that sin() can be applied to, so we return 0 and rely on z().
-    // However, for peak lines in WaveSurfacePainter, it uses getPhase.
-    // We can return the phase of the first source for visualization if needed,
-    // but peak lines for interference are complex.
-    // Let's return the sum of phases for a rough visualization or 0.
-    return 0.0;
+    // Return phase of the first source for rough visualization
+    final v = lambda / periodT;
+    final r1 = math.sqrt(x * x + (y - a) * (y - a));
+    return 2 * math.pi * (t / periodT - r1 / lambda);
   }
 
   @override
@@ -826,7 +865,9 @@ class CircularWaveField extends WaveField {
 
   @override
   double phase(double x, double y, double t) {
-    return 0.0;
+    final v = lambda / periodT;
+    final r = math.sqrt(x * x + y * y);
+    return 2 * math.pi * (t / periodT - r / lambda);
   }
 
   @override
@@ -835,6 +876,7 @@ class CircularWaveField extends WaveField {
     final r = math.sqrt(x * x + y * y);
     final tReach = r / v;
     final p = 2 * math.pi * (t / periodT - r / lambda);
+    // Add small offset to avoid tReach exactly 0 issues
     return (t >= tReach) ? amplitude * math.sin(p) : 0.0;
   }
 
@@ -886,7 +928,14 @@ class ThinFilmInterference2DField extends WaveField {
   final double amplitude;
 
   @override
-  double phase(double x, double y, double t) => 0.0;
+  double phase(double x, double y, double t) {
+    final k1 = 2 * math.pi / lambda;
+    final omega = 2 * math.pi / periodT;
+    final ky = k1 * math.sin(theta);
+    final kx1 = k1 * math.cos(theta);
+    const dOffset = 7.5;
+    return omega * t - (kx1 * x + ky * y + k1 * dOffset);
+  }
 
   @override
   double z(double x, double y, double t) {
@@ -914,7 +963,7 @@ class ThinFilmInterference2DField extends WaveField {
     final kx2Sq = k2 * k2 - ky * ky;
     final kx2 = kx2Sq > 0 ? math.sqrt(kx2Sq) : 0.0;
 
-    const dOffset = 15.0;
+    const dOffset = 7.5;
 
     // 1. Incident Wave
     double zi = 0.0;
@@ -1020,24 +1069,26 @@ class YoungDoubleSlitField extends WaveField {
 
   @override
   double phase(double x, double y, double t) {
-    return 0.0;
+    final v = lambda / periodT;
+    final r1 = math.sqrt((x + 4) * (x + 4) + (y - a) * (y - a));
+    return 2 * math.pi * (t / periodT - r1 / lambda);
   }
 
   @override
   double z(double x, double y, double t) {
-    if (x < -8) return 0.0;
+    if (x < -4) return 0.0;
 
     final v = lambda / periodT;
 
-    // Source 1: (-8, a)
-    final r1 = math.sqrt((x + 8) * (x + 8) + (y - a) * (y - a));
+    // Source 1: (-4, a)
+    final r1 = math.sqrt((x + 4) * (x + 4) + (y - a) * (y - a));
     final tReach1 = r1 / v;
     final z1 = (t >= tReach1)
         ? amplitude * math.sin(2 * math.pi * (t / periodT - r1 / lambda))
         : 0.0;
 
-    // Source 2: (-8, -a)
-    final r2 = math.sqrt((x + 8) * (x + 8) + (y + a) * (y + a));
+    // Source 2: (-4, -a)
+    final r2 = math.sqrt((x + 4) * (x + 4) + (y + a) * (y + a));
     final tReach2 = r2 / v;
     final z2 = (t >= tReach2)
         ? amplitude * math.sin(2 * math.pi * (t / periodT - r2 / lambda) + phi)
@@ -1052,16 +1103,16 @@ class YoungDoubleSlitField extends WaveField {
     final v = lambda / periodT;
 
     // Source 1
-    final r1 = math.sqrt((x + 8) * (x + 8) + (y - a) * (y - a));
+    final r1 = math.sqrt((x + 4) * (x + 4) + (y - a) * (y - a));
     final tReach1 = r1 / v;
-    final z1 = (x >= -8 && t >= tReach1)
+    final z1 = (x >= -4 && t >= tReach1)
         ? amplitude * math.sin(2 * math.pi * (t / periodT - r1 / lambda))
         : 0.0;
 
     // Source 2
-    final r2 = math.sqrt((x + 8) * (x + 8) + (y + a) * (y + a));
+    final r2 = math.sqrt((x + 4) * (x + 4) + (y + a) * (y + a));
     final tReach2 = r2 / v;
-    final z2 = (x >= -8 && t >= tReach2)
+    final z2 = (x >= -4 && t >= tReach2)
         ? amplitude * math.sin(2 * math.pi * (t / periodT - r2 / lambda) + phi)
         : 0.0;
 

@@ -1,6 +1,7 @@
 import '../../model.dart'; // Videoクラス定義が別ならインポート
 final solenoidSelfInductance = Video(
-    category: 'electroMagnetism', // ← 追加
+  isExperiment: true,
+  category: 'electroMagnetism', // ← 追加
     iconName: "solenoidSelfInductance",
     title: "ソレノイドコイルの自己インダクタンス",
     videoURL: "_M7kIijXf9M",

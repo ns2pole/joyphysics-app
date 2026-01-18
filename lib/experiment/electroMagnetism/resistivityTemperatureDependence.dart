@@ -1,6 +1,7 @@
 import '../../model.dart'; // Videoクラス定義が別ならインポート
 final resistivityTemperatureDependence = Video(
-    category: 'electroMagnetism', // ← 追加
+  isExperiment: true,
+  category: 'electroMagnetism', // ← 追加
     iconName: "resistivityTemperatureDependence",
     title: "温度による銅線の抵抗変化",
     videoURL: "WRXY65C0pA4",

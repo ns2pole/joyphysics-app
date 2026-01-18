@@ -1,6 +1,7 @@
 import '../../model.dart'; // Videoクラス定義
 
 final rlc_circuit_discharge = Video(
+  isExperiment: true,
   category: 'electroMagnetism',
   iconName: "", // アイコン未作成 → 空文字（UI側で空白を確保）
   title: "RLC回路（直列・放電）観測量：コンデンサ電圧 v_C(t)／代表値：周期T（L=5 mH, R=10 Ω, C=22 μF）",

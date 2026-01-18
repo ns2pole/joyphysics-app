@@ -1,6 +1,7 @@
 import '../../model.dart'; // Videoクラス定義が別ならインポート
 final buildingBlocksStability = Video(
-    category: 'dynamics', // ← 追加
+  isExperiment: true,
+  category: 'dynamics', // ← 追加
     iconName: "buildingBlocksStability",
     title: "積み木",
     videoURL: "-HkXWEXjywc",

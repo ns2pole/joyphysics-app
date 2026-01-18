@@ -1,5 +1,6 @@
 import '../../model.dart'; // Videoクラス定義が別ならインポート
 final elasticCollision2D = Video(
+  isExperiment: true,
   category: 'dynamics', // ← 追加
   iconName: 'elasticCollision2D',
   title: '弾性衝突(2次元)',

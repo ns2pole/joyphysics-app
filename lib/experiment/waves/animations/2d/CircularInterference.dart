@@ -22,10 +22,7 @@ class CircularInterferenceSimulation extends PhysicsSimulation {
       : super(
           title: "円形波干渉",
           is3D: true,
-          formula: Math.tex(
-            r'|r_1 - r_2| = m\lambda',
-            textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
+          formula: const FormulaDisplay(r'|r_1 - r_2| = m\lambda'),
         );
 
   @override

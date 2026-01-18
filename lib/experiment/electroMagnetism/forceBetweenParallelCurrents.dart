@@ -1,6 +1,7 @@
 import '../../model.dart'; // Videoクラス定義が別ならインポート
 final forceBetweenParallelCurrents = Video(
-    category: 'electroMagnetism', // ← 追加
+  isExperiment: true,
+  category: 'electroMagnetism', // ← 追加
     iconName: "forceBetweenParallelCurrents",
     title: "平行電流間に働く力",
     videoURL: "mp8eFvdeuZE",

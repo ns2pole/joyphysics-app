@@ -1,7 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_math_fork/flutter_math.dart';
 import 'package:joyphysics/model.dart';
 import 'package:joyphysics/experiment/HasHeight.dart';
 import 'PhysicsAnimationScaffold.dart';
+
+/// 数式表示用の共通スタイル
+const TextStyle commonFormulaStyle = TextStyle(
+  fontSize: 18,
+  fontWeight: FontWeight.w900,
+);
+
+/// 数式を表示するための共通ウィジェット
+class FormulaDisplay extends StatelessWidget {
+  final String tex;
+  final TextStyle? style;
+
+  const FormulaDisplay(this.tex, {super.key, this.style});
+
+  @override
+  Widget build(BuildContext context) {
+    return Math.tex(
+      tex,
+      textStyle: commonFormulaStyle.merge(style),
+    );
+  }
+}
 
 /// 物理シミュレーションの設定データを保持する抽象クラス
 abstract class PhysicsSimulation {
@@ -56,7 +79,7 @@ class PhysicsSimulationView extends StatefulWidget with HasHeight {
   const PhysicsSimulationView({
     super.key,
     required this.simulation,
-    this.height = 550,
+    this.height = 650,
   });
 
   @override
@@ -125,10 +148,12 @@ Video createWaveVideo({
     videoURL: "",
     equipment: [],
     costRating: "★",
+    isSimulation: true,
     latex: latex,
     experimentWidgets: [
       PhysicsSimulationView(simulation: simulation),
     ],
   );
 }
+
 
