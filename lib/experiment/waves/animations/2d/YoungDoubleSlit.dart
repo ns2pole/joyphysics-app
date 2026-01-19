@@ -60,6 +60,8 @@ class YoungDoubleSlitSimulation extends WaveSimulation {
       ThicknessLSlider(
         label: 'a (間隔)',
         value: params['a']!,
+        min: 0.0001,
+        max: 1.0,
         onChanged: (val) => updateParam('a', val),
       ),
       PhiSlider(

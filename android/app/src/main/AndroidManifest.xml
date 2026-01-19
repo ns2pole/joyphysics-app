@@ -12,7 +12,7 @@
         android:required="false" />
 
     <application
-        android:label="実験と理論で学ぶ高校物理"
+        android:label="アニメと実験で学ぶ高校物理"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

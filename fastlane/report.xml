@@ -5,67 +5,54 @@
     
     
       
-      <testcase classname="fastlane.lanes" name="00: default_platform" time="0.00065">
+      <testcase classname="fastlane.lanes" name="0: default_platform" time="0.000564">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="01: get_info_plist_value" time="0.002388">
+      <testcase classname="fastlane.lanes" name="1: get_info_plist_value" time="0.003575">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="02: flutter clean" time="16.349881">
+      <testcase classname="fastlane.lanes" name="2: flutter clean" time="13.841073">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="03: flutter pub get" time="8.032365">
+      <testcase classname="fastlane.lanes" name="3: flutter pub get" time="8.554256">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="04: cd ../ios &amp;&amp; pod install --repo-update &amp;&amp; cd .." time="4.263599">
+      <testcase classname="fastlane.lanes" name="4: cd ../ios &amp;&amp; pod install --repo-update &amp;&amp; cd .." time="7.887157">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="05: flutter build appbundle --release" time="255.358841">
+      <testcase classname="fastlane.lanes" name="5: flutter build appbundle --release" time="258.30494">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="06: increment_version_number" time="0.414571">
+      <testcase classname="fastlane.lanes" name="6: increment_version_number" time="1.963428">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="07: increment_build_number" time="0.369364">
+      <testcase classname="fastlane.lanes" name="7: increment_build_number" time="0.385142">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="08: build_app" time="182.084388">
+      <testcase classname="fastlane.lanes" name="8: build_app" time="182.630262">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="09: deliver" time="386.717598">
+      <testcase classname="fastlane.lanes" name="9: deliver" time="3.210881">
         
-      </testcase>
-    
-      
-      <testcase classname="fastlane.lanes" name="10: mkdir -p ./metadata/android/ja-JP/changelogs" time="0.012523">
-        
-      </testcase>
-    
-      
-      <testcase classname="fastlane.lanes" name="11: assembleRelease" time="240.283185">
-        
-      </testcase>
-    
-      
-      <testcase classname="fastlane.lanes" name="12: upload_to_play_store" time="185.035832">
+          <failure message="/Users/nakamurashunsuke/Documents/app/joyphysics/vendor/bundle/ruby/4.0.0/gems/fastlane-2.229.0/fastlane/lib/fastlane/actions/actions_helper.rb:67:in &apos;Fastlane::Actions.execute_action&apos;&#10;/Users/nakamurashunsuke/Documents/app/joyphysics/vendor/bundle/ruby/4.0.0/gems/fastlane-2.229.0/fastlane/lib/fastlane/runner.rb:255:in &apos;block in Fastlane::Runner#execute_action&apos;&#10;/Users/nakamurashunsuke/Documents/app/joyphysics/vendor/bundle/ruby/4.0.0/gems/fastlane-2.229.0/fastlane/lib/fastlane/runner.rb:229:in &apos;Dir.chdir&apos;&#10;/Users/nakamurashunsuke/Documents/app/joyphysics/vendor/bundle/ruby/4.0.0/gems/fastlane-2.229.0/fastlane/lib/fastlane/runner.rb:229:in &apos;Fastlane::Runner#execute_action&apos;&#10;/Users/nakamurashunsuke/Documents/app/joyphysics/vendor/bundle/ruby/4.0.0/gems/fastlane-2.229.0/fastlane/lib/fastlane/runner.rb:157:in &apos;Fastlane::Runner#trigger_action_by_name&apos;&#10;/Users/nakamurashunsuke/Documents/app/joyphysics/vendor/bundle/ruby/4.0.0/gems/fastlane-2.229.0/fastlane/lib/fastlane/fast_file.rb:159:in &apos;Fastlane::FastFile#method_missing&apos;&#10;Fastfile:52:in &apos;block (2 levels) in Fastlane::FastFile#parsing_binding&apos;&#10;/Users/nakamurashunsuke/Documents/app/joyphysics/vendor/bundle/ruby/4.0.0/gems/fastlane-2.229.0/fastlane/lib/fastlane/lane.rb:41:in &apos;Fastlane::Lane#call&apos;&#10;/Users/nakamurashunsuke/Documents/app/joyphysics/vendor/bundle/ruby/4.0.0/gems/fastlane-2.229.0/fastlane/lib/fastlane/runner.rb:49:in &apos;block in Fastlane::Runner#execute&apos;&#10;/Users/nakamurashunsuke/Documents/app/joyphysics/vendor/bundle/ruby/4.0.0/gems/fastlane-2.229.0/fastlane/lib/fastlane/runner.rb:45:in &apos;Dir.chdir&apos;&#10;/Users/nakamurashunsuke/Documents/app/joyphysics/vendor/bundle/ruby/4.0.0/gems/fastlane-2.229.0/fastlane/lib/fastlane/runner.rb:45:in &apos;Fastlane::Runner#execute&apos;&#10;/Users/nakamurashunsuke/Documents/app/joyphysics/vendor/bundle/ruby/4.0.0/gems/fastlane-2.229.0/fastlane/lib/fastlane/lane_manager.rb:46:in &apos;Fastlane::LaneManager.cruise_lane&apos;&#10;/Users/nakamurashunsuke/Documents/app/joyphysics/vendor/bundle/ruby/4.0.0/gems/fastlane-2.229.0/fastlane/lib/fastlane/command_line_handler.rb:34:in &apos;Fastlane::CommandLineHandler.handle&apos;&#10;/Users/nakamurashunsuke/Documents/app/joyphysics/vendor/bundle/ruby/4.0.0/gems/fastlane-2.229.0/fastlane/lib/fastlane/commands_generator.rb:110:in &apos;block (2 levels) in Fastlane::CommandsGenerator#run&apos;&#10;/Users/nakamurashunsuke/Documents/app/joyphysics/vendor/bundle/ruby/4.0.0/gems/commander-4.6.0/lib/commander/command.rb:187:in &apos;Commander::Command#call&apos;&#10;/Users/nakamurashunsuke/Documents/app/joyphysics/vendor/bundle/ruby/4.0.0/gems/commander-4.6.0/lib/commander/command.rb:157:in &apos;Commander::Command#run&apos;&#10;/Users/nakamurashunsuke/Documents/app/joyphysics/vendor/bundle/ruby/4.0.0/gems/commander-4.6.0/lib/commander/runner.rb:444:in &apos;Commander::Runner#run_active_command&apos;&#10;/Users/nakamurashunsuke/Documents/app/joyphysics/vendor/bundle/ruby/4.0.0/gems/fastlane-2.229.0/fastlane_core/lib/fastlane_core/ui/fastlane_runner.rb:124:in &apos;Commander::Runner#run!&apos;&#10;/Users/nakamurashunsuke/Documents/app/joyphysics/vendor/bundle/ruby/4.0.0/gems/commander-4.6.0/lib/commander/delegates.rb:18:in &apos;Commander::Delegates#run!&apos;&#10;/Users/nakamurashunsuke/Documents/app/joyphysics/vendor/bundle/ruby/4.0.0/gems/fastlane-2.229.0/fastlane/lib/fastlane/commands_generator.rb:363:in &apos;Fastlane::CommandsGenerator#run&apos;&#10;/Users/nakamurashunsuke/Documents/app/joyphysics/vendor/bundle/ruby/4.0.0/gems/fastlane-2.229.0/fastlane/lib/fastlane/commands_generator.rb:43:in &apos;Fastlane::CommandsGenerator.start&apos;&#10;/Users/nakamurashunsuke/Documents/app/joyphysics/vendor/bundle/ruby/4.0.0/gems/fastlane-2.229.0/fastlane/lib/fastlane/cli_tools_distributor.rb:123:in &apos;Fastlane::CLIToolsDistributor.take_off&apos;&#10;/Users/nakamurashunsuke/Documents/app/joyphysics/vendor/bundle/ruby/4.0.0/gems/fastlane-2.229.0/bin/fastlane:23:in &apos;&lt;top (required)&gt;&apos;&#10;/usr/local/Cellar/ruby/4.0.0/lib/ruby/4.0.0/rubygems.rb:303:in &apos;Kernel#load&apos;&#10;/usr/local/Cellar/ruby/4.0.0/lib/ruby/4.0.0/rubygems.rb:303:in &apos;Gem.activate_and_load_bin_path&apos;&#10;/Users/nakamurashunsuke/Documents/app/joyphysics/vendor/bundle/ruby/4.0.0/bin/fastlane:25:in &apos;&lt;top (required)&gt;&apos;&#10;/Users/nakamurashunsuke/Documents/app/joyphysics/vendor/bundle/ruby/4.0.0/gems/bundler-2.6.9/lib/bundler/cli/exec.rb:59:in &apos;Kernel.load&apos;&#10;/Users/nakamurashunsuke/Documents/app/joyphysics/vendor/bundle/ruby/4.0.0/gems/bundler-2.6.9/lib/bundler/cli/exec.rb:59:in &apos;Bundler::CLI::Exec#kernel_load&apos;&#10;/Users/nakamurashunsuke/Documents/app/joyphysics/vendor/bundle/ruby/4.0.0/gems/bundler-2.6.9/lib/bundler/cli/exec.rb:23:in &apos;Bundler::CLI::Exec#run&apos;&#10;/Users/nakamurashunsuke/Documents/app/joyphysics/vendor/bundle/ruby/4.0.0/gems/bundler-2.6.9/lib/bundler/cli.rb:452:in &apos;Bundler::CLI#exec&apos;&#10;/Users/nakamurashunsuke/Documents/app/joyphysics/vendor/bundle/ruby/4.0.0/gems/bundler-2.6.9/lib/bundler/vendor/thor/lib/thor/command.rb:28:in &apos;Bundler::Thor::Command#run&apos;&#10;/Users/nakamurashunsuke/Documents/app/joyphysics/vendor/bundle/ruby/4.0.0/gems/bundler-2.6.9/lib/bundler/vendor/thor/lib/thor/invocation.rb:127:in &apos;Bundler::Thor::Invocation#invoke_command&apos;&#10;/Users/nakamurashunsuke/Documents/app/joyphysics/vendor/bundle/ruby/4.0.0/gems/bundler-2.6.9/lib/bundler/vendor/thor/lib/thor.rb:538:in &apos;Bundler::Thor.dispatch&apos;&#10;/Users/nakamurashunsuke/Documents/app/joyphysics/vendor/bundle/ruby/4.0.0/gems/bundler-2.6.9/lib/bundler/cli.rb:35:in &apos;Bundler::CLI.dispatch&apos;&#10;/Users/nakamurashunsuke/Documents/app/joyphysics/vendor/bundle/ruby/4.0.0/gems/bundler-2.6.9/lib/bundler/vendor/thor/lib/thor/base.rb:584:in &apos;Bundler::Thor::Base::ClassMethods#start&apos;&#10;/Users/nakamurashunsuke/Documents/app/joyphysics/vendor/bundle/ruby/4.0.0/gems/bundler-2.6.9/lib/bundler/cli.rb:29:in &apos;Bundler::CLI.start&apos;&#10;/Users/nakamurashunsuke/Documents/app/joyphysics/vendor/bundle/ruby/4.0.0/gems/bundler-2.6.9/exe/bundle:28:in &apos;block in &lt;top (required)&gt;&apos;&#10;/Users/nakamurashunsuke/Documents/app/joyphysics/vendor/bundle/ruby/4.0.0/gems/bundler-2.6.9/lib/bundler/friendly_errors.rb:117:in &apos;Bundler.with_friendly_errors&apos;&#10;/Users/nakamurashunsuke/Documents/app/joyphysics/vendor/bundle/ruby/4.0.0/gems/bundler-2.6.9/exe/bundle:20:in &apos;&lt;top (required)&gt;&apos;&#10;/usr/local/Cellar/ruby/4.0.0/lib/ruby/4.0.0/rubygems.rb:303:in &apos;Kernel#load&apos;&#10;/usr/local/Cellar/ruby/4.0.0/lib/ruby/4.0.0/rubygems.rb:303:in &apos;Gem.activate_and_load_bin_path&apos;&#10;/usr/local/opt/ruby/bin/bundle:25:in &apos;&lt;main&gt;&apos;&#10;&#10;Operation not supported by device - &lt;STDIN&gt;" />
         
       </testcase>
     

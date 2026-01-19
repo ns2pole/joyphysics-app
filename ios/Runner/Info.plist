@@ -9,7 +9,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>実験と理論で学ぶ高校物理</string>
+	<string>アニメと実験で学ぶ高校物理</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -21,11 +21,11 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>3.0.5</string>
+	<string>4.0.0</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>55</string>
+	<string>56</string>
 	<key>NSMotionUsageDescription</key>
 	<string>This app requires access to motion sensors and barometer to obtain acceleration and atmospheric pressure data.</string>
 	<key>NSMicrophoneUsageDescription</key>
