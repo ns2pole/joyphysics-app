@@ -34,6 +34,7 @@ class Superposition1DSimulation extends WaveSimulation {
           'periodT': 1.0,
           'pulseWidth': 2.0,
           'isTriangle': 0.0, // 0 for sine, 1 for triangle
+          'isOpposite': 0.0, // 0 for Pattern 1, 1 for Pattern 2
         },
         obsX: 0.0,
       );
@@ -44,6 +45,28 @@ class Superposition1DSimulation extends WaveSimulation {
   @override
   List<Widget> buildControls(context, params, updateParam) {
     return [
+      Center(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('パターン1', style: TextStyle(fontSize: 12)),
+            Radio<double>(
+              value: 0.0,
+              groupValue: params['isOpposite'],
+              onChanged: (v) => updateParam('isOpposite', v!),
+              visualDensity: VisualDensity.compact,
+            ),
+            const SizedBox(width: 8),
+            const Text('パターン2', style: TextStyle(fontSize: 12)),
+            Radio<double>(
+              value: 1.0,
+              groupValue: params['isOpposite'],
+              onChanged: (v) => updateParam('isOpposite', v!),
+              visualDensity: VisualDensity.compact,
+            ),
+          ],
+        ),
+      ),
       Text(
         '速度 v = ${(params['lambda']! / params['periodT']!).toStringAsFixed(2)}   幅 W = ${params['pulseWidth']!.toStringAsFixed(2)}',
         style: const TextStyle(fontSize: 12),
@@ -106,7 +129,9 @@ class Superposition1DSimulation extends WaveSimulation {
       lambda: params['lambda']!,
       periodT: params['periodT']!,
       pulseWidth: params['pulseWidth']!,
-      shape: params['isTriangle'] == 1.0 ? PulseShape.triangle : PulseShape.sine,
+      shape:
+          params['isTriangle'] == 1.0 ? PulseShape.triangle : PulseShape.sine,
+      isOpposite: params['isOpposite'] == 1.0,
       amplitude: 0.6,
     );
     return CustomPaint(

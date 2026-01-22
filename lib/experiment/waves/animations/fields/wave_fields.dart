@@ -1267,6 +1267,7 @@ class PulseSuperpositionField extends WaveField {
     this.amplitude = 0.6,
     this.pulseWidth = 2.0,
     this.shape = PulseShape.sine,
+    this.isOpposite = false,
   });
 
   final double lambda;
@@ -1274,21 +1275,27 @@ class PulseSuperpositionField extends WaveField {
   final double amplitude;
   final double pulseWidth;
   final PulseShape shape;
+  final bool isOpposite;
 
-  double _pulse(double u) {
+  double _pulse(double u, {bool invert = false}) {
     if (u < 0 || u > pulseWidth) return 0.0;
+    double val;
     if (shape == PulseShape.sine) {
       // One positive lobe of sine: 0 to pulseWidth
-      return amplitude * math.sin(math.pi * u / pulseWidth);
+      val = amplitude * math.sin(math.pi * u / pulseWidth);
     } else if (shape == PulseShape.fullSine) {
       // One full period of sine: 0 to pulseWidth
-      return amplitude * math.sin(2 * math.pi * u / pulseWidth);
+      val = amplitude * math.sin(2 * math.pi * u / pulseWidth);
     } else {
       // Triangular pulse
       final mid = pulseWidth / 2;
-      if (u < mid) return amplitude * (u / mid);
-      return amplitude * (1 - (u - mid) / mid);
+      if (u < mid) {
+        val = amplitude * (u / mid);
+      } else {
+        val = amplitude * (1 - (u - mid) / mid);
+      }
     }
+    return invert ? -val : val;
   }
 
   @override
@@ -1302,7 +1309,7 @@ class PulseSuperpositionField extends WaveField {
     // Pulse 1 center at -5.0 + v*t
     // Pulse 2 center at 5.0 - v*t
     final z1 = _pulse(x - (-5.0 + v * t - pulseWidth / 2));
-    final z2 = _pulse((5.0 - v * t + pulseWidth / 2) - x);
+    final z2 = _pulse((5.0 - v * t + pulseWidth / 2) - x, invert: isOpposite);
     return z1 + z2;
   }
 
@@ -1311,7 +1318,7 @@ class PulseSuperpositionField extends WaveField {
       double x, double y, double t, Set<String> activeIds) {
     final v = lambda / periodT;
     final z1 = _pulse(x - (-5.0 + v * t - pulseWidth / 2));
-    final z2 = _pulse((5.0 - v * t + pulseWidth / 2) - x);
+    final z2 = _pulse((5.0 - v * t + pulseWidth / 2) - x, invert: isOpposite);
 
     final List<WaveComponent> res = [];
     if (activeIds.contains('wave1')) {
@@ -1339,12 +1346,13 @@ class PulseSuperpositionField extends WaveField {
         other.periodT == periodT &&
         other.amplitude == amplitude &&
         other.pulseWidth == pulseWidth &&
-        other.shape == shape;
+        other.shape == shape &&
+        other.isOpposite == isOpposite;
   }
 
   @override
   int get hashCode =>
-      Object.hash(lambda, periodT, amplitude, pulseWidth, shape);
+      Object.hash(lambda, periodT, amplitude, pulseWidth, shape, isOpposite);
 }
 
 class PulseReflectionField extends WaveField {
