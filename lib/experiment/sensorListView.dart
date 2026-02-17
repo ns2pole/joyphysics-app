@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:joyphysics/model.dart';
-import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
 import 'package:joyphysics/dataExporter.dart';
 import 'package:joyphysics/experiment/ExperimentView.dart';
 import 'package:joyphysics/experiment/dynamics/AccelerometerExperimentWidget.dart';
@@ -34,6 +34,13 @@ class _SensorListViewState extends State<SensorListView> {
   @override
   void initState() {
     super.initState();
+    // Web では MethodChannel が使えないためセンサー判定をスキップ
+    if (kIsWeb) {
+      for (final k in _availability.keys) {
+        _availability[k] = false;
+      }
+      return;
+    }
     _checkAllSensors();
   }
 
@@ -88,7 +95,7 @@ class _SensorListViewState extends State<SensorListView> {
       'widget': FrequencyMeasureWidget(),
       'key': '周波数センサー',
     },
-    if (!(kIsWeb || Platform.isIOS))
+    if (!(kIsWeb || defaultTargetPlatform == TargetPlatform.iOS))
       {
         'name': '光センサー',
         'icon': Icons.wb_sunny,

@@ -1,5 +1,4 @@
 // lib/utils/update_checker.dart
-import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:new_version_plus/new_version_plus.dart';
@@ -40,6 +39,8 @@ class UpdateChecker {
 
   /// アプリ起動時に一度呼ぶ想定。WidgetsBinding.instance.addPostFrameCallback の内外どちらでも可。
   void checkOnAppStart() {
+    // Web ではストア誘導は不要/不可能なため無効化
+    if (kIsWeb) return;
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       debugPrint('[UpdateChecker] checkOnAppStart: called');
       try {
@@ -177,7 +178,7 @@ class UpdateChecker {
               // ここが重要：launchAppStore は "ストアのリンク（URL）" を期待するので、
               // status?.appStoreLink を使い、なければフォールバックで URL を組み立てる。
               final String? statusLink = status?.appStoreLink;
-              final String fallbackLink = Platform.isIOS
+              final String fallbackLink = defaultTargetPlatform == TargetPlatform.iOS
                   // iOS: App Store の id は通常数字（例: 123456789）。`iosId` が numeric でない場合は正しい URL にならない点に注意。
                   ? 'https://apps.apple.com/app/id$iosId'
                   // Android: package name を使って Play Store の URL を組み立てる

@@ -65,6 +65,11 @@ export './experiment/thermoDynamics/boyle_law.dart';
 export './experiment/thermoDynamics/charles_s_law.dart';
 export './experiment/thermoDynamics/ideal_gas_eqation_and_weight_of_air.dart';
 export './experiment/thermoDynamics/ideal_gas_eqation_and_helium_buoyancy.dart';
+export './experiment/thermoDynamics/animations/IsochoricProcess.dart';
+export './experiment/thermoDynamics/animations/IsobaricProcess.dart';
+export './experiment/thermoDynamics/animations/IsothermalProcess.dart';
+export './experiment/thermoDynamics/animations/AdiabaticProcess.dart';
+export './experiment/thermoDynamics/animations/HeatCycle.dart';
 
 // waves
 export './experiment/waves/closedPipeResonance.dart';
@@ -90,6 +95,7 @@ export './experiment/waves/animations/1d/FreeEndReflectionLine.dart';
 export './experiment/waves/animations/1d/Refraction1D.dart';
 export './experiment/waves/animations/1d/ThinFilmInterference1D.dart';
 export './experiment/waves/animations/1d/Superposition1D.dart';
+export './experiment/waves/animations/1d/Beating1D.dart';
 export './experiment/waves/animations/1d/TwoSource1D.dart';
 export './experiment/waves/animations/1d/WaveEquation1D.dart';
 export './experiment/waves/animations/1d/DopplerEffect1D.dart';

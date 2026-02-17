@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'dart:async';
-import 'dart:io' show Platform;
 
 import './FrequencyMeasureWidget.dart';
 import '../../model.dart'; // Videoクラス定義

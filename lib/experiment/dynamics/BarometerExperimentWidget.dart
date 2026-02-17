@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb, TargetPlatform;
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:joyphysics/experiment/HasHeight.dart';
 import 'package:joyphysics/shared_components.dart';
@@ -29,7 +29,10 @@ class _BarometerExperimentWidgetState extends State<BarometerExperimentWidget> {
   @override
   void initState() {
     super.initState();
-    if (Platform.isAndroid || Platform.isIOS) {
+    final isMobile = !kIsWeb &&
+        (defaultTargetPlatform == TargetPlatform.android ||
+            defaultTargetPlatform == TargetPlatform.iOS);
+    if (isMobile) {
       _pressureSub = barometerEventStream().listen((BarometerEvent event) {
         if (!mounted) return;
         setState(() {

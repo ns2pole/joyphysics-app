@@ -13,9 +13,11 @@ class PhysicsAnimationScaffold extends StatefulWidget with HasHeight {
   final VoidCallback? onReset;
   final double height;
   final bool is3D;
+  final double aspectRatio;
   final Color? backgroundColor;
   final List<WaveMarker> Function(double time)? getMarkers;
   final void Function(int index, math.Point<double> newPoint, double time)? onMarkerDragged;
+  final String? rangeLabel;
 
   const PhysicsAnimationScaffold({
     super.key,
@@ -27,9 +29,11 @@ class PhysicsAnimationScaffold extends StatefulWidget with HasHeight {
     this.onReset,
     this.height = 650,
     this.is3D = false,
+    this.aspectRatio = 1.0,
     this.backgroundColor,
     this.getMarkers,
     this.onMarkerDragged,
+    this.rangeLabel,
   });
 
   @override
@@ -117,7 +121,7 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
               child: widget.formula!,
             ),
           AspectRatio(
-            aspectRatio: 1.0, // ここで正確に正方形を維持
+            aspectRatio: widget.aspectRatio, // 正方形以外も許可するように変更
             child: Stack(
               children: [
                 LayoutBuilder(
@@ -209,6 +213,28 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
                     ),
                   ),
                 ),
+                if (widget.rangeLabel != null)
+                  Positioned(
+                    top: 10,
+                    left: 10,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Text(
+                        widget.rangeLabel!,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Courier',
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),

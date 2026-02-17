@@ -1,4 +1,3 @@
-import 'dart:io' show Platform;
 import 'package:joyphysics/model.dart';
 import 'package:joyphysics/dataExporter.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -161,6 +160,7 @@ final categoriesData = <Category>[
         videos: [
           waveEquation1D,
           superposition1D,
+          beating1D,
           twoSource1D,
         ],
       ),
@@ -241,7 +241,12 @@ final categoriesData = <Category>[
           boyleLaw,
           charles_s_law,
           ideal_gas_eqation_and_weight_of_air,
-          ideal_gas_eqation_and_helium_buoyancy
+          ideal_gas_eqation_and_helium_buoyancy,
+          isochoricProcess,
+          isobaricProcess,
+          isothermalProcess,
+          adiabaticProcess,
+          heatCycleProcess
         ],
       ),
     ],
