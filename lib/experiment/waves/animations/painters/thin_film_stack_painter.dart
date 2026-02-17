@@ -225,6 +225,7 @@ class ThinFilmStackPainter extends CustomPainter {
       final pathCombined = Path();
 
       bool started = false;
+      bool startedCombined = false;
       for (int i = 0; i <= samples; i++) {
         final x = -_worldRange + i * step;
 
@@ -302,13 +303,21 @@ class ThinFilmStackPainter extends CustomPainter {
           if (showIncident) pathIncident.moveTo(sx, yi);
           if (showR1) pathR1.moveTo(sx, yr1);
           if (showR2) pathR2.moveTo(sx, yr2);
-          if (showCombined) pathCombined.moveTo(sx, yc);
           started = true;
         } else {
           if (showIncident) pathIncident.lineTo(sx, yi);
           if (showR1) pathR1.lineTo(sx, yr1);
           if (showR2) pathR2.lineTo(sx, yr2);
-          if (showCombined) pathCombined.lineTo(sx, yc);
+        }
+
+        // Combined reflected wave should only be drawn in the left region (x <= 0).
+        if (showCombined && x <= 0) {
+          if (!startedCombined) {
+            pathCombined.moveTo(sx, yc);
+            startedCombined = true;
+          } else {
+            pathCombined.lineTo(sx, yc);
+          }
         }
       }
 
@@ -316,7 +325,9 @@ class ThinFilmStackPainter extends CustomPainter {
       if (showIncident) canvas.drawPath(pathIncident, cp);
       if (showR1) canvas.drawPath(pathR1, cp);
       if (showR2) canvas.drawPath(pathR2, cp);
-      if (showCombined) canvas.drawPath(pathCombined, combinedPaint(row.color));
+      if (showCombined && startedCombined) {
+        canvas.drawPath(pathCombined, combinedPaint(row.color));
+      }
     }
   }
 
