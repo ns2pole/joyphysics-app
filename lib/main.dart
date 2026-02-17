@@ -55,8 +55,8 @@ class JoyPhysicsApp extends StatelessWidget {
           final raw = settings.name ?? '/';
           // HashUrlStrategy では name は通常 '/foo' になるが、念のため repo prefix を除去
           var name = raw;
-          if (name.startsWith('/dart-joyphysics/')) {
-            name = name.substring('/dart-joyphysics'.length);
+          if (name.startsWith('/joyphysics-app/')) {
+            name = name.substring('/joyphysics-app'.length);
             if (name.isEmpty) name = '/';
           }
 
