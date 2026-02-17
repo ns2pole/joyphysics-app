@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:joyphysics/LatexView.dart';
 import 'package:joyphysics/model.dart';
+import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
+import 'package:joyphysics/experiment/PhysicsAnimationScaffold.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:joyphysics/experiment/formulaListData.dart';
 import 'package:joyphysics/experiment/HexColor.dart';
@@ -317,9 +319,16 @@ class _VideoCategoryList extends StatelessWidget {
 
 // 以降は元のまま（必要箇所のみ微修正）
 
-class VideoDetailView extends StatelessWidget {
+class VideoDetailView extends StatefulWidget {
   final Video video;
   const VideoDetailView({required this.video, Key? key}) : super(key: key);
+
+  @override
+  State<VideoDetailView> createState() => _VideoDetailViewState();
+}
+
+class _VideoDetailViewState extends State<VideoDetailView> {
+  List<_EmbeddedSimState> _simStates = [];
 
   bool _isWideWeb(BuildContext context) {
     if (!kIsWeb) return false;
@@ -329,27 +338,108 @@ class VideoDetailView extends StatelessWidget {
     return size.width >= 900 && ratio >= 1.2;
   }
 
+  @override
+  void didUpdateWidget(covariant VideoDetailView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.video != widget.video) {
+      _simStates = [];
+    }
+  }
+
+  _EmbeddedSimState _ensureSimState(int simIndex, PhysicsSimulation sim) {
+    while (_simStates.length <= simIndex) {
+      _simStates.add(_EmbeddedSimState.empty());
+    }
+    final existing = _simStates[simIndex];
+    if (!existing.isInitialized) {
+      _simStates[simIndex] = _EmbeddedSimState.fromSimulation(sim);
+    }
+    return _simStates[simIndex];
+  }
+
   Widget _buildLeftVisualPane(BuildContext context) {
     final items = <Widget>[];
 
     // シミュレーション・実験
-    if (video.experimentWidgets != null && video.experimentWidgets!.isNotEmpty) {
-      items.addAll(video.experimentWidgets!.map(
-        (w) => Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: w,
-        ),
-      ));
+    if (widget.video.experimentWidgets != null &&
+        widget.video.experimentWidgets!.isNotEmpty) {
+      int simIndex = 0;
+      for (final w in widget.video.experimentWidgets!) {
+        // Wide Web では、解説カラムへ数式/スライダーを移すため、シミュレーションを「左=アニメのみ」に分割する
+        if (_isWideWeb(context) && w is PhysicsSimulationView) {
+          final sim = w.simulation;
+          final state = _ensureSimState(simIndex, sim);
+
+          void updateParam(String key, double value) {
+            setState(() => state.parameters[key] = value);
+          }
+
+          void updateActiveIds(Set<String> ids) {
+            setState(() => state.activeIds = ids);
+          }
+
+          void resetAll() {
+            setState(() {
+              state.parameters = Map<String, double>.from(sim.initialParameters);
+              state.activeIds = Set<String>.from(sim.initialActiveIds);
+            });
+          }
+
+          items.add(
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: PhysicsAnimationScaffold(
+                // 左は「アニメ表示」に徹する（数式/スライダーは右へ）
+                title: sim.title,
+                formula: null,
+                sliders: null,
+                extraControls: null,
+                height: w.height,
+                aspectRatio: sim.aspectRatio,
+                is3D: sim.is3D,
+                enableWideWebSplit: false, // VideoDetailView 側で左右分割するため、二重分割は抑止
+                onReset: resetAll,
+                getMarkers: (time) => sim.getMarkers(state.parameters, time),
+                onMarkerDragged: (index, newPoint, time) {
+                  sim.onMarkerDragged(
+                      state.parameters, updateParam, index, newPoint, time);
+                },
+                animationBuilder: (context, time, azimuth, tilt, scale) {
+                  return sim.buildAnimation(
+                    context,
+                    time,
+                    azimuth,
+                    tilt,
+                    scale,
+                    state.parameters,
+                    state.activeIds,
+                  );
+                },
+              ),
+            ),
+          );
+
+          simIndex++;
+          continue;
+        }
+
+        items.add(
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: w,
+          ),
+        );
+      }
     }
 
     // YouTube（視覚モジュール）
-    if (video.videoURL.isNotEmpty) {
+    if (widget.video.videoURL.isNotEmpty) {
       items.add(
         SizedBox(
           width: double.infinity,
           child: AspectRatio(
             aspectRatio: 16 / 9,
-            child: PhysicsYouTubePlayer(videoURL: video.videoURL),
+            child: PhysicsYouTubePlayer(videoURL: widget.video.videoURL),
           ),
         ),
       );
@@ -376,17 +466,74 @@ class VideoDetailView extends StatelessWidget {
   Widget _buildRightExplanationPane(BuildContext context) {
     final items = <Widget>[];
 
+    // Wide Web: 右上に「数式・スライダー」を集約して、その下に解説を置く
+    if (_isWideWeb(context) &&
+        widget.video.experimentWidgets != null &&
+        widget.video.experimentWidgets!.isNotEmpty) {
+      int simIndex = 0;
+      for (final w in widget.video.experimentWidgets!) {
+        if (w is PhysicsSimulationView) {
+          final sim = w.simulation;
+          final state = _ensureSimState(simIndex, sim);
+
+          void updateParam(String key, double value) {
+            setState(() => state.parameters[key] = value);
+          }
+
+          void updateActiveIds(Set<String> ids) {
+            setState(() => state.activeIds = ids);
+          }
+
+          final extra = sim.buildExtraControls(context, state.activeIds, updateActiveIds);
+          final sliders = sim.buildControls(context, state.parameters, updateParam);
+
+          items.add(
+            Card(
+              margin: const EdgeInsets.only(bottom: 12),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      '数式・パラメータ',
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleSmall
+                          ?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    if (sim.formula != null) sim.formula!,
+                    if (extra != null) ...[
+                      const SizedBox(height: 10),
+                      extra,
+                    ],
+                    if (sliders.isNotEmpty) ...[
+                      const SizedBox(height: 10),
+                      ...sliders,
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          );
+
+          simIndex++;
+        }
+      }
+    }
+
     // 解説・ポイント
-    if (video.latex != null) {
-      items.add(LatexWebView(latexHtml: video.latex!));
+    if (widget.video.latex != null) {
+      items.add(LatexWebView(latexHtml: widget.video.latex!));
     }
 
     // 実験道具
-    if (video.equipment.isNotEmpty) {
+    if (widget.video.equipment.isNotEmpty) {
       items.add(
         Padding(
           padding: const EdgeInsets.only(top: 16),
-          child: EquipmentListView(equipment: video.equipment),
+          child: EquipmentListView(equipment: widget.video.equipment),
         ),
       );
     }
@@ -416,7 +563,7 @@ class VideoDetailView extends StatelessWidget {
   Widget build(BuildContext context) {
     if (_isWideWeb(context)) {
       return Scaffold(
-        appBar: AppBar(title: Text(video.title)),
+        appBar: AppBar(title: Text(widget.video.title)),
         body: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -433,47 +580,66 @@ class VideoDetailView extends StatelessWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(video.title)),
+      appBar: AppBar(title: Text(widget.video.title)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(6),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 1. シミュレーション・実験ウィジェットを最上部に
-            if (video.experimentWidgets != null && video.experimentWidgets!.isNotEmpty)
-              ...video.experimentWidgets!.map(
+            if (widget.video.experimentWidgets != null &&
+                widget.video.experimentWidgets!.isNotEmpty)
+              ...widget.video.experimentWidgets!.map(
                 (w) => Padding(
                   padding: const EdgeInsets.only(top: 16),
                   child: w,
                 ),
               ),
             // 2. YouTube動画（これも視覚モジュールとして上部に配置）
-            if (video.videoURL.isNotEmpty)
+            if (widget.video.videoURL.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 16),
                 child: SizedBox(
                   height: 200,
                   width: double.infinity,
-                  child: PhysicsYouTubePlayer(videoURL: video.videoURL),
+                  child: PhysicsYouTubePlayer(videoURL: widget.video.videoURL),
                 ),
               ),
             // 3. 解説・ポイント
-            if (video.latex != null)
+            if (widget.video.latex != null)
               Padding(
                 padding: const EdgeInsets.only(top: 16),
-                child: LatexWebView(latexHtml: video.latex!),
+                child: LatexWebView(latexHtml: widget.video.latex!),
               ),
             // 4. 実験道具を最後に
-            if (video.equipment.isNotEmpty)
+            if (widget.video.equipment.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 16),
-                child: EquipmentListView(equipment: video.equipment),
+                child: EquipmentListView(equipment: widget.video.equipment),
               ),
           ],
         ),
       ),
     );
   }
+}
+
+class _EmbeddedSimState {
+  Map<String, double> parameters;
+  Set<String> activeIds;
+  final bool isInitialized;
+
+  _EmbeddedSimState._(this.parameters, this.activeIds, this.isInitialized);
+
+  factory _EmbeddedSimState.empty() =>
+      _EmbeddedSimState._(<String, double>{}, <String>{}, false);
+
+  factory _EmbeddedSimState.fromSimulation(PhysicsSimulation sim) =>
+      _EmbeddedSimState._(
+        Map<String, double>.from(sim.initialParameters),
+        Set<String>.from(sim.initialActiveIds),
+        true,
+      );
 }
 
 // 共通の TextStyle（ファイル上部に置く）

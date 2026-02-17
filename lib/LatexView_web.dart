@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:joyphysics/dataExporter.dart';
 import 'package:joyphysics/model.dart';
 import 'package:joyphysics/theory/TheoryView.dart';
+import 'package:flutter/scheduler.dart';
 
 // Web-only registry API
 import 'dart:ui_web' as ui;
@@ -29,6 +30,24 @@ class _LatexWebViewState extends State<LatexWebView> {
   final Map<String, String> _base64Cache = {};
   late final Future<void> _ready;
 
+  void _scrollNearestAncestor(double deltaY) {
+    if (!mounted) return;
+    // Defer until after layout so Scrollable.maybeOf can find ancestors reliably.
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final scrollable = Scrollable.maybeOf(context);
+      if (scrollable == null) return;
+      final position = scrollable.position;
+
+      // deltaY is in pixels (usually). Clamp to avoid huge jumps.
+      final dy = deltaY.clamp(-250.0, 250.0);
+      final target = (position.pixels + dy)
+          .clamp(position.minScrollExtent, position.maxScrollExtent);
+      if (target == position.pixels) return;
+      position.jumpTo(target);
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -44,7 +63,9 @@ class _LatexWebViewState extends State<LatexWebView> {
       if (data['event'] == 'height') {
         final num? h = data['height'];
         if (h != null) {
-          final newHeight = (h.toDouble() + 24).clamp(80.0, 5000.0);
+          // Let the outer (Flutter) scroll view handle scrolling.
+          // Keep iframe non-scrollable by expanding its height to fit content.
+          final newHeight = (h.toDouble() + 24).clamp(80.0, 20000.0);
           if ((newHeight - _height).abs() > 1 && mounted) {
             setState(() => _height = newHeight);
           }
@@ -53,6 +74,11 @@ class _LatexWebViewState extends State<LatexWebView> {
         final url = data['url'];
         if (url is String) {
           _handleAppLink(context, url);
+        }
+      } else if (data['event'] == 'wheel') {
+        final num? dy = data['deltaY'];
+        if (dy != null) {
+          _scrollNearestAncestor(dy.toDouble());
         }
       }
     });
@@ -76,6 +102,8 @@ class _LatexWebViewState extends State<LatexWebView> {
         ..style.border = 'none'
         ..style.width = '100%'
         ..style.height = '100%'
+        ..style.overflow = 'hidden'
+        ..setAttribute('scrolling', 'no')
         ..srcdoc = fullHtml;
       return iframe;
     });
@@ -156,6 +184,42 @@ class _LatexWebViewState extends State<LatexWebView> {
         parent.postMessage({type: 'latexView', id: ${_id}, event: 'height', height: document.body.scrollHeight}, '*');
       } catch(e) {}
     }
+    function postWheel(deltaY) {
+      try {
+        parent.postMessage({type: 'latexView', id: ${_id}, event: 'wheel', deltaY: deltaY}, '*');
+      } catch(e) {}
+    }
+    function interceptWheel() {
+      try {
+        // Forward wheel/trackpad scroll to parent (Flutter scroll view).
+        // Must be non-passive to allow preventDefault.
+        document.addEventListener('wheel', function(ev){
+          postWheel(ev.deltaY || 0);
+          ev.preventDefault();
+        }, {passive: false});
+      } catch(e) {}
+    }
+    function interceptTouchScroll() {
+      try {
+        var lastY = null;
+        document.addEventListener('touchstart', function(ev){
+          if (!ev.touches || ev.touches.length === 0) return;
+          lastY = ev.touches[0].clientY;
+        }, {passive: true});
+        document.addEventListener('touchmove', function(ev){
+          if (lastY === null) return;
+          if (!ev.touches || ev.touches.length === 0) return;
+          var y = ev.touches[0].clientY;
+          var dy = lastY - y; // dy>0 => scroll down
+          lastY = y;
+          postWheel(dy);
+          ev.preventDefault();
+        }, {passive: false});
+        document.addEventListener('touchend', function(ev){
+          lastY = null;
+        }, {passive: true});
+      } catch(e) {}
+    }
     function interceptAppLinks() {
       try {
         document.querySelectorAll('a').forEach(function(a){
@@ -193,7 +257,8 @@ class _LatexWebViewState extends State<LatexWebView> {
     html, body {
       margin: 0;
       padding: 0;
-      overflow: auto;
+      /* Disable inner scrolling; use outer Flutter scroll instead. */
+      overflow: hidden;
       background-color: transparent;
       font-family: 'KeiFont', sans-serif;
       font-size: 18px;
@@ -251,10 +316,14 @@ class _LatexWebViewState extends State<LatexWebView> {
     $bridgeScript
     if (window.MathJax && MathJax.typesetPromise) {
       MathJax.typesetPromise().then(() => {
+        interceptWheel();
+        interceptTouchScroll();
         interceptAppLinks();
         setTimeout(() => { postHeight(); }, 100);
       });
     } else {
+      interceptWheel();
+      interceptTouchScroll();
       interceptAppLinks();
       setTimeout(() => { postHeight(); }, 150);
     }
