@@ -27,6 +27,7 @@ class _LatexWebViewState extends State<LatexWebView> {
   StreamSubscription<html.MessageEvent>? _msgSub;
 
   final Map<String, String> _base64Cache = {};
+  late final Future<void> _ready;
 
   @override
   void initState() {
@@ -56,7 +57,8 @@ class _LatexWebViewState extends State<LatexWebView> {
       }
     });
 
-    _registerAndLoad();
+    // Ensure registerViewFactory completes before HtmlElementView is built.
+    _ready = _registerAndLoad();
   }
 
   @override
@@ -264,11 +266,43 @@ class _LatexWebViewState extends State<LatexWebView> {
 
   @override
   Widget build(BuildContext context) {
-    // registerViewFactory は async で済ませるため、初回は短い placeholder を出す
-    return SizedBox(
-      width: double.infinity,
-      height: _height,
-      child: HtmlElementView(viewType: _viewType),
+    return FutureBuilder<void>(
+      future: _ready,
+      builder: (context, snapshot) {
+        // registerViewFactory は async で済ませるため、初回は placeholder を出す
+        if (snapshot.connectionState != ConnectionState.done) {
+          return SizedBox(
+            width: double.infinity,
+            height: _height,
+            child: const Center(
+              child: SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+          );
+        }
+
+        if (snapshot.hasError) {
+          return SizedBox(
+            width: double.infinity,
+            height: _height,
+            child: Center(
+              child: Text(
+                'LaTeX表示の初期化に失敗しました',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ),
+          );
+        }
+
+        return SizedBox(
+          width: double.infinity,
+          height: _height,
+          child: HtmlElementView(viewType: _viewType),
+        );
+      },
     );
   }
 }

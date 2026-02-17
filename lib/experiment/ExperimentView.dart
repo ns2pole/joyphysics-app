@@ -1,6 +1,7 @@
 import 'dart:math' as math; // 準備中透かしの回転で使用
 import 'package:joyphysics/experiment/HasHeight.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:joyphysics/LatexView.dart';
 import 'package:joyphysics/model.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -320,8 +321,117 @@ class VideoDetailView extends StatelessWidget {
   final Video video;
   const VideoDetailView({required this.video, Key? key}) : super(key: key);
 
+  bool _isWideWeb(BuildContext context) {
+    if (!kIsWeb) return false;
+    final size = MediaQuery.sizeOf(context);
+    if (size.height <= 0) return false;
+    final ratio = size.width / size.height;
+    return size.width >= 900 && ratio >= 1.2;
+  }
+
+  Widget _buildLeftVisualPane(BuildContext context) {
+    final items = <Widget>[];
+
+    // シミュレーション・実験
+    if (video.experimentWidgets != null && video.experimentWidgets!.isNotEmpty) {
+      items.addAll(video.experimentWidgets!.map(
+        (w) => Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: w,
+        ),
+      ));
+    }
+
+    // YouTube（視覚モジュール）
+    if (video.videoURL.isNotEmpty) {
+      items.add(
+        SizedBox(
+          width: double.infinity,
+          child: AspectRatio(
+            aspectRatio: 16 / 9,
+            child: PhysicsYouTubePlayer(videoURL: video.videoURL),
+          ),
+        ),
+      );
+    }
+
+    if (items.isEmpty) {
+      return const Center(
+        child: Text(
+          'このコンテンツには動画/実験がありません。',
+          style: TextStyle(color: Colors.black54),
+        ),
+      );
+    }
+
+    // 左は「基本固定」。ただし溢れる場合だけ左カラム内でスクロールできるようにする
+    return Padding(
+      padding: const EdgeInsets.all(8),
+      child: ListView(
+        children: items,
+      ),
+    );
+  }
+
+  Widget _buildRightExplanationPane(BuildContext context) {
+    final items = <Widget>[];
+
+    // 解説・ポイント
+    if (video.latex != null) {
+      items.add(LatexWebView(latexHtml: video.latex!));
+    }
+
+    // 実験道具
+    if (video.equipment.isNotEmpty) {
+      items.add(
+        Padding(
+          padding: const EdgeInsets.only(top: 16),
+          child: EquipmentListView(equipment: video.equipment),
+        ),
+      );
+    }
+
+    if (items.isEmpty) {
+      return const Center(
+        child: Text(
+          '解説がありません。',
+          style: TextStyle(color: Colors.black54),
+        ),
+      );
+    }
+
+    // 右側だけスクロール
+    return Scrollbar(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: items,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (_isWideWeb(context)) {
+      return Scaffold(
+        appBar: AppBar(title: Text(video.title)),
+        body: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: _buildLeftVisualPane(context),
+            ),
+            const VerticalDivider(width: 1, thickness: 1),
+            Expanded(
+              child: _buildRightExplanationPane(context),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(title: Text(video.title)),
       body: SingleChildScrollView(
