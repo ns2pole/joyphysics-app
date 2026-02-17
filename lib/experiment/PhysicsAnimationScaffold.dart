@@ -54,7 +54,7 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
 
   // Camera settings for 3D
   // Camerva settings for 3D
-  // Camerva settings for 3D
+  // Camerva settings for 3Ds
   static const double _defaultAzimuth = 0.0;
   static const double _defaultTilt = 35 * math.pi / 180;
   static const double _tiltMax = math.pi / 2;
