@@ -10,14 +10,20 @@ import 'package:joyphysics/experiment/sensorListView.dart';
 import 'package:joyphysics/store/ProductListPage.dart';
 import 'package:joyphysics/aboutView.dart';
 import 'package:joyphysics/model.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 import 'update_checker.dart'; // UpdateChecker (navigatorKey を受け取る実装にする)
+import 'package:flutter_web_plugins/url_strategy.dart';
+import 'package:joyphysics/dataExporter.dart' show thinFilmInterference1D;
 
 // 共有の navigatorKey を1つだけ作る
 final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
 
 void main() {
+  if (kIsWeb) {
+    setUrlStrategy(const HashUrlStrategy());
+  }
   runApp(JoyPhysicsApp());
 
   // runApp の後で非同期にアップデートチェックを開始（postFrame は安全）
@@ -45,7 +51,29 @@ class JoyPhysicsApp extends StatelessWidget {
             bodyMedium: TextStyle(fontSize: 18),
           ),
         ),
-        home: ContentView(),
+        onGenerateRoute: (settings) {
+          final raw = settings.name ?? '/';
+          // HashUrlStrategy では name は通常 '/foo' になるが、念のため repo prefix を除去
+          var name = raw;
+          if (name.startsWith('/dart-joyphysics/')) {
+            name = name.substring('/dart-joyphysics'.length);
+            if (name.isEmpty) name = '/';
+          }
+
+          Widget page;
+          switch (name) {
+            case '/':
+              page = ContentView();
+              break;
+            case '/waves/thin-film-interference-1d':
+              page = VideoDetailView(video: thinFilmInterference1D);
+              break;
+            default:
+              page = ContentView();
+              break;
+          }
+          return MaterialPageRoute(builder: (_) => page, settings: settings);
+        },
       );
 }
 
