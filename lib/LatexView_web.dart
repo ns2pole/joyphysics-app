@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:html' as html;
+import 'dart:js_util' as js_util;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -26,26 +27,53 @@ class _LatexWebViewState extends State<LatexWebView> {
   late final String _viewType;
   double _height = 140;
   StreamSubscription<html.MessageEvent>? _msgSub;
+  static const double _maxIframeHeight = 900;
 
   final Map<String, String> _base64Cache = {};
   late final Future<void> _ready;
+  double _pendingDy = 0.0;
+  bool _scrollScheduled = false;
 
-  void _scrollNearestAncestor(double deltaY) {
+  void _scrollNearestAncestor(double deltaY, {required int deltaMode}) {
     if (!mounted) return;
+    final dyPx = _deltaToPixels(deltaY, deltaMode: deltaMode);
+    _pendingDy += dyPx;
+    if (_scrollScheduled) return;
+    _scrollScheduled = true;
+
     // Defer until after layout so Scrollable.maybeOf can find ancestors reliably.
     SchedulerBinding.instance.addPostFrameCallback((_) {
+      _scrollScheduled = false;
       if (!mounted) return;
       final scrollable = Scrollable.maybeOf(context);
-      if (scrollable == null) return;
+      if (scrollable == null) {
+        _pendingDy = 0.0;
+        return;
+      }
       final position = scrollable.position;
 
-      // deltaY is in pixels (usually). Clamp to avoid huge jumps.
-      final dy = deltaY.clamp(-250.0, 250.0);
+      final dy = _pendingDy.clamp(-320.0, 320.0);
+      _pendingDy = 0.0;
+
       final target = (position.pixels + dy)
           .clamp(position.minScrollExtent, position.maxScrollExtent);
       if (target == position.pixels) return;
       position.jumpTo(target);
     });
+  }
+
+  double _deltaToPixels(double deltaY, {required int deltaMode}) {
+    // https://developer.mozilla.org/en-US/docs/Web/API/WheelEvent/deltaMode
+    // 0: pixel, 1: line, 2: page
+    switch (deltaMode) {
+      case 1:
+        return deltaY * 16.0;
+      case 2:
+        return deltaY * _height;
+      case 0:
+      default:
+        return deltaY;
+    }
   }
 
   @override
@@ -55,7 +83,22 @@ class _LatexWebViewState extends State<LatexWebView> {
     _viewType = 'latex-iframe-$_id';
 
     _msgSub = html.window.onMessage.listen((event) {
-      final data = event.data;
+      dynamic data = event.data;
+
+      // postMessage payload can arrive as a JS object (not a Dart Map) on web.
+      // Convert it so wheel/height forwarding always works.
+      if (data is String) {
+        try {
+          data = jsonDecode(data);
+        } catch (_) {}
+      }
+      if (data is! Map) {
+        try {
+          final dartified = js_util.dartify(data);
+          if (dartified is Map) data = dartified;
+        } catch (_) {}
+      }
+
       if (data is! Map) return;
       if (data['type'] != 'latexView') return;
       if (data['id'] != _id) return;
@@ -63,9 +106,9 @@ class _LatexWebViewState extends State<LatexWebView> {
       if (data['event'] == 'height') {
         final num? h = data['height'];
         if (h != null) {
-          // Let the outer (Flutter) scroll view handle scrolling.
-          // Keep iframe non-scrollable by expanding its height to fit content.
-          final newHeight = (h.toDouble() + 24).clamp(80.0, 20000.0);
+          // Web: A very tall HtmlElementView (iframe) makes scrolling janky.
+          // Cap the height and let the iframe scroll internally when needed.
+          final newHeight = (h.toDouble() + 24).clamp(120.0, _maxIframeHeight);
           if ((newHeight - _height).abs() > 1 && mounted) {
             setState(() => _height = newHeight);
           }
@@ -78,7 +121,8 @@ class _LatexWebViewState extends State<LatexWebView> {
       } else if (data['event'] == 'wheel') {
         final num? dy = data['deltaY'];
         if (dy != null) {
-          _scrollNearestAncestor(dy.toDouble());
+          final mode = (data['deltaMode'] as num?)?.toInt() ?? 0;
+          _scrollNearestAncestor(dy.toDouble(), deltaMode: mode);
         }
       }
     });
@@ -102,8 +146,8 @@ class _LatexWebViewState extends State<LatexWebView> {
         ..style.border = 'none'
         ..style.width = '100%'
         ..style.height = '100%'
-        ..style.overflow = 'hidden'
-        ..setAttribute('scrolling', 'no')
+        ..style.overflow = 'auto'
+        ..setAttribute('scrolling', 'yes')
         ..srcdoc = fullHtml;
       return iframe;
     });
@@ -179,22 +223,50 @@ class _LatexWebViewState extends State<LatexWebView> {
 
     // iframe 内で height を親へ通知する
     final bridgeScript = '''
+    function postMessageToParent(payload) {
+      try {
+        parent.postMessage(JSON.stringify(payload), '*');
+      } catch(e) {
+        try { parent.postMessage(payload, '*'); } catch(e2) {}
+      }
+    }
     function postHeight() {
       try {
-        parent.postMessage({type: 'latexView', id: ${_id}, event: 'height', height: document.body.scrollHeight}, '*');
+        postMessageToParent({type: 'latexView', id: ${_id}, event: 'height', height: document.body.scrollHeight});
       } catch(e) {}
     }
-    function postWheel(deltaY) {
+    function postWheel(deltaY, deltaMode) {
       try {
-        parent.postMessage({type: 'latexView', id: ${_id}, event: 'wheel', deltaY: deltaY}, '*');
+        postMessageToParent({type: 'latexView', id: ${_id}, event: 'wheel', deltaY: deltaY, deltaMode: deltaMode});
       } catch(e) {}
     }
     function interceptWheel() {
       try {
+        var pendingDy = 0;
+        var pendingMode = 0;
+        var scheduled = false;
+        function modeToPx(dy, mode) {
+          // 0: pixel, 1: line, 2: page
+          if (mode === 1) return dy * 16;
+          if (mode === 2) return dy * (window.innerHeight || 800);
+          return dy;
+        }
+        function flush() {
+          scheduled = false;
+          if (pendingDy === 0) return;
+          postWheel(pendingDy, 0); // send as pixels
+          pendingDy = 0;
+          pendingMode = 0;
+        }
         // Forward wheel/trackpad scroll to parent (Flutter scroll view).
         // Must be non-passive to allow preventDefault.
         document.addEventListener('wheel', function(ev){
-          postWheel(ev.deltaY || 0);
+          pendingDy += modeToPx(ev.deltaY || 0, ev.deltaMode || 0);
+          pendingMode = ev.deltaMode || 0;
+          if (!scheduled) {
+            scheduled = true;
+            (window.requestAnimationFrame || function(cb){ return setTimeout(cb, 16); })(flush);
+          }
           ev.preventDefault();
         }, {passive: false});
       } catch(e) {}
@@ -212,7 +284,7 @@ class _LatexWebViewState extends State<LatexWebView> {
           var y = ev.touches[0].clientY;
           var dy = lastY - y; // dy>0 => scroll down
           lastY = y;
-          postWheel(dy);
+          postWheel(dy, 0);
           ev.preventDefault();
         }, {passive: false});
         document.addEventListener('touchend', function(ev){
@@ -227,7 +299,7 @@ class _LatexWebViewState extends State<LatexWebView> {
             var href = a.getAttribute('href') || '';
             if (href.startsWith('app://')) {
               ev.preventDefault();
-              parent.postMessage({type: 'latexView', id: ${_id}, event: 'appLink', url: href}, '*');
+              postMessageToParent({type: 'latexView', id: ${_id}, event: 'appLink', url: href});
             }
           });
         });

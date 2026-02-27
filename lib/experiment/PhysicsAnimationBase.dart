@@ -259,8 +259,10 @@ class _PhysicsSimulationViewState extends State<PhysicsSimulationView> {
       formula: widget.simulation.formula,
       is3D: widget.simulation.is3D,
       aspectRatio: widget.simulation.aspectRatio,
-      showTimeOverlay: widget.simulation.showTimeOverlay,
+      // Safety: when time is disabled, never show any time overlay UI.
       enableTime: widget.simulation.enableTime,
+      showTimeOverlay:
+          widget.simulation.enableTime && widget.simulation.showTimeOverlay,
       height: widget.height,
       sliders:
           widget.simulation.buildControls(context, _parameters, _updateParam),

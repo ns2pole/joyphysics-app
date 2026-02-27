@@ -421,6 +421,9 @@ class _VideoDetailViewState extends State<VideoDetailView> {
                 height: w.height,
                 aspectRatio: sim.aspectRatio,
                 is3D: sim.is3D,
+                // Simulation側の設定を反映（虹など time 無効のものは確実に非表示）
+                enableTime: sim.enableTime,
+                showTimeOverlay: sim.enableTime && sim.showTimeOverlay,
                 enableWideWebSplit: false, // VideoDetailView 側で左右分割するため、二重分割は抑止
                 onReset: resetAll,
                 getMarkers: (time) => sim.getMarkers(state.parameters, time),
