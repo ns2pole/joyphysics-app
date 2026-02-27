@@ -114,6 +114,7 @@ final rainbowDroplet2D = createWaveVideo(
   <p>赤色光 ($n=1.33$) と青色光 ($n=1.34$) の分散により、出射方向に差が生まれます。</p>
   """,
   simulation: RainbowDroplet2DSimulation(),
+  height: 780,
 );
 
 class RainbowDroplet2DSimulation extends WaveSimulation {
@@ -479,14 +480,17 @@ class _RainbowDropletPainter extends CustomPainter {
       helperPaint,
     );
 
-    if (viewMode == _RainbowViewMode.exitZoom) {
+    if (viewMode == _RainbowViewMode.exitZoom ||
+        viewMode == _RainbowViewMode.normal ||
+        viewMode == _RainbowViewMode.tinyDroplet) {
       _drawPhiArc(
         canvas,
         vertex: p3s,
         lineDir: const Offset(1, 0),
         rayDir: -outDirScreen,
         color: color,
-        arcRadius: refractiveIndex == redN ? 34.0 : 26.0,
+        arcRadius: (refractiveIndex == redN ? 34.0 : 26.0) * 3.0,
+        useVerticalAngle: true,
       );
     }
   }
@@ -590,6 +594,7 @@ class _RainbowDropletPainter extends CustomPainter {
     required Offset rayDir,
     required Color color,
     required double arcRadius,
+    bool useVerticalAngle = false,
   }) {
     if (lineDir.distance <= 1e-6 || rayDir.distance <= 1e-6) return;
 
@@ -600,8 +605,12 @@ class _RainbowDropletPainter extends CustomPainter {
     final delta1 = _normalizeSignedAngle(rayAngle - lineAngle);
     final delta2 = _normalizeSignedAngle(rayAngle - oppositeLineAngle);
     final usePrimary = delta1.abs() <= delta2.abs();
-    final startAngle = usePrimary ? lineAngle : oppositeLineAngle;
+    var startAngle = usePrimary ? lineAngle : oppositeLineAngle;
     final sweep = usePrimary ? delta1 : delta2;
+    if (useVerticalAngle) {
+      // 対頂角（反対側の同じ角）として描く：両方の半直線をπだけ回転した位置に移す
+      startAngle = _normalizeAngle(startAngle + math.pi);
+    }
     final center = vertex;
 
     final arcPaint = Paint()
