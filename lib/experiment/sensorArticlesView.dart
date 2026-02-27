@@ -56,7 +56,7 @@ class SensorArticlesView extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   const Text(
-                    'Web版ではセンサー使えません。アプリをダウンロードしてね。',
+                    'Web版ではセンサーが使えません。アプリをダウンロードしてね。',
                     style: TextStyle(fontSize: 14, color: Colors.black87),
                   ),
                   const SizedBox(height: 10),

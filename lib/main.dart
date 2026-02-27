@@ -159,7 +159,7 @@ class CategoryList extends StatelessWidget {
         // ---------- 先頭部分 ----------
         if (index == 1) {
           final info = kIsWeb
-              ? _buildInfoText('Web版ではセンサー使えません。\nアプリをダウンロードしてね。')
+              ? _buildInfoText('Web版ではセンサーが使えません。\nアプリをダウンロードしてね。RR')
               : _buildInfoText('スマホセンサーを活用！');
           return Column(
             children: [
