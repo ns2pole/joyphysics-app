@@ -29,7 +29,10 @@ class _LatexWebViewState extends State<LatexWebView> {
   StreamSubscription<html.MessageEvent>? _msgSub;
   static const double _maxIframeHeight = 1400;
 
-  final Map<String, String> _base64Cache = {};
+  // Cache across instances to reduce heavy base64 work on web.
+  static final Map<String, String> _base64Cache = {};
+  static final Map<String, String> _processedHtmlCache = {};
+  static Future<String>? _fontBase64Future;
   late final Future<void> _ready;
   double _pendingDy = 0.0;
   bool _scrollScheduled = false;
@@ -41,24 +44,34 @@ class _LatexWebViewState extends State<LatexWebView> {
     if (_scrollScheduled) return;
     _scrollScheduled = true;
 
-    // Defer until after layout so Scrollable.maybeOf can find ancestors reliably.
-    SchedulerBinding.instance.addPostFrameCallback((_) {
-      _scrollScheduled = false;
-      if (!mounted) return;
+    bool tryApplyScroll() {
+      if (!mounted) return false;
       final scrollable = Scrollable.maybeOf(context);
-      if (scrollable == null) {
-        _pendingDy = 0.0;
-        return;
-      }
-      final position = scrollable.position;
+      if (scrollable == null) return false;
 
-      final dy = _pendingDy.clamp(-320.0, 320.0);
+      final position = scrollable.position;
+      final dy = _pendingDy.clamp(-1200.0, 1200.0);
       _pendingDy = 0.0;
 
       final target = (position.pixels + dy)
           .clamp(position.minScrollExtent, position.maxScrollExtent);
-      if (target == position.pixels) return;
+      if (target == position.pixels) return true;
       position.jumpTo(target);
+      return true;
+    }
+
+    // Apply immediately when possible; fall back to next frame.
+    if (tryApplyScroll()) {
+      _scrollScheduled = false;
+      return;
+    }
+
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _scrollScheduled = false;
+      final applied = tryApplyScroll();
+      if (!applied) {
+        _pendingDy = 0.0;
+      }
     });
   }
 
@@ -138,7 +151,7 @@ class _LatexWebViewState extends State<LatexWebView> {
   }
 
   Future<void> _registerAndLoad() async {
-    final processedHtml = await _embedBase64Images(widget.latexHtml);
+    final processedHtml = await _embedBase64ImagesCached(widget.latexHtml);
     final fullHtml = await _wrapHtmlWithFont(processedHtml);
 
     ui.platformViewRegistry.registerViewFactory(_viewType, (int viewId) {
@@ -148,6 +161,7 @@ class _LatexWebViewState extends State<LatexWebView> {
         ..style.height = '100%'
         ..style.overflow = 'auto'
         ..setAttribute('scrolling', 'yes')
+        ..setAttribute('loading', 'lazy')
         ..srcdoc = fullHtml;
       return iframe;
     });
@@ -193,7 +207,10 @@ class _LatexWebViewState extends State<LatexWebView> {
     }
   }
 
-  Future<String> _embedBase64Images(String htmlText) async {
+  Future<String> _embedBase64ImagesCached(String htmlText) async {
+    final cached = _processedHtmlCache[htmlText];
+    if (cached != null) return cached;
+
     final regex = RegExp(r'<img\s+[^>]*src="([^"]+)"[^>]*>', caseSensitive: false);
     var newHtml = htmlText;
     for (final match in regex.allMatches(htmlText)) {
@@ -214,12 +231,16 @@ class _LatexWebViewState extends State<LatexWebView> {
         }
       }
     }
+    _processedHtmlCache[htmlText] = newHtml;
     return newHtml;
   }
 
   Future<String> _wrapHtmlWithFont(String bodyHtml) async {
-    final fontData = await rootBundle.load('assets/fonts/keifont.ttf');
-    final fontBase64 = base64Encode(fontData.buffer.asUint8List());
+    _fontBase64Future ??= () async {
+      final fontData = await rootBundle.load('assets/fonts/keifont.ttf');
+      return base64Encode(fontData.buffer.asUint8List());
+    }();
+    final fontBase64 = await _fontBase64Future!;
 
     // iframe 内で height を親へ通知する
     final bridgeScript = '''
@@ -259,12 +280,12 @@ class _LatexWebViewState extends State<LatexWebView> {
     function atTop() {
       var m = scrollerMetrics();
       if (!m) return true;
-      return m.top <= 1;
+      return m.top <= 4;
     }
     function atBottom() {
       var m = scrollerMetrics();
       if (!m) return true;
-      return (m.top + m.clientH) >= (m.scrollH - 1);
+      return (m.top + m.clientH) >= (m.scrollH - 4);
     }
     function shouldForwardToParent(dyPx) {
       // If this document cannot scroll, always forward to Flutter.
@@ -297,7 +318,7 @@ class _LatexWebViewState extends State<LatexWebView> {
         document.addEventListener('wheel', function(ev){
           var dyPx = modeToPx(ev.deltaY || 0, ev.deltaMode || 0);
           if (!shouldForwardToParent(dyPx)) {
-            // Let the iframe scroll naturally.
+            // Let browser handle scrolling in iframe naturally.
             return;
           }
           pendingDy += dyPx;
@@ -306,7 +327,7 @@ class _LatexWebViewState extends State<LatexWebView> {
             scheduled = true;
             (window.requestAnimationFrame || function(cb){ return setTimeout(cb, 16); })(flush);
           }
-          ev.preventDefault();
+          if (ev.cancelable) ev.preventDefault();
         }, {passive: false});
       } catch(e) {}
     }
@@ -332,9 +353,7 @@ class _LatexWebViewState extends State<LatexWebView> {
           if (Math.abs(dy) >= Math.abs(dx)) {
             if (shouldForwardToParent(dy)) {
               postWheel(dy, 0);
-              ev.preventDefault();
-            } else {
-              // Allow native scrolling inside the iframe.
+              if (ev.cancelable) ev.preventDefault();
             }
           }
         }, {passive: false});
@@ -494,7 +513,9 @@ class _LatexWebViewState extends State<LatexWebView> {
         return SizedBox(
           width: double.infinity,
           height: _height,
-          child: HtmlElementView(viewType: _viewType),
+          child: RepaintBoundary(
+            child: HtmlElementView(viewType: _viewType),
+          ),
         );
       },
     );
