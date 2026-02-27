@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:google_fonts/google_fonts.dart'; // 等幅フォント
 import 'package:joyphysics/experiment/HasHeight.dart';
+import 'package:joyphysics/experiment/sensor_availability.dart';
+import 'package:joyphysics/experiment/sensor_availability_types.dart';
 import 'package:joyphysics/shared_components.dart';
 
 class AccelerometerExperimentWidget extends StatefulWidget with HasHeight {
@@ -28,10 +30,27 @@ class _AccelerometerExperimentWidgetState extends State<AccelerometerExperimentW
   double y = 0.0;
   double z = 0.0;
   StreamSubscription<UserAccelerometerEvent>? _subscription;
+  SensorAvailability _availability = SensorAvailability.checking;
 
   @override
   void initState() {
     super.initState();
+    _initSensor();
+  }
+
+  Future<void> _initSensor() async {
+    final status = await checkSensorAvailability(SensorKind.accelerometer);
+    if (!mounted) return;
+    setState(() {
+      _availability = status;
+    });
+    if (status.isAvailable) {
+      _startSubscription();
+    }
+  }
+
+  void _startSubscription() {
+    _subscription?.cancel();
     _subscription = userAccelerometerEvents.listen((event) {
       if (!mounted) return;
       setState(() {
@@ -40,6 +59,17 @@ class _AccelerometerExperimentWidgetState extends State<AccelerometerExperimentW
         z = event.z;
       });
     });
+  }
+
+  Future<void> _requestPermission() async {
+    final status = await requestSensorPermission(SensorKind.accelerometer);
+    if (!mounted) return;
+    setState(() {
+      _availability = status;
+    });
+    if (status.isAvailable) {
+      _startSubscription();
+    }
   }
 
   @override
@@ -58,36 +88,55 @@ class _AccelerometerExperimentWidgetState extends State<AccelerometerExperimentW
   Widget build(BuildContext context) {
     final magnitude = sqrt(x * x + y * y + z * z);
 
+    final bool isAvailable = _availability.isAvailable;
+    final bool needsPermission = _availability.needsPermission;
+
     final content = SensorDisplayCard(
       title: '加速度センサーの値',
       height: widget.height,
-      children: [
-        Text("X: ${formatValue(x)} (m/s²)",
-            style: GoogleFonts.robotoMono(fontSize: 22, color: Colors.black)),
-        Text("Y: ${formatValue(y)} (m/s²)",
-            style: GoogleFonts.robotoMono(fontSize: 22, color: Colors.black)),
-        Text("Z: ${formatValue(z)} (m/s²)",
-            style: GoogleFonts.robotoMono(fontSize: 22, color: Colors.black)),
-        const SizedBox(height: 24),
-        const Text(
-          "合成加速度",
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          "${formatValueMag(magnitude)} m/s²",
-          textAlign: TextAlign.center,
-          style: GoogleFonts.robotoMono(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
-          ),
-        ),
-      ],
+      children: isAvailable
+          ? [
+              Text("X: ${formatValue(x)} (m/s²)",
+                  style:
+                      GoogleFonts.robotoMono(fontSize: 22, color: Colors.black)),
+              Text("Y: ${formatValue(y)} (m/s²)",
+                  style:
+                      GoogleFonts.robotoMono(fontSize: 22, color: Colors.black)),
+              Text("Z: ${formatValue(z)} (m/s²)",
+                  style:
+                      GoogleFonts.robotoMono(fontSize: 22, color: Colors.black)),
+              const SizedBox(height: 24),
+              const Text(
+                "合成加速度",
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "${formatValueMag(magnitude)} m/s²",
+                textAlign: TextAlign.center,
+                style: GoogleFonts.robotoMono(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+            ]
+          : [
+              Text(
+                _availability.message,
+                style: const TextStyle(fontSize: 18, color: Colors.grey),
+              ),
+              const SizedBox(height: 12),
+              if (needsPermission)
+                ElevatedButton(
+                  onPressed: _requestPermission,
+                  child: const Text('センサー利用を許可'),
+                ),
+            ],
     );
 
     if (!widget.useScaffold) {

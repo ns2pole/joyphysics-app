@@ -122,49 +122,59 @@ class RainbowDroplet2DSimulation extends WaveSimulation {
           title: "虹の光路 (単一水滴)",
           is3D: false,
           showTimeOverlay: false,
+          enableTime: false,
         );
 
   @override
   Map<String, double> get initialParameters => const {
         'k': 0.82,
+        'viewMode': 0.0,
       };
 
   @override
   List<Widget> buildControls(context, params, updateParam) {
-    final k = (params['k'] ?? 0.82).clamp(0.0, 0.999);
-    final redPath = _RayOptics.computeRayPath(k, _RainbowDropletPainter.redN);
-    final bluePath = _RayOptics.computeRayPath(k, _RainbowDropletPainter.blueN);
-    final redPhiGeo = redPath == null ? 0.0 : _RayOptics.phiGeoDegFromPath(redPath);
-    final bluePhiGeo = bluePath == null ? 0.0 : _RayOptics.phiGeoDegFromPath(bluePath);
-    final redPhiTheory = _RayOptics.theoryPhiDeg(k, _RainbowDropletPainter.redN);
-    final bluePhiTheory = _RayOptics.theoryPhiDeg(k, _RainbowDropletPainter.blueN);
-    final redPeakPhi = _RayOptics.theoryPhiDeg(
-      _RayOptics.peakK(_RainbowDropletPainter.redN),
-      _RainbowDropletPainter.redN,
-    );
-    final bluePeakPhi = _RayOptics.theoryPhiDeg(
-      _RayOptics.peakK(_RainbowDropletPainter.blueN),
-      _RainbowDropletPainter.blueN,
-    );
+    final metrics = _buildMetrics(params);
+    final viewMode = _viewModeFromParams(params);
 
     return [
+      Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          ChoiceChip(
+            label: const Text('通常'),
+            selected: viewMode == _RainbowViewMode.normal,
+            onSelected: (_) => updateParam('viewMode', 0.0),
+          ),
+          ChoiceChip(
+            label: const Text('極小水滴'),
+            selected: viewMode == _RainbowViewMode.tinyDroplet,
+            onSelected: (_) => updateParam('viewMode', 1.0),
+          ),
+          ChoiceChip(
+            label: const Text('出射点拡大'),
+            selected: viewMode == _RainbowViewMode.exitZoom,
+            onSelected: (_) => updateParam('viewMode', 2.0),
+          ),
+        ],
+      ),
       Text(
-        'k = ${k.toStringAsFixed(3)}   φ_red = ${redPhiGeo.toStringAsFixed(2)}°   φ_blue = ${bluePhiGeo.toStringAsFixed(2)}°',
+        'k = ${metrics.k.toStringAsFixed(3)}   φ_red = ${metrics.redPhiGeo.toStringAsFixed(2)}°   φ_blue = ${metrics.bluePhiGeo.toStringAsFixed(2)}°',
         style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
       ),
       WaveParameterSlider(
         label: 'k',
-        value: k,
+        value: metrics.k,
         min: 0.0,
         max: 0.999,
         onChanged: (v) => updateParam('k', v),
       ),
       Text(
-        '理論ピーク φ: 赤 ${redPeakPhi.toStringAsFixed(2)}° / 青 ${bluePeakPhi.toStringAsFixed(2)}°',
+        '理論ピーク φ: 赤 ${metrics.redPeakPhi.toStringAsFixed(2)}° / 青 ${metrics.bluePeakPhi.toStringAsFixed(2)}°',
         style: const TextStyle(fontSize: 15, color: Colors.black54),
       ),
       Text(
-        '理論との差 |Δφ|: 赤 ${(redPhiGeo - redPhiTheory).abs().toStringAsFixed(2)}° / 青 ${(bluePhiGeo - bluePhiTheory).abs().toStringAsFixed(2)}°',
+        '理論との差 |Δφ|: 赤 ${(metrics.redPhiGeo - metrics.redPhiTheory).abs().toStringAsFixed(2)}° / 青 ${(metrics.bluePhiGeo - metrics.bluePhiTheory).abs().toStringAsFixed(2)}°',
         style: const TextStyle(fontSize: 14, color: Colors.black54),
       ),
     ];
@@ -174,43 +184,66 @@ class RainbowDroplet2DSimulation extends WaveSimulation {
   Widget buildAnimation(
       context, time, azimuth, tilt, scale, params, activeIds) {
     final k = (params['k'] ?? 0.82).clamp(0.0, 0.999);
+    final viewMode = _viewModeFromParams(params);
+    return CustomPaint(
+      size: Size.infinite,
+      painter: _RainbowDropletPainter(k: k, scale: scale, viewMode: viewMode),
+    );
+  }
+  
+  _RainbowMetrics _buildMetrics(Map<String, double> params) {
+    final k = (params['k'] ?? 0.82).clamp(0.0, 0.999);
     final redPath = _RayOptics.computeRayPath(k, _RainbowDropletPainter.redN);
     final bluePath = _RayOptics.computeRayPath(k, _RainbowDropletPainter.blueN);
-    final redPhiDeg = redPath == null ? 0.0 : _RayOptics.phiGeoDegFromPath(redPath);
-    final bluePhiDeg = bluePath == null ? 0.0 : _RayOptics.phiGeoDegFromPath(bluePath);
-    return Stack(
-      children: [
-        CustomPaint(
-          size: Size.infinite,
-          painter: _RainbowDropletPainter(k: k, scale: scale),
-        ),
-        Positioned(
-          top: 12,
-          left: 0,
-          right: 0,
-          child: Center(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.5),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Text(
-                'k = ${k.toStringAsFixed(3)}   φ_red = ${redPhiDeg.toStringAsFixed(2)}°   φ_blue = ${bluePhiDeg.toStringAsFixed(2)}°',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Courier',
-                  fontSize: 16,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
+    final redPhiGeo = redPath == null ? 0.0 : _RayOptics.phiGeoDegFromPath(redPath);
+    final bluePhiGeo =
+        bluePath == null ? 0.0 : _RayOptics.phiGeoDegFromPath(bluePath);
+    final redPhiTheory = _RayOptics.theoryPhiDeg(k, _RainbowDropletPainter.redN);
+    final bluePhiTheory =
+        _RayOptics.theoryPhiDeg(k, _RainbowDropletPainter.blueN);
+    final redPeakPhi = _RayOptics.theoryPhiDeg(
+      _RayOptics.peakK(_RainbowDropletPainter.redN),
+      _RainbowDropletPainter.redN,
+    );
+    final bluePeakPhi = _RayOptics.theoryPhiDeg(
+      _RayOptics.peakK(_RainbowDropletPainter.blueN),
+      _RainbowDropletPainter.blueN,
+    );
+    return _RainbowMetrics(
+      k: k,
+      redPhiGeo: redPhiGeo,
+      bluePhiGeo: bluePhiGeo,
+      redPhiTheory: redPhiTheory,
+      bluePhiTheory: bluePhiTheory,
+      redPeakPhi: redPeakPhi,
+      bluePeakPhi: bluePeakPhi,
     );
   }
 
+  _RainbowViewMode _viewModeFromParams(Map<String, double> params) {
+    final raw = (params['viewMode'] ?? 0.0).round().clamp(0, 2);
+    return _RainbowViewMode.values[raw];
+  }
+}
+
+class _RainbowMetrics {
+  final double k;
+  final double redPhiGeo;
+  final double bluePhiGeo;
+  final double redPhiTheory;
+  final double bluePhiTheory;
+  final double redPeakPhi;
+  final double bluePeakPhi;
+
+  const _RainbowMetrics({
+    required this.k,
+    required this.redPhiGeo,
+    required this.bluePhiGeo,
+    required this.redPhiTheory,
+    required this.bluePhiTheory,
+    required this.redPeakPhi,
+    required this.bluePeakPhi,
+  });
 }
 
 class _RayPath {
@@ -230,60 +263,139 @@ class _RayPath {
 class _RainbowDropletPainter extends CustomPainter {
   final double k;
   final double scale;
+  final _RainbowViewMode viewMode;
 
   static const double _dropRadius = 1.0;
   static const double redN = 1.33;
   static const double blueN = 1.34;
 
-  const _RainbowDropletPainter({required this.k, required this.scale});
+  static const double _normalRadiusFactor = 0.40;
+  static const double _tinyRadiusFactor = 0.018;
+  static const double _exitZoomWorldZoom = 2.7;
+
+  const _RainbowDropletPainter({
+    required this.k,
+    required this.scale,
+    required this.viewMode,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final pixelRadius = math.min(size.width, size.height) * 0.34;
-
-    Offset worldToScreen(Offset p) {
-      return Offset(
-        center.dx + p.dx * pixelRadius * scale,
-        center.dy - p.dy * pixelRadius * scale,
-      );
-    }
-
-    final dropletCenter = worldToScreen(Offset.zero);
-    final dropletRadius = pixelRadius * scale * _dropRadius;
-
-    final dropPaint = Paint()
-      ..style = PaintingStyle.fill
-      ..color = const Color(0xFF81D4FA).withOpacity(0.35);
-    canvas.drawCircle(dropletCenter, dropletRadius, dropPaint);
-
-    final outlinePaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.2
-      ..color = Colors.lightBlue.shade200;
-    canvas.drawCircle(dropletCenter, dropletRadius, outlinePaint);
+    final view = _computeView(size);
+    _drawDroplet(canvas, size, view);
 
     _drawColorPath(
       canvas: canvas,
-      worldToScreen: worldToScreen,
+      size: size,
+      worldToScreen: view.worldToScreen,
       refractiveIndex: redN,
       color: Colors.red.withOpacity(0.7),
     );
     _drawColorPath(
       canvas: canvas,
-      worldToScreen: worldToScreen,
+      size: size,
+      worldToScreen: view.worldToScreen,
       refractiveIndex: blueN,
       color: Colors.blue.withOpacity(0.7),
     );
   }
 
+  _RainbowView _computeView(Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final baseRadius = math.min(size.width, size.height);
+
+    var radiusFactor = _normalRadiusFactor;
+    var worldZoom = 1.0;
+    var focusWorld = Offset.zero;
+    Offset? exitFocusPoint;
+
+    if (viewMode == _RainbowViewMode.tinyDroplet) {
+      radiusFactor = _tinyRadiusFactor;
+    } else if (viewMode == _RainbowViewMode.exitZoom) {
+      radiusFactor = _normalRadiusFactor;
+      worldZoom = _exitZoomWorldZoom;
+      final redPath = _RayOptics.computeRayPath(k, redN);
+      final bluePath = _RayOptics.computeRayPath(k, blueN);
+      exitFocusPoint = redPath?.p3 ?? bluePath?.p3 ?? Offset.zero;
+      focusWorld = exitFocusPoint;
+    }
+
+    final pixelRadius = baseRadius * radiusFactor;
+    final pixelsPerWorld = pixelRadius * scale * worldZoom;
+
+    Offset worldToScreen(Offset p) {
+      return Offset(
+        center.dx + (p.dx - focusWorld.dx) * pixelsPerWorld,
+        center.dy - (p.dy - focusWorld.dy) * pixelsPerWorld,
+      );
+    }
+
+    return _RainbowView(
+      center: center,
+      pixelsPerWorld: pixelsPerWorld,
+      worldToScreen: worldToScreen,
+      exitFocusPoint: exitFocusPoint,
+    );
+  }
+
+  void _drawDroplet(Canvas canvas, Size size, _RainbowView view) {
+    final dropletCenter = view.worldToScreen(Offset.zero);
+    final dropletRadius = view.pixelsPerWorld * _dropRadius;
+
+    if (viewMode != _RainbowViewMode.exitZoom) {
+      final fill = Paint()
+        ..style = PaintingStyle.fill
+        ..color = const Color(0xFF81D4FA).withOpacity(0.35);
+      final outline = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.2
+        ..color = Colors.lightBlue.shade200;
+      canvas.drawCircle(dropletCenter, dropletRadius, fill);
+      canvas.drawCircle(dropletCenter, dropletRadius, outline);
+      return;
+    }
+
+    // exitZoom: 測角点(p3)を通る境界弧と、水側（円内部）を塗る
+    final p3World = view.exitFocusPoint ?? Offset.zero;
+    final p3Screen = view.worldToScreen(p3World);
+
+    final circleRect = Rect.fromCircle(center: dropletCenter, radius: dropletRadius);
+    final boundaryAngle = math.atan2(
+      p3Screen.dy - dropletCenter.dy,
+      p3Screen.dx - dropletCenter.dx,
+    );
+
+    const span = 1.95; // 境界弧の開き角
+    final startAngle = boundaryAngle - span / 2;
+
+    final fillPaint = Paint()
+      ..style = PaintingStyle.fill
+      ..color = const Color(0xFF4FC3F7).withOpacity(0.30);
+    final boundaryColor = Colors.lightBlue.shade600.withOpacity(0.95);
+    final boundaryPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.8
+      ..color = boundaryColor;
+
+    // p3近傍のみ表示（他所に出る大きな弧を抑制）
+    final clipSize = math.min(size.width, size.height) * 0.70;
+    final localClip =
+        Rect.fromCenter(center: p3Screen, width: clipSize, height: clipSize);
+    canvas.save();
+    canvas.clipRect(localClip);
+    canvas.drawCircle(dropletCenter, dropletRadius, fillPaint);
+    canvas.drawArc(circleRect, startAngle, span, false, boundaryPaint);
+    canvas.restore();
+  }
+
   void _drawColorPath({
     required Canvas canvas,
+    required Size size,
     required Offset Function(Offset) worldToScreen,
     required double refractiveIndex,
     required Color color,
   }) {
-    final path = _computeRayPath(k, refractiveIndex);
+    final path = _RayOptics.computeRayPath(k, refractiveIndex);
     if (path == null) return;
 
     final rayPaint = Paint()
@@ -292,60 +404,91 @@ class _RainbowDropletPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..color = color;
 
+    final p1s = worldToScreen(path.p1);
+    final p2s = worldToScreen(path.p2);
+    final p3s = worldToScreen(path.p3);
+    final outDirScreen = worldToScreen(path.p3 + path.outDir) - p3s;
+    final isTinyMode = viewMode == _RainbowViewMode.tinyDroplet;
+
     // 左から水平入射する前置きの線分
-    final incidentStart = Offset(path.p1.dx - 1.0, path.p1.dy);
-    canvas.drawLine(worldToScreen(incidentStart), worldToScreen(path.p1), rayPaint);
+    final incidentStart = isTinyMode
+        ? _rayToCanvasEdge(p1s, const Offset(-1, 0), size) ?? p1s
+        : worldToScreen(Offset(path.p1.dx - 1.3, path.p1.dy));
+    _drawArrowedLine(
+      canvas,
+      incidentStart,
+      p1s,
+      rayPaint,
+      arrowPosition: isTinyMode ? 0.72 : 0.58,
+    );
 
     // 水滴内: 屈折 -> 内部反射 -> 出射点まで
-    canvas.drawLine(worldToScreen(path.p1), worldToScreen(path.p2), rayPaint);
-    canvas.drawLine(worldToScreen(path.p2), worldToScreen(path.p3), rayPaint);
+    _drawArrowedLine(
+      canvas,
+      p1s,
+      p2s,
+      rayPaint,
+    );
+    _drawArrowedLine(
+      canvas,
+      p2s,
+      p3s,
+      rayPaint,
+    );
 
     // 出射光（実線）
-    final exitEnd = path.p3 + path.outDir * 1.2;
-    canvas.drawLine(worldToScreen(path.p3), worldToScreen(exitEnd), rayPaint);
+    final exitEnd = isTinyMode
+        ? _rayToCanvasEdge(p3s, outDirScreen, size) ?? p3s
+        : worldToScreen(path.p3 + path.outDir * 1.6);
+    _drawArrowedLine(
+      canvas,
+      p3s,
+      exitEnd,
+      rayPaint,
+      arrowPosition: isTinyMode ? 0.72 : 0.58,
+    );
 
     final helperPaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.2
       ..color = color.withOpacity(0.85);
 
-    // 出射点の高さで水平基準線（点線）を描く
-    final horizontalY = path.p3.dy;
+    // 出射点を通る水平基準線（点線）
+    final horizontalY = p3s.dy;
+    final horizontalStart = isTinyMode
+        ? Offset(0, horizontalY)
+        : worldToScreen(Offset(path.p3.dx - 1.0, path.p3.dy));
+    final horizontalEnd = isTinyMode
+        ? Offset(size.width, horizontalY)
+        : worldToScreen(Offset(path.p3.dx + 1.0, path.p3.dy));
     _drawDashedLine(
       canvas,
-      worldToScreen(Offset(2.1, horizontalY)),
-      worldToScreen(Offset(-2.1, horizontalY)),
+      horizontalStart,
+      horizontalEnd,
       helperPaint,
     );
 
-    // 出射光の延長（交点までを点線）
-    final phiIntersection = _lineHorizontalIntersection(path.p3, path.outDir, horizontalY);
-    if (phiIntersection != null) {
-      _drawDashedLine(
-        canvas,
-        worldToScreen(path.p3),
-        worldToScreen(phiIntersection),
-        helperPaint,
-      );
+    // 出射光の後方延長（点線）
+    final backEnd = isTinyMode
+        ? _rayToCanvasEdge(p3s, -outDirScreen, size) ?? p3s
+        : worldToScreen(path.p3 - path.outDir * 1.0);
+    _drawDashedLine(
+      canvas,
+      p3s,
+      backEnd,
+      helperPaint,
+    );
+
+    if (viewMode == _RainbowViewMode.exitZoom) {
       _drawPhiArc(
         canvas,
-        worldToScreen,
-        path.p3,
-        path.outDir,
-        color,
-        arcRadius: refractiveIndex == redN ? 24.0 : 16.0,
-        centerOffset:
-            refractiveIndex == redN ? const Offset(2, 2) : const Offset(-2, -2),
+        vertex: p3s,
+        lineDir: const Offset(1, 0),
+        rayDir: -outDirScreen,
+        color: color,
+        arcRadius: refractiveIndex == redN ? 34.0 : 26.0,
       );
     }
-  }
-
-  _RayPath? _computeRayPath(double x, double n) {
-    return _RayOptics.computeRayPath(x, n);
-  }
-
-  Offset? _lineHorizontalIntersection(Offset p, Offset dir, double y) {
-    return _RayOptics.horizontalIntersection(p, dir, y);
   }
 
   void _drawDashedLine(
@@ -369,59 +512,167 @@ class _RainbowDropletPainter extends CustomPainter {
     }
   }
 
+  void _drawArrowedLine(
+    Canvas canvas,
+    Offset start,
+    Offset end,
+    Paint paint,
+    {double arrowPosition = 0.58}
+  ) {
+    canvas.drawLine(start, end, paint);
+
+    final delta = end - start;
+    final len = delta.distance;
+    if (len <= 1e-6) return;
+
+    final dir = delta / len;
+    const arrowLength = 9.0;
+    const arrowAngle = 28.0 * math.pi / 180.0;
+
+    final tip = start + delta * arrowPosition;
+    final left = tip - _rotate(dir, arrowAngle) * arrowLength;
+    final right = tip - _rotate(dir, -arrowAngle) * arrowLength;
+    canvas.drawLine(tip, left, paint);
+    canvas.drawLine(tip, right, paint);
+  }
+
+  Offset _rotate(Offset v, double rad) {
+    final c = math.cos(rad);
+    final s = math.sin(rad);
+    return Offset(
+      v.dx * c - v.dy * s,
+      v.dx * s + v.dy * c,
+    );
+  }
+
+  Offset? _rayToCanvasEdge(Offset start, Offset dir, Size size) {
+    const eps = 1e-6;
+    final dLen = dir.distance;
+    if (dLen <= eps) return null;
+    final unit = dir / dLen;
+    final w = size.width;
+    final h = size.height;
+    final candidates = <double>[];
+
+    void addT(double t) {
+      if (t > eps && t.isFinite) {
+        candidates.add(t);
+      }
+    }
+
+    if (unit.dx.abs() > eps) {
+      addT((0 - start.dx) / unit.dx);
+      addT((w - start.dx) / unit.dx);
+    }
+    if (unit.dy.abs() > eps) {
+      addT((0 - start.dy) / unit.dy);
+      addT((h - start.dy) / unit.dy);
+    }
+    if (candidates.isEmpty) return null;
+
+    double? bestT;
+    for (final t in candidates) {
+      final p = start + unit * t;
+      final inBounds =
+          p.dx >= -0.5 && p.dx <= w + 0.5 && p.dy >= -0.5 && p.dy <= h + 0.5;
+      if (!inBounds) continue;
+      if (bestT == null || t < bestT) bestT = t;
+    }
+    if (bestT == null) return null;
+    return start + unit * bestT;
+  }
+
   void _drawPhiArc(
     Canvas canvas,
-    Offset Function(Offset) worldToScreen,
-    Offset p3,
-    Offset outDir,
-    Color color,
-    {required double arcRadius, required Offset centerOffset}
-  ) {
-    final center = worldToScreen(p3) + centerOffset;
-    final back = -outDir;
-    if (back.distance == 0.0) return;
+    {
+    required Offset vertex,
+    required Offset lineDir,
+    required Offset rayDir,
+    required Color color,
+    required double arcRadius,
+  }) {
+    if (lineDir.distance <= 1e-6 || rayDir.distance <= 1e-6) return;
 
-    // φ は水平線との小さい鋭角で表示する
-    final refStart = back.dx >= 0 ? 0.0 : math.pi;
-    final target = math.atan2(back.dy, back.dx);
-    final acute = math.atan2(back.dy.abs(), back.dx.abs());
-    var delta = target - refStart;
-    while (delta > math.pi) {
-      delta -= 2 * math.pi;
-    }
-    while (delta < -math.pi) {
-      delta += 2 * math.pi;
-    }
-    final sweep = delta >= 0 ? acute : -acute;
+    final lineAngle = math.atan2(lineDir.dy, lineDir.dx);
+    final oppositeLineAngle = _normalizeAngle(lineAngle + math.pi);
+    final rayAngle = math.atan2(rayDir.dy, rayDir.dx);
+
+    final delta1 = _normalizeSignedAngle(rayAngle - lineAngle);
+    final delta2 = _normalizeSignedAngle(rayAngle - oppositeLineAngle);
+    final usePrimary = delta1.abs() <= delta2.abs();
+    final startAngle = usePrimary ? lineAngle : oppositeLineAngle;
+    final sweep = usePrimary ? delta1 : delta2;
+    final center = vertex;
 
     final arcPaint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.4
+      ..strokeWidth = 1.5
       ..color = color;
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: arcRadius),
-      refStart,
+      startAngle,
       sweep,
       false,
       arcPaint,
     );
+
+    final midAngle = startAngle + sweep * 0.5;
     final label = TextPainter(
       text: TextSpan(
         text: 'φ',
         style: TextStyle(
           color: color,
           fontWeight: FontWeight.bold,
-          fontSize: 14,
+          fontSize: 15,
         ),
       ),
       textDirection: TextDirection.ltr,
     )..layout();
-    final labelAnchor = worldToScreen(p3 + outDir * 0.12);
-    label.paint(canvas, labelAnchor + const Offset(6, -6));
+    final labelCenter = center +
+        Offset(
+          math.cos(midAngle) * (arcRadius + 10),
+          math.sin(midAngle) * (arcRadius + 10),
+        );
+    label.paint(
+      canvas,
+      labelCenter - Offset(label.width / 2, label.height / 2),
+    );
+  }
+
+  double _normalizeAngle(double a) {
+    var out = a;
+    while (out > math.pi) out -= 2 * math.pi;
+    while (out < -math.pi) out += 2 * math.pi;
+    return out;
+  }
+
+  double _normalizeSignedAngle(double a) {
+    var out = a;
+    while (out > math.pi) out -= 2 * math.pi;
+    while (out < -math.pi) out += 2 * math.pi;
+    return out;
   }
 
   @override
   bool shouldRepaint(covariant _RainbowDropletPainter oldDelegate) {
-    return oldDelegate.k != k || oldDelegate.scale != scale;
+    return oldDelegate.k != k ||
+        oldDelegate.scale != scale ||
+        oldDelegate.viewMode != viewMode;
   }
 }
+
+class _RainbowView {
+  final Offset center;
+  final double pixelsPerWorld;
+  final Offset Function(Offset) worldToScreen;
+  final Offset? exitFocusPoint;
+
+  const _RainbowView({
+    required this.center,
+    required this.pixelsPerWorld,
+    required this.worldToScreen,
+    required this.exitFocusPoint,
+  });
+}
+
+enum _RainbowViewMode { normal, tinyDroplet, exitZoom }

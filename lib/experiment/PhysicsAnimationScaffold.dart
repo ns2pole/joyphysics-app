@@ -21,6 +21,7 @@ class PhysicsAnimationScaffold extends StatefulWidget with HasHeight {
   final void Function(int index, math.Point<double> newPoint, double time)? onMarkerDragged;
   final String? rangeLabel;
   final bool showTimeOverlay;
+  final bool enableTime;
 
   const PhysicsAnimationScaffold({
     super.key,
@@ -39,6 +40,7 @@ class PhysicsAnimationScaffold extends StatefulWidget with HasHeight {
     this.onMarkerDragged,
     this.rangeLabel,
     this.showTimeOverlay = true,
+    this.enableTime = true,
   });
 
   @override
@@ -78,13 +80,18 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
   @override
   void initState() {
     super.initState();
+    _isPlaying = widget.enableTime;
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 1),
-    )..repeat();
+    );
+
+    if (widget.enableTime) {
+      _controller.repeat();
+    }
 
     _controller.addListener(() {
-      if (mounted && _isPlaying) {
+      if (mounted && widget.enableTime && _isPlaying) {
         setState(() {
           _time += 0.02;
         });
@@ -117,6 +124,7 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
   }
 
   Widget _buildAnimationArea() {
+    final time = widget.enableTime ? _time : 0.0;
     return Center(
       child: AspectRatio(
         aspectRatio: widget.aspectRatio, // 正方形以外も許可するように変更
@@ -139,7 +147,7 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
 
                     if (widget.onMarkerDragged != null &&
                         widget.getMarkers != null) {
-                      final markers = widget.getMarkers!(_time);
+                      final markers = widget.getMarkers!(time);
                       // ヒットテスト: 赤いマーカーのみドラッグ可能にする
                       for (int i = 0; i < markers.length; i++) {
                         final m = markers[i];
@@ -162,7 +170,7 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
                       final newWorldPoint =
                           transformer.screenToWorld(details.localFocalPoint);
                       widget.onMarkerDragged!(
-                          _draggingMarkerIndex, newWorldPoint, _time);
+                          _draggingMarkerIndex, newWorldPoint, time);
                       return;
                     }
 
@@ -185,7 +193,7 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
                   },
                   child: ClipRect(
                     child: widget.animationBuilder(
-                        context, _time, _azimuth, _tilt, _scale),
+                        context, time, _azimuth, _tilt, _scale),
                   ),
                 );
               },
@@ -230,7 +238,7 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
                       ),
                     ),
                   if (kIsWeb) const SizedBox(width: 8),
-                  if (widget.showTimeOverlay)
+                  if (widget.enableTime && widget.showTimeOverlay)
                     Container(
                       padding:
                           const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -239,7 +247,7 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
                         borderRadius: BorderRadius.circular(5),
                       ),
                       child: Text(
-                        'Time: ${_time.toStringAsFixed(2)}',
+                        'Time: ${time.toStringAsFixed(2)}',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 12,
@@ -274,7 +282,7 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
                 ),
               ),
             // Web: Play/Pause + Reset buttons (top-left)
-            if (kIsWeb)
+            if (kIsWeb && widget.enableTime)
               Positioned(
                 left: 10,
                 top: 10,
@@ -333,7 +341,7 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
             child: widget.extraControls!,
           ),
         // Web ではキャンバス内に停止/リセットを置くため、右パネルには出さない
-        if (!kIsWeb)
+        if (!kIsWeb && widget.enableTime)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
             child: Row(

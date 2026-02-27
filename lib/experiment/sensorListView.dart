@@ -9,9 +9,9 @@ import 'package:joyphysics/experiment/dynamics/BarometerExperimentWidget.dart';
 import 'package:joyphysics/experiment/electroMagnetism/MagnetometerExperimentWidget.dart';
 import 'package:joyphysics/experiment/waves/LuxMeasurementWidget.dart';
 import 'package:joyphysics/experiment/waves/FrequencyMeasureWidget.dart';
+import 'package:joyphysics/experiment/sensor_availability.dart';
+import 'package:joyphysics/experiment/sensor_availability_types.dart';
 import 'package:joyphysics/shared_components.dart';
-
-import 'package:flutter/services.dart';
 
 class SensorListView extends StatefulWidget {
   const SensorListView({super.key});
@@ -21,51 +21,67 @@ class SensorListView extends StatefulWidget {
 }
 
 class _SensorListViewState extends State<SensorListView> {
-  static const _sensorCheckChannel = MethodChannel('com.joyphysics/sensor_check');
+  final Map<String, SensorAvailability> _availability = {
+    '加速度センサー': SensorAvailability.checking,
+    '気圧センサー': SensorAvailability.checking,
+    '磁気センサー': SensorAvailability.checking,
+    '周波数センサー': SensorAvailability.checking,
+    '光センサー': SensorAvailability.checking,
+  };
 
-  final Map<String, bool> _availability = {
-    '加速度センサー': true,
-    '気圧センサー': true,
-    '磁気センサー': true,
-    '周波数センサー': true,
-    '光センサー': true,
+  final Map<String, SensorKind> _sensorKinds = const {
+    '加速度センサー': SensorKind.accelerometer,
+    '気圧センサー': SensorKind.barometer,
+    '磁気センサー': SensorKind.magnetometer,
+    '周波数センサー': SensorKind.microphone,
+    '光センサー': SensorKind.light,
   };
 
   @override
   void initState() {
     super.initState();
-    // Web では MethodChannel が使えないためセンサー判定をスキップ
-    if (kIsWeb) {
-      for (final k in _availability.keys) {
-        _availability[k] = false;
-      }
-      return;
-    }
     _checkAllSensors();
   }
 
   Future<void> _checkAllSensors() async {
-    final Map<String, String> sensorKeys = {
-      '加速度センサー': 'accelerometer',
-      '気圧センサー': 'barometer',
-      '磁気センサー': 'magnetometer',
-      '周波数センサー': 'microphone',
-      '光センサー': 'light',
-    };
+    for (final entry in _sensorKinds.entries) {
+      final status = await checkSensorAvailability(entry.value);
+      if (!mounted) return;
+      setState(() {
+        _availability[entry.key] = status;
+      });
+    }
+  }
 
-    for (var entry in sensorKeys.entries) {
-      try {
-        final bool available = await _sensorCheckChannel.invokeMethod(
-          'isSensorAvailable',
-          {'sensorType': entry.value},
+  Future<void> _onTapSensor(
+    BuildContext context,
+    String key,
+    Widget target,
+  ) async {
+    final kind = _sensorKinds[key];
+    final status = _availability[key] ?? SensorAvailability.unavailable;
+    if (status.isAvailable) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => target),
+      );
+      return;
+    }
+    if (kind != null && status.needsPermission) {
+      final granted = await requestSensorPermission(kind);
+      if (!mounted) return;
+      setState(() {
+        _availability[key] = granted;
+      });
+      if (granted.isAvailable) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => target),
         );
-        if (mounted) {
-          setState(() {
-            _availability[entry.key] = available;
-          });
-        }
-      } catch (e) {
-        debugPrint('Error checking sensor ${entry.key}: $e');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(granted.message)),
+        );
       }
     }
   }
@@ -123,7 +139,22 @@ class _SensorListViewState extends State<SensorListView> {
           if (index < sensors.length) {
             final sensor = sensors[index];
             final availabilityKey = sensor['key'] as String;
-            final bool isAvailable = _availability[availabilityKey] ?? true;
+            final status =
+                _availability[availabilityKey] ?? SensorAvailability.unavailable;
+            final isAvailable = status.isAvailable;
+            final canTap = isAvailable || status.needsPermission;
+            final String titleSuffix;
+            if (isAvailable) {
+              titleSuffix = '';
+            } else if (status.needsPermission) {
+              titleSuffix = '(許可が必要)';
+            } else if (status.state == SensorAvailabilityState.denied) {
+              titleSuffix = '(許可拒否)';
+            } else if (status.state == SensorAvailabilityState.checking) {
+              titleSuffix = '(確認中)';
+            } else {
+              titleSuffix = '(端末非対応)';
+            }
 
             return ListTile(
               leading: Icon(
@@ -131,19 +162,18 @@ class _SensorListViewState extends State<SensorListView> {
                 color: isAvailable ? null : Colors.grey,
               ),
               title: Text(
-                isAvailable ? sensor['name'] : '${sensor['name']}(端末非対応)',
+                '${sensor['name']}$titleSuffix',
                 style: TextStyle(
                   color: isAvailable ? null : Colors.grey,
                 ),
               ),
-              enabled: isAvailable,
-              onTap: isAvailable
-                  ? () {
-                      Navigator.push(
+              enabled: canTap,
+              onTap: canTap
+                  ? () => _onTapSensor(
                         context,
-                        MaterialPageRoute(builder: (_) => sensor['widget']),
-                      );
-                    }
+                        availabilityKey,
+                        sensor['widget'] as Widget,
+                      )
                   : null,
             );
           } else {
@@ -173,7 +203,8 @@ class _SensorListViewState extends State<SensorListView> {
 
   Widget _buildCategory(
       BuildContext context, String categoryName, List<Video> videos) {
-    final bool isAvailable = _availability[categoryName] ?? true;
+    final bool isAvailable =
+        (_availability[categoryName] ?? SensorAvailability.unavailable).isAvailable;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
