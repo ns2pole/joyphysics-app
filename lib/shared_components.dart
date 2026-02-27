@@ -88,8 +88,10 @@ class _PhysicsYouTubePlayerState extends State<PhysicsYouTubePlayer> {
     return SizedBox(
       height: widget.height,
       width: double.infinity,
-      child: YoutubePlayer(
-        controller: _controller!,
+      child: RepaintBoundary(
+        child: YoutubePlayer(
+          controller: _controller!,
+        ),
       ),
     );
   }

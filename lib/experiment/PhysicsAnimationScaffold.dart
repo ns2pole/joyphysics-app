@@ -53,7 +53,7 @@ class PhysicsAnimationScaffold extends StatefulWidget with HasHeight {
 class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  double _time = 0.0;
+  final ValueNotifier<double> _time = ValueNotifier<double>(0.0);
   bool _isPlaying = true;
 
   // Camera settings for 3D
@@ -92,9 +92,9 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
 
     _controller.addListener(() {
       if (mounted && widget.enableTime && _isPlaying) {
-        setState(() {
-          _time += 0.02;
-        });
+        // Keep the same time step as before (behavior unchanged),
+        // but avoid rebuilding the whole widget tree each tick.
+        _time.value = _time.value + 0.02;
       }
     });
   }
@@ -102,6 +102,7 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
   @override
   void dispose() {
     _controller.dispose();
+    _time.dispose();
     super.dispose();
   }
 
@@ -117,95 +118,186 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
   }
 
   void _reset() {
-    setState(() {
-      _time = 0.0;
-      // Reset only the clock; keep camera/zoom and simulation parameters.
-    });
+    _time.value = 0.0;
+    // Reset only the clock; keep camera/zoom and simulation parameters.
   }
 
   Widget _buildAnimationArea() {
-    final time = widget.enableTime ? _time : 0.0;
-    return Center(
-      child: AspectRatio(
-        aspectRatio: widget.aspectRatio, // 正方形以外も許可するように変更
-        child: Stack(
-          children: [
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final transformer = WaveCoordinateTransformer(
-                  size: Size(constraints.maxWidth, constraints.maxHeight),
-                  scale: _scale,
-                  is3D: widget.is3D,
-                  azimuth: _azimuth,
-                  tilt: _tilt,
-                );
+    return ValueListenableBuilder<double>(
+      valueListenable: _time,
+      builder: (context, rawTime, _) {
+        final time = widget.enableTime ? rawTime : 0.0;
+        return Center(
+          child: AspectRatio(
+            aspectRatio: widget.aspectRatio, // 正方形以外も許可するように変更
+            child: Stack(
+              children: [
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final transformer = WaveCoordinateTransformer(
+                      size: Size(constraints.maxWidth, constraints.maxHeight),
+                      scale: _scale,
+                      is3D: widget.is3D,
+                      azimuth: _azimuth,
+                      tilt: _tilt,
+                    );
 
-                return GestureDetector(
-                  onScaleStart: (details) {
-                    _baseScale = _scale;
-                    _draggingMarkerIndex = -1;
+                    return GestureDetector(
+                      onScaleStart: (details) {
+                        _baseScale = _scale;
+                        _draggingMarkerIndex = -1;
 
-                    if (widget.onMarkerDragged != null &&
-                        widget.getMarkers != null) {
-                      final markers = widget.getMarkers!(time);
-                      // ヒットテスト: 赤いマーカーのみドラッグ可能にする
-                      for (int i = 0; i < markers.length; i++) {
-                        final m = markers[i];
-                        if (m.color != Colors.red) continue;
+                        if (widget.onMarkerDragged != null &&
+                            widget.getMarkers != null) {
+                          final markers = widget.getMarkers!(time);
+                          // ヒットテスト: 赤いマーカーのみドラッグ可能にする
+                          for (int i = 0; i < markers.length; i++) {
+                            final m = markers[i];
+                            if (m.color != Colors.red) continue;
 
-                        // 本来は波の高さzを考慮すべきだが、簡略化のためz=0で判定
-                        final screenPos =
-                            transformer.worldToScreen(m.point.x, m.point.y, 0);
-                        final dist =
-                            (screenPos - details.localFocalPoint).distance;
-                        if (dist < 30.0) {
-                          _draggingMarkerIndex = i;
-                          break;
+                            // 本来は波の高さzを考慮すべきだが、簡略化のためz=0で判定
+                            final screenPos = transformer.worldToScreen(
+                              m.point.x,
+                              m.point.y,
+                              0,
+                            );
+                            final dist =
+                                (screenPos - details.localFocalPoint).distance;
+                            if (dist < 30.0) {
+                              _draggingMarkerIndex = i;
+                              break;
+                            }
+                          }
                         }
-                      }
-                    }
-                  },
-                  onScaleUpdate: (details) {
-                    if (_draggingMarkerIndex != -1) {
-                      final newWorldPoint =
-                          transformer.screenToWorld(details.localFocalPoint);
-                      widget.onMarkerDragged!(
-                          _draggingMarkerIndex, newWorldPoint, time);
-                      return;
-                    }
+                      },
+                      onScaleUpdate: (details) {
+                        if (_draggingMarkerIndex != -1) {
+                          final newWorldPoint =
+                              transformer.screenToWorld(details.localFocalPoint);
+                          widget.onMarkerDragged!(
+                              _draggingMarkerIndex, newWorldPoint, time);
+                          return;
+                        }
 
-                    setState(() {
-                      // Handle Scaling (Pinch)
-                      _scale = (_baseScale * details.scale).clamp(0.5, 3.0);
+                        setState(() {
+                          // Handle Scaling (Pinch)
+                          _scale = (_baseScale * details.scale).clamp(0.5, 3.0);
 
-                      // Handle Rotation (Pan) - only for 3D
-                      if (widget.is3D) {
-                        _azimuth =
-                            (_azimuth + details.focalPointDelta.dx * 0.01) %
-                                (2 * math.pi);
-                        _tilt = (_tilt + details.focalPointDelta.dy * 0.005)
-                            .clamp(0.0, _tiltMax);
-                      }
-                    });
+                          // Handle Rotation (Pan) - only for 3D
+                          if (widget.is3D) {
+                            _azimuth =
+                                (_azimuth + details.focalPointDelta.dx * 0.01) %
+                                    (2 * math.pi);
+                            _tilt = (_tilt + details.focalPointDelta.dy * 0.005)
+                                .clamp(0.0, _tiltMax);
+                          }
+                        });
+                      },
+                      onScaleEnd: (details) {
+                        _draggingMarkerIndex = -1;
+                      },
+                      child: ClipRect(
+                        child: RepaintBoundary(
+                          child: widget.animationBuilder(
+                              context, time, _azimuth, _tilt, _scale),
+                        ),
+                      ),
+                    );
                   },
-                  onScaleEnd: (details) {
-                    _draggingMarkerIndex = -1;
-                  },
-                  child: ClipRect(
-                    child: widget.animationBuilder(
-                        context, time, _azimuth, _tilt, _scale),
+                ),
+                Positioned(
+                  top: 10,
+                  right: 10,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (kIsWeb)
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.45),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                visualDensity: VisualDensity.compact,
+                                iconSize: 18,
+                                color: Colors.white,
+                                tooltip: 'Zoom out',
+                                onPressed: () => _zoomBy(1 / 1.15),
+                                icon: const Icon(Icons.remove),
+                              ),
+                              Container(
+                                width: 1,
+                                height: 18,
+                                color: Colors.white.withOpacity(0.25),
+                              ),
+                              IconButton(
+                                visualDensity: VisualDensity.compact,
+                                iconSize: 18,
+                                color: Colors.white,
+                                tooltip: 'Zoom in',
+                                onPressed: () => _zoomBy(1.15),
+                                icon: const Icon(Icons.add),
+                              ),
+                            ],
+                          ),
+                        ),
+                      if (kIsWeb) const SizedBox(width: 8),
+                      if (widget.enableTime && widget.showTimeOverlay)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.5),
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          child: Text(
+                            'Time: ${time.toStringAsFixed(2)}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Courier',
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
-                );
-              },
-            ),
-            Positioned(
-              top: 10,
-              right: 10,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (kIsWeb)
-                    DecoratedBox(
+                ),
+                if (widget.rangeLabel != null)
+                  Positioned(
+                    top: kIsWeb ? 48 : 10,
+                    left: 10,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Text(
+                        widget.rangeLabel!,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Courier',
+                        ),
+                      ),
+                    ),
+                  ),
+                // Web: Play/Pause + Reset buttons (top-left)
+                if (kIsWeb && widget.enableTime)
+                  Positioned(
+                    left: 10,
+                    top: 10,
+                    child: DecoratedBox(
                       decoration: BoxDecoration(
                         color: Colors.black.withOpacity(0.45),
                         borderRadius: BorderRadius.circular(10),
@@ -217,9 +309,11 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
                             visualDensity: VisualDensity.compact,
                             iconSize: 18,
                             color: Colors.white,
-                            tooltip: 'Zoom out',
-                            onPressed: () => _zoomBy(1 / 1.15),
-                            icon: const Icon(Icons.remove),
+                            tooltip: _isPlaying ? '停止' : '再生',
+                            onPressed: _togglePlayPause,
+                            icon: Icon(
+                              _isPlaying ? Icons.pause : Icons.play_arrow,
+                            ),
                           ),
                           Container(
                             width: 1,
@@ -230,99 +324,19 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
                             visualDensity: VisualDensity.compact,
                             iconSize: 18,
                             color: Colors.white,
-                            tooltip: 'Zoom in',
-                            onPressed: () => _zoomBy(1.15),
-                            icon: const Icon(Icons.add),
+                            tooltip: 'リセット',
+                            onPressed: _reset,
+                            icon: const Icon(Icons.restore),
                           ),
                         ],
                       ),
                     ),
-                  if (kIsWeb) const SizedBox(width: 8),
-                  if (widget.enableTime && widget.showTimeOverlay)
-                    Container(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.5),
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      child: Text(
-                        'Time: ${time.toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Courier',
-                        ),
-                      ),
-                    ),
-                ],
-              ),
+                  ),
+              ],
             ),
-            if (widget.rangeLabel != null)
-              Positioned(
-                top: kIsWeb ? 48 : 10,
-                left: 10,
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.5),
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  child: Text(
-                    widget.rangeLabel!,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Courier',
-                    ),
-                  ),
-                ),
-              ),
-            // Web: Play/Pause + Reset buttons (top-left)
-            if (kIsWeb && widget.enableTime)
-              Positioned(
-                left: 10,
-                top: 10,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.45),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        visualDensity: VisualDensity.compact,
-                        iconSize: 18,
-                        color: Colors.white,
-                        tooltip: _isPlaying ? '停止' : '再生',
-                        onPressed: _togglePlayPause,
-                        icon:
-                            Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
-                      ),
-                      Container(
-                        width: 1,
-                        height: 18,
-                        color: Colors.white.withOpacity(0.25),
-                      ),
-                      IconButton(
-                        visualDensity: VisualDensity.compact,
-                        iconSize: 18,
-                        color: Colors.white,
-                        tooltip: 'リセット',
-                        onPressed: _reset,
-                        icon: const Icon(Icons.restore),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
