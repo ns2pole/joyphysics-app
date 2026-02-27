@@ -273,21 +273,30 @@ class _LatexWebViewState extends State<LatexWebView> {
     }
     function interceptTouchScroll() {
       try {
+        var lastX = null;
         var lastY = null;
         document.addEventListener('touchstart', function(ev){
           if (!ev.touches || ev.touches.length === 0) return;
+          lastX = ev.touches[0].clientX;
           lastY = ev.touches[0].clientY;
         }, {passive: true});
         document.addEventListener('touchmove', function(ev){
-          if (lastY === null) return;
+          if (lastY === null || lastX === null) return;
           if (!ev.touches || ev.touches.length === 0) return;
+          var x = ev.touches[0].clientX;
           var y = ev.touches[0].clientY;
+          var dx = x - lastX;
           var dy = lastY - y; // dy>0 => scroll down
+          lastX = x;
           lastY = y;
-          postWheel(dy, 0);
-          ev.preventDefault();
+          // Only treat as scroll when the gesture is mainly vertical.
+          if (Math.abs(dy) >= Math.abs(dx)) {
+            postWheel(dy, 0);
+            ev.preventDefault();
+          }
         }, {passive: false});
         document.addEventListener('touchend', function(ev){
+          lastX = null;
           lastY = null;
         }, {passive: true});
       } catch(e) {}
@@ -389,10 +398,14 @@ class _LatexWebViewState extends State<LatexWebView> {
     if (window.MathJax && MathJax.typesetPromise) {
       MathJax.typesetPromise().then(() => {
         interceptAppLinks();
+        interceptWheel();
+        interceptTouchScroll();
         setTimeout(() => { postHeight(); }, 100);
       });
     } else {
       interceptAppLinks();
+      interceptWheel();
+      interceptTouchScroll();
       setTimeout(() => { postHeight(); }, 150);
     }
   </script>

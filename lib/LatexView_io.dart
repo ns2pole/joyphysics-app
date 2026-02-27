@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:joyphysics/dataExporter.dart';
@@ -310,7 +312,16 @@ class _LatexWebViewState extends State<LatexWebView> {
     return SizedBox(
       width: double.infinity,
       height: webViewHeight,
-      child: WebViewWidget(controller: _controller),
+      child: WebViewWidget(
+        controller: _controller,
+        // Let vertical drag scroll the surrounding Flutter ScrollView.
+        // Keep taps (links) and horizontal drags (math horizontal scroll) inside WebView.
+        gestureRecognizers: {
+          Factory<TapGestureRecognizer>(() => TapGestureRecognizer()),
+          Factory<HorizontalDragGestureRecognizer>(
+              () => HorizontalDragGestureRecognizer()),
+        },
+      ),
     );
   }
 }

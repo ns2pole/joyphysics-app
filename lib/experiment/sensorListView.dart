@@ -12,6 +12,7 @@ import 'package:joyphysics/experiment/waves/FrequencyMeasureWidget.dart';
 import 'package:joyphysics/experiment/sensor_availability.dart';
 import 'package:joyphysics/experiment/sensor_availability_types.dart';
 import 'package:joyphysics/shared_components.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SensorListView extends StatefulWidget {
   const SensorListView({super.key});
@@ -86,6 +87,17 @@ class _SensorListViewState extends State<SensorListView> {
     }
   }
 
+  static final Uri _appStoreUri = Uri.parse(
+    'https://apps.apple.com/jp/app/%E5%AE%9F%E9%A8%93%E3%81%A7%E5%AD%A6%E3%81%B6%E9%AB%98%E6%A0%A1%E7%89%A9%E7%90%86-%E3%83%BC-joy-physics/id6748957698',
+  );
+  static final Uri _googlePlayUri = Uri.parse(
+    'https://play.google.com/store/apps/details?id=com.joyphysics',
+  );
+
+  Future<void> _openStoreLink(Uri uri) async {
+    await launchUrl(uri, webOnlyWindowName: '_blank');
+  }
+
   final List<Map<String, dynamic>> sensors = [
     {
       'name': '加速度センサー',
@@ -130,14 +142,58 @@ class _SensorListViewState extends State<SensorListView> {
 
   @override
   Widget build(BuildContext context) {
+    final showWebCta = kIsWeb;
     return Scaffold(
       appBar: AppBar(title: Text('センサーを使う')),
       body: ListView.separated(
-        itemCount: sensors.length + 1, // +1 = 解説記事リンク
+        itemCount: sensors.length + 1 + (showWebCta ? 1 : 0), // +1 = 解説記事リンク
         separatorBuilder: (_, __) => Divider(),
         itemBuilder: (context, index) {
-          if (index < sensors.length) {
-            final sensor = sensors[index];
+          if (showWebCta && index == 0) {
+            return Padding(
+              padding: const EdgeInsets.all(12),
+              child: Card(
+                elevation: 0,
+                color: Colors.blue[50],
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Web版ではセンサーが使えません。アプリをDLしてね！',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          OutlinedButton.icon(
+                            onPressed: () => _openStoreLink(_appStoreUri),
+                            icon: const Icon(Icons.apple),
+                            label: const Text('App Store'),
+                          ),
+                          OutlinedButton.icon(
+                            onPressed: () => _openStoreLink(_googlePlayUri),
+                            icon: const Icon(Icons.android),
+                            label: const Text('Google Play'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }
+
+          final adjustedIndex = showWebCta ? index - 1 : index;
+          if (adjustedIndex < sensors.length) {
+            final sensor = sensors[adjustedIndex];
             final availabilityKey = sensor['key'] as String;
             final status =
                 _availability[availabilityKey] ?? SensorAvailability.unavailable;

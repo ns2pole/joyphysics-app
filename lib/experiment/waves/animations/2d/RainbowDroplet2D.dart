@@ -6,29 +6,41 @@ import '../widgets/wave_slider.dart';
 class _RayOptics {
   static const double dropRadius = 1.0;
 
-  static _RayPath? computeRayPath(double k, double n) {
+  static _RayPath? computeRayPath(
+    double k,
+    double n, {
+    Offset dropletCenter = Offset.zero,
+  }) {
     final x = k.clamp(0.0, 0.999);
     final alpha = math.asin(x);
-    final p1 = Offset(
-      -dropRadius * math.cos(alpha),
-      dropRadius * math.sin(alpha),
-    );
+    final p1 =
+        dropletCenter + Offset(-dropRadius * math.cos(alpha), dropRadius * math.sin(alpha));
 
     const incoming = Offset(1, 0);
-    final normalAtP1 = _normalize(p1);
+    final normalAtP1 = _normalize(p1 - dropletCenter);
     final d1 = _refract(incoming, normalAtP1, 1.0, n);
     if (d1 == null) return null;
 
-    final p2 = _nextCircleIntersection(p1 + d1 * 1e-6, d1, dropRadius);
+    final p2 = _nextCircleIntersection(
+      p1 + d1 * 1e-6,
+      d1,
+      dropRadius,
+      center: dropletCenter,
+    );
     if (p2 == null) return null;
 
-    final normalAtP2 = _normalize(p2);
+    final normalAtP2 = _normalize(p2 - dropletCenter);
     final d2 = _reflect(d1, normalAtP2);
 
-    final p3 = _nextCircleIntersection(p2 + d2 * 1e-6, d2, dropRadius);
+    final p3 = _nextCircleIntersection(
+      p2 + d2 * 1e-6,
+      d2,
+      dropRadius,
+      center: dropletCenter,
+    );
     if (p3 == null) return null;
 
-    final normalAtP3 = _normalize(p3);
+    final normalAtP3 = _normalize(p3 - dropletCenter);
     final outDir = _refract(d2, normalAtP3, n, 1.0);
     if (outDir == null) return null;
 
@@ -55,10 +67,16 @@ class _RayOptics {
     return p + dir * t;
   }
 
-  static Offset? _nextCircleIntersection(Offset origin, Offset dir, double r) {
+  static Offset? _nextCircleIntersection(
+    Offset origin,
+    Offset dir,
+    double r, {
+    Offset center = Offset.zero,
+  }) {
+    final shiftedOrigin = origin - center;
     final a = _dot(dir, dir);
-    final b = 2.0 * _dot(origin, dir);
-    final c = _dot(origin, origin) - r * r;
+    final b = 2.0 * _dot(shiftedOrigin, dir);
+    final c = _dot(shiftedOrigin, shiftedOrigin) - r * r;
     final d = b * b - 4.0 * a * c;
     if (d < 0.0) return null;
 
@@ -299,14 +317,25 @@ class RainbowDroplet2DSimulation extends WaveSimulation {
   Map<String, double> get initialParameters => const {
         'k': 0.82,
         'viewMode': 0.0,
-        'bundleColorMode': 2.0, // 0=red, 1=blue, 2=both
+        'bundleRed': 1.0,
+        'bundleBlue': 1.0,
       };
 
   @override
   List<Widget> buildControls(context, params, updateParam) {
     final metrics = _buildMetrics(params);
     final viewMode = _viewModeFromParams(params);
-    final bundleColorMode = _bundleColorModeFromParams(params);
+    final bundleSelection = _bundleSelectionFromParams(params);
+    void setBundleSelection({bool? red, bool? blue}) {
+      var nextRed = red ?? bundleSelection.drawRed;
+      var nextBlue = blue ?? bundleSelection.drawBlue;
+      if (!nextRed && !nextBlue) {
+        nextRed = true;
+        nextBlue = true;
+      }
+      updateParam('bundleRed', nextRed ? 1.0 : 0.0);
+      updateParam('bundleBlue', nextBlue ? 1.0 : 0.0);
+    }
 
     return [
       Wrap(
@@ -329,38 +358,44 @@ class RainbowDroplet2DSimulation extends WaveSimulation {
             onSelected: (_) => updateParam('viewMode', 2.0),
           ),
           ChoiceChip(
-            label: const Text('光線束'),
-            selected: viewMode == _RainbowViewMode.rayBundle,
+            label: const Text('光線束(単一)'),
+            selected: viewMode == _RainbowViewMode.singleRayBundle,
             onSelected: (_) => updateParam('viewMode', 3.0),
+          ),
+          ChoiceChip(
+            label: const Text('光線束(多水滴)'),
+            selected: viewMode == _RainbowViewMode.multiRayBundle,
+            onSelected: (_) => updateParam('viewMode', 4.0),
+          ),
+          ChoiceChip(
+            label: const Text('多水滴極小'),
+            selected: viewMode == _RainbowViewMode.multiRayBundleTiny,
+            onSelected: (_) => updateParam('viewMode', 5.0),
           ),
         ],
       ),
-      if (viewMode == _RainbowViewMode.rayBundle)
+      if (_isBundleMode(viewMode))
         Wrap(
           spacing: 14,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             const Text(
-              '光線束:',
+              '描画色:',
               style: TextStyle(fontWeight: FontWeight.w700),
             ),
-            _bundleRadio(
-              label: 'あか',
-              value: _RayBundleColorMode.red,
-              groupValue: bundleColorMode,
-              onChanged: (v) => updateParam('bundleColorMode', v.index.toDouble()),
+            FilterChip(
+              label: const Text('あか'),
+              selected: bundleSelection.drawRed,
+              onSelected: (v) => setBundleSelection(red: v),
+              selectedColor: Colors.red.withOpacity(0.18),
+              checkmarkColor: Colors.red.shade700,
             ),
-            _bundleRadio(
-              label: 'あお',
-              value: _RayBundleColorMode.blue,
-              groupValue: bundleColorMode,
-              onChanged: (v) => updateParam('bundleColorMode', v.index.toDouble()),
-            ),
-            _bundleRadio(
-              label: '両方',
-              value: _RayBundleColorMode.both,
-              groupValue: bundleColorMode,
-              onChanged: (v) => updateParam('bundleColorMode', v.index.toDouble()),
+            FilterChip(
+              label: const Text('あお'),
+              selected: bundleSelection.drawBlue,
+              onSelected: (v) => setBundleSelection(blue: v),
+              selectedColor: Colors.blue.withOpacity(0.18),
+              checkmarkColor: Colors.blue.shade700,
             ),
           ],
         ),
@@ -387,7 +422,7 @@ class RainbowDroplet2DSimulation extends WaveSimulation {
       context, time, azimuth, tilt, scale, params, activeIds) {
     final k = (params['k'] ?? 0.82).clamp(0.0, 0.999);
     final viewMode = _viewModeFromParams(params);
-    final bundleColorMode = _bundleColorModeFromParams(params);
+    final bundleSelection = _bundleSelectionFromParams(params);
     final redPath = _RayOptics.computeRayPath(k, _RainbowDropletPainter.redN);
     final bluePath = _RayOptics.computeRayPath(k, _RainbowDropletPainter.blueN);
     final redPhiDeg =
@@ -408,7 +443,8 @@ class RainbowDroplet2DSimulation extends WaveSimulation {
             k: k,
             scale: scale,
             viewMode: viewMode,
-            bundleColorMode: bundleColorMode,
+            drawRed: bundleSelection.drawRed,
+            drawBlue: bundleSelection.drawBlue,
           ),
         ),
         Positioned(
@@ -468,39 +504,24 @@ class RainbowDroplet2DSimulation extends WaveSimulation {
   }
 
   _RainbowViewMode _viewModeFromParams(Map<String, double> params) {
-    final raw = (params['viewMode'] ?? 0.0).round().clamp(0, 3);
+    final raw = (params['viewMode'] ?? 0.0).round().clamp(0, 5);
     return _RainbowViewMode.values[raw];
   }
 
-  _RayBundleColorMode _bundleColorModeFromParams(Map<String, double> params) {
-    final raw = (params['bundleColorMode'] ?? 2.0).round().clamp(0, 2);
-    return _RayBundleColorMode.values[raw];
+  bool _isBundleMode(_RainbowViewMode viewMode) {
+    return viewMode == _RainbowViewMode.singleRayBundle ||
+        viewMode == _RainbowViewMode.multiRayBundle ||
+        viewMode == _RainbowViewMode.multiRayBundleTiny;
   }
 
-  Widget _bundleRadio({
-    required String label,
-    required _RayBundleColorMode value,
-    required _RayBundleColorMode groupValue,
-    required ValueChanged<_RayBundleColorMode> onChanged,
-  }) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(8),
-      onTap: () => onChanged(value),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Radio<_RayBundleColorMode>(
-            value: value,
-            groupValue: groupValue,
-            onChanged: (v) {
-              if (v != null) onChanged(v);
-            },
-            visualDensity: VisualDensity.compact,
-          ),
-          Text(label),
-        ],
-      ),
-    );
+  _BundleSelection _bundleSelectionFromParams(Map<String, double> params) {
+    var drawRed = (params['bundleRed'] ?? 1.0) >= 0.5;
+    var drawBlue = (params['bundleBlue'] ?? 1.0) >= 0.5;
+    if (!drawRed && !drawBlue) {
+      drawRed = true;
+      drawBlue = true;
+    }
+    return _BundleSelection(drawRed: drawRed, drawBlue: drawBlue);
   }
 }
 
@@ -542,7 +563,8 @@ class _RainbowDropletPainter extends CustomPainter {
   final double k;
   final double scale;
   final _RainbowViewMode viewMode;
-  final _RayBundleColorMode bundleColorMode;
+  final bool drawRed;
+  final bool drawBlue;
 
   static const double _dropRadius = 1.0;
   static const double redN = 1.33;
@@ -550,25 +572,57 @@ class _RainbowDropletPainter extends CustomPainter {
 
   static const double _normalRadiusFactor = 0.40;
   static const double _tinyRadiusFactor = 0.018;
-  static const double _bundleRadiusFactor = 0.084;
+  static const double _singleBundleRadiusFactor = _tinyRadiusFactor * 3.0;
+  static const double _multiTinyRadiusFactor = _tinyRadiusFactor / 5.0;
   static const double _exitZoomWorldZoom = 2.7;
 
   const _RainbowDropletPainter({
     required this.k,
     required this.scale,
     required this.viewMode,
-    required this.bundleColorMode,
+    required this.drawRed,
+    required this.drawBlue,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
     final view = _computeView(size);
-    _drawDroplet(canvas, size, view);
 
-    if (viewMode == _RainbowViewMode.rayBundle) {
-      _drawRayBundle(canvas, size, view.worldToScreen, bundleColorMode);
+    if (viewMode == _RainbowViewMode.singleRayBundle) {
+      _drawDroplet(canvas, size, view);
+      _drawSingleRayBundle(
+        canvas,
+        size,
+        view.worldToScreen,
+        drawRed: drawRed,
+        drawBlue: drawBlue,
+      );
       return;
     }
+
+    if (viewMode == _RainbowViewMode.multiRayBundle) {
+      _drawMultiDropletRayBundle(
+        canvas,
+        size,
+        view,
+        dropletCount: 14,
+        useSmoothGradient: false,
+      );
+      return;
+    }
+
+    if (viewMode == _RainbowViewMode.multiRayBundleTiny) {
+      _drawMultiDropletRayBundle(
+        canvas,
+        size,
+        view,
+        dropletCount: 49,
+        useSmoothGradient: true,
+      );
+      return;
+    }
+
+    _drawDroplet(canvas, size, view);
 
     _drawColorPath(
       canvas: canvas,
@@ -586,21 +640,19 @@ class _RainbowDropletPainter extends CustomPainter {
     );
   }
 
-  void _drawRayBundle(
+  void _drawSingleRayBundle(
     Canvas canvas,
     Size size,
     Offset Function(Offset) worldToScreen,
-    _RayBundleColorMode colorMode,
+    {required bool drawRed, required bool drawBlue}
   ) {
     const count = 75;
     const kMin = 0.0;
     const kMax = 0.99;
-
     for (int i = 0; i < count; i++) {
       final t = count == 1 ? 0.0 : i / (count - 1);
       final kk = kMin + (kMax - kMin) * t;
-      if (colorMode == _RayBundleColorMode.red ||
-          colorMode == _RayBundleColorMode.both) {
+      if (drawRed) {
         _drawThinRayForK(
           canvas,
           size,
@@ -608,10 +660,10 @@ class _RainbowDropletPainter extends CustomPainter {
           kk,
           redN,
           Colors.red.withOpacity(0.20),
+          dropletCenter: Offset.zero,
         );
       }
-      if (colorMode == _RayBundleColorMode.blue ||
-          colorMode == _RayBundleColorMode.both) {
+      if (drawBlue) {
         _drawThinRayForK(
           canvas,
           size,
@@ -619,6 +671,137 @@ class _RainbowDropletPainter extends CustomPainter {
           kk,
           blueN,
           Colors.blue.withOpacity(0.20),
+          dropletCenter: Offset.zero,
+        );
+      }
+    }
+  }
+
+  void _drawMultiDropletRayBundle(
+    Canvas canvas,
+    Size size,
+    _RainbowView view,
+    {required int dropletCount, required bool useSmoothGradient}
+  ) {
+    final centers = _buildDropletCenters(size, view, dropletCount: dropletCount);
+    for (int i = 0; i < centers.length; i++) {
+      final dropletCenter = centers[i];
+      final color = useSmoothGradient
+          ? _dropletGradientColor(i, centers.length)
+          : _dropletGroupColor(i);
+      _drawSimpleDroplet(canvas, view, dropletCenter);
+      _drawBundleForDroplet(
+        canvas,
+        size,
+        view.worldToScreen,
+        dropletCenter: dropletCenter,
+        color: color,
+      );
+    }
+  }
+
+  List<Offset> _buildDropletCenters(
+    Size size,
+    _RainbowView view, {
+    required int dropletCount,
+  }) {
+    // 右余白を従来(幅の1/4)の半分にする -> x = 7/8 W
+    final x = size.width * 0.875;
+
+    // 水滴が「ギリギリ重ならない」程度: 直径の少し上を間隔にする
+    final dropletDiameter = view.pixelsPerWorld * _dropRadius * 2.0;
+    final step = dropletDiameter * 1.03;
+
+    // 最上段は従来感覚の上余白の1/3まで寄せる
+    final previousTopMargin = math.max(10.0, view.pixelsPerWorld * _dropRadius * 1.8);
+    final yStart = previousTopMargin / 3.0;
+
+    return List<Offset>.generate(dropletCount, (i) {
+      final y = yStart + step * i;
+      return view.screenToWorld(Offset(x, y));
+    });
+  }
+
+  Color _dropletGroupColor(int dropletIndex) {
+    final group = (dropletIndex ~/ 2).clamp(0, 6);
+    const palette = <Color>[
+      Colors.red,
+      Colors.orange,
+      Colors.yellow,
+      Colors.green,
+      Colors.cyan,
+      Colors.blue,
+      Colors.purple,
+    ];
+    return palette[group];
+  }
+
+  Color _dropletGradientColor(int dropletIndex, int totalDroplets) {
+    const palette = <Color>[
+      Colors.red,
+      Colors.orange,
+      Colors.yellow,
+      Colors.green,
+      Colors.cyan,
+      Colors.blue,
+      Colors.purple,
+    ];
+    if (totalDroplets <= 1) return palette.first;
+    final t = dropletIndex / (totalDroplets - 1);
+    final scaled = t * (palette.length - 1);
+    final lower = scaled.floor().clamp(0, palette.length - 1);
+    final upper = (lower + 1).clamp(0, palette.length - 1);
+    final localT = scaled - lower;
+    return Color.lerp(palette[lower], palette[upper], localT) ?? palette[lower];
+  }
+
+  void _drawSimpleDroplet(Canvas canvas, _RainbowView view, Offset centerWorld) {
+    final center = view.worldToScreen(centerWorld);
+    final radius = view.pixelsPerWorld * _dropRadius;
+    final fill = Paint()
+      ..style = PaintingStyle.fill
+      ..color = const Color(0xFF81D4FA).withOpacity(0.35);
+    final outline = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2
+      ..color = Colors.lightBlue.shade200;
+    canvas.drawCircle(center, radius, fill);
+    canvas.drawCircle(center, radius, outline);
+  }
+
+  void _drawBundleForDroplet(
+    Canvas canvas,
+    Size size,
+    Offset Function(Offset) worldToScreen, {
+    required Offset dropletCenter,
+    required Color color,
+  }) {
+    const count = 20;
+    const kMin = 0.02;
+    const kMax = 0.98;
+    for (int i = 0; i < count; i++) {
+      final t = count == 1 ? 0.0 : i / (count - 1);
+      final kk = kMin + (kMax - kMin) * t;
+      if (drawRed) {
+        _drawThinRayForK(
+          canvas,
+          size,
+          worldToScreen,
+          kk,
+          redN,
+          Color.lerp(color, Colors.red, 0.22)!.withOpacity(0.36),
+          dropletCenter: dropletCenter,
+        );
+      }
+      if (drawBlue) {
+        _drawThinRayForK(
+          canvas,
+          size,
+          worldToScreen,
+          kk,
+          blueN,
+          Color.lerp(color, Colors.blue, 0.22)!.withOpacity(0.36),
+          dropletCenter: dropletCenter,
         );
       }
     }
@@ -631,8 +814,13 @@ class _RainbowDropletPainter extends CustomPainter {
     double kk,
     double refractiveIndex,
     Color color,
+    {required Offset dropletCenter}
   ) {
-    final path = _RayOptics.computeRayPath(kk, refractiveIndex);
+    final path = _RayOptics.computeRayPath(
+      kk,
+      refractiveIndex,
+      dropletCenter: dropletCenter,
+    );
     if (path == null) return;
 
     final paint = Paint()
@@ -667,8 +855,12 @@ class _RainbowDropletPainter extends CustomPainter {
 
     if (viewMode == _RainbowViewMode.tinyDroplet) {
       radiusFactor = _tinyRadiusFactor;
-    } else if (viewMode == _RainbowViewMode.rayBundle) {
-      radiusFactor = _bundleRadiusFactor;
+    } else if (viewMode == _RainbowViewMode.singleRayBundle) {
+      radiusFactor = _singleBundleRadiusFactor;
+    } else if (viewMode == _RainbowViewMode.multiRayBundle) {
+      radiusFactor = _tinyRadiusFactor;
+    } else if (viewMode == _RainbowViewMode.multiRayBundleTiny) {
+      radiusFactor = _multiTinyRadiusFactor;
     } else if (viewMode == _RainbowViewMode.exitZoom) {
       radiusFactor = _normalRadiusFactor;
       worldZoom = _exitZoomWorldZoom;
@@ -687,11 +879,18 @@ class _RainbowDropletPainter extends CustomPainter {
         center.dy - (p.dy - focusWorld.dy) * pixelsPerWorld,
       );
     }
+    Offset screenToWorld(Offset p) {
+      return Offset(
+        (p.dx - center.dx) / pixelsPerWorld + focusWorld.dx,
+        (center.dy - p.dy) / pixelsPerWorld + focusWorld.dy,
+      );
+    }
 
     return _RainbowView(
       center: center,
       pixelsPerWorld: pixelsPerWorld,
       worldToScreen: worldToScreen,
+      screenToWorld: screenToWorld,
       exitFocusPoint: exitFocusPoint,
     );
   }
@@ -1029,7 +1228,8 @@ class _RainbowDropletPainter extends CustomPainter {
     return oldDelegate.k != k ||
         oldDelegate.scale != scale ||
         oldDelegate.viewMode != viewMode ||
-        oldDelegate.bundleColorMode != bundleColorMode;
+        oldDelegate.drawRed != drawRed ||
+        oldDelegate.drawBlue != drawBlue;
   }
 }
 
@@ -1037,16 +1237,33 @@ class _RainbowView {
   final Offset center;
   final double pixelsPerWorld;
   final Offset Function(Offset) worldToScreen;
+  final Offset Function(Offset) screenToWorld;
   final Offset? exitFocusPoint;
 
   const _RainbowView({
     required this.center,
     required this.pixelsPerWorld,
     required this.worldToScreen,
+    required this.screenToWorld,
     required this.exitFocusPoint,
   });
 }
 
-enum _RainbowViewMode { normal, tinyDroplet, exitZoom, rayBundle }
+enum _RainbowViewMode {
+  normal,
+  tinyDroplet,
+  exitZoom,
+  singleRayBundle,
+  multiRayBundle,
+  multiRayBundleTiny,
+}
 
-enum _RayBundleColorMode { red, blue, both }
+class _BundleSelection {
+  final bool drawRed;
+  final bool drawBlue;
+
+  const _BundleSelection({
+    required this.drawRed,
+    required this.drawBlue,
+  });
+}
