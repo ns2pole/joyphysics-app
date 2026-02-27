@@ -142,17 +142,19 @@ class SensorArticleOnlyView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(video.title)),
-      body: Padding(
-        padding: const EdgeInsets.all(12),
-        child: video.latex == null
-            ? const Center(
-                child: Text(
-                  '記事は準備中です。',
-                  style: TextStyle(color: Colors.black54),
-                ),
-              )
-            : LatexWebView(latexHtml: video.latex!),
-      ),
+      body: video.latex == null
+          ? const Center(
+              child: Text(
+                '記事は準備中です。',
+                style: TextStyle(color: Colors.black54),
+              ),
+            )
+          : Scrollbar(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(12),
+                child: LatexWebView(latexHtml: video.latex!),
+              ),
+            ),
     );
   }
 }
