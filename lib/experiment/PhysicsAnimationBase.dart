@@ -39,6 +39,7 @@ abstract class PhysicsSimulation {
   final Widget? formula;
   final bool is3D;
   final double aspectRatio;
+  final bool showTimeOverlay;
 
   PhysicsSimulation({
     required this.title,
@@ -46,6 +47,7 @@ abstract class PhysicsSimulation {
     this.formula,
     this.is3D = false,
     this.aspectRatio = 1.0,
+    this.showTimeOverlay = true,
   });
 
   /// 初期パラメータ
@@ -123,6 +125,7 @@ abstract class WaveSimulation extends PhysicsSimulation {
     super.latex,
     super.formula,
     super.is3D = false,
+    super.showTimeOverlay = true,
   });
 
   /// 観測点位置を含む初期パラメータを生成するヘルパー
@@ -253,6 +256,7 @@ class _PhysicsSimulationViewState extends State<PhysicsSimulationView> {
       formula: widget.simulation.formula,
       is3D: widget.simulation.is3D,
       aspectRatio: widget.simulation.aspectRatio,
+      showTimeOverlay: widget.simulation.showTimeOverlay,
       height: widget.height,
       sliders:
           widget.simulation.buildControls(context, _parameters, _updateParam),

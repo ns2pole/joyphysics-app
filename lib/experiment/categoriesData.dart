@@ -197,6 +197,7 @@ final categoriesData = <Category>[
         videos: [
           diffractionGrating,
           spectroscopy,
+          rainbowDroplet2D,
           thinFilmInterference1D,
           thinFilmInterference2D,
           youngDoubleSlit,

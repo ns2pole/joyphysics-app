@@ -20,6 +20,7 @@ class PhysicsAnimationScaffold extends StatefulWidget with HasHeight {
   final List<WaveMarker> Function(double time)? getMarkers;
   final void Function(int index, math.Point<double> newPoint, double time)? onMarkerDragged;
   final String? rangeLabel;
+  final bool showTimeOverlay;
 
   const PhysicsAnimationScaffold({
     super.key,
@@ -37,6 +38,7 @@ class PhysicsAnimationScaffold extends StatefulWidget with HasHeight {
     this.getMarkers,
     this.onMarkerDragged,
     this.rangeLabel,
+    this.showTimeOverlay = true,
   });
 
   @override
@@ -228,23 +230,24 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
                       ),
                     ),
                   if (kIsWeb) const SizedBox(width: 8),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.5),
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    child: Text(
-                      'Time: ${_time.toStringAsFixed(2)}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Courier',
+                  if (widget.showTimeOverlay)
+                    Container(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Text(
+                        'Time: ${_time.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Courier',
+                        ),
                       ),
                     ),
-                  ),
                 ],
               ),
             ),
@@ -404,6 +407,7 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Expanded(
+                    flex: 2,
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: _buildAnimationArea(),
@@ -411,6 +415,7 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
                   ),
                   const VerticalDivider(width: 1, thickness: 1),
                   Expanded(
+                    flex: 1,
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: _buildRightPanel(scrollable: true, includeFormula: true),
