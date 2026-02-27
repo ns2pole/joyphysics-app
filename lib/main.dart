@@ -159,7 +159,7 @@ class CategoryList extends StatelessWidget {
         // ---------- 先頭部分 ----------
         if (index == 1) {
           final info = kIsWeb
-              ? _buildInfoText('Web版ではセンサー使えません。アプリをダウンロードしてね')
+              ? _buildInfoText('Web版ではセンサー使えません。\nアプリをダウンロードしてね。')
               : _buildInfoText('スマホセンサーを活用！');
           return Column(
             children: [
@@ -279,11 +279,6 @@ class CategoryList extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'センサーを使いたい人はこちらから',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 10),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
