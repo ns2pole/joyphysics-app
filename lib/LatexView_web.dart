@@ -27,7 +27,7 @@ class _LatexWebViewState extends State<LatexWebView> {
   late final String _viewType;
   double _height = 140;
   StreamSubscription<html.MessageEvent>? _msgSub;
-  static const double _maxIframeHeight = 900;
+  static const double _maxIframeHeight = 1400;
 
   final Map<String, String> _base64Cache = {};
   late final Future<void> _ready;
