@@ -319,6 +319,13 @@ class RainbowDroplet2DSimulation extends WaveSimulation {
         'viewMode': 0.0,
         'bundleRed': 1.0,
         'bundleBlue': 1.0,
+        'bundleColor0': 1.0,
+        'bundleColor1': 1.0,
+        'bundleColor2': 1.0,
+        'bundleColor3': 1.0,
+        'bundleColor4': 1.0,
+        'bundleColor5': 1.0,
+        'bundleColor6': 1.0,
       };
 
   @override
@@ -326,6 +333,7 @@ class RainbowDroplet2DSimulation extends WaveSimulation {
     final metrics = _buildMetrics(params);
     final viewMode = _viewModeFromParams(params);
     final bundleSelection = _bundleSelectionFromParams(params);
+    final multiColorSelection = _multiColorSelectionFromParams(params);
     void setBundleSelection({bool? red, bool? blue}) {
       var nextRed = red ?? bundleSelection.drawRed;
       var nextBlue = blue ?? bundleSelection.drawBlue;
@@ -335,6 +343,18 @@ class RainbowDroplet2DSimulation extends WaveSimulation {
       }
       updateParam('bundleRed', nextRed ? 1.0 : 0.0);
       updateParam('bundleBlue', nextBlue ? 1.0 : 0.0);
+    }
+    void setMultiColorSelection(int colorIndex, bool selected) {
+      final next = List<bool>.from(multiColorSelection.enabled);
+      next[colorIndex] = selected;
+      if (!next.contains(true)) {
+        for (int i = 0; i < next.length; i++) {
+          next[i] = true;
+        }
+      }
+      for (int i = 0; i < next.length; i++) {
+        updateParam(_multiColorParamKeys[i], next[i] ? 1.0 : 0.0);
+      }
     }
 
     return [
@@ -374,7 +394,7 @@ class RainbowDroplet2DSimulation extends WaveSimulation {
           ),
         ],
       ),
-      if (_isBundleMode(viewMode))
+      if (_isSingleBundleMode(viewMode))
         Wrap(
           spacing: 14,
           crossAxisAlignment: WrapCrossAlignment.center,
@@ -399,13 +419,34 @@ class RainbowDroplet2DSimulation extends WaveSimulation {
             ),
           ],
         ),
-      WaveParameterSlider(
-        label: 'k',
-        value: metrics.k,
-        min: 0.0,
-        max: 0.999,
-        onChanged: (v) => updateParam('k', v),
-      ),
+      if (_isMultiBundleMode(viewMode))
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            const Text(
+              '描画色:',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
+            for (int i = 0; i < _sevenColorPalette.length; i++)
+              FilterChip(
+                label: Text(_colorLabel(i)),
+                selected: multiColorSelection.enabled[i],
+                onSelected: (v) => setMultiColorSelection(i, v),
+                selectedColor: _sevenColorPalette[i].withOpacity(0.20),
+                checkmarkColor: _sevenColorPalette[i],
+              ),
+          ],
+        ),
+      if (!_isSingleBundleMode(viewMode) && !_isMultiBundleMode(viewMode))
+        WaveParameterSlider(
+          label: 'k',
+          value: metrics.k,
+          min: 0.0,
+          max: 0.999,
+          onChanged: (v) => updateParam('k', v),
+        ),
       Text(
         '理論ピーク φ: 赤 ${metrics.redPeakPhi.toStringAsFixed(2)}° / 青 ${metrics.bluePeakPhi.toStringAsFixed(2)}°',
         style: const TextStyle(
@@ -423,6 +464,7 @@ class RainbowDroplet2DSimulation extends WaveSimulation {
     final k = (params['k'] ?? 0.82).clamp(0.0, 0.999);
     final viewMode = _viewModeFromParams(params);
     final bundleSelection = _bundleSelectionFromParams(params);
+    final multiColorSelection = _multiColorSelectionFromParams(params);
     final redPath = _RayOptics.computeRayPath(k, _RainbowDropletPainter.redN);
     final bluePath = _RayOptics.computeRayPath(k, _RainbowDropletPainter.blueN);
     final redPhiDeg =
@@ -445,6 +487,7 @@ class RainbowDroplet2DSimulation extends WaveSimulation {
             viewMode: viewMode,
             drawRed: bundleSelection.drawRed,
             drawBlue: bundleSelection.drawBlue,
+            multiColorMask: multiColorSelection.mask,
           ),
         ),
         Positioned(
@@ -508,9 +551,12 @@ class RainbowDroplet2DSimulation extends WaveSimulation {
     return _RainbowViewMode.values[raw];
   }
 
-  bool _isBundleMode(_RainbowViewMode viewMode) {
-    return viewMode == _RainbowViewMode.singleRayBundle ||
-        viewMode == _RainbowViewMode.multiRayBundle ||
+  bool _isSingleBundleMode(_RainbowViewMode viewMode) {
+    return viewMode == _RainbowViewMode.singleRayBundle;
+  }
+
+  bool _isMultiBundleMode(_RainbowViewMode viewMode) {
+    return viewMode == _RainbowViewMode.multiRayBundle ||
         viewMode == _RainbowViewMode.multiRayBundleTiny;
   }
 
@@ -522,6 +568,31 @@ class RainbowDroplet2DSimulation extends WaveSimulation {
       drawBlue = true;
     }
     return _BundleSelection(drawRed: drawRed, drawBlue: drawBlue);
+  }
+
+  _MultiColorSelection _multiColorSelectionFromParams(
+      Map<String, double> params) {
+    final enabled = List<bool>.generate(
+      _multiColorParamKeys.length,
+      (i) => (params[_multiColorParamKeys[i]] ?? 1.0) >= 0.5,
+    );
+    if (!enabled.contains(true)) {
+      for (int i = 0; i < enabled.length; i++) {
+        enabled[i] = true;
+      }
+    }
+    var mask = 0;
+    for (int i = 0; i < enabled.length; i++) {
+      if (enabled[i]) {
+        mask |= (1 << i);
+      }
+    }
+    return _MultiColorSelection(enabled: enabled, mask: mask);
+  }
+
+  String _colorLabel(int i) {
+    const labels = ['赤', '橙', '黄', '緑', '水', '青', '紫'];
+    return labels[i];
   }
 }
 
@@ -565,6 +636,7 @@ class _RainbowDropletPainter extends CustomPainter {
   final _RainbowViewMode viewMode;
   final bool drawRed;
   final bool drawBlue;
+  final int multiColorMask;
 
   static const double _dropRadius = 1.0;
   static const double redN = 1.33;
@@ -575,6 +647,15 @@ class _RainbowDropletPainter extends CustomPainter {
   static const double _singleBundleRadiusFactor = _tinyRadiusFactor * 3.0;
   static const double _multiTinyRadiusFactor = _tinyRadiusFactor / 5.0;
   static const double _exitZoomWorldZoom = 2.7;
+  static const List<Color> _sevenColorPalette = <Color>[
+    Colors.red,
+    Colors.orange,
+    Colors.yellow,
+    Colors.green,
+    Colors.cyan,
+    Colors.blue,
+    Colors.purple,
+  ];
 
   const _RainbowDropletPainter({
     required this.k,
@@ -582,6 +663,7 @@ class _RainbowDropletPainter extends CustomPainter {
     required this.viewMode,
     required this.drawRed,
     required this.drawBlue,
+    required this.multiColorMask,
   });
 
   @override
@@ -607,6 +689,9 @@ class _RainbowDropletPainter extends CustomPainter {
         view,
         dropletCount: 14,
         useSmoothGradient: false,
+        spacingFactor: 1.03,
+        xRatio: 0.875,
+        topMarginRatio: 1.0 / 3.0,
       );
       return;
     }
@@ -616,8 +701,11 @@ class _RainbowDropletPainter extends CustomPainter {
         canvas,
         size,
         view,
-        dropletCount: 49,
+        dropletCount: 28,
         useSmoothGradient: true,
+        spacingFactor: 1.18,
+        xRatio: 0.9375,
+        topMarginRatio: 0.60,
       );
       return;
     }
@@ -681,14 +769,34 @@ class _RainbowDropletPainter extends CustomPainter {
     Canvas canvas,
     Size size,
     _RainbowView view,
-    {required int dropletCount, required bool useSmoothGradient}
+    {
+    required int dropletCount,
+    required bool useSmoothGradient,
+    required double spacingFactor,
+    required double xRatio,
+    required double topMarginRatio,
+  }
   ) {
-    final centers = _buildDropletCenters(size, view, dropletCount: dropletCount);
+    final centers = _buildDropletCenters(
+      size,
+      view,
+      dropletCount: dropletCount,
+      spacingFactor: spacingFactor,
+      xRatio: xRatio,
+      topMarginRatio: topMarginRatio,
+    );
     for (int i = 0; i < centers.length; i++) {
       final dropletCenter = centers[i];
+      final colorIndex = useSmoothGradient
+          ? _gradientColorIndex(i, centers.length)
+          : _groupColorIndex(i);
+      if (!_isMultiColorEnabled(colorIndex)) {
+        continue;
+      }
       final color = useSmoothGradient
           ? _dropletGradientColor(i, centers.length)
           : _dropletGroupColor(i);
+      final refractiveIndex = _dropletRefractiveIndex(i, centers.length);
       _drawSimpleDroplet(canvas, view, dropletCenter);
       _drawBundleForDroplet(
         canvas,
@@ -696,6 +804,7 @@ class _RainbowDropletPainter extends CustomPainter {
         view.worldToScreen,
         dropletCenter: dropletCenter,
         color: color,
+        refractiveIndex: refractiveIndex,
       );
     }
   }
@@ -704,17 +813,19 @@ class _RainbowDropletPainter extends CustomPainter {
     Size size,
     _RainbowView view, {
     required int dropletCount,
+    required double spacingFactor,
+    required double xRatio,
+    required double topMarginRatio,
   }) {
-    // 右余白を従来(幅の1/4)の半分にする -> x = 7/8 W
-    final x = size.width * 0.875;
+    final x = size.width * xRatio;
 
     // 水滴が「ギリギリ重ならない」程度: 直径の少し上を間隔にする
     final dropletDiameter = view.pixelsPerWorld * _dropRadius * 2.0;
-    final step = dropletDiameter * 1.03;
+    final step = dropletDiameter * spacingFactor;
 
     // 最上段は従来感覚の上余白の1/3まで寄せる
     final previousTopMargin = math.max(10.0, view.pixelsPerWorld * _dropRadius * 1.8);
-    final yStart = previousTopMargin / 3.0;
+    final yStart = previousTopMargin * topMarginRatio;
 
     return List<Offset>.generate(dropletCount, (i) {
       final y = yStart + step * i;
@@ -723,36 +834,32 @@ class _RainbowDropletPainter extends CustomPainter {
   }
 
   Color _dropletGroupColor(int dropletIndex) {
-    final group = (dropletIndex ~/ 2).clamp(0, 6);
-    const palette = <Color>[
-      Colors.red,
-      Colors.orange,
-      Colors.yellow,
-      Colors.green,
-      Colors.cyan,
-      Colors.blue,
-      Colors.purple,
-    ];
-    return palette[group];
+    return _sevenColorPalette[_groupColorIndex(dropletIndex)];
   }
 
   Color _dropletGradientColor(int dropletIndex, int totalDroplets) {
-    const palette = <Color>[
-      Colors.red,
-      Colors.orange,
-      Colors.yellow,
-      Colors.green,
-      Colors.cyan,
-      Colors.blue,
-      Colors.purple,
-    ];
-    if (totalDroplets <= 1) return palette.first;
+    if (totalDroplets <= 1) return _sevenColorPalette.first;
     final t = dropletIndex / (totalDroplets - 1);
-    final scaled = t * (palette.length - 1);
-    final lower = scaled.floor().clamp(0, palette.length - 1);
-    final upper = (lower + 1).clamp(0, palette.length - 1);
+    final scaled = t * (_sevenColorPalette.length - 1);
+    final lower = scaled.floor().clamp(0, _sevenColorPalette.length - 1);
+    final upper = (lower + 1).clamp(0, _sevenColorPalette.length - 1);
     final localT = scaled - lower;
-    return Color.lerp(palette[lower], palette[upper], localT) ?? palette[lower];
+    return Color.lerp(
+            _sevenColorPalette[lower], _sevenColorPalette[upper], localT) ??
+        _sevenColorPalette[lower];
+  }
+
+  int _groupColorIndex(int dropletIndex) => (dropletIndex ~/ 2).clamp(0, 6);
+
+  int _gradientColorIndex(int dropletIndex, int totalDroplets) {
+    if (totalDroplets <= 1) return 0;
+    final t = dropletIndex / (totalDroplets - 1);
+    final idx = (t * _sevenColorPalette.length).floor();
+    return idx.clamp(0, _sevenColorPalette.length - 1);
+  }
+
+  bool _isMultiColorEnabled(int colorIndex) {
+    return (multiColorMask & (1 << colorIndex)) != 0;
   }
 
   void _drawSimpleDroplet(Canvas canvas, _RainbowView view, Offset centerWorld) {
@@ -775,6 +882,7 @@ class _RainbowDropletPainter extends CustomPainter {
     Offset Function(Offset) worldToScreen, {
     required Offset dropletCenter,
     required Color color,
+    required double refractiveIndex,
   }) {
     const count = 20;
     const kMin = 0.02;
@@ -782,29 +890,22 @@ class _RainbowDropletPainter extends CustomPainter {
     for (int i = 0; i < count; i++) {
       final t = count == 1 ? 0.0 : i / (count - 1);
       final kk = kMin + (kMax - kMin) * t;
-      if (drawRed) {
-        _drawThinRayForK(
-          canvas,
-          size,
-          worldToScreen,
-          kk,
-          redN,
-          Color.lerp(color, Colors.red, 0.22)!.withOpacity(0.36),
-          dropletCenter: dropletCenter,
-        );
-      }
-      if (drawBlue) {
-        _drawThinRayForK(
-          canvas,
-          size,
-          worldToScreen,
-          kk,
-          blueN,
-          Color.lerp(color, Colors.blue, 0.22)!.withOpacity(0.36),
-          dropletCenter: dropletCenter,
-        );
-      }
+      _drawThinRayForK(
+        canvas,
+        size,
+        worldToScreen,
+        kk,
+        refractiveIndex,
+        color.withOpacity(0.36),
+        dropletCenter: dropletCenter,
+      );
     }
+  }
+
+  double _dropletRefractiveIndex(int dropletIndex, int totalDroplets) {
+    if (totalDroplets <= 1) return 1.33;
+    final t = dropletIndex / (totalDroplets - 1);
+    return 1.33 + (1.34 - 1.33) * t;
   }
 
   void _drawThinRayForK(
@@ -1229,7 +1330,8 @@ class _RainbowDropletPainter extends CustomPainter {
         oldDelegate.scale != scale ||
         oldDelegate.viewMode != viewMode ||
         oldDelegate.drawRed != drawRed ||
-        oldDelegate.drawBlue != drawBlue;
+        oldDelegate.drawBlue != drawBlue ||
+        oldDelegate.multiColorMask != multiColorMask;
   }
 }
 
@@ -1267,3 +1369,33 @@ class _BundleSelection {
     required this.drawBlue,
   });
 }
+
+class _MultiColorSelection {
+  final List<bool> enabled;
+  final int mask;
+
+  const _MultiColorSelection({
+    required this.enabled,
+    required this.mask,
+  });
+}
+
+const List<String> _multiColorParamKeys = <String>[
+  'bundleColor0',
+  'bundleColor1',
+  'bundleColor2',
+  'bundleColor3',
+  'bundleColor4',
+  'bundleColor5',
+  'bundleColor6',
+];
+
+const List<Color> _sevenColorPalette = <Color>[
+  Colors.red,
+  Colors.orange,
+  Colors.yellow,
+  Colors.green,
+  Colors.cyan,
+  Colors.blue,
+  Colors.purple,
+];

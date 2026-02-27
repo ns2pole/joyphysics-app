@@ -1,21 +1,18 @@
 // main.dart
-import 'package:webview_flutter/webview_flutter.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:joyphysics/theory/theoryData.dart';
-import 'package:joyphysics/theory/TheoryView.dart';
 import 'package:joyphysics/update_checker.dart';
 import 'package:joyphysics/experiment/ExperimentView.dart';
 import 'package:joyphysics/experiment/categoriesData.dart';
 import 'package:joyphysics/experiment/sensorListView.dart';
+import 'package:joyphysics/experiment/sensorArticlesView.dart';
 import 'package:joyphysics/store/ProductListPage.dart';
 import 'package:joyphysics/aboutView.dart';
 import 'package:joyphysics/model.dart';
+import 'package:joyphysics/formulaCollectionView.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import 'package:flutter/material.dart';
-import 'update_checker.dart'; // UpdateChecker (navigatorKey を受け取る実装にする)
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:joyphysics/dataExporter.dart' show thinFilmInterference1D;
+import 'package:url_launcher/url_launcher.dart';
 
 // 共有の navigatorKey を1つだけ作る
 final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
@@ -102,6 +99,21 @@ class CategoryList extends StatelessWidget {
   final List<Category> categories;
   const CategoryList({Key? key, required this.categories}) : super(key: key);
 
+  static final Uri _appStoreUri = Uri.parse(
+    'https://apps.apple.com/jp/app/%E5%AE%9F%E9%A8%93%E3%81%A7%E5%AD%A6%E3%81%B6%E9%AB%98%E6%A0%A1%E7%89%A9%E7%90%86-%E3%83%BC-joy-physics/id6748957698',
+  );
+  static final Uri _googlePlayUri = Uri.parse(
+    'https://play.google.com/store/apps/details?id=com.joyphysics',
+  );
+
+  Future<void> _openStoreLink(Uri uri) async {
+    await launchUrl(
+      uri,
+      mode: LaunchMode.externalApplication,
+      webOnlyWindowName: '_blank',
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // final theoryButtons = [
@@ -131,7 +143,7 @@ class CategoryList extends StatelessWidget {
     // +3 = (スマホセンサー記事のテキスト, 解説記事のテキスト, 理論記事のテキスト)
     // +1 = 物販ボタン
     // アプリについてボタンは非表示
-    final totalCount = categories.length + 0 + 5; // theoryButtons.length を 0 に変更、アプリについてボタンを非表示
+    final totalCount = categories.length + 0 + 6; // 物理公式集ボタンぶん +1
 
     return ListView.builder(
       padding: EdgeInsets.zero,
@@ -146,16 +158,28 @@ class CategoryList extends StatelessWidget {
         }
         // ---------- 先頭部分 ----------
         if (index == 1) {
-          return _buildInfoText('スマホセンサーを活用！');
+          final info = kIsWeb
+              ? _buildInfoText('Web版ではセンサー使えません。アプリをダウンロードしてね')
+              : _buildInfoText('スマホセンサーを活用！');
+          return Column(
+            children: [
+              info,
+              _buildSensorDownloadCta(context),
+            ],
+          );
         }
         if (index == 2) {
           return _buildSensorButton(context);
         }
         if (index == 3) {
+          return _buildFormulaButton(context);
+        }
+
+        if (index == 4) {
           return _buildInfoText('実験&アニメーション記事');
         }
 
-        final adjustedIndex = index - 4;
+        final adjustedIndex = index - 5;
 
         // ---------- 実験カテゴリ ----------
         if (adjustedIndex < categories.length) {
@@ -245,12 +269,51 @@ class CategoryList extends StatelessWidget {
         ),
       );
 
+  Widget _buildSensorDownloadCta(BuildContext context) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 40),
+        child: Card(
+          elevation: 0,
+          color: Colors.blue[50],
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'センサーを使いたい人はこちらから',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: () => _openStoreLink(_appStoreUri),
+                      icon: const Icon(Icons.apple),
+                      label: const Text('App Store'),
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: () => _openStoreLink(_googlePlayUri),
+                      icon: const Icon(Icons.android),
+                      label: const Text('Google Play'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
   Widget _buildSensorButton(BuildContext context) => Padding(
         padding: EdgeInsets.symmetric(vertical: 8, horizontal: 75),
         child: GestureDetector(
           onTap: () => Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => SensorListView()),
+            MaterialPageRoute(
+              builder: (_) => kIsWeb ? const SensorArticlesView() : SensorListView(),
+            ),
           ),
           child: Container(
             height: 60,
@@ -262,10 +325,43 @@ class CategoryList extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.sensors, color: Colors.white, size: 35),
+                Icon(kIsWeb ? Icons.menu_book : Icons.sensors,
+                    color: Colors.white, size: 35),
                 SizedBox(width: 8),
                 Text(
-                  'センサーを使う！',
+                  kIsWeb ? 'センサー関係の記事' : 'センサーを使う！',
+                  style: TextStyle(
+                    fontSize: 24,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+  Widget _buildFormulaButton(BuildContext context) => Padding(
+        padding: EdgeInsets.symmetric(vertical: 8, horizontal: 75),
+        child: GestureDetector(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const FormulaCollectionView()),
+          ),
+          child: Container(
+            height: 60,
+            decoration: BoxDecoration(
+              color: Colors.deepPurple.withOpacity(0.9),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [BoxShadow(blurRadius: 4, color: Colors.black26)],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                Icon(Icons.functions, color: Colors.white, size: 35),
+                SizedBox(width: 8),
+                Text(
+                  '物理公式集',
                   style: TextStyle(
                     fontSize: 24,
                     color: Colors.white,
