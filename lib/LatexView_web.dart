@@ -329,8 +329,8 @@ class _LatexWebViewState extends State<LatexWebView> {
     html, body {
       margin: 0;
       padding: 0;
-      /* Disable inner scrolling; use outer Flutter scroll instead. */
-      overflow: hidden;
+      /* Enable inner scrolling (iframe) for web performance. */
+      overflow: auto;
       background-color: transparent;
       font-family: 'KeiFont', sans-serif;
       font-size: 18px;
@@ -388,14 +388,10 @@ class _LatexWebViewState extends State<LatexWebView> {
     $bridgeScript
     if (window.MathJax && MathJax.typesetPromise) {
       MathJax.typesetPromise().then(() => {
-        interceptWheel();
-        interceptTouchScroll();
         interceptAppLinks();
         setTimeout(() => { postHeight(); }, 100);
       });
     } else {
-      interceptWheel();
-      interceptTouchScroll();
       interceptAppLinks();
       setTimeout(() => { postHeight(); }, 150);
     }
