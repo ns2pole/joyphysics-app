@@ -464,6 +464,8 @@ class RainbowDroplet2DSimulation extends WaveSimulation {
     final k = (params['k'] ?? 0.82).clamp(0.0, 0.999);
     final viewMode = _viewModeFromParams(params);
     final bundleSelection = _bundleSelectionFromParams(params);
+    final showOverlayTex =
+        !_isSingleBundleMode(viewMode) && !_isMultiBundleMode(viewMode);
     final multiColorSelection = _multiColorSelectionFromParams(params);
     final redPath = _RayOptics.computeRayPath(k, _RainbowDropletPainter.redN);
     final bluePath = _RayOptics.computeRayPath(k, _RainbowDropletPainter.blueN);
@@ -490,29 +492,30 @@ class RainbowDroplet2DSimulation extends WaveSimulation {
             multiColorMask: multiColorSelection.mask,
           ),
         ),
-        Positioned(
-          top: 10,
-          left: 0,
-          right: 0,
-          child: Center(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.92),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.black12),
-              ),
-              child: FormulaDisplay(
-                overlayTex,
-                style: const TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black87,
+        if (showOverlayTex)
+          Positioned(
+            top: 10,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.92),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.black12),
+                ),
+                child: FormulaDisplay(
+                  overlayTex,
+                  style: const TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
+                  ),
                 ),
               ),
             ),
           ),
-        ),
       ],
     );
   }

@@ -240,6 +240,40 @@ class _LatexWebViewState extends State<LatexWebView> {
         postMessageToParent({type: 'latexView', id: ${_id}, event: 'wheel', deltaY: deltaY, deltaMode: deltaMode});
       } catch(e) {}
     }
+    function getScroller() {
+      return document.scrollingElement || document.documentElement || document.body;
+    }
+    function scrollerMetrics() {
+      var s = getScroller();
+      if (!s) return null;
+      var clientH = s.clientHeight || window.innerHeight || 0;
+      var scrollH = s.scrollHeight || 0;
+      var top = s.scrollTop || 0;
+      return {top: top, clientH: clientH, scrollH: scrollH};
+    }
+    function canScrollVertically() {
+      var m = scrollerMetrics();
+      if (!m) return false;
+      return (m.scrollH - m.clientH) > 1;
+    }
+    function atTop() {
+      var m = scrollerMetrics();
+      if (!m) return true;
+      return m.top <= 1;
+    }
+    function atBottom() {
+      var m = scrollerMetrics();
+      if (!m) return true;
+      return (m.top + m.clientH) >= (m.scrollH - 1);
+    }
+    function shouldForwardToParent(dyPx) {
+      // If this document cannot scroll, always forward to Flutter.
+      if (!canScrollVertically()) return true;
+      // Otherwise, forward only when we're at an edge in that direction.
+      if (dyPx > 0) return atBottom();
+      if (dyPx < 0) return atTop();
+      return false;
+    }
     function interceptWheel() {
       try {
         var pendingDy = 0;
@@ -261,7 +295,12 @@ class _LatexWebViewState extends State<LatexWebView> {
         // Forward wheel/trackpad scroll to parent (Flutter scroll view).
         // Must be non-passive to allow preventDefault.
         document.addEventListener('wheel', function(ev){
-          pendingDy += modeToPx(ev.deltaY || 0, ev.deltaMode || 0);
+          var dyPx = modeToPx(ev.deltaY || 0, ev.deltaMode || 0);
+          if (!shouldForwardToParent(dyPx)) {
+            // Let the iframe scroll naturally.
+            return;
+          }
+          pendingDy += dyPx;
           pendingMode = ev.deltaMode || 0;
           if (!scheduled) {
             scheduled = true;
@@ -291,8 +330,12 @@ class _LatexWebViewState extends State<LatexWebView> {
           lastY = y;
           // Only treat as scroll when the gesture is mainly vertical.
           if (Math.abs(dy) >= Math.abs(dx)) {
-            postWheel(dy, 0);
-            ev.preventDefault();
+            if (shouldForwardToParent(dy)) {
+              postWheel(dy, 0);
+              ev.preventDefault();
+            } else {
+              // Allow native scrolling inside the iframe.
+            }
           }
         }, {passive: false});
         document.addEventListener('touchend', function(ev){
@@ -340,6 +383,7 @@ class _LatexWebViewState extends State<LatexWebView> {
       padding: 0;
       /* Enable inner scrolling (iframe) for web performance. */
       overflow: auto;
+      -webkit-overflow-scrolling: touch;
       background-color: transparent;
       font-family: 'KeiFont', sans-serif;
       font-size: 18px;
