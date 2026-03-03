@@ -310,7 +310,7 @@ class RainbowDroplet2DSimulation extends WaveSimulation {
           title: "虹の光路 (単一水滴)",
           is3D: false,
           showTimeOverlay: false,
-          enableTime: false,
+          enableTime: true,
         );
 
   @override
@@ -464,59 +464,27 @@ class RainbowDroplet2DSimulation extends WaveSimulation {
     final k = (params['k'] ?? 0.82).clamp(0.0, 0.999);
     final viewMode = _viewModeFromParams(params);
     final bundleSelection = _bundleSelectionFromParams(params);
-    final showOverlayTex =
-        !_isSingleBundleMode(viewMode) && !_isMultiBundleMode(viewMode);
     final multiColorSelection = _multiColorSelectionFromParams(params);
-    final redPath = _RayOptics.computeRayPath(k, _RainbowDropletPainter.redN);
-    final bluePath = _RayOptics.computeRayPath(k, _RainbowDropletPainter.blueN);
-    final redPhiDeg =
-        redPath == null ? 0.0 : _RayOptics.phiGeoDegFromPath(redPath);
-    final bluePhiDeg =
-        bluePath == null ? 0.0 : _RayOptics.phiGeoDegFromPath(bluePath);
-    final overlayTex =
-        'k=${k.toStringAsFixed(3)}\\quad '
-        '{\\color{red}\\phi_{\\mathrm{red}}=${redPhiDeg.toStringAsFixed(2)}^\\circ}\\quad '
-        '{\\color{blue}\\phi_{\\mathrm{blue}}=${bluePhiDeg.toStringAsFixed(2)}^\\circ}';
 
-    return Stack(
-      children: [
-        CustomPaint(
-          size: Size.infinite,
-          painter:
-              _RainbowDropletPainter(
-            k: k,
-            scale: scale,
-            viewMode: viewMode,
-            drawRed: bundleSelection.drawRed,
-            drawBlue: bundleSelection.drawBlue,
-            multiColorMask: multiColorSelection.mask,
-          ),
-        ),
-        if (showOverlayTex)
-          Positioned(
-            top: 10,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.92),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.black12),
-                ),
-                child: FormulaDisplay(
-                  overlayTex,
-                  style: const TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black87,
-                  ),
-                ),
-              ),
-            ),
-          ),
-      ],
+    // 光線の入射アニメーション: 2.5秒で0→1、角度表示1.5秒でループ
+    const enterSec = 2.5;
+    const angleDisplaySec = 1.5;
+    const cycleSec = enterSec + angleDisplaySec;
+    final t = (time % cycleSec) / enterSec;
+    final rayProgress = (t >= 1.0) ? 1.0 : Curves.easeOutCubic.transform(t.clamp(0.0, 1.0));
+
+    // 数式オーバーレイは buildFormulaOverlay でボタン上に表示するため、ここでは描画しない
+    return CustomPaint(
+      size: Size.infinite,
+      painter: _RainbowDropletPainter(
+        k: k,
+        scale: scale,
+        viewMode: viewMode,
+        drawRed: bundleSelection.drawRed,
+        drawBlue: bundleSelection.drawBlue,
+        multiColorMask: multiColorSelection.mask,
+        rayProgress: rayProgress,
+      ),
     );
   }
   
@@ -597,6 +565,53 @@ class RainbowDroplet2DSimulation extends WaveSimulation {
     const labels = ['赤', '橙', '黄', '緑', '水', '青', '紫'];
     return labels[i];
   }
+
+  @override
+  Widget? buildFormulaOverlay(Map<String, double> parameters) {
+    final viewMode = (parameters['viewMode'] ?? 0.0).round().clamp(0, 5);
+    if (viewMode == 3 || viewMode == 4 || viewMode == 5) return null;
+    final k = (parameters['k'] ?? 0.82).clamp(0.0, 0.999);
+    final redPath = _RayOptics.computeRayPath(k, _RainbowDropletPainter.redN);
+    final bluePath = _RayOptics.computeRayPath(k, _RainbowDropletPainter.blueN);
+    final redPhiDeg =
+        redPath == null ? 0.0 : _RayOptics.phiGeoDegFromPath(redPath);
+    final bluePhiDeg =
+        bluePath == null ? 0.0 : _RayOptics.phiGeoDegFromPath(bluePath);
+    final overlayTex =
+        'k=${k.toStringAsFixed(3)}\\quad '
+        '{\\color{red}\\phi_{\\mathrm{red}}=${redPhiDeg.toStringAsFixed(2)}^\\circ}\\quad '
+        '{\\color{blue}\\phi_{\\mathrm{blue}}=${bluePhiDeg.toStringAsFixed(2)}^\\circ}';
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.92),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.black12),
+      ),
+      child: FormulaDisplay(
+        overlayTex,
+        style: const TextStyle(
+          fontSize: 32,
+          fontWeight: FontWeight.w700,
+          color: Colors.black87,
+        ),
+      ),
+    );
+  }
+
+  @override
+  bool useCompactButtonSpacing(Map<String, double> parameters) {
+    final viewMode = (parameters['viewMode'] ?? 0.0).round().clamp(0, 5);
+    return viewMode == 0 || viewMode == 1 || viewMode == 3;
+  }
+
+  @override
+  double animationOffsetY(Map<String, double> parameters) {
+    final viewMode = (parameters['viewMode'] ?? 0.0).round().clamp(0, 5);
+    if (viewMode == 0 || viewMode == 1 || viewMode == 3) return -110;
+    if (viewMode == 4 || viewMode == 5) return 30; // 光線束(多水滴)・多水滴極小
+    return 0;
+  }
 }
 
 class _RainbowMetrics {
@@ -640,12 +655,13 @@ class _RainbowDropletPainter extends CustomPainter {
   final bool drawRed;
   final bool drawBlue;
   final int multiColorMask;
+  final double rayProgress;
 
   static const double _dropRadius = 1.0;
   static const double redN = 1.33;
   static const double blueN = 1.34;
 
-  static const double _normalRadiusFactor = 0.40;
+  static const double _normalRadiusFactor = 0.32;
   static const double _tinyRadiusFactor = 0.018;
   static const double _singleBundleRadiusFactor = _tinyRadiusFactor * 3.0;
   static const double _multiTinyRadiusFactor = _tinyRadiusFactor / 5.0;
@@ -667,6 +683,7 @@ class _RainbowDropletPainter extends CustomPainter {
     required this.drawRed,
     required this.drawBlue,
     required this.multiColorMask,
+    this.rayProgress = 1.0,
   });
 
   @override
@@ -788,7 +805,8 @@ class _RainbowDropletPainter extends CustomPainter {
       xRatio: xRatio,
       topMarginRatio: topMarginRatio,
     );
-    for (int i = 0; i < centers.length; i++) {
+    // 下から上に描画し、上の水滴の反射光が下の入射光より先に出るのを防ぐ
+    for (int i = centers.length - 1; i >= 0; i--) {
       final dropletCenter = centers[i];
       final colorIndex = useSmoothGradient
           ? _gradientColorIndex(i, centers.length)
@@ -826,9 +844,14 @@ class _RainbowDropletPainter extends CustomPainter {
     final dropletDiameter = view.pixelsPerWorld * _dropRadius * 2.0;
     final step = dropletDiameter * spacingFactor;
 
-    // 最上段は従来感覚の上余白の1/3まで寄せる
-    final previousTopMargin = math.max(10.0, view.pixelsPerWorld * _dropRadius * 1.8);
-    final yStart = previousTopMargin * topMarginRatio;
+    // 最上段は従来感覚の上余白の topMarginRatio まで寄せるが、
+    // 水滴が上端で見切れないよう半径+余白を確保
+    final dropletRadius = view.pixelsPerWorld * _dropRadius;
+    final previousTopMargin = math.max(10.0, dropletRadius * 1.8);
+    final yStart = math.max(
+      previousTopMargin * topMarginRatio,
+      dropletRadius + 8,
+    );
 
     return List<Offset>.generate(dropletCount, (i) {
       final y = yStart + step * i;
@@ -938,14 +961,24 @@ class _RainbowDropletPainter extends CustomPainter {
     final p3s = worldToScreen(path.p3);
     final outDirScreen = worldToScreen(path.p3 + path.outDir) - p3s;
 
-    final incidentStart =
-        _rayToCanvasEdge(p1s, const Offset(-1, 0), size) ?? p1s;
+    // 入射光の開始点: 必ずp1の左側にし、反射光が先に描かれるのを防ぐ
+    var incidentStart = _rayToCanvasEdge(p1s, const Offset(-1, 0), size);
+    if (incidentStart == null || incidentStart.dx >= p1s.dx) {
+      incidentStart = worldToScreen(path.p1 + const Offset(-3.0, 0));
+    }
+    // 左端まで伸ばして入射区間を十分長くする（多水滴で反射が先に出る対策）
+    if (incidentStart.dx > 0 && incidentStart.dx < p1s.dx) {
+      final denom = incidentStart.dx - p1s.dx;
+      if (denom.abs() > 1e-6) {
+        final t = -incidentStart.dx / denom;
+        incidentStart = incidentStart + (incidentStart - p1s) * t;
+      }
+    }
     final exitEnd = _rayToCanvasEdge(p3s, outDirScreen, size) ?? p3s;
 
-    canvas.drawLine(incidentStart, p1s, paint);
-    canvas.drawLine(p1s, p2s, paint);
-    canvas.drawLine(p2s, p3s, paint);
-    canvas.drawLine(p3s, exitEnd, paint);
+    final pathPoints = [incidentStart, p1s, p2s, p3s, exitEnd];
+    _drawProgressivePath(canvas, pathPoints, paint, rayProgress,
+        drawArrows: false);
   }
 
   _RainbowView _computeView(Size size) {
@@ -1050,6 +1083,52 @@ class _RainbowDropletPainter extends CustomPainter {
     canvas.restore();
   }
 
+  void _drawProgressivePath(
+    Canvas canvas,
+    List<Offset> points,
+    Paint paint,
+    double progress, {
+    double arrowPosition = 0.58,
+    bool drawArrows = true,
+  }) {
+    if (points.length < 2 || progress <= 0) return;
+    double totalLen = 0;
+    final lengths = <double>[];
+    for (int i = 0; i < points.length - 1; i++) {
+      final len = (points[i + 1] - points[i]).distance;
+      lengths.add(len);
+      totalLen += len;
+    }
+    if (totalLen <= 0) return;
+    final targetLen = progress * totalLen;
+    double cumulative = 0;
+    for (int i = 0; i < points.length - 1; i++) {
+      final seg = points[i + 1] - points[i];
+      final segLen = lengths[i];
+      if (cumulative >= targetLen) break;
+      final isComplete = cumulative + segLen <= targetLen;
+      if (isComplete) {
+        cumulative += segLen;
+        if (drawArrows) {
+          _drawArrowedLine(canvas, points[i], points[i + 1], paint,
+              arrowPosition: arrowPosition);
+        } else {
+          canvas.drawLine(points[i], points[i + 1], paint);
+        }
+      } else {
+        final partial = (targetLen - cumulative) / segLen;
+        final end = points[i] + seg * partial;
+        if (drawArrows && partial > 0.03) {
+          _drawArrowedLine(canvas, points[i], end, paint,
+              arrowPosition: 0.95);
+        } else {
+          canvas.drawLine(points[i], end, paint);
+        }
+        break;
+      }
+    }
+  }
+
   void _drawColorPath({
     required Canvas canvas,
     required Size size,
@@ -1072,43 +1151,32 @@ class _RainbowDropletPainter extends CustomPainter {
     final outDirScreen = worldToScreen(path.p3 + path.outDir) - p3s;
     final isTinyMode = viewMode == _RainbowViewMode.tinyDroplet;
 
-    // 左から水平入射する前置きの線分
     final incidentStart = isTinyMode
         ? _rayToCanvasEdge(p1s, const Offset(-1, 0), size) ?? p1s
         : worldToScreen(Offset(path.p1.dx - 1.3, path.p1.dy));
-    _drawArrowedLine(
-      canvas,
-      incidentStart,
-      p1s,
-      rayPaint,
-      arrowPosition: isTinyMode ? 0.72 : 0.58,
-    );
-
-    // 水滴内: 屈折 -> 内部反射 -> 出射点まで
-    _drawArrowedLine(
-      canvas,
-      p1s,
-      p2s,
-      rayPaint,
-    );
-    _drawArrowedLine(
-      canvas,
-      p2s,
-      p3s,
-      rayPaint,
-    );
-
-    // 出射光（実線）
     final exitEnd = isTinyMode
         ? _rayToCanvasEdge(p3s, outDirScreen, size) ?? p3s
         : worldToScreen(path.p3 + path.outDir * 1.6);
-    _drawArrowedLine(
+
+    final pathPoints = [incidentStart, p1s, p2s, p3s, exitEnd];
+    _drawProgressivePath(
       canvas,
-      p3s,
-      exitEnd,
+      pathPoints,
       rayPaint,
+      rayProgress,
       arrowPosition: isTinyMode ? 0.72 : 0.58,
     );
+
+    // 光が水滴を出たら（p3に到達したら）角度・点線を描画
+    double totalLen = 0;
+    double lenUpToP3 = 0;
+    for (int i = 0; i < pathPoints.length - 1; i++) {
+      final segLen = (pathPoints[i + 1] - pathPoints[i]).distance;
+      totalLen += segLen;
+      if (i < 3) lenUpToP3 += segLen;
+    }
+    final exitThreshold = totalLen > 0 ? lenUpToP3 / totalLen : 1.0;
+    if (rayProgress < exitThreshold) return;
 
     final helperPaint = Paint()
       ..style = PaintingStyle.stroke
@@ -1334,7 +1402,8 @@ class _RainbowDropletPainter extends CustomPainter {
         oldDelegate.viewMode != viewMode ||
         oldDelegate.drawRed != drawRed ||
         oldDelegate.drawBlue != drawBlue ||
-        oldDelegate.multiColorMask != multiColorMask;
+        oldDelegate.multiColorMask != multiColorMask ||
+        oldDelegate.rayProgress != rayProgress;
   }
 }
 

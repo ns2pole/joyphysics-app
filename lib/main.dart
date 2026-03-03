@@ -11,7 +11,7 @@ import 'package:joyphysics/formulaCollectionView.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
-import 'package:joyphysics/dataExporter.dart' show thinFilmInterference1D;
+import 'package:joyphysics/dataExporter.dart' show thinFilmInterference1D, rainbowDroplet2D;
 import 'package:url_launcher/url_launcher.dart';
 
 // 共有の navigatorKey を1つだけ作る
@@ -64,6 +64,9 @@ class JoyPhysicsApp extends StatelessWidget {
               break;
             case '/waves/thin-film-interference-1d':
               page = VideoDetailView(video: thinFilmInterference1D);
+              break;
+            case '/waves/rainbow-droplet-2d':
+              page = VideoDetailView(video: rainbowDroplet2D);
               break;
             default:
               page = ContentView();

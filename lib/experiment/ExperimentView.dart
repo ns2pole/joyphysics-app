@@ -415,7 +415,9 @@ class _VideoDetailViewState extends State<VideoDetailView> {
               child: PhysicsAnimationScaffold(
                 // 左は「アニメ表示」に徹する（数式/スライダーは右へ）
                 title: sim.title,
-                formula: null,
+                formula: sim.buildFormulaOverlay(state.parameters),
+                compactButtonSpacing: sim.useCompactButtonSpacing(state.parameters),
+                animationOffsetY: sim.animationOffsetY(state.parameters),
                 sliders: null,
                 extraControls: null,
                 height: w.height,

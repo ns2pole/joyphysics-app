@@ -73,6 +73,15 @@ abstract class PhysicsSimulation {
   ) =>
       null;
 
+  /// パラメータに依存する数式オーバーレイ（ボタンより上に表示する場合に使用）
+  Widget? buildFormulaOverlay(Map<String, double> parameters) => null;
+
+  /// ボタンとアニメーションの間を詰めるか（通常8px→約3px）
+  bool useCompactButtonSpacing(Map<String, double> parameters) => false;
+
+  /// アニメーション領域の縦方向オフセット（正で下、負で上）[px]
+  double animationOffsetY(Map<String, double> parameters) => 0;
+
   /// アニメーション本体を構築
   Widget buildAnimation(
     BuildContext context,
@@ -256,7 +265,11 @@ class _PhysicsSimulationViewState extends State<PhysicsSimulationView> {
   Widget build(BuildContext context) {
     return PhysicsAnimationScaffold(
       title: widget.simulation.title,
-      formula: widget.simulation.formula,
+      formula: widget.simulation.buildFormulaOverlay(_parameters) ??
+          widget.simulation.formula,
+      compactButtonSpacing:
+          widget.simulation.useCompactButtonSpacing(_parameters),
+      animationOffsetY: widget.simulation.animationOffsetY(_parameters),
       is3D: widget.simulation.is3D,
       aspectRatio: widget.simulation.aspectRatio,
       // Safety: when time is disabled, never show any time overlay UI.

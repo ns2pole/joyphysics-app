@@ -22,6 +22,8 @@ class PhysicsAnimationScaffold extends StatefulWidget with HasHeight {
   final String? rangeLabel;
   final bool showTimeOverlay;
   final bool enableTime;
+  final bool compactButtonSpacing;
+  final double animationOffsetY;
 
   const PhysicsAnimationScaffold({
     super.key,
@@ -41,6 +43,8 @@ class PhysicsAnimationScaffold extends StatefulWidget with HasHeight {
     this.rangeLabel,
     this.showTimeOverlay = true,
     this.enableTime = true,
+    this.compactButtonSpacing = false,
+    this.animationOffsetY = 0,
   });
 
   @override
@@ -120,6 +124,41 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
   void _reset() {
     _time.value = 0.0;
     // Reset only the clock; keep camera/zoom and simulation parameters.
+  }
+
+  Widget _buildPlayPauseResetButtons() {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.45),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            visualDensity: VisualDensity.compact,
+            iconSize: 18,
+            color: Colors.white,
+            tooltip: _isPlaying ? '停止' : '再生',
+            onPressed: _togglePlayPause,
+            icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
+          ),
+          Container(
+            width: 1,
+            height: 18,
+            color: Colors.white.withOpacity(0.25),
+          ),
+          IconButton(
+            visualDensity: VisualDensity.compact,
+            iconSize: 18,
+            color: Colors.white,
+            tooltip: 'リセット',
+            onPressed: _reset,
+            icon: const Icon(Icons.restore),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildAnimationArea() {
@@ -292,46 +331,6 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
                       ),
                     ),
                   ),
-                // Web: Play/Pause + Reset buttons (top-left)
-                if (kIsWeb && widget.enableTime)
-                  Positioned(
-                    left: 10,
-                    top: 10,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.45),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            visualDensity: VisualDensity.compact,
-                            iconSize: 18,
-                            color: Colors.white,
-                            tooltip: _isPlaying ? '停止' : '再生',
-                            onPressed: _togglePlayPause,
-                            icon: Icon(
-                              _isPlaying ? Icons.pause : Icons.play_arrow,
-                            ),
-                          ),
-                          Container(
-                            width: 1,
-                            height: 18,
-                            color: Colors.white.withOpacity(0.25),
-                          ),
-                          IconButton(
-                            visualDensity: VisualDensity.compact,
-                            iconSize: 18,
-                            color: Colors.white,
-                            tooltip: 'リセット',
-                            onPressed: _reset,
-                            icon: const Icon(Icons.restore),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
               ],
             ),
           ),
@@ -340,7 +339,11 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
     );
   }
 
-  Widget _buildRightPanel({required bool scrollable, bool includeFormula = true}) {
+  Widget _buildRightPanel({
+    required bool scrollable,
+    bool includeFormula = true,
+    bool showPlayButtons = true,
+  }) {
     final content = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -349,42 +352,21 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
             padding: const EdgeInsets.fromLTRB(8, 8, 8, 4),
             child: widget.formula!,
           ),
+        // 再生/停止/リセット（数式の下に中央寄せ）
+        if (widget.enableTime && showPlayButtons)
+          Padding(
+            padding: EdgeInsets.fromLTRB(
+              8.0,
+              8.0,
+              8.0,
+              widget.compactButtonSpacing ? 3.0 : 8.0,
+            ),
+            child: Center(child: _buildPlayPauseResetButtons()),
+          ),
         if (widget.extraControls != null)
           Padding(
             padding: const EdgeInsets.fromLTRB(8, 4, 8, 8),
             child: widget.extraControls!,
-          ),
-        // Web ではキャンバス内に停止/リセットを置くため、右パネルには出さない
-        if (!kIsWeb && widget.enableTime)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: _togglePlayPause,
-                  icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
-                  label: Text(_isPlaying ? '停止' : '再生'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        _isPlaying ? Colors.red[400] : Colors.green[400],
-                    foregroundColor: Colors.white,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                ElevatedButton.icon(
-                  onPressed: _reset,
-                  icon: const Icon(Icons.restore),
-                  label: const Text('リセット'),
-                  style: ElevatedButton.styleFrom(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  ),
-                ),
-              ],
-            ),
           ),
         if (widget.sliders != null && widget.sliders!.isNotEmpty)
           Padding(
@@ -440,7 +422,11 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
                     flex: 1,
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: _buildRightPanel(scrollable: true, includeFormula: true),
+                      child: _buildRightPanel(
+                        scrollable: true,
+                        includeFormula: true,
+                        showPlayButtons: true,
+                      ),
                     ),
                   ),
                 ],
@@ -454,15 +440,35 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
           child: Column(
             mainAxisSize: MainAxisSize.min, // コンテンツに合わせて最小限の高さに
             children: [
-              // Narrow layout keeps formula above the animation (original behavior)
+              // 数式（formula / buildFormulaOverlay）
               if (widget.formula != null)
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: widget.formula!,
                 ),
-              _buildAnimationArea(),
+              // 再生/停止/リセット（数式の下に中央寄せ・縦レイアウト用）
+              if (widget.enableTime)
+                Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    8.0,
+                    8.0,
+                    8.0,
+                    widget.compactButtonSpacing ? 3.0 : 8.0,
+                  ),
+                  child: Center(
+                    child: _buildPlayPauseResetButtons(),
+                  ),
+                ),
+              Transform.translate(
+                offset: Offset(0, widget.animationOffsetY),
+                child: _buildAnimationArea(),
+              ),
               // 操作パネル部分（縦レイアウトは従来の順序を維持）
-              _buildRightPanel(scrollable: false, includeFormula: false),
+              _buildRightPanel(
+                scrollable: false,
+                includeFormula: false,
+                showPlayButtons: false,
+              ),
             ],
           ),
         );
