@@ -198,6 +198,7 @@ final categoriesData = <Category>[
           diffractionGrating,
           spectroscopy,
           rainbowDroplet2D,
+          secondaryRainbowDroplet2D,
           thinFilmInterference1D,
           thinFilmInterference2D,
           youngDoubleSlit,

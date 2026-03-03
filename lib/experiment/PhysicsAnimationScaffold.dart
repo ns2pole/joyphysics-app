@@ -127,6 +127,7 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
   }
 
   Widget _buildPlayPauseResetButtons() {
+    const btnSize = 26.0;
     return DecoratedBox(
       decoration: BoxDecoration(
         color: Colors.black.withOpacity(0.45),
@@ -137,7 +138,7 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
         children: [
           IconButton(
             visualDensity: VisualDensity.compact,
-            iconSize: 18,
+            iconSize: btnSize,
             color: Colors.white,
             tooltip: _isPlaying ? '停止' : '再生',
             onPressed: _togglePlayPause,
@@ -145,12 +146,12 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
           ),
           Container(
             width: 1,
-            height: 18,
+            height: btnSize,
             color: Colors.white.withOpacity(0.25),
           ),
           IconButton(
             visualDensity: VisualDensity.compact,
-            iconSize: 18,
+            iconSize: btnSize,
             color: Colors.white,
             tooltip: 'リセット',
             onPressed: _reset,
@@ -261,7 +262,7 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
                             children: [
                               IconButton(
                                 visualDensity: VisualDensity.compact,
-                                iconSize: 18,
+                                iconSize: 26,
                                 color: Colors.white,
                                 tooltip: 'Zoom out',
                                 onPressed: () => _zoomBy(1 / 1.15),
@@ -269,12 +270,12 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
                               ),
                               Container(
                                 width: 1,
-                                height: 18,
+                                height: 26,
                                 color: Colors.white.withOpacity(0.25),
                               ),
                               IconButton(
                                 visualDensity: VisualDensity.compact,
-                                iconSize: 18,
+                                iconSize: 26,
                                 color: Colors.white,
                                 tooltip: 'Zoom in',
                                 onPressed: () => _zoomBy(1.15),

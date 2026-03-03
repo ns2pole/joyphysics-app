@@ -3,18 +3,97 @@ import 'package:flutter/material.dart';
 import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import '../widgets/wave_slider.dart';
 
-class _RayOptics {
+/// 副虹用の光路計算（2回内部反射、下半分入射）
+class _RayOpticsSecondary {
   static const double dropRadius = 1.0;
 
-  static _RayPath? computeRayPath(
+  /// 副虹: P1(入射・下半分)→P2(1回反射)→P3(2回反射)→P4(出射)
+  static _RayPathSecondary? computeRayPath(
     double k,
     double n, {
     Offset dropletCenter = Offset.zero,
   }) {
     final x = k.clamp(0.0, 0.999);
     final alpha = math.asin(x);
-    final p1 =
-        dropletCenter + Offset(-dropRadius * math.cos(alpha), dropRadius * math.sin(alpha));
+    // 下半分に入射: -sin(α) で y を負に
+    final p1 = dropletCenter +
+        Offset(-dropRadius * math.cos(alpha), -dropRadius * math.sin(alpha));
+
+    const incoming = Offset(1, 0);
+    final normalAtP1 = _normalize(p1 - dropletCenter);
+    final d1 = _refract(incoming, normalAtP1, 1.0, n);
+    if (d1 == null) return null;
+
+    final p2 = _nextCircleIntersection(
+      p1 + d1 * 1e-6,
+      d1,
+      dropRadius,
+      center: dropletCenter,
+    );
+    if (p2 == null) return null;
+
+    final normalAtP2 = _normalize(p2 - dropletCenter);
+    final d2 = _reflect(d1, normalAtP2);
+
+    final p3 = _nextCircleIntersection(
+      p2 + d2 * 1e-6,
+      d2,
+      dropRadius,
+      center: dropletCenter,
+    );
+    if (p3 == null) return null;
+
+    final normalAtP3 = _normalize(p3 - dropletCenter);
+    final d3 = _reflect(d2, normalAtP3);
+
+    final p4 = _nextCircleIntersection(
+      p3 + d3 * 1e-6,
+      d3,
+      dropRadius,
+      center: dropletCenter,
+    );
+    if (p4 == null) return null;
+
+    final normalAtP4 = _normalize(p4 - dropletCenter);
+    final outDir = _refract(d3, normalAtP4, n, 1.0);
+    if (outDir == null) return null;
+
+    return _RayPathSecondary(
+      p1: p1,
+      p2: p2,
+      p3: p3,
+      p4: p4,
+      outDir: _normalize(outDir),
+    );
+  }
+
+  static double phiGeoDegFromPath(_RayPathSecondary path) {
+    final back = -path.outDir;
+    final phi = math.atan2(back.dy.abs(), back.dx.abs());
+    return phi * 180.0 / math.pi;
+  }
+
+  static double theoryPhiDeg(double k, double n) {
+    final x = k.clamp(0.0, 0.999);
+    final i = math.asin(x);
+    final r = math.asin(x / n);
+    final phiRad = math.pi - 6.0 * r + 2.0 * i;
+    return phiRad * 180.0 / math.pi;
+  }
+
+  static double peakK(double n) => math.sqrt((9.0 - n * n) / 8.0);
+
+  /// 主虹: P1(入射・上半分)→P2(1回反射)→P3(出射)
+  static _RayPathPrimary? computeRayPathPrimary(
+    double k,
+    double n, {
+    Offset dropletCenter = Offset.zero,
+  }) {
+    final x = k.clamp(0.0, 0.999);
+    final alpha = math.asin(x);
+    // 上半分に入射: +sin(α) で y を正に
+    final p1 = dropletCenter +
+        Offset(-dropRadius * math.cos(alpha), dropRadius * math.sin(alpha));
 
     const incoming = Offset(1, 0);
     final normalAtP1 = _normalize(p1 - dropletCenter);
@@ -44,27 +123,12 @@ class _RayOptics {
     final outDir = _refract(d2, normalAtP3, n, 1.0);
     if (outDir == null) return null;
 
-    return _RayPath(p1: p1, p2: p2, p3: p3, outDir: _normalize(outDir));
-  }
-
-  static double phiGeoDegFromPath(_RayPath path) {
-    final back = -path.outDir;
-    final phi = math.atan2(back.dy.abs(), back.dx.abs());
-    return phi * 180.0 / math.pi;
-  }
-
-  static double theoryPhiDeg(double k, double n) {
-    final x = k.clamp(0.0, 0.999);
-    final phiRad = 4.0 * math.asin(x / n) - 2.0 * math.asin(x);
-    return phiRad * 180.0 / math.pi;
-  }
-
-  static double peakK(double n) => math.sqrt((4.0 - n * n) / 3.0);
-
-  static Offset? horizontalIntersection(Offset p, Offset dir, double y) {
-    if (dir.dy.abs() < 1e-9) return null;
-    final t = (y - p.dy) / dir.dy;
-    return p + dir * t;
+    return _RayPathPrimary(
+      p1: p1,
+      p2: p2,
+      p3: p3,
+      outDir: _normalize(outDir),
+    );
   }
 
   static Offset? _nextCircleIntersection(
@@ -104,7 +168,6 @@ class _RayOptics {
   static Offset? _refract(Offset incident, Offset normal, double n1, double n2) {
     final i = _normalize(incident);
     var n = _normalize(normal);
-    // n1, n2 は呼び出し側で媒質を指定済みなので、法線は向きだけ合わせる
     if (_dot(i, n) > 0) {
       n = -n;
     }
@@ -124,43 +187,66 @@ class _RayOptics {
   static double _dot(Offset a, Offset b) => a.dx * b.dx + a.dy * b.dy;
 }
 
-final rainbowDroplet2D = createWaveVideo(
-  title: "虹の光路 (単一水滴)",
+const List<Color> _sevenColorPalette = <Color>[
+  Colors.red,
+  Colors.orange,
+  Colors.yellow,
+  Colors.green,
+  Colors.cyan,
+  Colors.blue,
+  Colors.purple,
+];
+
+class _RayPathSecondary {
+  final Offset p1;
+  final Offset p2;
+  final Offset p3;
+  final Offset p4;
+  final Offset outDir;
+
+  const _RayPathSecondary({
+    required this.p1,
+    required this.p2,
+    required this.p3,
+    required this.p4,
+    required this.outDir,
+  });
+}
+
+class _RayPathPrimary {
+  final Offset p1;
+  final Offset p2;
+  final Offset p3;
+  final Offset outDir;
+
+  const _RayPathPrimary({
+    required this.p1,
+    required this.p2,
+    required this.p3,
+    required this.outDir,
+  });
+}
+
+final secondaryRainbowDroplet2D = createWaveVideo(
+  title: "副虹の光路 (単一水滴)",
   latex: r"""
   <div class="common-box">ポイント</div>
-  <p>入射パラメータ $k$ を 0 から 1 の範囲で動かし、球状水滴での屈折→内部反射→出射を可視化します。</p>
-  <p>赤色光 ($n=1.33$) と青色光 ($n=1.34$) の分散により、出射方向に差が生まれます。</p>
-  <p><b>上半分だけ描いている理由</b>：水滴の下側も同様に光路が存在しますが、説明では「出射点付近の角度関係」が見やすい上側を主に表示しています。</p>
-  <p><b>虹とのつながり</b>：$k$ を連続に変えると出射方向（角度 $\phi$）が変化し、ある角度付近で出射光が集中します。波長（屈折率）の違いでその集中角がずれるため、赤と青で見える方向が分かれて「虹」になります。</p>
-  <p><b>表示モード</b></p>
-  <ul>
-    <li><b>通常</b>：1本の光線で光路の折れ方を確認</li>
-    <li><b>極小水滴</b>：水滴を小さくして、入射・出射の方向（延長）を端まで見やすく</li>
-    <li><b>出射点拡大</b>：出射点付近を拡大して、点線同士の角度（対頂角の $\phi$）を読み取りやすく</li>
-    <li><b>光線束</b>：$k=0\sim 0.99$ の等間隔な複数光線を同時に描き、どの方向に光が集まりやすいかを直感的に確認</li>
-  </ul>
+  <p>副虹は水滴内で<b>2回</b>内部反射して出射する光で形成されます。光線は水滴の<b>下半分</b>に入射します。</p>
+  <p>主虹と同様、入射パラメータ $k$ を動かすと出射方向 $\phi$ が変化し、ある角度付近で光が集中します。副虹の観測角は主虹より大きく（約51°）、色の順序が<b>逆転</b>します（赤が内側、紫が外側）。</p>
   <p><b>理論式（$k$ から $\phi$）</b></p>
   <p>
-    入射角 $i$ と屈折角 $r$ を
+    副虹は2回反射のため
     \[
-      i=\arcsin k,\qquad r=\arcsin\left(\frac{k}{n}\right)
+      \phi(k)=\pi-(6r-2i)
+      =\pi-\left(6\arcsin\frac{k}{n}-2\arcsin k\right)\quad(\mathrm{rad})
     \]
-    とすると、主虹（屈折→内部反射→出射）の出射方向は
-    \[
-      \phi(k)=4r-2i
-      =4\arcsin\left(\frac{k}{n}\right)-2\arcsin(k)\quad(\mathrm{rad})
-    \]
-    です。度数表示では
-    \[
-      \phi_{\deg}(k)=\frac{180}{\pi}\left(4\arcsin\left(\frac{k}{n}\right)-2\arcsin(k)\right)
-    \]
-    となります（赤: $n=1.33$、青: $n=1.34$）。
+    となります。$\phi$ は $k$ に対して<b>極小</b>（約51°）を取り、その付近で光が集中します。
   </p>
-  <p><b>理論曲線（度数表示）</b></p>
-  <canvas id="phi-plot" style="width:100%; height:260px; display:block;"></canvas>
+  <p><b>理論曲線（$\phi=\pi-6r+2i$・極小あり）</b></p>
+  <canvas id="phi-plot-secondary-rainbow" style="width:100%; height:260px; display:block;"></canvas>
   <script>
     (function(){
-      const canvas = document.getElementById('phi-plot');
+      const canvas = document.getElementById('phi-plot-secondary-rainbow');
       if (!canvas) return;
       const nRed = 1.33, nBlue = 1.34;
       const kMin = 0.0, kMax = 0.99;
@@ -168,7 +254,7 @@ final rainbowDroplet2D = createWaveVideo(
       function phiDeg(k, n) {
         const i = Math.asin(k);
         const r = Math.asin(k / n);
-        return (180 / Math.PI) * (4 * r - 2 * i);
+        return (180 / Math.PI) * (Math.PI - 6 * r + 2 * i);
       }
 
       function draw() {
@@ -182,11 +268,9 @@ final rainbowDroplet2D = createWaveVideo(
         if (!ctx) return;
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-        // compute ranges
         const samples = 220;
         let yMin = Infinity, yMax = -Infinity;
-        const red = [];
-        const blue = [];
+        const red = [], blue = [];
         for (let s = 0; s < samples; s++) {
           const t = samples === 1 ? 0 : s / (samples - 1);
           const k = kMin + (kMax - kMin) * t;
@@ -201,7 +285,6 @@ final rainbowDroplet2D = createWaveVideo(
         yMin -= padY;
         yMax += padY;
 
-        // layout
         const m = {l: 46, r: 14, t: 12, b: 34};
         const W = cssW, H = cssH;
         const plotW = W - m.l - m.r;
@@ -210,33 +293,27 @@ final rainbowDroplet2D = createWaveVideo(
         function x(k){ return m.l + (k - kMin) / (kMax - kMin) * plotW; }
         function y(v){ return m.t + (yMax - v) / (yMax - yMin) * plotH; }
 
-        // background
         ctx.clearRect(0, 0, W, H);
         ctx.fillStyle = 'rgba(255,255,255,1)';
         ctx.fillRect(0, 0, W, H);
 
-        // grid + axes
         ctx.strokeStyle = 'rgba(0,0,0,0.12)';
         ctx.lineWidth = 1;
         ctx.beginPath();
-        // x ticks
         const xTicks = [0, 0.25, 0.5, 0.75, 0.99];
         for (const xt of xTicks) {
           const xx = x(xt);
           ctx.moveTo(xx, m.t);
           ctx.lineTo(xx, m.t + plotH);
         }
-        // y ticks
-        const yTicks = 4;
-        for (let i = 0; i <= yTicks; i++) {
-          const vv = yMin + (yMax - yMin) * (i / yTicks);
+        for (let i = 0; i <= 4; i++) {
+          const vv = yMin + (yMax - yMin) * (i / 4);
           const yy = y(vv);
           ctx.moveTo(m.l, yy);
           ctx.lineTo(m.l + plotW, yy);
         }
         ctx.stroke();
 
-        // axis lines
         ctx.strokeStyle = 'rgba(0,0,0,0.35)';
         ctx.beginPath();
         ctx.moveTo(m.l, m.t);
@@ -244,7 +321,6 @@ final rainbowDroplet2D = createWaveVideo(
         ctx.lineTo(m.l + plotW, m.t + plotH);
         ctx.stroke();
 
-        // labels
         ctx.fillStyle = 'rgba(0,0,0,0.8)';
         ctx.font = '12px sans-serif';
         ctx.textAlign = 'center';
@@ -254,8 +330,8 @@ final rainbowDroplet2D = createWaveVideo(
         }
         ctx.textAlign = 'right';
         ctx.textBaseline = 'middle';
-        for (let i = 0; i <= yTicks; i++) {
-          const vv = yMin + (yMax - yMin) * (i / yTicks);
+        for (let i = 0; i <= 4; i++) {
+          const vv = yMin + (yMax - yMin) * (i / 4);
           ctx.fillText(vv.toFixed(1), m.l - 6, y(vv));
         }
         ctx.textAlign = 'left';
@@ -263,7 +339,6 @@ final rainbowDroplet2D = createWaveVideo(
         ctx.fillText('k', m.l + plotW - 6, m.t + plotH + 6);
         ctx.fillText('φ [deg]', 6, m.t);
 
-        // lines
         function drawLine(points, stroke) {
           ctx.strokeStyle = stroke;
           ctx.lineWidth = 2;
@@ -279,35 +354,36 @@ final rainbowDroplet2D = createWaveVideo(
         drawLine(red, 'rgba(220,40,40,0.95)');
         drawLine(blue, 'rgba(40,90,220,0.95)');
 
-        // legend
         const lx = m.l + 10, ly = m.t + 10;
         ctx.fillStyle = 'rgba(255,255,255,0.85)';
         ctx.strokeStyle = 'rgba(0,0,0,0.15)';
         ctx.lineWidth = 1;
-        ctx.fillRect(lx - 6, ly - 6, 150, 36);
-        ctx.strokeRect(lx - 6, ly - 6, 150, 36);
-        ctx.font = '12px sans-serif';
+        ctx.fillRect(lx - 6, ly - 6, 150, 50);
+        ctx.strokeRect(lx - 6, ly - 6, 150, 50);
+        ctx.font = '11px sans-serif';
         ctx.textBaseline = 'middle';
+        ctx.fillStyle = 'rgba(0,0,0,0.8)';
+        ctx.fillText('副虹 φ=π-6r+2i（極小）', lx, ly + 4);
         ctx.fillStyle = 'rgba(220,40,40,0.95)';
-        ctx.fillText('red: n=1.33', lx, ly + 6);
+        ctx.font = '12px sans-serif';
+        ctx.fillText('red: n=1.33', lx, ly + 20);
         ctx.fillStyle = 'rgba(40,90,220,0.95)';
-        ctx.fillText('blue: n=1.34', lx, ly + 22);
+        ctx.fillText('blue: n=1.34', lx, ly + 36);
       }
 
-      // draw now + on resize
       draw();
       window.addEventListener('resize', function(){ setTimeout(draw, 60); });
     })();
   </script>
   """,
-  simulation: RainbowDroplet2DSimulation(),
+  simulation: SecondaryRainbowDroplet2DSimulation(),
   height: 780,
 );
 
-class RainbowDroplet2DSimulation extends WaveSimulation {
-  RainbowDroplet2DSimulation()
+class SecondaryRainbowDroplet2DSimulation extends WaveSimulation {
+  SecondaryRainbowDroplet2DSimulation()
       : super(
-          title: "虹の光路 (単一水滴)",
+          title: "副虹の光路 (単一水滴)",
           is3D: false,
           showTimeOverlay: false,
           enableTime: true,
@@ -315,7 +391,7 @@ class RainbowDroplet2DSimulation extends WaveSimulation {
 
   @override
   Map<String, double> get initialParameters => const {
-        'k': 0.82,
+        'k': 0.92,
         'viewMode': 0.0,
         'bundleRed': 1.0,
         'bundleBlue': 1.0,
@@ -364,33 +440,38 @@ class RainbowDroplet2DSimulation extends WaveSimulation {
         children: [
           ChoiceChip(
             label: const Text('通常'),
-            selected: viewMode == _RainbowViewMode.normal,
+            selected: viewMode == _SecondaryRainbowViewMode.normal,
             onSelected: (_) => updateParam('viewMode', 0.0),
           ),
           ChoiceChip(
             label: const Text('極小水滴'),
-            selected: viewMode == _RainbowViewMode.tinyDroplet,
+            selected: viewMode == _SecondaryRainbowViewMode.tinyDroplet,
             onSelected: (_) => updateParam('viewMode', 1.0),
           ),
           ChoiceChip(
             label: const Text('出射点拡大'),
-            selected: viewMode == _RainbowViewMode.exitZoom,
+            selected: viewMode == _SecondaryRainbowViewMode.exitZoom,
             onSelected: (_) => updateParam('viewMode', 2.0),
           ),
           ChoiceChip(
             label: const Text('光線束(単一)'),
-            selected: viewMode == _RainbowViewMode.singleRayBundle,
+            selected: viewMode == _SecondaryRainbowViewMode.singleRayBundle,
             onSelected: (_) => updateParam('viewMode', 3.0),
           ),
           ChoiceChip(
             label: const Text('光線束(多水滴)'),
-            selected: viewMode == _RainbowViewMode.multiRayBundle,
+            selected: viewMode == _SecondaryRainbowViewMode.multiRayBundle,
             onSelected: (_) => updateParam('viewMode', 4.0),
           ),
           ChoiceChip(
             label: const Text('多水滴極小'),
-            selected: viewMode == _RainbowViewMode.multiRayBundleTiny,
+            selected: viewMode == _SecondaryRainbowViewMode.multiRayBundleTiny,
             onSelected: (_) => updateParam('viewMode', 5.0),
+          ),
+          ChoiceChip(
+            label: const Text('主虹・副虹'),
+            selected: viewMode == _SecondaryRainbowViewMode.primaryAndSecondary,
+            onSelected: (_) => updateParam('viewMode', 6.0),
           ),
         ],
       ),
@@ -419,7 +500,7 @@ class RainbowDroplet2DSimulation extends WaveSimulation {
             ),
           ],
         ),
-      if (_isMultiBundleMode(viewMode))
+      if (_isMultiBundleMode(viewMode) || _isDualRainbowMode(viewMode))
         Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -439,7 +520,9 @@ class RainbowDroplet2DSimulation extends WaveSimulation {
               ),
           ],
         ),
-      if (!_isSingleBundleMode(viewMode) && !_isMultiBundleMode(viewMode))
+      if (!_isSingleBundleMode(viewMode) &&
+          !_isMultiBundleMode(viewMode) &&
+          !_isDualRainbowMode(viewMode))
         WaveParameterSlider(
           label: 'k',
           value: metrics.k,
@@ -447,36 +530,36 @@ class RainbowDroplet2DSimulation extends WaveSimulation {
           max: 0.999,
           onChanged: (v) => updateParam('k', v),
         ),
-      Text(
-        '理論ピーク φ: 赤 ${metrics.redPeakPhi.toStringAsFixed(2)}° / 青 ${metrics.bluePeakPhi.toStringAsFixed(2)}°',
-        style: const TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.w800,
-          color: Colors.black87,
+      if (!_isDualRainbowMode(viewMode))
+        Text(
+          '理論極小 φ: 青 ${metrics.bluePeakPhi.toStringAsFixed(2)}°（外側） / 赤 ${metrics.redPeakPhi.toStringAsFixed(2)}°（内側）',
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w800,
+            color: Colors.black87,
+          ),
         ),
-      ),
     ];
   }
 
   @override
   Widget buildAnimation(
       context, time, azimuth, tilt, scale, params, activeIds) {
-    final k = (params['k'] ?? 0.82).clamp(0.0, 0.999);
+    final k = (params['k'] ?? 0.92).clamp(0.0, 0.999);
     final viewMode = _viewModeFromParams(params);
     final bundleSelection = _bundleSelectionFromParams(params);
     final multiColorSelection = _multiColorSelectionFromParams(params);
 
-    // 光線の入射アニメーション: 2.5秒で0→1、角度表示1.5秒でループ
     const enterSec = 2.5;
     const angleDisplaySec = 1.5;
     const cycleSec = enterSec + angleDisplaySec;
     final t = (time % cycleSec) / enterSec;
-    final rayProgress = (t >= 1.0) ? 1.0 : Curves.easeOutCubic.transform(t.clamp(0.0, 1.0));
+    final rayProgress =
+        (t >= 1.0) ? 1.0 : Curves.easeOutCubic.transform(t.clamp(0.0, 1.0));
 
-    // 数式オーバーレイは buildFormulaOverlay でボタン上に表示するため、ここでは描画しない
     return CustomPaint(
       size: Size.infinite,
-      painter: _RainbowDropletPainter(
+      painter: _SecondaryRainbowDropletPainter(
         k: k,
         scale: scale,
         viewMode: viewMode,
@@ -487,26 +570,30 @@ class RainbowDroplet2DSimulation extends WaveSimulation {
       ),
     );
   }
-  
-  _RainbowMetrics _buildMetrics(Map<String, double> params) {
-    final k = (params['k'] ?? 0.82).clamp(0.0, 0.999);
-    final redPath = _RayOptics.computeRayPath(k, _RainbowDropletPainter.redN);
-    final bluePath = _RayOptics.computeRayPath(k, _RainbowDropletPainter.blueN);
-    final redPhiGeo = redPath == null ? 0.0 : _RayOptics.phiGeoDegFromPath(redPath);
+
+  _SecondaryRainbowMetrics _buildMetrics(Map<String, double> params) {
+    final k = (params['k'] ?? 0.92).clamp(0.0, 0.999);
+    final redPath =
+        _RayOpticsSecondary.computeRayPath(k, _SecondaryRainbowDropletPainter.redN);
+    final bluePath =
+        _RayOpticsSecondary.computeRayPath(k, _SecondaryRainbowDropletPainter.blueN);
+    final redPhiGeo =
+        redPath == null ? 0.0 : _RayOpticsSecondary.phiGeoDegFromPath(redPath);
     final bluePhiGeo =
-        bluePath == null ? 0.0 : _RayOptics.phiGeoDegFromPath(bluePath);
-    final redPhiTheory = _RayOptics.theoryPhiDeg(k, _RainbowDropletPainter.redN);
+        bluePath == null ? 0.0 : _RayOpticsSecondary.phiGeoDegFromPath(bluePath);
+    final redPhiTheory =
+        _RayOpticsSecondary.theoryPhiDeg(k, _SecondaryRainbowDropletPainter.redN);
     final bluePhiTheory =
-        _RayOptics.theoryPhiDeg(k, _RainbowDropletPainter.blueN);
-    final redPeakPhi = _RayOptics.theoryPhiDeg(
-      _RayOptics.peakK(_RainbowDropletPainter.redN),
-      _RainbowDropletPainter.redN,
+        _RayOpticsSecondary.theoryPhiDeg(k, _SecondaryRainbowDropletPainter.blueN);
+    final redPeakPhi = _RayOpticsSecondary.theoryPhiDeg(
+      _RayOpticsSecondary.peakK(_SecondaryRainbowDropletPainter.redN),
+      _SecondaryRainbowDropletPainter.redN,
     );
-    final bluePeakPhi = _RayOptics.theoryPhiDeg(
-      _RayOptics.peakK(_RainbowDropletPainter.blueN),
-      _RainbowDropletPainter.blueN,
+    final bluePeakPhi = _RayOpticsSecondary.theoryPhiDeg(
+      _RayOpticsSecondary.peakK(_SecondaryRainbowDropletPainter.blueN),
+      _SecondaryRainbowDropletPainter.blueN,
     );
-    return _RainbowMetrics(
+    return _SecondaryRainbowMetrics(
       k: k,
       redPhiGeo: redPhiGeo,
       bluePhiGeo: bluePhiGeo,
@@ -517,18 +604,22 @@ class RainbowDroplet2DSimulation extends WaveSimulation {
     );
   }
 
-  _RainbowViewMode _viewModeFromParams(Map<String, double> params) {
-    final raw = (params['viewMode'] ?? 0.0).round().clamp(0, 5);
-    return _RainbowViewMode.values[raw];
+  _SecondaryRainbowViewMode _viewModeFromParams(Map<String, double> params) {
+    final raw = (params['viewMode'] ?? 0.0).round().clamp(0, 6);
+    return _SecondaryRainbowViewMode.values[raw];
   }
 
-  bool _isSingleBundleMode(_RainbowViewMode viewMode) {
-    return viewMode == _RainbowViewMode.singleRayBundle;
+  bool _isSingleBundleMode(_SecondaryRainbowViewMode viewMode) {
+    return viewMode == _SecondaryRainbowViewMode.singleRayBundle;
   }
 
-  bool _isMultiBundleMode(_RainbowViewMode viewMode) {
-    return viewMode == _RainbowViewMode.multiRayBundle ||
-        viewMode == _RainbowViewMode.multiRayBundleTiny;
+  bool _isMultiBundleMode(_SecondaryRainbowViewMode viewMode) {
+    return viewMode == _SecondaryRainbowViewMode.multiRayBundle ||
+        viewMode == _SecondaryRainbowViewMode.multiRayBundleTiny;
+  }
+
+  bool _isDualRainbowMode(_SecondaryRainbowViewMode viewMode) {
+    return viewMode == _SecondaryRainbowViewMode.primaryAndSecondary;
   }
 
   _BundleSelection _bundleSelectionFromParams(Map<String, double> params) {
@@ -568,15 +659,17 @@ class RainbowDroplet2DSimulation extends WaveSimulation {
 
   @override
   Widget? buildFormulaOverlay(Map<String, double> parameters) {
-    final viewMode = (parameters['viewMode'] ?? 0.0).round().clamp(0, 5);
-    if (viewMode == 3 || viewMode == 4 || viewMode == 5) return null;
-    final k = (parameters['k'] ?? 0.82).clamp(0.0, 0.999);
-    final redPath = _RayOptics.computeRayPath(k, _RainbowDropletPainter.redN);
-    final bluePath = _RayOptics.computeRayPath(k, _RainbowDropletPainter.blueN);
+    final viewMode = (parameters['viewMode'] ?? 0.0).round().clamp(0, 6);
+    if (viewMode == 3 || viewMode == 4 || viewMode == 5 || viewMode == 6) return null;
+    final k = (parameters['k'] ?? 0.92).clamp(0.0, 0.999);
+    final redPath =
+        _RayOpticsSecondary.computeRayPath(k, _SecondaryRainbowDropletPainter.redN);
+    final bluePath =
+        _RayOpticsSecondary.computeRayPath(k, _SecondaryRainbowDropletPainter.blueN);
     final redPhiDeg =
-        redPath == null ? 0.0 : _RayOptics.phiGeoDegFromPath(redPath);
+        redPath == null ? 0.0 : _RayOpticsSecondary.phiGeoDegFromPath(redPath);
     final bluePhiDeg =
-        bluePath == null ? 0.0 : _RayOptics.phiGeoDegFromPath(bluePath);
+        bluePath == null ? 0.0 : _RayOpticsSecondary.phiGeoDegFromPath(bluePath);
     final overlayTex =
         'k=${k.toStringAsFixed(3)}\\quad '
         '{\\color{red}\\phi_{\\mathrm{red}}=${redPhiDeg.toStringAsFixed(2)}^\\circ}\\quad '
@@ -601,20 +694,21 @@ class RainbowDroplet2DSimulation extends WaveSimulation {
 
   @override
   bool useCompactButtonSpacing(Map<String, double> parameters) {
-    final viewMode = (parameters['viewMode'] ?? 0.0).round().clamp(0, 5);
+    final viewMode = (parameters['viewMode'] ?? 0.0).round().clamp(0, 6);
     return viewMode == 0 || viewMode == 1 || viewMode == 3;
   }
 
   @override
   double animationOffsetY(Map<String, double> parameters) {
-    final viewMode = (parameters['viewMode'] ?? 0.0).round().clamp(0, 5);
+    final viewMode = (parameters['viewMode'] ?? 0.0).round().clamp(0, 6);
     if (viewMode == 0 || viewMode == 1 || viewMode == 3) return -110;
-    if (viewMode == 4 || viewMode == 5) return 30; // 光線束(多水滴)・多水滴極小
+    if (viewMode == 4 || viewMode == 5) return 30;
+    if (viewMode == 6) return 0;
     return 0;
   }
 }
 
-class _RainbowMetrics {
+class _SecondaryRainbowMetrics {
   final double k;
   final double redPhiGeo;
   final double bluePhiGeo;
@@ -623,7 +717,7 @@ class _RainbowMetrics {
   final double redPeakPhi;
   final double bluePeakPhi;
 
-  const _RainbowMetrics({
+  const _SecondaryRainbowMetrics({
     required this.k,
     required this.redPhiGeo,
     required this.bluePhiGeo,
@@ -634,24 +728,20 @@ class _RainbowMetrics {
   });
 }
 
-class _RayPath {
-  final Offset p1;
-  final Offset p2;
-  final Offset p3;
-  final Offset outDir;
-
-  const _RayPath({
-    required this.p1,
-    required this.p2,
-    required this.p3,
-    required this.outDir,
-  });
+enum _SecondaryRainbowViewMode {
+  normal,
+  tinyDroplet,
+  exitZoom,
+  singleRayBundle,
+  multiRayBundle,
+  multiRayBundleTiny,
+  primaryAndSecondary,
 }
 
-class _RainbowDropletPainter extends CustomPainter {
+class _SecondaryRainbowDropletPainter extends CustomPainter {
   final double k;
   final double scale;
-  final _RainbowViewMode viewMode;
+  final _SecondaryRainbowViewMode viewMode;
   final bool drawRed;
   final bool drawBlue;
   final int multiColorMask;
@@ -663,20 +753,12 @@ class _RainbowDropletPainter extends CustomPainter {
 
   static const double _normalRadiusFactor = 0.32;
   static const double _tinyRadiusFactor = 0.018;
+  static const double _primarySecondaryRadiusFactor = _tinyRadiusFactor / 6.0;
   static const double _singleBundleRadiusFactor = _tinyRadiusFactor * 3.0;
   static const double _multiTinyRadiusFactor = _tinyRadiusFactor / 5.0;
   static const double _exitZoomWorldZoom = 2.7;
-  static const List<Color> _sevenColorPalette = <Color>[
-    Colors.red,
-    Colors.orange,
-    Colors.yellow,
-    Colors.green,
-    Colors.cyan,
-    Colors.blue,
-    Colors.purple,
-  ];
 
-  const _RainbowDropletPainter({
+  const _SecondaryRainbowDropletPainter({
     required this.k,
     required this.scale,
     required this.viewMode,
@@ -690,7 +772,7 @@ class _RainbowDropletPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final view = _computeView(size);
 
-    if (viewMode == _RainbowViewMode.singleRayBundle) {
+    if (viewMode == _SecondaryRainbowViewMode.singleRayBundle) {
       _drawDroplet(canvas, size, view);
       _drawSingleRayBundle(
         canvas,
@@ -702,7 +784,7 @@ class _RainbowDropletPainter extends CustomPainter {
       return;
     }
 
-    if (viewMode == _RainbowViewMode.multiRayBundle) {
+    if (viewMode == _SecondaryRainbowViewMode.multiRayBundle) {
       _drawMultiDropletRayBundle(
         canvas,
         size,
@@ -716,7 +798,7 @@ class _RainbowDropletPainter extends CustomPainter {
       return;
     }
 
-    if (viewMode == _RainbowViewMode.multiRayBundleTiny) {
+    if (viewMode == _SecondaryRainbowViewMode.multiRayBundleTiny) {
       _drawMultiDropletRayBundle(
         canvas,
         size,
@@ -727,6 +809,11 @@ class _RainbowDropletPainter extends CustomPainter {
         xRatio: 0.9375,
         topMarginRatio: 0.60,
       );
+      return;
+    }
+
+    if (viewMode == _SecondaryRainbowViewMode.primaryAndSecondary) {
+      _drawPrimaryAndSecondaryDroplets(canvas, size, view);
       return;
     }
 
@@ -788,15 +875,13 @@ class _RainbowDropletPainter extends CustomPainter {
   void _drawMultiDropletRayBundle(
     Canvas canvas,
     Size size,
-    _RainbowView view,
-    {
+    _SecondaryRainbowView view, {
     required int dropletCount,
     required bool useSmoothGradient,
     required double spacingFactor,
     required double xRatio,
     required double topMarginRatio,
-  }
-  ) {
+  }) {
     final centers = _buildDropletCenters(
       size,
       view,
@@ -805,7 +890,6 @@ class _RainbowDropletPainter extends CustomPainter {
       xRatio: xRatio,
       topMarginRatio: topMarginRatio,
     );
-    // 下から上に描画し、上の水滴の反射光が下の入射光より先に出るのを防ぐ
     for (int i = centers.length - 1; i >= 0; i--) {
       final dropletCenter = centers[i];
       final colorIndex = useSmoothGradient
@@ -830,9 +914,159 @@ class _RainbowDropletPainter extends CustomPainter {
     }
   }
 
+  void _drawPrimaryAndSecondaryDroplets(
+    Canvas canvas,
+    Size size,
+    _SecondaryRainbowView view,
+  ) {
+    const countPerRow = 7;
+    final (topCenters, bottomCenters) =
+        _buildDualRowCenters(size, view, dropletCountPerRow: countPerRow);
+
+    for (int i = topCenters.length - 1; i >= 0; i--) {
+      final colorIndex = i.clamp(0, 6);
+      if (!_isMultiColorEnabled(colorIndex)) continue;
+      final color = _sevenColorPalette[colorIndex];
+      final refractiveIndex = _dropletRefractiveIndex(i, countPerRow);
+      _drawSimpleDroplet(canvas, view, topCenters[i]);
+      _drawBundleForDroplet(
+        canvas,
+        size,
+        view.worldToScreen,
+        dropletCenter: topCenters[i],
+        color: color.withOpacity(0.36),
+        refractiveIndex: refractiveIndex,
+        rayCount: 400,
+      );
+    }
+    for (int i = bottomCenters.length - 1; i >= 0; i--) {
+      final colorIndex = i.clamp(0, 6);
+      if (!_isMultiColorEnabled(colorIndex)) continue;
+      final color = _sevenColorPalette[colorIndex];
+      final refractiveIndex = _dropletRefractiveIndex(i, countPerRow);
+      _drawSimpleDroplet(canvas, view, bottomCenters[i]);
+      _drawBundleForDropletPrimary(
+        canvas,
+        size,
+        view.worldToScreen,
+        dropletCenter: bottomCenters[i],
+        color: color.withOpacity(0.36),
+        refractiveIndex: refractiveIndex,
+        rayCount: 400,
+      );
+    }
+  }
+
+  (List<Offset>, List<Offset>) _buildDualRowCenters(
+    Size size,
+    _SecondaryRainbowView view, {
+    required int dropletCountPerRow,
+    double spacingFactor = 1.03,
+    double gapFactor = 11.25,
+    double xRatio = 0.875,
+    double topMarginRatio = 0.25,
+  }) {
+    final x = size.width * xRatio;
+    final dropletDiameter = view.pixelsPerWorld * _dropRadius * 2.0;
+    final step = dropletDiameter * spacingFactor;
+    final gap = dropletDiameter * gapFactor;
+    final dropletRadius = view.pixelsPerWorld * _dropRadius;
+    final previousTopMargin = math.max(10.0, dropletRadius * 1.8);
+    final yStartTop = math.max(
+      previousTopMargin * topMarginRatio,
+      dropletRadius + 8,
+    );
+
+    final topCenters = List<Offset>.generate(dropletCountPerRow, (i) {
+      final y = yStartTop + step * i;
+      return view.screenToWorld(Offset(x, y));
+    });
+
+    final yStartBottom = yStartTop + step * (dropletCountPerRow - 1) + gap;
+    final bottomCenters = List<Offset>.generate(dropletCountPerRow, (i) {
+      final y = yStartBottom + step * i;
+      return view.screenToWorld(Offset(x, y));
+    });
+
+    return (topCenters, bottomCenters);
+  }
+
+  void _drawBundleForDropletPrimary(
+    Canvas canvas,
+    Size size,
+    Offset Function(Offset) worldToScreen, {
+    required Offset dropletCenter,
+    required Color color,
+    required double refractiveIndex,
+    int rayCount = 20,
+  }) {
+    const kMin = 0.02;
+    const kMax = 0.98;
+    for (int i = 0; i < rayCount; i++) {
+      final t = rayCount == 1 ? 0.0 : i / (rayCount - 1);
+      final kk = kMin + (kMax - kMin) * t;
+      _drawThinRayForKPrimary(
+        canvas,
+        size,
+        worldToScreen,
+        kk,
+        refractiveIndex,
+        color,
+        dropletCenter: dropletCenter,
+        syncIncidentPhase: true,
+      );
+    }
+  }
+
+  void _drawThinRayForKPrimary(
+    Canvas canvas,
+    Size size,
+    Offset Function(Offset) worldToScreen,
+    double kk,
+    double refractiveIndex,
+    Color color, {
+    required Offset dropletCenter,
+    bool syncIncidentPhase = false,
+  }) {
+    final path = _RayOpticsSecondary.computeRayPathPrimary(
+      kk,
+      refractiveIndex,
+      dropletCenter: dropletCenter,
+    );
+    if (path == null) return;
+
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.9
+      ..strokeCap = StrokeCap.round
+      ..color = color;
+
+    final p1s = worldToScreen(path.p1);
+    final p2s = worldToScreen(path.p2);
+    final p3s = worldToScreen(path.p3);
+    final outDirScreen = worldToScreen(path.p3 + path.outDir) - p3s;
+
+    var incidentStart = _rayToCanvasEdge(p1s, const Offset(-1, 0), size);
+    if (incidentStart == null || incidentStart.dx >= p1s.dx) {
+      incidentStart = worldToScreen(path.p1 + const Offset(-3.0, 0));
+    }
+    if (incidentStart.dx > 0 && incidentStart.dx < p1s.dx) {
+      final denom = incidentStart.dx - p1s.dx;
+      if (denom.abs() > 1e-6) {
+        final t = -incidentStart.dx / denom;
+        incidentStart = incidentStart + (incidentStart - p1s) * t;
+      }
+    }
+    final exitEnd = _rayToCanvasEdge(p3s, outDirScreen, size) ?? p3s;
+
+    final pathPoints = [incidentStart, p1s, p2s, p3s, exitEnd];
+    _drawProgressivePath(canvas, pathPoints, paint, rayProgress,
+        drawArrows: false, syncIncidentPhase: syncIncidentPhase);
+  }
+
   List<Offset> _buildDropletCenters(
     Size size,
-    _RainbowView view, {
+    _SecondaryRainbowView view, {
     required int dropletCount,
     required double spacingFactor,
     required double xRatio,
@@ -840,12 +1074,9 @@ class _RainbowDropletPainter extends CustomPainter {
   }) {
     final x = size.width * xRatio;
 
-    // 水滴が「ギリギリ重ならない」程度: 直径の少し上を間隔にする
     final dropletDiameter = view.pixelsPerWorld * _dropRadius * 2.0;
     final step = dropletDiameter * spacingFactor;
 
-    // 最上段は従来感覚の上余白の topMarginRatio まで寄せるが、
-    // 水滴が上端で見切れないよう半径+余白を確保
     final dropletRadius = view.pixelsPerWorld * _dropRadius;
     final previousTopMargin = math.max(10.0, dropletRadius * 1.8);
     final yStart = math.max(
@@ -888,7 +1119,8 @@ class _RainbowDropletPainter extends CustomPainter {
     return (multiColorMask & (1 << colorIndex)) != 0;
   }
 
-  void _drawSimpleDroplet(Canvas canvas, _RainbowView view, Offset centerWorld) {
+  void _drawSimpleDroplet(
+      Canvas canvas, _SecondaryRainbowView view, Offset centerWorld) {
     final center = view.worldToScreen(centerWorld);
     final radius = view.pixelsPerWorld * _dropRadius;
     final fill = Paint()
@@ -909,12 +1141,12 @@ class _RainbowDropletPainter extends CustomPainter {
     required Offset dropletCenter,
     required Color color,
     required double refractiveIndex,
+    int rayCount = 20,
   }) {
-    const count = 20;
     const kMin = 0.02;
     const kMax = 0.98;
-    for (int i = 0; i < count; i++) {
-      final t = count == 1 ? 0.0 : i / (count - 1);
+    for (int i = 0; i < rayCount; i++) {
+      final t = rayCount == 1 ? 0.0 : i / (rayCount - 1);
       final kk = kMin + (kMax - kMin) * t;
       _drawThinRayForK(
         canvas,
@@ -941,10 +1173,11 @@ class _RainbowDropletPainter extends CustomPainter {
     Offset Function(Offset) worldToScreen,
     double kk,
     double refractiveIndex,
-    Color color,
-    {required Offset dropletCenter, bool syncIncidentPhase = false}
-  ) {
-    final path = _RayOptics.computeRayPath(
+    Color color, {
+    required Offset dropletCenter,
+    bool syncIncidentPhase = false,
+  }) {
+    final path = _RayOpticsSecondary.computeRayPath(
       kk,
       refractiveIndex,
       dropletCenter: dropletCenter,
@@ -960,14 +1193,13 @@ class _RainbowDropletPainter extends CustomPainter {
     final p1s = worldToScreen(path.p1);
     final p2s = worldToScreen(path.p2);
     final p3s = worldToScreen(path.p3);
-    final outDirScreen = worldToScreen(path.p3 + path.outDir) - p3s;
+    final p4s = worldToScreen(path.p4);
+    final outDirScreen = worldToScreen(path.p4 + path.outDir) - p4s;
 
-    // 入射光の開始点: 必ずp1の左側にし、反射光が先に描かれるのを防ぐ
     var incidentStart = _rayToCanvasEdge(p1s, const Offset(-1, 0), size);
     if (incidentStart == null || incidentStart.dx >= p1s.dx) {
       incidentStart = worldToScreen(path.p1 + const Offset(-3.0, 0));
     }
-    // 左端まで伸ばして入射区間を十分長くする（多水滴で反射が先に出る対策）
     if (incidentStart.dx > 0 && incidentStart.dx < p1s.dx) {
       final denom = incidentStart.dx - p1s.dx;
       if (denom.abs() > 1e-6) {
@@ -975,14 +1207,14 @@ class _RainbowDropletPainter extends CustomPainter {
         incidentStart = incidentStart + (incidentStart - p1s) * t;
       }
     }
-    final exitEnd = _rayToCanvasEdge(p3s, outDirScreen, size) ?? p3s;
+    final exitEnd = _rayToCanvasEdge(p4s, outDirScreen, size) ?? p4s;
 
-    final pathPoints = [incidentStart, p1s, p2s, p3s, exitEnd];
+    final pathPoints = [incidentStart, p1s, p2s, p3s, p4s, exitEnd];
     _drawProgressivePath(canvas, pathPoints, paint, rayProgress,
         drawArrows: false, syncIncidentPhase: syncIncidentPhase);
   }
 
-  _RainbowView _computeView(Size size) {
+  _SecondaryRainbowView _computeView(Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final baseRadius = math.min(size.width, size.height);
 
@@ -991,20 +1223,22 @@ class _RainbowDropletPainter extends CustomPainter {
     var focusWorld = Offset.zero;
     Offset? exitFocusPoint;
 
-    if (viewMode == _RainbowViewMode.tinyDroplet) {
+    if (viewMode == _SecondaryRainbowViewMode.tinyDroplet) {
       radiusFactor = _tinyRadiusFactor;
-    } else if (viewMode == _RainbowViewMode.singleRayBundle) {
+    } else if (viewMode == _SecondaryRainbowViewMode.singleRayBundle) {
       radiusFactor = _singleBundleRadiusFactor;
-    } else if (viewMode == _RainbowViewMode.multiRayBundle) {
+    } else     if (viewMode == _SecondaryRainbowViewMode.multiRayBundle) {
       radiusFactor = _tinyRadiusFactor;
-    } else if (viewMode == _RainbowViewMode.multiRayBundleTiny) {
+    } else if (viewMode == _SecondaryRainbowViewMode.multiRayBundleTiny) {
       radiusFactor = _multiTinyRadiusFactor;
-    } else if (viewMode == _RainbowViewMode.exitZoom) {
+    } else if (viewMode == _SecondaryRainbowViewMode.primaryAndSecondary) {
+      radiusFactor = _primarySecondaryRadiusFactor;
+    } else if (viewMode == _SecondaryRainbowViewMode.exitZoom) {
       radiusFactor = _normalRadiusFactor;
       worldZoom = _exitZoomWorldZoom;
-      final redPath = _RayOptics.computeRayPath(k, redN);
-      final bluePath = _RayOptics.computeRayPath(k, blueN);
-      exitFocusPoint = redPath?.p3 ?? bluePath?.p3 ?? Offset.zero;
+      final redPath = _RayOpticsSecondary.computeRayPath(k, redN);
+      final bluePath = _RayOpticsSecondary.computeRayPath(k, blueN);
+      exitFocusPoint = redPath?.p4 ?? bluePath?.p4 ?? Offset.zero;
       focusWorld = exitFocusPoint;
     }
 
@@ -1024,7 +1258,7 @@ class _RainbowDropletPainter extends CustomPainter {
       );
     }
 
-    return _RainbowView(
+    return _SecondaryRainbowView(
       center: center,
       pixelsPerWorld: pixelsPerWorld,
       worldToScreen: worldToScreen,
@@ -1033,11 +1267,11 @@ class _RainbowDropletPainter extends CustomPainter {
     );
   }
 
-  void _drawDroplet(Canvas canvas, Size size, _RainbowView view) {
+  void _drawDroplet(Canvas canvas, Size size, _SecondaryRainbowView view) {
     final dropletCenter = view.worldToScreen(Offset.zero);
     final dropletRadius = view.pixelsPerWorld * _dropRadius;
 
-    if (viewMode != _RainbowViewMode.exitZoom) {
+    if (viewMode != _SecondaryRainbowViewMode.exitZoom) {
       final fill = Paint()
         ..style = PaintingStyle.fill
         ..color = const Color(0xFF81D4FA).withOpacity(0.35);
@@ -1050,17 +1284,17 @@ class _RainbowDropletPainter extends CustomPainter {
       return;
     }
 
-    // exitZoom: 測角点(p3)を通る境界弧と、水側（円内部）を塗る
-    final p3World = view.exitFocusPoint ?? Offset.zero;
-    final p3Screen = view.worldToScreen(p3World);
+    final p4World = view.exitFocusPoint ?? Offset.zero;
+    final p4Screen = view.worldToScreen(p4World);
 
-    final circleRect = Rect.fromCircle(center: dropletCenter, radius: dropletRadius);
+    final circleRect =
+        Rect.fromCircle(center: dropletCenter, radius: dropletRadius);
     final boundaryAngle = math.atan2(
-      p3Screen.dy - dropletCenter.dy,
-      p3Screen.dx - dropletCenter.dx,
+      p4Screen.dy - dropletCenter.dy,
+      p4Screen.dx - dropletCenter.dx,
     );
 
-    const span = 1.95; // 境界弧の開き角
+    const span = 1.95;
     final startAngle = boundaryAngle - span / 2;
 
     final fillPaint = Paint()
@@ -1072,11 +1306,9 @@ class _RainbowDropletPainter extends CustomPainter {
       ..strokeWidth = 2.8
       ..color = boundaryColor;
 
-    // p3近傍のみ表示（他所に出る大きな弧を抑制）
-    // 拡大モードでは余白を減らして、より広い範囲に水滴を見せる
     final clipSize = math.min(size.width, size.height) * 0.92;
     final localClip =
-        Rect.fromCenter(center: p3Screen, width: clipSize, height: clipSize);
+        Rect.fromCenter(center: p4Screen, width: clipSize, height: clipSize);
     canvas.save();
     canvas.clipRect(localClip);
     canvas.drawCircle(dropletCenter, dropletRadius, fillPaint);
@@ -1153,7 +1385,7 @@ class _RainbowDropletPainter extends CustomPainter {
     required double refractiveIndex,
     required Color color,
   }) {
-    final path = _RayOptics.computeRayPath(k, refractiveIndex);
+    final path = _RayOpticsSecondary.computeRayPath(k, refractiveIndex);
     if (path == null) return;
 
     final rayPaint = Paint()
@@ -1165,17 +1397,18 @@ class _RainbowDropletPainter extends CustomPainter {
     final p1s = worldToScreen(path.p1);
     final p2s = worldToScreen(path.p2);
     final p3s = worldToScreen(path.p3);
-    final outDirScreen = worldToScreen(path.p3 + path.outDir) - p3s;
-    final isTinyMode = viewMode == _RainbowViewMode.tinyDroplet;
+    final p4s = worldToScreen(path.p4);
+    final outDirScreen = worldToScreen(path.p4 + path.outDir) - p4s;
+    final isTinyMode = viewMode == _SecondaryRainbowViewMode.tinyDroplet;
 
     final incidentStart = isTinyMode
         ? _rayToCanvasEdge(p1s, const Offset(-1, 0), size) ?? p1s
         : worldToScreen(Offset(path.p1.dx - 1.3, path.p1.dy));
     final exitEnd = isTinyMode
-        ? _rayToCanvasEdge(p3s, outDirScreen, size) ?? p3s
-        : worldToScreen(path.p3 + path.outDir * 1.6);
+        ? _rayToCanvasEdge(p4s, outDirScreen, size) ?? p4s
+        : worldToScreen(path.p4 + path.outDir * 1.6);
 
-    final pathPoints = [incidentStart, p1s, p2s, p3s, exitEnd];
+    final pathPoints = [incidentStart, p1s, p2s, p3s, p4s, exitEnd];
     _drawProgressivePath(
       canvas,
       pathPoints,
@@ -1184,15 +1417,14 @@ class _RainbowDropletPainter extends CustomPainter {
       arrowPosition: isTinyMode ? 0.72 : 0.58,
     );
 
-    // 光が水滴を出たら（p3に到達したら）角度・点線を描画
     double totalLen = 0;
-    double lenUpToP3 = 0;
+    double lenUpToP4 = 0;
     for (int i = 0; i < pathPoints.length - 1; i++) {
       final segLen = (pathPoints[i + 1] - pathPoints[i]).distance;
       totalLen += segLen;
-      if (i < 3) lenUpToP3 += segLen;
+      if (i < 4) lenUpToP4 += segLen;
     }
-    final exitThreshold = totalLen > 0 ? lenUpToP3 / totalLen : 1.0;
+    final exitThreshold = totalLen > 0 ? lenUpToP4 / totalLen : 1.0;
     if (rayProgress < exitThreshold) return;
 
     final helperPaint = Paint()
@@ -1200,14 +1432,13 @@ class _RainbowDropletPainter extends CustomPainter {
       ..strokeWidth = 1.2
       ..color = color.withOpacity(0.85);
 
-    // 出射点を通る水平基準線（点線）
-    final horizontalY = p3s.dy;
+    final horizontalY = p4s.dy;
     final horizontalStart = isTinyMode
         ? Offset(0, horizontalY)
-        : worldToScreen(Offset(path.p3.dx - 1.0, path.p3.dy));
+        : worldToScreen(Offset(path.p4.dx - 1.0, path.p4.dy));
     final horizontalEnd = isTinyMode
         ? Offset(size.width, horizontalY)
-        : worldToScreen(Offset(path.p3.dx + 1.0, path.p3.dy));
+        : worldToScreen(Offset(path.p4.dx + 1.0, path.p4.dy));
     _drawDashedLine(
       canvas,
       horizontalStart,
@@ -1215,27 +1446,26 @@ class _RainbowDropletPainter extends CustomPainter {
       helperPaint,
     );
 
-    // 出射光の後方延長（点線）
     final backEnd = isTinyMode
-        ? _rayToCanvasEdge(p3s, -outDirScreen, size) ?? p3s
-        : worldToScreen(path.p3 - path.outDir * 1.0);
+        ? _rayToCanvasEdge(p4s, -outDirScreen, size) ?? p4s
+        : worldToScreen(path.p4 - path.outDir * 1.0);
     _drawDashedLine(
       canvas,
-      p3s,
+      p4s,
       backEnd,
       helperPaint,
     );
 
-    if (viewMode == _RainbowViewMode.exitZoom ||
-        viewMode == _RainbowViewMode.normal ||
-        viewMode == _RainbowViewMode.tinyDroplet) {
-      final arcScale = (viewMode == _RainbowViewMode.tinyDroplet ||
-              viewMode == _RainbowViewMode.exitZoom)
+    if (viewMode == _SecondaryRainbowViewMode.exitZoom ||
+        viewMode == _SecondaryRainbowViewMode.normal ||
+        viewMode == _SecondaryRainbowViewMode.tinyDroplet) {
+      final arcScale = (viewMode == _SecondaryRainbowViewMode.tinyDroplet ||
+              viewMode == _SecondaryRainbowViewMode.exitZoom)
           ? 6.0
           : 3.0;
       _drawPhiArc(
         canvas,
-        vertex: p3s,
+        vertex: p4s,
         lineDir: const Offset(1, 0),
         rayDir: -outDirScreen,
         color: color,
@@ -1270,9 +1500,9 @@ class _RainbowDropletPainter extends CustomPainter {
     Canvas canvas,
     Offset start,
     Offset end,
-    Paint paint,
-    {double arrowPosition = 0.58}
-  ) {
+    Paint paint, {
+    double arrowPosition = 0.58,
+  }) {
     canvas.drawLine(start, end, paint);
 
     final delta = end - start;
@@ -1337,8 +1567,7 @@ class _RainbowDropletPainter extends CustomPainter {
   }
 
   void _drawPhiArc(
-    Canvas canvas,
-    {
+    Canvas canvas, {
     required Offset vertex,
     required Offset lineDir,
     required Offset rayDir,
@@ -1358,7 +1587,6 @@ class _RainbowDropletPainter extends CustomPainter {
     var startAngle = usePrimary ? lineAngle : oppositeLineAngle;
     final sweep = usePrimary ? delta1 : delta2;
     if (useVerticalAngle) {
-      // 対頂角（反対側の同じ角）として描く：両方の半直線をπだけ回転した位置に移す
       startAngle = _normalizeAngle(startAngle + math.pi);
     }
     final center = vertex;
@@ -1413,7 +1641,7 @@ class _RainbowDropletPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _RainbowDropletPainter oldDelegate) {
+  bool shouldRepaint(covariant _SecondaryRainbowDropletPainter oldDelegate) {
     return oldDelegate.k != k ||
         oldDelegate.scale != scale ||
         oldDelegate.viewMode != viewMode ||
@@ -1424,29 +1652,20 @@ class _RainbowDropletPainter extends CustomPainter {
   }
 }
 
-class _RainbowView {
+class _SecondaryRainbowView {
   final Offset center;
   final double pixelsPerWorld;
   final Offset Function(Offset) worldToScreen;
   final Offset Function(Offset) screenToWorld;
   final Offset? exitFocusPoint;
 
-  const _RainbowView({
+  const _SecondaryRainbowView({
     required this.center,
     required this.pixelsPerWorld,
     required this.worldToScreen,
     required this.screenToWorld,
     required this.exitFocusPoint,
   });
-}
-
-enum _RainbowViewMode {
-  normal,
-  tinyDroplet,
-  exitZoom,
-  singleRayBundle,
-  multiRayBundle,
-  multiRayBundleTiny,
 }
 
 class _BundleSelection {
@@ -1477,14 +1696,4 @@ const List<String> _multiColorParamKeys = <String>[
   'bundleColor4',
   'bundleColor5',
   'bundleColor6',
-];
-
-const List<Color> _sevenColorPalette = <Color>[
-  Colors.red,
-  Colors.orange,
-  Colors.yellow,
-  Colors.green,
-  Colors.cyan,
-  Colors.blue,
-  Colors.purple,
 ];

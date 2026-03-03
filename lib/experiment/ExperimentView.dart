@@ -554,7 +554,10 @@ class _VideoDetailViewState extends State<VideoDetailView> {
 
     // 解説・ポイント
     if (widget.video.latex != null) {
-      items.add(LatexWebView(latexHtml: widget.video.latex!));
+      items.add(LatexWebView(
+        key: ValueKey('latex-${widget.video.title}'),
+        latexHtml: widget.video.latex!,
+      ));
     }
 
     // 実験道具
@@ -639,7 +642,10 @@ class _VideoDetailViewState extends State<VideoDetailView> {
             if (widget.video.latex != null)
               Padding(
                 padding: const EdgeInsets.only(top: 16),
-                child: LatexWebView(latexHtml: widget.video.latex!),
+                child: LatexWebView(
+                  key: ValueKey('latex-${widget.video.title}'),
+                  latexHtml: widget.video.latex!,
+                ),
               ),
             // 4. 実験道具を最後に
             if (widget.video.equipment.isNotEmpty)

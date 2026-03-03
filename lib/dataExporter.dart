@@ -109,6 +109,7 @@ export './experiment/waves/animations/2d/ReflectionLaw2D.dart';
 export './experiment/waves/animations/2d/FixedReflection2D.dart';
 export './experiment/waves/animations/2d/ThinFilmInterference2D.dart';
 export './experiment/waves/animations/2d/RainbowDroplet2D.dart';
+export './experiment/waves/animations/2d/SecondaryRainbowDroplet2D.dart';
 export './experiment/waves/animations/2d/CircularInterference.dart';
 export './experiment/waves/animations/2d/PlaneWaveInterference.dart';
 export './experiment/waves/animations/2d/CircularPlaneInterference.dart';
