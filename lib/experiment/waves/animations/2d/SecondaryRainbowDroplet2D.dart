@@ -463,16 +463,11 @@ class SecondaryRainbowDroplet2DSimulation extends WaveSimulation {
             selected: viewMode == _SecondaryRainbowViewMode.multiRayBundle,
             onSelected: (_) => updateParam('viewMode', 4.0),
           ),
-          ChoiceChip(
-            label: const Text('多水滴極小'),
-            selected: viewMode == _SecondaryRainbowViewMode.multiRayBundleTiny,
-            onSelected: (_) => updateParam('viewMode', 5.0),
-          ),
-          ChoiceChip(
-            label: const Text('主虹・副虹'),
-            selected: viewMode == _SecondaryRainbowViewMode.primaryAndSecondary,
-            onSelected: (_) => updateParam('viewMode', 6.0),
-          ),
+          // ChoiceChip(
+          //   label: const Text('主虹・副虹'),
+          //   selected: viewMode == _SecondaryRainbowViewMode.primaryAndSecondary,
+          //   onSelected: (_) => updateParam('viewMode', 5.0),
+          // ),
         ],
       ),
       if (_isSingleBundleMode(viewMode))
@@ -605,7 +600,8 @@ class SecondaryRainbowDroplet2DSimulation extends WaveSimulation {
   }
 
   _SecondaryRainbowViewMode _viewModeFromParams(Map<String, double> params) {
-    final raw = (params['viewMode'] ?? 0.0).round().clamp(0, 6);
+    // primaryAndSecondary はコメントアウト中
+    final raw = (params['viewMode'] ?? 0.0).round().clamp(0, 4);
     return _SecondaryRainbowViewMode.values[raw];
   }
 
@@ -614,8 +610,7 @@ class SecondaryRainbowDroplet2DSimulation extends WaveSimulation {
   }
 
   bool _isMultiBundleMode(_SecondaryRainbowViewMode viewMode) {
-    return viewMode == _SecondaryRainbowViewMode.multiRayBundle ||
-        viewMode == _SecondaryRainbowViewMode.multiRayBundleTiny;
+    return viewMode == _SecondaryRainbowViewMode.multiRayBundle;
   }
 
   bool _isDualRainbowMode(_SecondaryRainbowViewMode viewMode) {
@@ -659,8 +654,8 @@ class SecondaryRainbowDroplet2DSimulation extends WaveSimulation {
 
   @override
   Widget? buildFormulaOverlay(Map<String, double> parameters) {
-    final viewMode = (parameters['viewMode'] ?? 0.0).round().clamp(0, 6);
-    if (viewMode == 3 || viewMode == 4 || viewMode == 5 || viewMode == 6) return null;
+    final viewMode = (parameters['viewMode'] ?? 0.0).round().clamp(0, 4);
+    if (viewMode == 3 || viewMode == 4) return null;
     final k = (parameters['k'] ?? 0.92).clamp(0.0, 0.999);
     final redPath =
         _RayOpticsSecondary.computeRayPath(k, _SecondaryRainbowDropletPainter.redN);
@@ -694,16 +689,15 @@ class SecondaryRainbowDroplet2DSimulation extends WaveSimulation {
 
   @override
   bool useCompactButtonSpacing(Map<String, double> parameters) {
-    final viewMode = (parameters['viewMode'] ?? 0.0).round().clamp(0, 6);
+    final viewMode = (parameters['viewMode'] ?? 0.0).round().clamp(0, 4);
     return viewMode == 0 || viewMode == 1 || viewMode == 3;
   }
 
   @override
   double animationOffsetY(Map<String, double> parameters) {
-    final viewMode = (parameters['viewMode'] ?? 0.0).round().clamp(0, 6);
+    final viewMode = (parameters['viewMode'] ?? 0.0).round().clamp(0, 4);
     if (viewMode == 0 || viewMode == 1 || viewMode == 3) return -110;
-    if (viewMode == 4 || viewMode == 5) return 30;
-    if (viewMode == 6) return 0;
+    if (viewMode == 4) return 30;
     return 0;
   }
 }
@@ -734,7 +728,6 @@ enum _SecondaryRainbowViewMode {
   exitZoom,
   singleRayBundle,
   multiRayBundle,
-  multiRayBundleTiny,
   primaryAndSecondary,
 }
 
@@ -789,33 +782,20 @@ class _SecondaryRainbowDropletPainter extends CustomPainter {
         canvas,
         size,
         view,
-        dropletCount: 14,
+        dropletCount: 7,
         useSmoothGradient: false,
-        spacingFactor: 1.03,
+        spacingFactor: 2.0, // 水滴同士の間隔を水滴分（直径）だけ開ける
         xRatio: 0.875,
-        topMarginRatio: 1.0 / 3.0,
+        topMarginRatio: 0.25,
+        rayCount: 400,
       );
       return;
     }
 
-    if (viewMode == _SecondaryRainbowViewMode.multiRayBundleTiny) {
-      _drawMultiDropletRayBundle(
-        canvas,
-        size,
-        view,
-        dropletCount: 28,
-        useSmoothGradient: true,
-        spacingFactor: 1.18,
-        xRatio: 0.9375,
-        topMarginRatio: 0.60,
-      );
-      return;
-    }
-
-    if (viewMode == _SecondaryRainbowViewMode.primaryAndSecondary) {
-      _drawPrimaryAndSecondaryDroplets(canvas, size, view);
-      return;
-    }
+    // if (viewMode == _SecondaryRainbowViewMode.primaryAndSecondary) {
+    //   _drawPrimaryAndSecondaryDroplets(canvas, size, view);
+    //   return;
+    // }
 
     _drawDroplet(canvas, size, view);
 
@@ -881,6 +861,7 @@ class _SecondaryRainbowDropletPainter extends CustomPainter {
     required double spacingFactor,
     required double xRatio,
     required double topMarginRatio,
+    int rayCount = 20,
   }) {
     final centers = _buildDropletCenters(
       size,
@@ -892,16 +873,23 @@ class _SecondaryRainbowDropletPainter extends CustomPainter {
     );
     for (int i = centers.length - 1; i >= 0; i--) {
       final dropletCenter = centers[i];
-      final colorIndex = useSmoothGradient
-          ? _gradientColorIndex(i, centers.length)
-          : _groupColorIndex(i);
+      // 副虹は色の並びが主虹と逆（赤=内側、紫=外側）
+      final colorIndex = centers.length == 7
+          ? (6 - i).clamp(0, 6)
+          : (useSmoothGradient
+              ? _gradientColorIndex(i, centers.length)
+              : _groupColorIndex(i));
       if (!_isMultiColorEnabled(colorIndex)) {
         continue;
       }
-      final color = useSmoothGradient
-          ? _dropletGradientColor(i, centers.length)
-          : _dropletGroupColor(i);
-      final refractiveIndex = _dropletRefractiveIndex(i, centers.length);
+      final color = centers.length == 7
+          ? _sevenColorPalette[colorIndex]
+          : (useSmoothGradient
+              ? _dropletGradientColor(i, centers.length)
+              : _dropletGroupColor(i));
+      final refractiveIndex = centers.length == 7
+          ? _dropletRefractiveIndex(colorIndex, 7)
+          : _dropletRefractiveIndex(i, centers.length);
       _drawSimpleDroplet(canvas, view, dropletCenter);
       _drawBundleForDroplet(
         canvas,
@@ -910,6 +898,7 @@ class _SecondaryRainbowDropletPainter extends CustomPainter {
         dropletCenter: dropletCenter,
         color: color,
         refractiveIndex: refractiveIndex,
+        rayCount: rayCount,
       );
     }
   }
@@ -924,10 +913,11 @@ class _SecondaryRainbowDropletPainter extends CustomPainter {
         _buildDualRowCenters(size, view, dropletCountPerRow: countPerRow);
 
     for (int i = topCenters.length - 1; i >= 0; i--) {
-      final colorIndex = i.clamp(0, 6);
+      // 副虹は色の並びが逆（赤=内側、紫=外側）
+      final colorIndex = (6 - i).clamp(0, 6);
       if (!_isMultiColorEnabled(colorIndex)) continue;
       final color = _sevenColorPalette[colorIndex];
-      final refractiveIndex = _dropletRefractiveIndex(i, countPerRow);
+      final refractiveIndex = _dropletRefractiveIndex(colorIndex, countPerRow);
       _drawSimpleDroplet(canvas, view, topCenters[i]);
       _drawBundleForDroplet(
         canvas,
@@ -961,7 +951,7 @@ class _SecondaryRainbowDropletPainter extends CustomPainter {
     Size size,
     _SecondaryRainbowView view, {
     required int dropletCountPerRow,
-    double spacingFactor = 1.03,
+    double spacingFactor = 2.0, // 水滴同士の間隔を水滴分（直径）だけ開ける
     double gapFactor = 11.25,
     double xRatio = 0.875,
     double topMarginRatio = 0.25,
@@ -1227,10 +1217,8 @@ class _SecondaryRainbowDropletPainter extends CustomPainter {
       radiusFactor = _tinyRadiusFactor;
     } else if (viewMode == _SecondaryRainbowViewMode.singleRayBundle) {
       radiusFactor = _singleBundleRadiusFactor;
-    } else     if (viewMode == _SecondaryRainbowViewMode.multiRayBundle) {
-      radiusFactor = _tinyRadiusFactor;
-    } else if (viewMode == _SecondaryRainbowViewMode.multiRayBundleTiny) {
-      radiusFactor = _multiTinyRadiusFactor;
+    } else if (viewMode == _SecondaryRainbowViewMode.multiRayBundle) {
+      radiusFactor = _primarySecondaryRadiusFactor;
     } else if (viewMode == _SecondaryRainbowViewMode.primaryAndSecondary) {
       radiusFactor = _primarySecondaryRadiusFactor;
     } else if (viewMode == _SecondaryRainbowViewMode.exitZoom) {
