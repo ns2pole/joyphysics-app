@@ -463,11 +463,11 @@ class SecondaryRainbowDroplet2DSimulation extends WaveSimulation {
             selected: viewMode == _SecondaryRainbowViewMode.multiRayBundle,
             onSelected: (_) => updateParam('viewMode', 4.0),
           ),
-          // ChoiceChip(
-          //   label: const Text('主虹・副虹'),
-          //   selected: viewMode == _SecondaryRainbowViewMode.primaryAndSecondary,
-          //   onSelected: (_) => updateParam('viewMode', 5.0),
-          // ),
+          ChoiceChip(
+            label: const Text('主虹・副虹'),
+            selected: viewMode == _SecondaryRainbowViewMode.primaryAndSecondary,
+            onSelected: (_) => updateParam('viewMode', 5.0),
+          ),
         ],
       ),
       if (_isSingleBundleMode(viewMode))
@@ -600,8 +600,7 @@ class SecondaryRainbowDroplet2DSimulation extends WaveSimulation {
   }
 
   _SecondaryRainbowViewMode _viewModeFromParams(Map<String, double> params) {
-    // primaryAndSecondary はコメントアウト中
-    final raw = (params['viewMode'] ?? 0.0).round().clamp(0, 4);
+    final raw = (params['viewMode'] ?? 0.0).round().clamp(0, 5);
     return _SecondaryRainbowViewMode.values[raw];
   }
 
@@ -654,8 +653,8 @@ class SecondaryRainbowDroplet2DSimulation extends WaveSimulation {
 
   @override
   Widget? buildFormulaOverlay(Map<String, double> parameters) {
-    final viewMode = (parameters['viewMode'] ?? 0.0).round().clamp(0, 4);
-    if (viewMode == 3 || viewMode == 4) return null;
+    final viewMode = (parameters['viewMode'] ?? 0.0).round().clamp(0, 5);
+    if (viewMode == 3 || viewMode == 4 || viewMode == 5) return null;
     final k = (parameters['k'] ?? 0.92).clamp(0.0, 0.999);
     final redPath =
         _RayOpticsSecondary.computeRayPath(k, _SecondaryRainbowDropletPainter.redN);
@@ -689,15 +688,15 @@ class SecondaryRainbowDroplet2DSimulation extends WaveSimulation {
 
   @override
   bool useCompactButtonSpacing(Map<String, double> parameters) {
-    final viewMode = (parameters['viewMode'] ?? 0.0).round().clamp(0, 4);
+    final viewMode = (parameters['viewMode'] ?? 0.0).round().clamp(0, 5);
     return viewMode == 0 || viewMode == 1 || viewMode == 3;
   }
 
   @override
   double animationOffsetY(Map<String, double> parameters) {
-    final viewMode = (parameters['viewMode'] ?? 0.0).round().clamp(0, 4);
+    final viewMode = (parameters['viewMode'] ?? 0.0).round().clamp(0, 5);
     if (viewMode == 0 || viewMode == 1 || viewMode == 3) return -110;
-    if (viewMode == 4) return 30;
+    if (viewMode == 4 || viewMode == 5) return 30;
     return 0;
   }
 }
@@ -792,10 +791,10 @@ class _SecondaryRainbowDropletPainter extends CustomPainter {
       return;
     }
 
-    // if (viewMode == _SecondaryRainbowViewMode.primaryAndSecondary) {
-    //   _drawPrimaryAndSecondaryDroplets(canvas, size, view);
-    //   return;
-    // }
+    if (viewMode == _SecondaryRainbowViewMode.primaryAndSecondary) {
+      _drawPrimaryAndSecondaryDroplets(canvas, size, view);
+      return;
+    }
 
     _drawDroplet(canvas, size, view);
 
@@ -912,6 +911,10 @@ class _SecondaryRainbowDropletPainter extends CustomPainter {
     final (topCenters, bottomCenters) =
         _buildDualRowCenters(size, view, dropletCountPerRow: countPerRow);
 
+    // 主虹の光を遅らせる: 全体の50%経過後に主虹開始
+    final primaryRayProgress =
+        ((rayProgress - 0.5) / 0.5).clamp(0.0, 1.0);
+
     for (int i = topCenters.length - 1; i >= 0; i--) {
       // 副虹は色の並びが逆（赤=内側、紫=外側）
       final colorIndex = (6 - i).clamp(0, 6);
@@ -943,6 +946,7 @@ class _SecondaryRainbowDropletPainter extends CustomPainter {
         color: color.withOpacity(0.36),
         refractiveIndex: refractiveIndex,
         rayCount: 400,
+        rayProgressOverride: primaryRayProgress,
       );
     }
   }
@@ -952,13 +956,15 @@ class _SecondaryRainbowDropletPainter extends CustomPainter {
     _SecondaryRainbowView view, {
     required int dropletCountPerRow,
     double spacingFactor = 2.0, // 水滴同士の間隔を水滴分（直径）だけ開ける
-    double gapFactor = 11.25,
+    double bottomSpacingFactor = 1.0, // 主虹の水滴群の間隔
+    double gapFactor = 28.0, // 水滴群同士の間を空ける
     double xRatio = 0.875,
     double topMarginRatio = 0.25,
   }) {
     final x = size.width * xRatio;
     final dropletDiameter = view.pixelsPerWorld * _dropRadius * 2.0;
-    final step = dropletDiameter * spacingFactor;
+    final stepTop = dropletDiameter * spacingFactor;
+    final stepBottom = dropletDiameter * bottomSpacingFactor;
     final gap = dropletDiameter * gapFactor;
     final dropletRadius = view.pixelsPerWorld * _dropRadius;
     final previousTopMargin = math.max(10.0, dropletRadius * 1.8);
@@ -968,13 +974,13 @@ class _SecondaryRainbowDropletPainter extends CustomPainter {
     );
 
     final topCenters = List<Offset>.generate(dropletCountPerRow, (i) {
-      final y = yStartTop + step * i;
+      final y = yStartTop + stepTop * i;
       return view.screenToWorld(Offset(x, y));
     });
 
-    final yStartBottom = yStartTop + step * (dropletCountPerRow - 1) + gap;
+    final yStartBottom = yStartTop + stepTop * (dropletCountPerRow - 1) + gap;
     final bottomCenters = List<Offset>.generate(dropletCountPerRow, (i) {
-      final y = yStartBottom + step * i;
+      final y = yStartBottom + stepBottom * i;
       return view.screenToWorld(Offset(x, y));
     });
 
@@ -989,6 +995,7 @@ class _SecondaryRainbowDropletPainter extends CustomPainter {
     required Color color,
     required double refractiveIndex,
     int rayCount = 20,
+    double? rayProgressOverride,
   }) {
     const kMin = 0.02;
     const kMax = 0.98;
@@ -1004,6 +1011,7 @@ class _SecondaryRainbowDropletPainter extends CustomPainter {
         color,
         dropletCenter: dropletCenter,
         syncIncidentPhase: true,
+        rayProgressOverride: rayProgressOverride,
       );
     }
   }
@@ -1017,6 +1025,7 @@ class _SecondaryRainbowDropletPainter extends CustomPainter {
     Color color, {
     required Offset dropletCenter,
     bool syncIncidentPhase = false,
+    double? rayProgressOverride,
   }) {
     final path = _RayOpticsSecondary.computeRayPathPrimary(
       kk,
@@ -1050,7 +1059,8 @@ class _SecondaryRainbowDropletPainter extends CustomPainter {
     final exitEnd = _rayToCanvasEdge(p3s, outDirScreen, size) ?? p3s;
 
     final pathPoints = [incidentStart, p1s, p2s, p3s, exitEnd];
-    _drawProgressivePath(canvas, pathPoints, paint, rayProgress,
+    final progress = rayProgressOverride ?? rayProgress;
+    _drawProgressivePath(canvas, pathPoints, paint, progress,
         drawArrows: false, syncIncidentPhase: syncIncidentPhase);
   }
 
