@@ -911,33 +911,27 @@ class _SecondaryRainbowDropletPainter extends CustomPainter {
     final (topCenters, bottomCenters) =
         _buildDualRowCenters(size, view, dropletCountPerRow: countPerRow);
 
-    // 主虹の光を遅らせる: 全体の50%経過後に主虹開始
+    // 主虹: 35%経過後に開始（先に描画して下層に）
     final primaryRayProgress =
-        ((rayProgress - 0.5) / 0.5).clamp(0.0, 1.0);
+        ((rayProgress - 0.35) / 0.65).clamp(0.0, 1.0);
 
-    for (int i = topCenters.length - 1; i >= 0; i--) {
-      // 副虹は色の並びが逆（赤=内側、紫=外側）
-      final colorIndex = (6 - i).clamp(0, 6);
-      if (!_isMultiColorEnabled(colorIndex)) continue;
-      final color = _sevenColorPalette[colorIndex];
-      final refractiveIndex = _dropletRefractiveIndex(colorIndex, countPerRow);
+    // 副虹: 45%経過後に開始、紫→青→…→赤の順。主虹の上に描画される
+    const secondaryBaseDelay = 0.45;
+
+    // 1. 全水滴を描画
+    for (int i = 0; i < topCenters.length; i++) {
       _drawSimpleDroplet(canvas, view, topCenters[i]);
-      _drawBundleForDroplet(
-        canvas,
-        size,
-        view.worldToScreen,
-        dropletCenter: topCenters[i],
-        color: color.withOpacity(0.36),
-        refractiveIndex: refractiveIndex,
-        rayCount: 400,
-      );
     }
+    for (int i = 0; i < bottomCenters.length; i++) {
+      _drawSimpleDroplet(canvas, view, bottomCenters[i]);
+    }
+
+    // 2. 主虹の光線を先に描画（下層）
     for (int i = bottomCenters.length - 1; i >= 0; i--) {
       final colorIndex = i.clamp(0, 6);
       if (!_isMultiColorEnabled(colorIndex)) continue;
       final color = _sevenColorPalette[colorIndex];
       final refractiveIndex = _dropletRefractiveIndex(i, countPerRow);
-      _drawSimpleDroplet(canvas, view, bottomCenters[i]);
       _drawBundleForDropletPrimary(
         canvas,
         size,
@@ -947,6 +941,27 @@ class _SecondaryRainbowDropletPainter extends CustomPainter {
         refractiveIndex: refractiveIndex,
         rayCount: 400,
         rayProgressOverride: primaryRayProgress,
+      );
+    }
+
+    // 3. 副虹の光線を後に描画（上層）。色ごとにタイムラグで紫→赤の順
+    for (int i = 0; i < topCenters.length; i++) {
+      final colorIndex = (6 - i).clamp(0, 6);
+      if (!_isMultiColorEnabled(colorIndex)) continue;
+      final color = _sevenColorPalette[colorIndex];
+      final refractiveIndex = _dropletRefractiveIndex(colorIndex, countPerRow);
+      final delay = secondaryBaseDelay + (6 - colorIndex) / 6 * 0.4;
+      final secondaryRayProgress =
+          ((rayProgress - delay) / (1.0 - delay)).clamp(0.0, 1.0);
+      _drawBundleForDroplet(
+        canvas,
+        size,
+        view.worldToScreen,
+        dropletCenter: topCenters[i],
+        color: color.withOpacity(0.36),
+        refractiveIndex: refractiveIndex,
+        rayCount: 400,
+        rayProgressOverride: secondaryRayProgress,
       );
     }
   }
@@ -1142,6 +1157,7 @@ class _SecondaryRainbowDropletPainter extends CustomPainter {
     required Color color,
     required double refractiveIndex,
     int rayCount = 20,
+    double? rayProgressOverride,
   }) {
     const kMin = 0.02;
     const kMax = 0.98;
@@ -1157,6 +1173,7 @@ class _SecondaryRainbowDropletPainter extends CustomPainter {
         color.withOpacity(0.36),
         dropletCenter: dropletCenter,
         syncIncidentPhase: true,
+        rayProgressOverride: rayProgressOverride,
       );
     }
   }
@@ -1176,6 +1193,7 @@ class _SecondaryRainbowDropletPainter extends CustomPainter {
     Color color, {
     required Offset dropletCenter,
     bool syncIncidentPhase = false,
+    double? rayProgressOverride,
   }) {
     final path = _RayOpticsSecondary.computeRayPath(
       kk,
@@ -1210,7 +1228,8 @@ class _SecondaryRainbowDropletPainter extends CustomPainter {
     final exitEnd = _rayToCanvasEdge(p4s, outDirScreen, size) ?? p4s;
 
     final pathPoints = [incidentStart, p1s, p2s, p3s, p4s, exitEnd];
-    _drawProgressivePath(canvas, pathPoints, paint, rayProgress,
+    final progress = rayProgressOverride ?? rayProgress;
+    _drawProgressivePath(canvas, pathPoints, paint, progress,
         drawArrows: false, syncIncidentPhase: syncIncidentPhase);
   }
 
