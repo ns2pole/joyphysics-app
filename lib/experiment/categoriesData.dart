@@ -40,7 +40,7 @@ final categoriesData = <Category>[
         ],
       ),
       Subcategory(
-        name: '保存則',
+        name: '弾性衝突',
         videos: [
           elasticCollision1D,
           elasticCollision2D,
@@ -98,7 +98,7 @@ final categoriesData = <Category>[
         ],
       ),
       Subcategory(
-        name: '半導体・電子素子',
+        name: 'ダイオード',
         videos: [
           diodeIntroduction,
         ],
@@ -133,7 +133,7 @@ final categoriesData = <Category>[
         ],
       ),
       Subcategory(
-        name: 'コイルの性質',
+        name: 'コイル',
         videos: [
           coilProperties,
           coil_self_induction_voltage,
@@ -165,7 +165,7 @@ final categoriesData = <Category>[
         ],
       ),
       Subcategory(
-        name: '2次元空間における波動',
+        name: '2次元波動',
         videos: [
           planeWave,
           circularWave,
@@ -197,22 +197,29 @@ final categoriesData = <Category>[
         videos: [
           diffractionGrating,
           spectroscopy,
-          rainbowDroplet2D,
-          secondaryRainbowDroplet2D,
           thinFilmInterference1D,
           thinFilmInterference2D,
           youngDoubleSlit,
         ],
       ),
       Subcategory(
-        name: '物質中の波動',
+        name: '虹',
+        videos: [
+          rainbowDroplet2D,
+          secondaryRainbowDroplet2D,
+          rainbowMultiDroplet2D,
+          secondaryRainbowMultiDroplet2D,
+        ],
+      ),
+      Subcategory(
+        name: '屈折,屈折率',
         videos: [
           refraction1D,
           refractionLaw,
         ],
       ),
       Subcategory(
-        name: '異媒質間における反射',
+        name: '反射',
         videos: [
           pulseReflection1D,
           fixedEndReflection1D,

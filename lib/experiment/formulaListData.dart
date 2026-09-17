@@ -22,12 +22,12 @@ final List<FormulaEntry> formulaListData = [
   FormulaEntry(
     latex: "x(t) = \\frac12 g t^2",
     relatedVideo: freeFall,
-    categoryName: "等加速度運動",
+    categoryName: "自由落下",
   ),
   FormulaEntry(
     latex: "t(x) = \\sqrt{\\frac{2x}{g}}",
     relatedVideo: freeFall,
-    categoryName: "等加速度運動",
+    categoryName: "自由落下",
   ),
   FormulaEntry(
     latex: "F(x) = -k x",
@@ -57,17 +57,17 @@ final List<FormulaEntry> formulaListData = [
   FormulaEntry(
     latex: "m_{1} v_{1} + m_{2} v_{2} = m_{1} v_{1}' + m_{2} v_{2}'",
     relatedVideo: elasticCollision1D,
-    categoryName: "運動量保存則",
+    categoryName: "弾性衝突",
   ),
   FormulaEntry(
     latex: "m_{1} \\vec{v}_{1} + m_{2} \\vec{v}_{2} = m_{1} \\vec{v}_{1}' + m_{2} \\vec{v}_{2}'",
     relatedVideo: elasticCollision2D,
-    categoryName: "運動量保存則",
+    categoryName: "弾性衝突",
   ),
   FormulaEntry(
     latex: "\\tfrac12 m_{1} v_{1}^{2} + \\tfrac12 m_{2} v_{2}^{2} = \\tfrac12 m_{1} v_{1}'^{2} + \\tfrac12 m_{2} v_{2}'^{2}",
     relatedVideo: elasticCollision2D,
-    categoryName: "力学的エネルギー保存",
+    categoryName: "弾性衝突",
   ),
   FormulaEntry(
     latex: "\\frac{T^{2}}{a^{3}} = \\frac{4\\pi^{2}}{GM}",

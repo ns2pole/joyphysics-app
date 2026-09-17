@@ -3,7 +3,7 @@ final coilProperties = Video(
   isExperiment: true,
   category: 'electroMagnetism', // ← 追加
     iconName: "coilProperties",
-    title: "コイルの性質",
+    title: "コイル",
     videoURL: "UQocVo4qLgo",
     equipment: ["コイル", "電源", "LED", "抵抗", "導線"],
     costRating: "★★☆", latex: r"""
