@@ -56,6 +56,19 @@ class _LatexWebViewState extends State<LatexWebView> {
                 try {
                   document.querySelectorAll('a[target="_blank"]').forEach(function(a){ a.target = '_self'; });
                 } catch(e){}
+                try {
+                  // 幅超過のインライン数式をブロック化して、ページではなく数式内スクロールにする
+                  document.querySelectorAll('mjx-container').forEach(function(el) {
+                    var parent = el.parentElement;
+                    if (!parent) return;
+                    if (el.getAttribute('display') === 'true') return;
+                    if (el.scrollWidth > parent.clientWidth + 1) {
+                      el.style.display = 'block';
+                      el.style.maxWidth = '100%';
+                      el.style.overflowX = 'auto';
+                    }
+                  });
+                } catch(e){}
                 setTimeout(() => {
                   SizeChannel.postMessage(document.body.scrollHeight.toString());
                 }, 100);
@@ -158,8 +171,11 @@ class _LatexWebViewState extends State<LatexWebView> {
     html, body {
       margin: 0;
       padding: 0;
-      overflow: auto;
-      -webkit-overflow-scrolling: touch;
+      width: 100%;
+      max-width: 100%;
+      /* ページ全体の横スライドを禁止。長い数式は数式側だけで横スクロール */
+      overflow-x: hidden;
+      overflow-y: visible;
       background-color: transparent;
       font-family: 'KeiFont', sans-serif;
       font-size: 18px;
@@ -172,9 +188,11 @@ class _LatexWebViewState extends State<LatexWebView> {
       margin: 0px 0;
       border-radius: 12px;
       border: 0.7px solid rgba(0, 0, 0, 1);
+      max-width: 100%;
+      box-sizing: border-box;
     }
 
-    li { margin-bottom: 0.5em; }
+    li { margin-bottom: 0.5em; max-width: 100%; }
 
     .paragraph-box {
       border: 2px solid #333;
@@ -182,6 +200,8 @@ class _LatexWebViewState extends State<LatexWebView> {
       padding: 8px 12px;
       margin: 8px 0;
       display: inline-block;
+      max-width: 100%;
+      box-sizing: border-box;
       background-color: #f9f9f9;
     }
 
@@ -192,6 +212,8 @@ class _LatexWebViewState extends State<LatexWebView> {
       font-size: 17px;
       border-radius: 12px;
       font-family: 'KeiFont', sans-serif;
+      max-width: 100%;
+      box-sizing: border-box;
     }
 
     .theory-common-box {
@@ -200,6 +222,8 @@ class _LatexWebViewState extends State<LatexWebView> {
       margin: 0px 0;
       border-radius: 12px;
       border: 0.7px solid rgba(0, 0, 0, 1);
+      max-width: 100%;
+      box-sizing: border-box;
     }
 
     .theorem-box {
@@ -208,6 +232,8 @@ class _LatexWebViewState extends State<LatexWebView> {
       margin: 0px 0;
       border-radius: 12px;
       border: 0.7px solid rgba(0, 0, 0, 1);
+      max-width: 100%;
+      box-sizing: border-box;
     }
 
     .proof-box {
@@ -219,17 +245,19 @@ class _LatexWebViewState extends State<LatexWebView> {
 
     .math-box {
       width: 100%;
+      max-width: 100%;
       padding: 0;
       box-sizing: border-box;
       white-space: normal;
-      overflow-wrap: break-word;
+      overflow-wrap: anywhere;
       word-break: break-word;
-      overflow-x: visible;
-      -webkit-overflow-scrolling: touch;
+      overflow-x: hidden;
     }
 
     .remark-box {
       display: inline-block;
+      max-width: 100%;
+      box-sizing: border-box;
       padding: 4px 12px;
       margin: 4px 0;
       border: 0.7px solid #333;
@@ -255,38 +283,33 @@ class _LatexWebViewState extends State<LatexWebView> {
       white-space: normal;
     }
 
-    .math-box .MathJax_Display,
-    .math-box .mjx-block,
-    .math-box .MathJax_Display * {
-      display: block;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      white-space: nowrap;
-      padding: 6px 0;
-      margin: 6px 0;
+    /* MathJax 3: はみ出す数式はコンテナ内だけ横スクロール */
+    .math-box mjx-container {
+      max-width: 100% !important;
       box-sizing: border-box;
-    }
-
-    .math-box .MathJax_Display .MathJax,
-    .math-box .MathJax_Display .mjx-svg-hbox,
-    .math-box .MathJax_Display svg,
-    .math-box .MathJax_Display mjx-container,
-    .math-box .mjx-block svg {
-      display: inline-block;
-      max-width: none !important;
-      height: auto !important;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
       vertical-align: middle;
     }
-
-    .math-box .MathJax_Chunk, 
-    .math-box .MathJax_SVG,
-    .math-box .mjx-chtml {
-      max-width: none !important;
-      overflow: visible !important;
+    .math-box mjx-container[display="true"] {
+      display: block;
+      width: 100%;
+      margin: 6px 0;
+      padding: 4px 0;
+      text-align: center;
     }
 
-    @media (max-width: 480px) {
-      .math-box .MathJax_Display { padding: 4px 0; }
+    /* 旧クラス名互換 */
+    .math-box .MathJax_Display,
+    .math-box .mjx-block {
+      display: block;
+      max-width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      box-sizing: border-box;
+      padding: 4px 0;
+      margin: 6px 0;
     }
   </style>
   <script>

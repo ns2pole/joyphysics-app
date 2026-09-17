@@ -400,8 +400,11 @@ class _LatexWebViewState extends State<LatexWebView> {
     html, body {
       margin: 0;
       padding: 0;
-      /* Enable inner scrolling (iframe) for web performance. */
-      overflow: auto;
+      width: 100%;
+      max-width: 100%;
+      /* ページ全体の横スライド禁止。長い数式は数式側だけで横スクロール */
+      overflow-x: hidden;
+      overflow-y: auto;
       -webkit-overflow-scrolling: touch;
       background-color: transparent;
       font-family: 'KeiFont', sans-serif;
@@ -410,8 +413,12 @@ class _LatexWebViewState extends State<LatexWebView> {
     }
     .math-box {
       width: 100%;
+      max-width: 100%;
       padding: 0;
       box-sizing: border-box;
+      overflow-x: hidden;
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
     .common-box {
       background: #cfc;
@@ -420,6 +427,8 @@ class _LatexWebViewState extends State<LatexWebView> {
       font-size: 17px;
       border-radius: 12px;
       font-family: 'KeiFont', sans-serif;
+      max-width: 100%;
+      box-sizing: border-box;
     }
     .math-box img,
     .math-box table {
@@ -431,16 +440,30 @@ class _LatexWebViewState extends State<LatexWebView> {
       border-radius: 12px;
       overflow: hidden;
     }
-    /* ブロック数式は横スクロール許可 */
-    .math-box .MathJax_Display,
-    .math-box .mjx-block,
-    .math-box .MathJax_Display * {
-      display: block;
-      overflow-x: auto;
-      white-space: nowrap;
-      padding: 6px 0;
-      margin: 6px 0;
+    .math-box mjx-container {
+      max-width: 100% !important;
       box-sizing: border-box;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      vertical-align: middle;
+    }
+    .math-box mjx-container[display="true"] {
+      display: block;
+      width: 100%;
+      margin: 6px 0;
+      padding: 4px 0;
+      text-align: center;
+    }
+    .math-box .MathJax_Display,
+    .math-box .mjx-block {
+      display: block;
+      max-width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      box-sizing: border-box;
+      padding: 4px 0;
+      margin: 6px 0;
     }
   </style>
   <script>
@@ -460,6 +483,18 @@ class _LatexWebViewState extends State<LatexWebView> {
     $bridgeScript
     if (window.MathJax && MathJax.typesetPromise) {
       MathJax.typesetPromise().then(() => {
+        try {
+          document.querySelectorAll('mjx-container').forEach(function(el) {
+            var parent = el.parentElement;
+            if (!parent) return;
+            if (el.getAttribute('display') === 'true') return;
+            if (el.scrollWidth > parent.clientWidth + 1) {
+              el.style.display = 'block';
+              el.style.maxWidth = '100%';
+              el.style.overflowX = 'auto';
+            }
+          });
+        } catch (e) {}
         interceptAppLinks();
         interceptWheel();
         interceptTouchScroll();
