@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import 'package:joyphysics/experiment/waves/animations/widgets/wave_slider.dart';
 import './common.dart';
+import './thermo_process_auto.dart';
 
 /// 等温変化（等温過程）のシミュレーション
 final isothermalProcess = createWaveVideo(
@@ -10,6 +11,7 @@ final isothermalProcess = createWaveVideo(
   latex: r"""
   <div class="common-box">等温変化（等温過程）</div>
   <p>気体の温度 $T$ を一定に保ったまま状態を変化させることを等温変化といいます。</p>
+  <p>薄い伝熱壁の容器を外気に触れさせておくと、気体は外気温と同じ温度に保たれるため等温過程になります。</p>
   <p>ボイルの法則より、温度が一定のとき、気体の圧力 $P$ は体積 $V$ に反比例します。</p>
   <p>$$PV = \text{一定} \quad \text{または} \quad P \propto \frac{1}{V}$$</p>
   <p>熱力学第一法則 $Q = \Delta U + W$ において、温度が変わらないため内部エネルギーの変化 $\Delta U = 0$ となり、外部から加えた熱 $Q$ はすべて気体が外部へ行う仕事 $W$ に等しくなります（あるいは外部から仕事を受けると、その分だけ熱を放出します）。</p>
@@ -26,48 +28,141 @@ class IsothermalSimulation extends PhysicsSimulation {
           aspectRatio: 0.66,
         );
 
+  final ValueNotifier<bool> autoCycle = ValueNotifier(false);
+  void Function(String key, double value)? _updateParam;
+  bool _autoTickScheduled = false;
+  DateTime? _lastAutoTickAt;
+
+  final ThermoVolumeAutoSession _autoSession = ThermoVolumeAutoSession(
+    homeVolume: IdealGasRef.v0L,
+    farVolume: IdealGasRef.vVisMaxL,
+    // 等温は熱が追いつくようゆっくり
+    speedLps: 0.25,
+  );
+
   @override
   Map<String, double> get initialParameters => {
-        'volume': 0.5, // 0.2 to 1.0
+        'volume': IdealGasRef.v0L,
       };
+
+  void _setAuto(bool enabled) {
+    if (autoCycle.value == enabled) return;
+    autoCycle.value = enabled;
+    if (enabled) {
+      _autoSession.reset();
+      _updateParam?.call('volume', IdealGasRef.v0L);
+      _scheduleAutoTick();
+    }
+  }
+
+  void _scheduleAutoTick() {
+    if (!autoCycle.value || _autoTickScheduled) return;
+    if (_updateParam == null) return;
+    _autoTickScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _autoTickScheduled = false;
+      if (!autoCycle.value || _updateParam == null) return;
+      final now = DateTime.now();
+      final dt = _lastAutoTickAt == null
+          ? 1 / 60
+          : (now.difference(_lastAutoTickAt!).inMicroseconds / 1e6)
+              .clamp(0.0, 0.1)
+              .toDouble();
+      _lastAutoTickAt = now;
+      final cur = _autoSession.volume;
+      final next = _autoSession.onPhysicsSample(cur, dt: dt);
+      if ((next - cur).abs() > 1e-6) {
+        _updateParam!('volume', next);
+      }
+      if (autoCycle.value) _scheduleAutoTick();
+    });
+  }
 
   @override
   List<Widget> buildControls(context, params, updateParam) {
+    _updateParam = updateParam;
     return [
       const Text("操作", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-      WaveParameterSlider(
-        label: "ピストンの押し引き (体積 V)",
-        value: params['volume']!,
-        min: 0.2,
-        max: 1.0,
-        onChanged: (v) => updateParam('volume', v),
+      ValueListenableBuilder<bool>(
+        valueListenable: autoCycle,
+        builder: (context, autoOn, _) {
+          return SizedBox(
+            height: 72,
+            child: autoOn
+                ? const SizedBox.shrink()
+                : WaveParameterSlider(
+                    label: "ピストンの押し引き (体積 V [L])",
+                    value: params['volume']!,
+                    min: IdealGasRef.vMinL,
+                    max: IdealGasRef.vVisMaxL,
+                    onChanged: (v) {
+                      final cur = params['volume']!;
+                      const maxStepL = 0.012;
+                      final next = v <= cur
+                          ? math.max(v, cur - maxStepL)
+                          : math.min(v, cur + maxStepL);
+                      updateParam(
+                        'volume',
+                        next.clamp(IdealGasRef.vMinL, IdealGasRef.vVisMaxL),
+                      );
+                    },
+                  ),
+          );
+        },
       ),
       const Padding(
         padding: EdgeInsets.symmetric(vertical: 4.0),
-        child: Text("スライダーを動かして、ゆっくりピストンを押し引きしてください。"),
+        child: Text(
+          "容器は薄い伝熱壁で、外気（300 K）に触れているため気体も常に同じ温度に保たれます（等温過程）。"
+          "一気に動かすと温度が変わってしまうので、ピストンはゆっくりしか動かせません。"
+          "初期状態は 1.0 L・300 K・1013 hPa です。"
+          "Auto では 1.0 L ⇄ 2.0 L のゆっくりした往復を繰り返します。",
+        ),
       ),
     ];
   }
 
   @override
   Widget buildAnimation(context, time, azimuth, tilt, scale, params, activeIds) {
-    return IsothermalAnimationWidget(
-      time: time,
-      volume: params['volume']!,
-      scale: scale,
+    if (autoCycle.value) {
+      _autoSession.volume = params['volume']!;
+      _scheduleAutoTick();
+    }
+    return Column(
+      children: [
+        Expanded(
+          child: IsothermalAnimationWidget(
+            time: time,
+            volumeL: params['volume']!,
+            scale: scale,
+          ),
+        ),
+        ValueListenableBuilder<bool>(
+          valueListenable: autoCycle,
+          builder: (context, autoOn, _) {
+            return buildThermoAutoToggle(
+              autoOn: autoOn,
+              onChanged: _setAuto,
+              statusLabel: autoOn
+                  ? _autoSession.statusLabel
+                  : null,
+            );
+          },
+        ),
+      ],
     );
   }
 }
 
 class IsothermalAnimationWidget extends StatefulWidget {
   final double time;
-  final double volume;
+  final double volumeL;
   final double scale;
 
   const IsothermalAnimationWidget({
     super.key,
     required this.time,
-    required this.volume,
+    required this.volumeL,
     this.scale = 1.0,
   });
 
@@ -79,19 +174,24 @@ class _IsothermalAnimationWidgetState extends State<IsothermalAnimationWidget> {
   late List<ThermodynamicParticle> particles;
   double lastTime = 0.0;
   final int particleCount = 20;
-  double lastVolume = 0.5;
+  double lastVolumeL = IdealGasRef.v0L;
   double heatFlux = 0.0; // 正: 吸熱 (膨張), 負: 放熱 (圧縮)
   final PvHistoryTracker pvHistory = PvHistoryTracker();
 
-  static const double _k = 0.5 * 0.4;
+  static final double _vAxisMaxL = IdealGasRef.vVisMaxL * 1.05;
+  static final double _pAxisMaxHPa =
+      IdealGasRef.isothermalPressureHPa(IdealGasRef.vMinL) * 1.08;
 
   @override
   void initState() {
     super.initState();
     lastTime = widget.time;
-    lastVolume = widget.volume;
+    lastVolumeL = widget.volumeL;
     _initParticles();
-    pvHistory.record(widget.volume, _k / widget.volume);
+    pvHistory.record(
+      widget.volumeL,
+      IdealGasRef.isothermalPressureHPa(widget.volumeL),
+    );
   }
 
   void _initParticles() {
@@ -109,26 +209,33 @@ class _IsothermalAnimationWidgetState extends State<IsothermalAnimationWidget> {
     if (dt < 0) dt = 0;
     if (dt > 0.1) dt = 0.02;
 
-    // 体積変化から熱流を計算 (Q = W = PΔV)
-    double dV = widget.volume - lastVolume;
+    // 体積変化から熱流を計算 (Q = W = PΔV)。L 単位なので係数を少し抑える
+    final double dV = widget.volumeL - lastVolumeL;
     if (dt > 0) {
-      double velocity = dV / dt;
-      heatFlux = (heatFlux * 0.8) + (velocity * 0.2 * 15.0);
+      final double velocity = dV / dt;
+      heatFlux = (heatFlux * 0.8) + (velocity * 0.2 * 8.0);
     }
     heatFlux *= 0.95;
     if (heatFlux.abs() < 0.01) heatFlux = 0.0;
 
     // 等温なので T=300K 固定
-    double speedScale = 1.0;
-    for (var p in particles) p.update(dt, speedScale);
-    pvHistory.record(widget.volume, _k / widget.volume);
+    for (var p in particles) {
+      p.update(dt, 1.0);
+    }
+    pvHistory.record(
+      widget.volumeL,
+      IdealGasRef.isothermalPressureHPa(widget.volumeL),
+    );
     lastTime = widget.time;
-    lastVolume = widget.volume;
+    lastVolumeL = widget.volumeL;
   }
 
   @override
   Widget build(BuildContext context) {
-    double currentP = _k / widget.volume;
+    final double volumeL = widget.volumeL;
+    final double pressureHPa = IdealGasRef.isothermalPressureHPa(volumeL);
+    const double temperatureK = IdealGasRef.t0K;
+    final double cylinderVolume = IdealGasRef.cylinderVolumeFromVL(volumeL);
 
     return Column(
       children: [
@@ -139,9 +246,11 @@ class _IsothermalAnimationWidgetState extends State<IsothermalAnimationWidget> {
             child: CustomPaint(
               size: Size.infinite,
               painter: IsothermalPVPainter(
-                volume: widget.volume,
-                pressure: currentP,
-                temperature: 300.0,
+                volumeL: volumeL,
+                pressureHPa: pressureHPa,
+                temperatureK: temperatureK,
+                volumeAxisMaxL: _vAxisMaxL,
+                pressureAxisMaxHPa: _pAxisMaxHPa,
                 history: pvHistory.points,
               ),
             ),
@@ -152,19 +261,36 @@ class _IsothermalAnimationWidgetState extends State<IsothermalAnimationWidget> {
           flex: 11,
           child: Padding(
             padding: const EdgeInsets.all(16.0),
-            child: CustomPaint(
-              size: Size.infinite,
-              painter: BaseGasPainter(
-                particles: particles,
-                volume: widget.volume,
-                temperature: 300.0,
-                // 等温: 体積変化に応じて熱浴が自動で吸熱・供給（手操作不要）
-                heatFlux: heatFlux,
-                isHeating: heatFlux > 0.05,
-                cylinderWidthFactor: 0.233,
-                cylinderHeightFactor: 0.66,
-                personFeetPos: const Offset(0,0), // ダミー。BaseGasPainter内でnullチェック
-              ),
+            child: Stack(
+              children: [
+                CustomPaint(
+                  size: Size.infinite,
+                  painter: BaseGasPainter(
+                    particles: particles,
+                    volume: cylinderVolume,
+                    temperature: temperatureK,
+                    // 薄い伝熱壁で外気と接触 → 常に外気温＝等温。電熱線なし
+                    showHeater: false,
+                    wallColor: Colors.grey,
+                    wallThickness: 4.0,
+                    // 体積変化に応じて外気との熱交換を可視化
+                    heatFlux: heatFlux,
+                    cylinderWidthFactor: 0.233,
+                    cylinderHeightFactor: 0.66,
+                    personFeetPos: const Offset(0, 0),
+                  ),
+                ),
+                buildGasStateHud(
+                  volumeL: volumeL,
+                  pressureHPa: pressureHPa,
+                  temperatureK: temperatureK,
+                ),
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: buildAmbientTpLabels(),
+                ),
+              ],
             ),
           ),
         ),
@@ -175,30 +301,45 @@ class _IsothermalAnimationWidgetState extends State<IsothermalAnimationWidget> {
 
 class IsothermalPVPainter extends BasePVPainter {
   IsothermalPVPainter({
-    required double volume,
-    required double pressure,
-    required double temperature,
+    required double volumeL,
+    required double pressureHPa,
+    required double temperatureK,
+    required double volumeAxisMaxL,
+    required double pressureAxisMaxHPa,
     List<Offset>? history,
   }) : super(
-          volume: volume,
-          pressure: pressure,
-          temperature: temperature,
-          label: "T = 300 K (const.)",
+          volume: volumeL,
+          pressure: pressureHPa,
+          temperature: temperatureK,
+          volumeAxisMax: volumeAxisMaxL,
+          pressureAxisMax: pressureAxisMaxHPa,
           history: history,
         );
 
   @override
   void drawExtraCurves(Canvas canvas, Size size, double padding, double w, double h) {
-    const double k = 0.5 * 0.4;
+    final double vMax = volumeAxisMax;
+    final double pMax = pressureAxisMax;
     final curvePath = Path();
     bool started = false;
-    for (double v = 0.15; v <= 1.0; v += 0.01) {
-      double p = k / v;
-      double x = padding + v * w;
-      double y = size.height - padding - p * h;
-      if (y < padding) continue;
-      if (!started) { curvePath.moveTo(x, y); started = true; } else { curvePath.lineTo(x, y); }
+    for (double vL = IdealGasRef.vMinL; vL <= IdealGasRef.vVisMaxL; vL += 0.02) {
+      final double p = IdealGasRef.isothermalPressureHPa(vL);
+      final double x = padding + (vL / vMax) * w;
+      final double y = size.height - padding - (p / pMax) * h;
+      if (y < padding || y > size.height - padding) continue;
+      if (!started) {
+        curvePath.moveTo(x, y);
+        started = true;
+      } else {
+        curvePath.lineTo(x, y);
+      }
     }
-    canvas.drawPath(curvePath, Paint()..color = Colors.blue.withOpacity(0.3)..strokeWidth = 3.0..style = PaintingStyle.stroke);
+    canvas.drawPath(
+      curvePath,
+      Paint()
+        ..color = Colors.blue.withOpacity(0.3)
+        ..strokeWidth = 3.0
+        ..style = PaintingStyle.stroke,
+    );
   }
 }
