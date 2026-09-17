@@ -168,7 +168,7 @@ class CategoryList extends StatelessWidget {
           return Column(
             children: [
               info,
-              _buildSensorDownloadCta(context),
+              if (kIsWeb) _buildSensorDownloadCta(context),
             ],
           );
         }
