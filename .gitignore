@@ -72,6 +72,10 @@ ios/build/
 android/.gradle/
 android/build/
 android/app/build/
+android/key.properties
+android/app/keystore.properties
+*.jks
+*.keystore
 
 # Fastlane secrets
 fastlane/*.json
