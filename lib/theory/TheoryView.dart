@@ -30,7 +30,7 @@ class TheoryListView extends StatelessWidget {
         children: [
           if (imageAsset != null)
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 9.0, horizontal: 16.0),
+              padding: const EdgeInsets.symmetric(vertical: 9.0, horizontal: 0),
               child: GestureDetector(
                 onTap: () {
                   Navigator.push(
@@ -38,6 +38,7 @@ class TheoryListView extends StatelessWidget {
                     MaterialPageRoute(
                       builder: (_) => PhysicsFullscreenImagePage(
                         imageAsset: imageAsset,
+                        title: Category.getMindMapLabelByName(categoryName),
                       ),
                     ),
                   );
@@ -47,14 +48,12 @@ class TheoryListView extends StatelessWidget {
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(12),
-                      child: SizedBox(
-                        width: MediaQuery.of(context).size.width * 0.58,
-                        child: AspectRatio(
-                          aspectRatio: 16 / 9,
-                          child: Image.asset(
-                            imageAsset,
-                            fit: BoxFit.cover,
-                          ),
+                      child: AspectRatio(
+                        aspectRatio: 16 / 9,
+                        child: Image.asset(
+                          imageAsset,
+                          fit: BoxFit.cover,
+                          width: double.infinity,
                         ),
                       ),
                     ),
@@ -181,7 +180,10 @@ class TopicDetailPage extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => PhysicsFullscreenImagePage(imageAsset: topic.imageAsset!),
+                          builder: (_) => PhysicsFullscreenImagePage(
+                            imageAsset: topic.imageAsset!,
+                            title: '全体像と本内容の位置付け',
+                          ),
                         ),
                       );
                     },

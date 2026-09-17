@@ -54,7 +54,7 @@ class _VideoListViewState extends State<VideoListView> {
           if (overallImageAsset != null)
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 9.0, horizontal: 16.0),
+                padding: const EdgeInsets.symmetric(vertical: 9.0, horizontal: 0),
                 child: GestureDetector(
                   onTap: () {
                     Navigator.push(
@@ -62,42 +62,34 @@ class _VideoListViewState extends State<VideoListView> {
                       MaterialPageRoute(
                         builder: (_) => PhysicsFullscreenImagePage(
                           imageAsset: overallImageAsset,
+                          title: widget.category.getMindMapLabel(),
                         ),
                       ),
                     );
                   },
-                  child: Builder(
-                    builder: (context) {
-                      final screenWidth = MediaQuery.of(context).size.width;
-                      // タブレット（600px以上）: 60%, スマホ: 95%
-                      final imageWidthRatio = screenWidth >= 600 ? 0.60 : 0.95;
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: SizedBox(
-                              width: screenWidth * imageWidthRatio,
-                              child: AspectRatio(
-                                aspectRatio: 16 / 9,
-                                child: Image.asset(
-                                  overallImageAsset,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: AspectRatio(
+                          aspectRatio: 16 / 9,
+                          child: Image.asset(
+                            overallImageAsset,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
                           ),
-                          const SizedBox(height: 4), // 画像と文字の間隔
-                          Text(
-                            widget.category.getMindMapLabel(),
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Colors.black54,
-                            ),
-                          ),
-                        ],
-                      );
-                    },
+                        ),
+                      ),
+                      const SizedBox(height: 4), // 画像と文字の間隔
+                      Text(
+                        widget.category.getMindMapLabel(),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.black54,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -135,9 +127,16 @@ class _VideoListViewState extends State<VideoListView> {
 
           // ─── コンテンツ本体（一覧 or 公式） ───
           if (viewMode == VideoViewMode.byCategory)
-            _VideoCategoryList(subcategories: widget.category.subcategories)
+            _VideoCategoryList(
+              subcategories: widget.category.subcategories,
+              // 熱力学は項目が少ないのでプルダウンせず全表示
+              flat: widget.category.name == '熱力学',
+            )
           else
-            FormulaList(groupedFormulas: groupMap),
+            FormulaList(
+              groupedFormulas: groupMap,
+              flat: widget.category.name == '熱力学',
+            ),
         ],
       ),
     );
@@ -166,10 +165,15 @@ Future<String> resolveAssetPath(String category, String iconName) async {
   }
 }
 
-// ---- _VideoCategoryList（サブカテゴリはプルダウンで収納）----
+// ---- _VideoCategoryList（サブカテゴリはプルダウンで収納。flat時は全展開）----
 class _VideoCategoryList extends StatelessWidget {
   final List<Subcategory> subcategories;
-  const _VideoCategoryList({required this.subcategories});
+  /// true のとき ExpansionTile を使わず最初から全項目を出す
+  final bool flat;
+  const _VideoCategoryList({
+    required this.subcategories,
+    this.flat = false,
+  });
 
   // 1件分のタイル（disabled = 準備中）
   Widget _videoTile(BuildContext context, Video v,
@@ -285,38 +289,52 @@ class _VideoCategoryList extends StatelessWidget {
       final preps = _prepVideos(sub);
 
       if (actives.isNotEmpty) {
+        final tiles = [
+          for (var i = 0; i < actives.length; i++)
+            _videoTile(
+              context,
+              actives[i],
+              disabled: false,
+              isLast: i == actives.length - 1,
+            ),
+        ];
         sections.add(
-          _SubcategoryExpansion(
-            name: sub.name,
-            disabled: false,
-            children: [
-              for (var i = 0; i < actives.length; i++)
-                _videoTile(
-                  context,
-                  actives[i],
+          flat
+              ? _SubcategoryFlatList(
+                  name: sub.name,
                   disabled: false,
-                  isLast: i == actives.length - 1,
+                  children: tiles,
+                )
+              : _SubcategoryExpansion(
+                  name: sub.name,
+                  disabled: false,
+                  children: tiles,
                 ),
-            ],
-          ),
         );
       }
 
       if (preps.isNotEmpty) {
+        final tiles = [
+          for (var i = 0; i < preps.length; i++)
+            _videoTile(
+              context,
+              preps[i],
+              disabled: true,
+              isLast: i == preps.length - 1,
+            ),
+        ];
         sections.add(
-          _SubcategoryExpansion(
-            name: sub.name,
-            disabled: true,
-            children: [
-              for (var i = 0; i < preps.length; i++)
-                _videoTile(
-                  context,
-                  preps[i],
+          flat
+              ? _SubcategoryFlatList(
+                  name: sub.name,
                   disabled: true,
-                  isLast: i == preps.length - 1,
+                  children: tiles,
+                )
+              : _SubcategoryExpansion(
+                  name: sub.name,
+                  disabled: true,
+                  children: tiles,
                 ),
-            ],
-          ),
         );
       }
     }
@@ -372,6 +390,51 @@ class _SubcategoryExpansion extends StatelessWidget {
             ),
         ],
       ),
+    );
+  }
+}
+
+/// プルダウンなしで見出し＋全項目を最初から出す（熱力学など）
+class _SubcategoryFlatList extends StatelessWidget {
+  final String name;
+  final bool disabled;
+  final List<Widget> children;
+
+  const _SubcategoryFlatList({
+    required this.name,
+    required this.disabled,
+    required this.children,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final bg = disabled ? Colors.grey[200] : Colors.grey[300];
+    final titleColor = disabled ? Colors.black45 : Colors.black87;
+    final label = disabled ? '$name（準備中）' : name;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        ColoredBox(
+          color: bg!,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: titleColor,
+              ),
+            ),
+          ),
+        ),
+        for (final child in children)
+          ColoredBox(
+            color: Colors.white,
+            child: child,
+          ),
+      ],
     );
   }
 }
@@ -572,7 +635,11 @@ class _VideoDetailViewState extends State<VideoDetailView> {
             setState(() => state.activeIds = ids);
           }
 
-          final extra = sim.buildExtraControls(context, state.activeIds, updateActiveIds);
+          final extra = sim.buildExtraControls(
+            context,
+            state.activeIds,
+            updateActiveIds,
+          );
           final sliders = sim.buildControls(context, state.parameters, updateParam);
 
           items.add(
@@ -745,7 +812,8 @@ const TextStyle keiFontStyle = TextStyle(
 
 class FormulaList extends StatelessWidget {
   final Map<String, List<FormulaEntry>> groupedFormulas;
-  FormulaList({required this.groupedFormulas});
+  final bool flat;
+  FormulaList({required this.groupedFormulas, this.flat = false});
 
   Widget _formulaTile(BuildContext context, FormulaEntry f, {bool isLast = false}) {
     return Column(
@@ -841,19 +909,26 @@ class FormulaList extends StatelessWidget {
 
       if (formulas.isEmpty) continue;
 
+      final tiles = [
+        for (var i = 0; i < formulas.length; i++)
+          _formulaTile(
+            context,
+            formulas[i],
+            isLast: i == formulas.length - 1,
+          ),
+      ];
       sections.add(
-        _SubcategoryExpansion(
-          name: entry.key,
-          disabled: false,
-          children: [
-            for (var i = 0; i < formulas.length; i++)
-              _formulaTile(
-                context,
-                formulas[i],
-                isLast: i == formulas.length - 1,
+        flat
+            ? _SubcategoryFlatList(
+                name: entry.key,
+                disabled: false,
+                children: tiles,
+              )
+            : _SubcategoryExpansion(
+                name: entry.key,
+                disabled: false,
+                children: tiles,
               ),
-          ],
-        ),
       );
     }
 
