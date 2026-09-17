@@ -8,6 +8,108 @@ import 'package:flutter/material.dart' as material;
 import '../fields/wave_fields.dart';
 import '../utils/coordinate_transformer.dart';
 
+/// 節線・腹線の世界座標線分キャッシュ（metric は時間非依存）。
+class _ZeroContourCache {
+  static final Map<int, Float32List> _byTag = {};
+  static WaveField? _field;
+  static int? _div;
+  static double? _range;
+
+  static Float32List segments({
+    required WaveField field,
+    required int tag,
+    required int div,
+    required double range,
+    required double Function(double x, double y) metric,
+  }) {
+    if (_field != field || _div != div || _range != range) {
+      _field = field;
+      _div = div;
+      _range = range;
+      _byTag.clear();
+    }
+    final cached = _byTag[tag];
+    if (cached != null) return cached;
+    final built = _march(div: div, range: range, metric: metric);
+    _byTag[tag] = built;
+    return built;
+  }
+
+  static Float32List _march({
+    required int div,
+    required double range,
+    required double Function(double x, double y) metric,
+  }) {
+    final n = div + 1;
+    final step = (range * 2) / div;
+    final grid = Float32List(n * n);
+    for (int i = 0; i < n; i++) {
+      final x = -range + i * step;
+      for (int j = 0; j < n; j++) {
+        grid[i * n + j] = metric(x, -range + j * step);
+      }
+    }
+
+    final out = <double>[];
+    void addCrossing(
+      double x0,
+      double y0,
+      double f0,
+      double x1,
+      double y1,
+      double f1,
+      List<double> buf,
+    ) {
+      if (f0 == 0.0) {
+        buf.add(x0);
+        buf.add(y0);
+        return;
+      }
+      if (f1 == 0.0) {
+        buf.add(x1);
+        buf.add(y1);
+        return;
+      }
+      if (f0 * f1 > 0) return;
+      final t = f0 / (f0 - f1);
+      buf.add(x0 + t * (x1 - x0));
+      buf.add(y0 + t * (y1 - y0));
+    }
+
+    final cross = <double>[];
+    for (int i = 0; i < div; i++) {
+      final x0 = -range + i * step;
+      final x1 = x0 + step;
+      for (int j = 0; j < div; j++) {
+        final y0 = -range + j * step;
+        final y1 = y0 + step;
+        final f00 = grid[i * n + j];
+        final f10 = grid[(i + 1) * n + j];
+        final f11 = grid[(i + 1) * n + (j + 1)];
+        final f01 = grid[i * n + (j + 1)];
+        cross.clear();
+        addCrossing(x0, y0, f00, x1, y0, f10, cross);
+        addCrossing(x1, y0, f10, x1, y1, f11, cross);
+        addCrossing(x1, y1, f11, x0, y1, f01, cross);
+        addCrossing(x0, y1, f01, x0, y0, f00, cross);
+        if (cross.length >= 4) {
+          out.add(cross[0]);
+          out.add(cross[1]);
+          out.add(cross[2]);
+          out.add(cross[3]);
+        }
+        if (cross.length >= 8) {
+          out.add(cross[4]);
+          out.add(cross[5]);
+          out.add(cross[6]);
+          out.add(cross[7]);
+        }
+      }
+    }
+    return Float32List.fromList(out);
+  }
+}
+
 class MediumSlabOverlay {
   const MediumSlabOverlay({
     required this.xStart,
@@ -647,20 +749,24 @@ class WaveSurfacePainter extends CustomPainter {
     drawAxis(0, axisLen, 0, Colors.green, yAxisLabel);
     drawAxis(0, 0, 3.5, Colors.blue, zAxisLabel);
 
-    // 節線・腹線: metric のゼロ等高線を z=0 上に描く
+    // 節線・腹線: metric のゼロ等高線を z=0 上に描く。
+    // 注意: 曲面グリッド(div=140)と同じ解像度で毎フレーム・点線細分化すると
+    // UIスレッドが詰まって ANR（応答していません）になる。
+    // metric は時間非依存なので世界座標の線分をキャッシュし、粗いグリッドで計算する。
     void drawZeroContours({
       required double Function(double x, double y) metric,
       required Color color,
       required bool dashed,
+      required int cacheTag,
     }) {
-      final metricGrid = Float64List(numPoints * numPoints);
-      for (int i = 0; i < numPoints; i++) {
-        final x = -range + i * step;
-        for (int j = 0; j < numPoints; j++) {
-          final y = -range + j * step;
-          metricGrid[i * numPoints + j] = metric(x, y);
-        }
-      }
+      const contourDiv = 48;
+      final segs = _ZeroContourCache.segments(
+        field: field,
+        tag: cacheTag,
+        div: contourDiv,
+        range: range,
+        metric: metric,
+      );
 
       final paint = Paint()
         ..color = color
@@ -669,92 +775,29 @@ class WaveSurfacePainter extends CustomPainter {
         ..strokeCap = StrokeCap.round
         ..isAntiAlias = true;
 
-      Offset? zeroOnEdge(
-        double x0,
-        double y0,
-        double f0,
-        double x1,
-        double y1,
-        double f1,
-      ) {
-        if (f0 == 0.0) return Offset(x0, y0);
-        if (f1 == 0.0) return Offset(x1, y1);
-        if (f0 * f1 > 0) return null;
-        final t = f0 / (f0 - f1);
-        return Offset(x0 + t * (x1 - x0), y0 + t * (y1 - y0));
-      }
+      const dashLen = 12.0;
+      const gapLen = 10.0;
+      const pattern = dashLen + gapLen;
 
-      // マーチングスクエアはセル毎の短い線分になる。
-      // PathMetric で点線化すると各断片が dash より短く、全部「線の先頭」になり実線に見える。
-      // 画面座標の進行方向への射影で位相を揃えて、隣接セルでも隙間が続くようにする。
-      void drawSegment(Offset a, Offset b) {
+      for (int k = 0; k + 3 < segs.length; k += 4) {
+        final a = worldToScreen(segs[k], segs[k + 1], 0);
+        final b = worldToScreen(segs[k + 2], segs[k + 3], 0);
         if (!dashed) {
           canvas.drawLine(a, b, paint);
-          return;
+          continue;
         }
-        const dashLen = 12.0;
-        const gapLen = 10.0;
-        const pattern = dashLen + gapLen;
+        // セル長の短い線分を while で点線分割すると drawCall 爆発→ANR。
+        // 始点の射影位相で「描く／飛ばす」を決め、線分あたり最大1回だけ描く。
         final dx = b.dx - a.dx;
         final dy = b.dy - a.dy;
         final len = math.sqrt(dx * dx + dy * dy);
-        if (len < 1e-6) return;
+        if (len < 0.35) continue;
         final ux = dx / len;
         final uy = dy / len;
-        // 同一方向の連続線分で位相がつながるよう、始点の射影でオフセット
-        var pos = a.dx * ux + a.dy * uy;
-        var drawn = 0.0;
-        while (drawn < len) {
-          var inPat = pos % pattern;
-          if (inPat < 0) inPat += pattern;
-          final drawDash = inPat < dashLen;
-          final remain =
-              drawDash ? (dashLen - inPat) : (pattern - inPat);
-          final seg = math.min(remain, len - drawn);
-          if (drawDash && seg > 0.35) {
-            final p0 = Offset(a.dx + ux * drawn, a.dy + uy * drawn);
-            final p1 =
-                Offset(a.dx + ux * (drawn + seg), a.dy + uy * (drawn + seg));
-            canvas.drawLine(p0, p1, paint);
-          }
-          drawn += seg;
-          pos += seg;
-        }
-      }
-
-      for (int i = 0; i < div; i++) {
-        final x0 = -range + i * step;
-        final x1 = x0 + step;
-        for (int j = 0; j < div; j++) {
-          final y0 = -range + j * step;
-          final y1 = y0 + step;
-          final f00 = metricGrid[i * numPoints + j];
-          final f10 = metricGrid[(i + 1) * numPoints + j];
-          final f11 = metricGrid[(i + 1) * numPoints + (j + 1)];
-          final f01 = metricGrid[i * numPoints + (j + 1)];
-
-          final crossings = <Offset>[];
-          void add(Offset? p) {
-            if (p != null) crossings.add(p);
-          }
-
-          add(zeroOnEdge(x0, y0, f00, x1, y0, f10));
-          add(zeroOnEdge(x1, y0, f10, x1, y1, f11));
-          add(zeroOnEdge(x1, y1, f11, x0, y1, f01));
-          add(zeroOnEdge(x0, y1, f01, x0, y0, f00));
-
-          if (crossings.length >= 2) {
-            drawSegment(
-              worldToScreen(crossings[0].dx, crossings[0].dy, 0),
-              worldToScreen(crossings[1].dx, crossings[1].dy, 0),
-            );
-            if (crossings.length >= 4) {
-              drawSegment(
-                worldToScreen(crossings[2].dx, crossings[2].dy, 0),
-                worldToScreen(crossings[3].dx, crossings[3].dy, 0),
-              );
-            }
-          }
+        var inPat = (a.dx * ux + a.dy * uy) % pattern;
+        if (inPat < 0) inPat += pattern;
+        if (inPat < dashLen) {
+          canvas.drawLine(a, b, paint);
         }
       }
     }
@@ -766,6 +809,7 @@ class WaveSurfacePainter extends CustomPainter {
         metric: nodalMetric!,
         color: nodalColor,
         dashed: true,
+        cacheTag: 1,
       );
     }
     if (showAntinodalLines && antinodalMetric != null) {
@@ -773,6 +817,7 @@ class WaveSurfacePainter extends CustomPainter {
         metric: antinodalMetric!,
         color: nodalColor,
         dashed: false,
+        cacheTag: 2,
       );
     }
 
