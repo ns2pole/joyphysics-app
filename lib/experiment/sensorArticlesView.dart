@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:joyphysics/LatexView.dart';
 import 'package:joyphysics/dataExporter.dart';
@@ -39,45 +40,47 @@ class SensorArticlesView extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(12),
         children: [
-          Card(
-            elevation: 0,
-            color: Colors.blue[50],
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'センサーを使いたい人はこちらから',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 6),
-                  const Text(
-                    'Web版ではセンサーが使えません。アプリをダウンロードしてね。',
-                    style: TextStyle(fontSize: 14, color: Colors.black87),
-                  ),
-                  const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      OutlinedButton.icon(
-                        onPressed: () => _openStoreLink(_appStoreUri),
-                        icon: const Icon(Icons.apple),
-                        label: const Text('App Store'),
-                      ),
-                      OutlinedButton.icon(
-                        onPressed: () => _openStoreLink(_googlePlayUri),
-                        icon: const Icon(Icons.android),
-                        label: const Text('Google Play'),
-                      ),
-                    ],
-                  ),
-                ],
+          if (kIsWeb) ...[
+            Card(
+              elevation: 0,
+              color: Colors.blue[50],
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'センサーを使いたい人はこちらから',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 6),
+                    const Text(
+                      'Web版ではセンサーが使えません。アプリをダウンロードしてね。',
+                      style: TextStyle(fontSize: 14, color: Colors.black87),
+                    ),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        OutlinedButton.icon(
+                          onPressed: () => _openStoreLink(_appStoreUri),
+                          icon: const Icon(Icons.apple),
+                          label: const Text('App Store'),
+                        ),
+                        OutlinedButton.icon(
+                          onPressed: () => _openStoreLink(_googlePlayUri),
+                          icon: const Icon(Icons.android),
+                          label: const Text('Google Play'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 8),
+            const SizedBox(height: 8),
+          ],
           ..._articlesByCategory.entries.map((entry) {
             final categoryName = entry.key;
             final videos = entry.value;

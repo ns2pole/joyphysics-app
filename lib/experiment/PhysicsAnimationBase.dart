@@ -82,6 +82,9 @@ abstract class PhysicsSimulation {
   /// アニメーション領域の縦方向オフセット（正で下、負で上）[px]
   double animationOffsetY(Map<String, double> parameters) => 0;
 
+  /// キャンバス右下の拡大縮小ボタンを表示するか
+  bool get showZoomButtons => false;
+
   /// アニメーション本体を構築
   Widget buildAnimation(
     BuildContext context,
@@ -139,6 +142,9 @@ abstract class WaveSimulation extends PhysicsSimulation {
     super.showTimeOverlay = true,
     super.enableTime = true,
   });
+
+  @override
+  bool get showZoomButtons => true;
 
   /// 観測点位置を含む初期パラメータを生成するヘルパー
   Map<String, double> getInitialParamsWithObs({
@@ -281,6 +287,7 @@ class _PhysicsSimulationViewState extends State<PhysicsSimulationView> {
           widget.simulation.buildControls(context, _parameters, _updateParam),
       extraControls: widget.simulation.buildExtraControls(
           context, _activeIds, _updateActiveIds),
+      showZoomButtons: widget.simulation.showZoomButtons,
       getMarkers: (time) => widget.simulation.getMarkers(_parameters, time),
       onMarkerDragged: (index, newPoint, time) {
         widget.simulation

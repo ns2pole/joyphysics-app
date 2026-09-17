@@ -166,7 +166,7 @@ Future<String> resolveAssetPath(String category, String iconName) async {
   }
 }
 
-// ---- _VideoCategoryList（ご要望対応：余白 + アイコン空欄 + タイトル2行）----
+// ---- _VideoCategoryList（サブカテゴリはプルダウンで収納）----
 class _VideoCategoryList extends StatelessWidget {
   final List<Subcategory> subcategories;
   const _VideoCategoryList({required this.subcategories});
@@ -240,13 +240,12 @@ class _VideoCategoryList extends StatelessWidget {
             endIndent: 16,
             color: Colors.grey[300],
           ),
-        const SizedBox(height: 0), // 項目末尾は既存同等。見出し直下は build 側で 4 を入れる
+        const SizedBox(height: 0),
       ],
     );
 
     if (!disabled) return row;
 
-    // 準備中は薄グレー背景＋「準備中」透かし
     return Stack(
       children: [
         Container(color: Colors.grey[200], child: row),
@@ -255,65 +254,124 @@ class _VideoCategoryList extends StatelessWidget {
     );
   }
 
+  List<Video> _activeVideos(Subcategory sub) {
+    return sub.videos.where((v) {
+      final hasVideo = v.videoURL.isNotEmpty &&
+          v.videoURL.trim() != "（動画URLをここに）" &&
+          !v.videoURL.contains("（動画URL");
+      final hasWidget =
+          v.experimentWidgets != null && v.experimentWidgets!.isNotEmpty;
+      return v.inPreparation != true && (hasVideo || hasWidget);
+    }).toList();
+  }
+
+  List<Video> _prepVideos(Subcategory sub) {
+    return sub.videos.where((v) {
+      final hasVideo = v.videoURL.isNotEmpty &&
+          v.videoURL.trim() != "（動画URLをここに）" &&
+          !v.videoURL.contains("（動画URL");
+      final hasWidget =
+          v.experimentWidgets != null && v.experimentWidgets!.isNotEmpty;
+      return v.inPreparation == true && (hasVideo || hasWidget);
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final allItems = subcategories.expand((sub) {
-      // 動画URL または 実験Widget があるもののみをフィルタリング
-      final actives = sub.videos.where((v) {
-        final hasVideo = v.videoURL.isNotEmpty && 
-                         v.videoURL.trim() != "（動画URLをここに）" &&
-                         !v.videoURL.contains("（動画URL");
-        final hasWidget = v.experimentWidgets != null && v.experimentWidgets!.isNotEmpty;
-        return v.inPreparation != true && (hasVideo || hasWidget);
-      }).toList();
+    final sections = <Widget>[];
 
-      final preps = sub.videos.where((v) {
-        final hasVideo = v.videoURL.isNotEmpty && 
-                         v.videoURL.trim() != "（動画URLをここに）" &&
-                         !v.videoURL.contains("（動画URL");
-        final hasWidget = v.experimentWidgets != null && v.experimentWidgets!.isNotEmpty;
-        return v.inPreparation == true && (hasVideo || hasWidget);
-      }).toList();
+    for (final sub in subcategories) {
+      final actives = _activeVideos(sub);
+      final preps = _prepVideos(sub);
 
-      final widgets = <Widget>[];
-
-      // フェーズ1：公開中
       if (actives.isNotEmpty) {
-        widgets.add(SectionHeader(name: sub.name, disabled: false));
-        widgets.add(const SizedBox(height: 4)); // 見出し直下の白い余白
-
-        for (var i = 0; i < actives.length; i++) {
-          widgets.add(_videoTile(
-            context,
-            actives[i],
+        sections.add(
+          _SubcategoryExpansion(
+            name: sub.name,
             disabled: false,
-            isLast: i == actives.length - 1 && preps.isEmpty,
-          ));
-        }
-        widgets.add(const SizedBox(height: 8)); // 次の帯との間隔（既存踏襲）
+            children: [
+              for (var i = 0; i < actives.length; i++)
+                _videoTile(
+                  context,
+                  actives[i],
+                  disabled: false,
+                  isLast: i == actives.length - 1,
+                ),
+            ],
+          ),
+        );
       }
 
-      // フェーズ2：準備中
       if (preps.isNotEmpty) {
-        widgets.add(SectionHeader(name: sub.name, disabled: true));
-        widgets.add(const SizedBox(height: 4)); // 見出し直下の白い余白
-
-        for (var i = 0; i < preps.length; i++) {
-          widgets.add(_videoTile(
-            context,
-            preps[i],
+        sections.add(
+          _SubcategoryExpansion(
+            name: sub.name,
             disabled: true,
-            isLast: i == preps.length - 1,
-          ));
-        }
-        widgets.add(const SizedBox(height: 8)); // 次の帯との間隔（既存踏襲）
+            children: [
+              for (var i = 0; i < preps.length; i++)
+                _videoTile(
+                  context,
+                  preps[i],
+                  disabled: true,
+                  isLast: i == preps.length - 1,
+                ),
+            ],
+          ),
+        );
       }
-
-      return widgets; // どちらも空なら何も追加しない
-    }).toList();
+    }
 
     return SliverList(
-      delegate: SliverChildListDelegate(allItems),
+      delegate: SliverChildListDelegate(sections),
+    );
+  }
+}
+
+/// サブカテゴリ見出しをタップで開閉するプルダウン
+class _SubcategoryExpansion extends StatelessWidget {
+  final String name;
+  final bool disabled;
+  final List<Widget> children;
+
+  const _SubcategoryExpansion({
+    required this.name,
+    required this.disabled,
+    required this.children,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final bg = disabled ? Colors.grey[200] : Colors.grey[300];
+    final titleColor = disabled ? Colors.black45 : Colors.black87;
+    final label = disabled ? '$name（準備中）' : name;
+
+    return Theme(
+      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+      child: ExpansionTile(
+        initiallyExpanded: false,
+        tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+        childrenPadding: EdgeInsets.zero,
+        // 見出し行は灰色のまま。展開時も見出し帯は bg、中身は白で上書き。
+        backgroundColor: bg,
+        collapsedBackgroundColor: bg,
+        iconColor: titleColor,
+        collapsedIconColor: titleColor,
+        title: Text(
+          label,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: titleColor,
+          ),
+        ),
+        children: [
+          for (final child in children)
+            ColoredBox(
+              color: Colors.white,
+              child: child,
+            ),
+        ],
+      ),
     );
   }
 }
@@ -426,6 +484,7 @@ class _VideoDetailViewState extends State<VideoDetailView> {
                 // Simulation側の設定を反映（虹など time 無効のものは確実に非表示）
                 enableTime: sim.enableTime,
                 showTimeOverlay: sim.enableTime && sim.showTimeOverlay,
+                showZoomButtons: sim.showZoomButtons,
                 enableWideWebSplit: false, // VideoDetailView 側で左右分割するため、二重分割は抑止
                 onReset: resetAll,
                 getMarkers: (time) => sim.getMarkers(state.parameters, time),
@@ -688,118 +747,118 @@ class FormulaList extends StatelessWidget {
   final Map<String, List<FormulaEntry>> groupedFormulas;
   FormulaList({required this.groupedFormulas});
 
-  @override
-  Widget build(BuildContext context) {
-    final allItems = groupedFormulas.entries.expand((entry) {
-      // 動画URL または 実験Widget があるもののみをフィルタリング
-      final formulas = entry.value.where((f) {
-        final v = f.relatedVideo;
-        final hasVideo = v.videoURL.isNotEmpty && 
-                         v.videoURL.trim() != "（動画URLをここに）" &&
-                         !v.videoURL.contains("（動画URL");
-        final hasWidget = v.experimentWidgets != null && v.experimentWidgets!.isNotEmpty;
-        return hasVideo || hasWidget;
-      }).toList();
-      
-      if (formulas.isEmpty) {
-        return <Widget>[];
-      }
-
-      return [
-        Container(
-          width: double.infinity,
-          color: Colors.grey[300],
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-          child: Text(
-            entry.key,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-          ),
-        ),
-        ...List.generate(formulas.length, (index) {
-          final f = formulas[index];
-          final isLast = index == formulas.length - 1;
-
-          return Column(
-            children: [
-              InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => VideoDetailView(video: f.relatedVideo),
-                    ),
-                  );
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                  child: Row(
+  Widget _formulaTile(BuildContext context, FormulaEntry f, {bool isLast = false}) {
+    return Column(
+      children: [
+        InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => VideoDetailView(video: f.relatedVideo),
+              ),
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // 本文部
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // タイトル＋isNewマーク表示部分
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Flexible(
-                                  child: Text(
-                                    f.relatedVideo.title,
-                                    style: const TextStyle(
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                    maxLines: 2,               // ← 2行まで表示
-                                    softWrap: true,            // ← 改行許可
-                                    overflow: TextOverflow.ellipsis, // 3行目以降は省略
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                PhysicsBadge(
-                                  isNew: f.relatedVideo.isNew ?? false,
-                                  isSimulation: f.relatedVideo.isSimulation ?? false,
-                                  isExperiment: f.relatedVideo.isExperiment ?? false,
-                                  isSmartPhoneOnly: f.relatedVideo.isSmartPhoneOnly ?? false,
-                                  width: 68,
-                                  height: 45,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            Math.tex(
-                              f.latex,
-                              textStyle: const TextStyle(
-                                fontFamily: 'RobotoMono',
-                                color: Colors.black,
-                                height: 1.2,
-                                fontSize: 22,
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              f.relatedVideo.title,
+                              style: const TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w500,
                               ),
+                              maxLines: 2,
+                              softWrap: true,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          ],
+                          ),
+                          const SizedBox(width: 10),
+                          PhysicsBadge(
+                            isNew: f.relatedVideo.isNew ?? false,
+                            isSimulation: f.relatedVideo.isSimulation ?? false,
+                            isExperiment: f.relatedVideo.isExperiment ?? false,
+                            isSmartPhoneOnly: f.relatedVideo.isSmartPhoneOnly ?? false,
+                            width: 68,
+                            height: 45,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Math.tex(
+                        f.latex,
+                        textStyle: const TextStyle(
+                          fontFamily: 'RobotoMono',
+                          color: Colors.black,
+                          height: 1.2,
+                          fontSize: 22,
                         ),
                       ),
                     ],
                   ),
                 ),
+              ],
+            ),
+          ),
+        ),
+        if (!isLast)
+          Divider(
+            thickness: 1.0,
+            height: 0,
+            indent: 16,
+            endIndent: 16,
+            color: Colors.grey[300],
+          ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final sections = <Widget>[];
+
+    for (final entry in groupedFormulas.entries) {
+      // 動画URL または 実験Widget があるもののみをフィルタリング
+      final formulas = entry.value.where((f) {
+        final v = f.relatedVideo;
+        final hasVideo = v.videoURL.isNotEmpty &&
+            v.videoURL.trim() != "（動画URLをここに）" &&
+            !v.videoURL.contains("（動画URL");
+        final hasWidget =
+            v.experimentWidgets != null && v.experimentWidgets!.isNotEmpty;
+        return hasVideo || hasWidget;
+      }).toList();
+
+      if (formulas.isEmpty) continue;
+
+      sections.add(
+        _SubcategoryExpansion(
+          name: entry.key,
+          disabled: false,
+          children: [
+            for (var i = 0; i < formulas.length; i++)
+              _formulaTile(
+                context,
+                formulas[i],
+                isLast: i == formulas.length - 1,
               ),
-              if (!isLast)
-                Divider(
-                  thickness: 1.0,
-                  height: 0,
-                  indent: 16,
-                  endIndent: 16,
-                  color: Colors.grey[300],
-                ),
-            ],
-          );
-        }),
-      ];
-    }).toList();
+          ],
+        ),
+      );
+    }
 
     return SliverList(
-      delegate: SliverChildListDelegate(allItems),
+      delegate: SliverChildListDelegate(sections),
     );
   }
 }

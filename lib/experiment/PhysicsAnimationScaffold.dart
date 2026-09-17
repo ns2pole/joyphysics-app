@@ -24,6 +24,7 @@ class PhysicsAnimationScaffold extends StatefulWidget with HasHeight {
   final bool enableTime;
   final bool compactButtonSpacing;
   final double animationOffsetY;
+  final bool showZoomButtons;
 
   const PhysicsAnimationScaffold({
     super.key,
@@ -45,6 +46,7 @@ class PhysicsAnimationScaffold extends StatefulWidget with HasHeight {
     this.enableTime = true,
     this.compactButtonSpacing = false,
     this.animationOffsetY = 0,
+    this.showZoomButtons = false,
   });
 
   @override
@@ -72,13 +74,43 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
   double _scale = 1.0;
   double _baseScale = 1.0;
 
+  static const double _minScale = 0.5;
+  static const double _maxScale = 3.0;
+  static const double _zoomFactor = 1.15;
+
   int _draggingMarkerIndex = -1;
 
   void _zoomBy(double factor) {
     setState(() {
-      _scale = (_scale * factor).clamp(0.5, 3.0);
+      _scale = (_scale * factor).clamp(_minScale, _maxScale);
       _baseScale = _scale;
     });
+  }
+
+  void _zoomIn() => _zoomBy(_zoomFactor);
+  void _zoomOut() => _zoomBy(1 / _zoomFactor);
+
+  Widget _buildZoomButtons() {
+    final canZoomOut = _scale > _minScale + 0.01;
+    final canZoomIn = _scale < _maxScale - 0.01;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _CanvasZoomButton(
+          icon: Icons.add,
+          tooltip: '拡大',
+          enabled: canZoomIn,
+          onPressed: _zoomIn,
+        ),
+        const SizedBox(height: 6),
+        _CanvasZoomButton(
+          icon: Icons.remove,
+          tooltip: '縮小',
+          enabled: canZoomOut,
+          onPressed: _zoomOut,
+        ),
+      ],
+    );
   }
 
   @override
@@ -221,7 +253,8 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
 
                         setState(() {
                           // Handle Scaling (Pinch)
-                          _scale = (_baseScale * details.scale).clamp(0.5, 3.0);
+                          _scale = (_baseScale * details.scale)
+                              .clamp(_minScale, _maxScale);
 
                           // Handle Rotation (Pan) - only for 3D
                           if (widget.is3D) {
@@ -245,72 +278,39 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
                     );
                   },
                 ),
-                Positioned(
-                  top: 10,
-                  right: 10,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (kIsWeb)
-                        DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.45),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                visualDensity: VisualDensity.compact,
-                                iconSize: 26,
-                                color: Colors.white,
-                                tooltip: 'Zoom out',
-                                onPressed: () => _zoomBy(1 / 1.15),
-                                icon: const Icon(Icons.remove),
-                              ),
-                              Container(
-                                width: 1,
-                                height: 26,
-                                color: Colors.white.withOpacity(0.25),
-                              ),
-                              IconButton(
-                                visualDensity: VisualDensity.compact,
-                                iconSize: 26,
-                                color: Colors.white,
-                                tooltip: 'Zoom in',
-                                onPressed: () => _zoomBy(1.15),
-                                icon: const Icon(Icons.add),
-                              ),
-                            ],
-                          ),
+                if (widget.enableTime && widget.showTimeOverlay)
+                  Positioned(
+                    top: 10,
+                    right: 10,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Text(
+                        'Time: ${time.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Courier',
                         ),
-                      if (kIsWeb) const SizedBox(width: 8),
-                      if (widget.enableTime && widget.showTimeOverlay)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 5,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.5),
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                          child: Text(
-                            'Time: ${time.toStringAsFixed(2)}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Courier',
-                            ),
-                          ),
-                        ),
-                    ],
+                      ),
+                    ),
                   ),
-                ),
+                if (widget.showZoomButtons)
+                  Positioned(
+                    right: 10,
+                    bottom: 10,
+                    child: _buildZoomButtons(),
+                  ),
                 if (widget.rangeLabel != null)
                   Positioned(
-                    top: kIsWeb ? 48 : 10,
+                    top: 10,
                     left: 10,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
@@ -474,6 +474,39 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
           ),
         );
       },
+    );
+  }
+}
+
+/// 公式集より一回り小さいキャンバス用拡大縮小ボタン
+class _CanvasZoomButton extends StatelessWidget {
+  final IconData icon;
+  final String tooltip;
+  final bool enabled;
+  final VoidCallback onPressed;
+
+  const _CanvasZoomButton({
+    required this.icon,
+    required this.tooltip,
+    required this.enabled,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.black.withValues(alpha: enabled ? 0.45 : 0.22),
+      shape: const CircleBorder(),
+      clipBehavior: Clip.antiAlias,
+      child: IconButton(
+        onPressed: enabled ? onPressed : null,
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints.tightFor(width: 34, height: 34),
+        visualDensity: VisualDensity.compact,
+        iconSize: 18,
+        icon: Icon(icon, color: enabled ? Colors.white : Colors.white38),
+        tooltip: tooltip,
+      ),
     );
   }
 }
