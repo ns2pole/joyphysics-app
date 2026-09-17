@@ -103,31 +103,27 @@ class _FormulaCollectionViewState extends State<FormulaCollectionView> {
         children: [
           LayoutBuilder(
             builder: (context, constraints) {
-              // 黒余白ごと画面全体をズーム・パン対象にする
-              final margin = EdgeInsets.symmetric(
-                horizontal: constraints.maxWidth * 0.5,
-                vertical: constraints.maxHeight * 0.5,
-              );
+              // 画像端までパンできれば十分（外側への余白パンは不要）
               return InteractiveViewer(
                 transformationController: _transformController,
                 minScale: _minScale,
                 maxScale: _maxScale,
-                boundaryMargin: margin,
+                boundaryMargin: EdgeInsets.zero,
                 clipBehavior: Clip.hardEdge,
                 child: SizedBox(
                   width: constraints.maxWidth,
                   height: constraints.maxHeight,
-                  child: Flex(
-                    direction: isPortrait ? Axis.vertical : Axis.horizontal,
-                    children: [
-                      for (final path in _images)
-                        Expanded(
-                          child: Image.asset(
-                            path,
-                            fit: BoxFit.contain,
-                          ),
-                        ),
-                    ],
+                  child: FittedBox(
+                    fit: BoxFit.contain,
+                    child: Flex(
+                      direction:
+                          isPortrait ? Axis.vertical : Axis.horizontal,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        for (final path in _images)
+                          Image.asset(path),
+                      ],
+                    ),
                   ),
                 ),
               );

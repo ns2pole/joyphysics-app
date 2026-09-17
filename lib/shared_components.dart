@@ -3,28 +3,181 @@ import 'package:flutter/material.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 import 'package:joyphysics/model.dart';
 
-/// 共通の全画面画像表示ページ
-class PhysicsFullscreenImagePage extends StatelessWidget {
+/// 共通の全画面画像表示ページ（公式集と同じ +/- ズーム・画像端までのパン）
+class PhysicsFullscreenImagePage extends StatefulWidget {
   final String imageAsset;
+  final String? title;
 
-  const PhysicsFullscreenImagePage({Key? key, required this.imageAsset}) : super(key: key);
+  const PhysicsFullscreenImagePage({
+    Key? key,
+    required this.imageAsset,
+    this.title,
+  }) : super(key: key);
+
+  @override
+  State<PhysicsFullscreenImagePage> createState() =>
+      _PhysicsFullscreenImagePageState();
+}
+
+class _PhysicsFullscreenImagePageState
+    extends State<PhysicsFullscreenImagePage> {
+  final _viewerKey = GlobalKey();
+  final _transformController = TransformationController();
+  double _scale = 1.0;
+  Orientation? _orientation;
+
+  static const _minScale = 1.0;
+  static const _maxScale = 6.0;
+  static const _zoomStep = 0.5;
+
+  @override
+  void initState() {
+    super.initState();
+    _transformController.addListener(_onTransformChanged);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final orientation = MediaQuery.orientationOf(context);
+    if (_orientation != null && _orientation != orientation) {
+      _transformController.value = Matrix4.identity();
+      _scale = 1.0;
+    }
+    _orientation = orientation;
+  }
+
+  @override
+  void dispose() {
+    _transformController.removeListener(_onTransformChanged);
+    _transformController.dispose();
+    super.dispose();
+  }
+
+  void _onTransformChanged() {
+    final next = _transformController.value.getMaxScaleOnAxis();
+    if ((next - _scale).abs() > 0.01) {
+      setState(() => _scale = next);
+    }
+  }
+
+  Size _viewerSize() {
+    final box = _viewerKey.currentContext?.findRenderObject() as RenderBox?;
+    return box?.size ?? MediaQuery.sizeOf(context);
+  }
+
+  void _applyScale(double nextScale) {
+    final current = _transformController.value.getMaxScaleOnAxis();
+    final next = nextScale.clamp(_minScale, _maxScale);
+    if ((next - current).abs() < 0.001) return;
+
+    // 画面中央を基準に拡大縮小
+    final size = _viewerSize();
+    final focal = Offset(size.width / 2, size.height / 2);
+    final sceneFocal = _transformController.toScene(focal);
+
+    _transformController.value = Matrix4.identity()
+      ..translateByDouble(focal.dx, focal.dy, 0, 1)
+      ..scaleByDouble(next, next, 1, 1)
+      ..translateByDouble(-sceneFocal.dx, -sceneFocal.dy, 0, 1);
+
+    setState(() => _scale = next);
+  }
+
+  void _zoomIn() {
+    final current = _transformController.value.getMaxScaleOnAxis();
+    _applyScale(current + _zoomStep);
+  }
+
+  void _zoomOut() {
+    final current = _transformController.value.getMaxScaleOnAxis();
+    _applyScale(current - _zoomStep);
+  }
 
   @override
   Widget build(BuildContext context) {
+    final canZoomOut = _scale > _minScale + 0.01;
+    final canZoomIn = _scale < _maxScale - 0.01;
+
     return Scaffold(
       backgroundColor: Colors.black,
-      body: GestureDetector(
-        onTap: () => Navigator.pop(context),
-        child: Center(
-          child: InteractiveViewer(
-            panEnabled: true,
-            scaleEnabled: true,
-            child: Image.asset(
-              imageAsset,
-              fit: BoxFit.contain,
+      appBar: AppBar(
+        title: Text(widget.title ?? ''),
+      ),
+      body: Stack(
+        key: _viewerKey,
+        children: [
+          LayoutBuilder(
+            builder: (context, constraints) {
+              // 画像端までパンできれば十分（外側への余白パンは不要）
+              return InteractiveViewer(
+                transformationController: _transformController,
+                minScale: _minScale,
+                maxScale: _maxScale,
+                boundaryMargin: EdgeInsets.zero,
+                clipBehavior: Clip.hardEdge,
+                child: SizedBox(
+                  width: constraints.maxWidth,
+                  height: constraints.maxHeight,
+                  child: Image.asset(
+                    widget.imageAsset,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              );
+            },
+          ),
+          Positioned(
+            right: 16,
+            bottom: 16 + MediaQuery.of(context).padding.bottom,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _FullscreenZoomButton(
+                  icon: Icons.add,
+                  tooltip: '拡大',
+                  enabled: canZoomIn,
+                  onPressed: _zoomIn,
+                ),
+                const SizedBox(height: 8),
+                _FullscreenZoomButton(
+                  icon: Icons.remove,
+                  tooltip: '縮小',
+                  enabled: canZoomOut,
+                  onPressed: _zoomOut,
+                ),
+              ],
             ),
           ),
-        ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FullscreenZoomButton extends StatelessWidget {
+  final IconData icon;
+  final String tooltip;
+  final bool enabled;
+  final VoidCallback onPressed;
+
+  const _FullscreenZoomButton({
+    required this.icon,
+    required this.tooltip,
+    required this.enabled,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white.withValues(alpha: enabled ? 0.22 : 0.1),
+      shape: const CircleBorder(),
+      clipBehavior: Clip.antiAlias,
+      child: IconButton(
+        onPressed: enabled ? onPressed : null,
+        icon: Icon(icon, color: enabled ? Colors.white : Colors.white38),
+        tooltip: tooltip,
       ),
     );
   }
