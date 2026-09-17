@@ -1,0 +1,1 @@
+Google Play の対象 API レベル要件に対応しました。
