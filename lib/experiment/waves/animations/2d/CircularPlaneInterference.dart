@@ -13,6 +13,7 @@ final circularPlaneInterference = createWaveVideo(
   <p>平面波は $x$ 軸の負の方向からやってくるように設定されています。</p>
   <p>合成波の変位 $z$ は、円形波の変位 $z_C$ と平面波の変位 $z_P$ の和です：</p>
   <p>\[ z = z_C + z_P \]</p>
+  <p>周期 $T_C = T_P$ のとき、「節線」（オレンジ・点線）で弱め合い、「腹線」（オレンジ・実線）で強め合いの曲線を表示できます（周期が異なると定常な節線・腹線はないため描画しません）。</p>
   """,
   simulation: CircularPlaneInterferenceSimulation(),
 );
@@ -49,7 +50,11 @@ class CircularPlaneInterferenceSimulation extends WaveSimulation {
       );
 
   @override
-  Set<String> get initialActiveIds => {'combined'};
+  Set<String> get initialActiveIds =>
+      {'combined', 'showNodalLines', 'showAntinodalLines'};
+
+  bool _samePeriod(Map<String, double> params) =>
+      (params['periodTC']! - params['periodTP']!).abs() < 1e-9;
 
   @override
   List<Widget> buildControls(context, params, updateParam) {
@@ -90,12 +95,19 @@ class CircularPlaneInterferenceSimulation extends WaveSimulation {
   Widget buildExtraControls(context, activeIds, updateActiveIds) {
     return Wrap(
       spacing: 8,
+      alignment: WrapAlignment.center,
       children: [
         buildChip('円形波', 'waveC', Colors.purpleAccent, activeIds, updateActiveIds,
             fontSize: 12),
         buildChip('平面波', 'waveP', Colors.greenAccent, activeIds, updateActiveIds,
             fontSize: 12),
         buildChip('合成', 'combined', Colors.blueAccent, activeIds, updateActiveIds,
+            fontSize: 12),
+        buildChip('節線', 'showNodalLines', Colors.orange, activeIds,
+            updateActiveIds,
+            fontSize: 12),
+        buildChip('腹線', 'showAntinodalLines', Colors.orange, activeIds,
+            updateActiveIds,
             fontSize: 12),
       ],
     );
@@ -112,6 +124,7 @@ class CircularPlaneInterferenceSimulation extends WaveSimulation {
       periodTP: params['periodTP']!,
       amplitude: 0.3,
     );
+    final canNodal = _samePeriod(params);
     return CustomPaint(
       size: Size.infinite,
       painter: WaveSurfacePainter(
@@ -125,6 +138,11 @@ class CircularPlaneInterferenceSimulation extends WaveSimulation {
           WaveMarker(point: const math.Point(0.0, 0.0), color: Colors.yellow, label: '円形波源'),
           getObsMarker(params, label: '観測点'),
         ],
+        showNodalLines: canNodal && activeIds.contains('showNodalLines'),
+        nodalMetric: canNodal ? field.nodalMetric : null,
+        showAntinodalLines:
+            canNodal && activeIds.contains('showAntinodalLines'),
+        antinodalMetric: canNodal ? field.antinodalMetric : null,
       ),
     );
   }

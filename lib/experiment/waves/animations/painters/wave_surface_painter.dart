@@ -34,6 +34,22 @@ class MediumSlabOverlay {
   int get hashCode => Object.hash(xStart, xEnd, color, opacity);
 }
 
+/// 波源→観測点方向に沿った1次元断面波形の指定
+class RadialCrossSectionSpec {
+  const RadialCrossSectionSpec({
+    required this.start,
+    required this.end,
+    required this.zAt,
+    this.color = Colors.deepPurple,
+  });
+
+  final math.Point<double> start;
+  final math.Point<double> end;
+  /// その断面で描く変位（干渉では各波源成分を渡す）
+  final double Function(double x, double y) zAt;
+  final Color color;
+}
+
 class WaveSurfacePainter extends CustomPainter {
   WaveSurfacePainter({
     required this.time,
@@ -56,6 +72,12 @@ class WaveSurfacePainter extends CustomPainter {
     this.showIntensityLine = false,
     this.showScreen = true,
     this.scale = 1.0,
+    this.radialCrossSections = const [],
+    this.showCrossSectionSum = true,
+    this.showNodalLines = false,
+    this.nodalMetric,
+    this.showAntinodalLines = false,
+    this.antinodalMetric,
   });
 
   final double time;
@@ -78,6 +100,18 @@ class WaveSurfacePainter extends CustomPainter {
   final bool showIntensityLine;
   final bool showScreen;
   final double scale;
+  /// 波源→観測点方向の1次元断面（複数可）
+  final List<RadialCrossSectionSpec> radialCrossSections;
+  /// 同一観測点で複数断面があるとき、合成変位を青の縦線で表示する
+  final bool showCrossSectionSum;
+  /// 弱め合いの節線（nodalMetric のゼロ等高線）
+  final bool showNodalLines;
+  /// ゼロが節線となる指標（例: cos(δ/2)）
+  final double Function(double x, double y)? nodalMetric;
+  /// 強め合いの腹線（antinodalMetric のゼロ等高線）
+  final bool showAntinodalLines;
+  /// ゼロが腹線となる指標（例: sin(δ/2)）
+  final double Function(double x, double y)? antinodalMetric;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -613,6 +647,275 @@ class WaveSurfacePainter extends CustomPainter {
     drawAxis(0, axisLen, 0, Colors.green, yAxisLabel);
     drawAxis(0, 0, 3.5, Colors.blue, zAxisLabel);
 
+    // 節線・腹線: metric のゼロ等高線を z=0 上に描く
+    void drawZeroContours({
+      required double Function(double x, double y) metric,
+      required Color color,
+      required bool dashed,
+    }) {
+      final metricGrid = Float64List(numPoints * numPoints);
+      for (int i = 0; i < numPoints; i++) {
+        final x = -range + i * step;
+        for (int j = 0; j < numPoints; j++) {
+          final y = -range + j * step;
+          metricGrid[i * numPoints + j] = metric(x, y);
+        }
+      }
+
+      final paint = Paint()
+        ..color = color
+        ..strokeWidth = 2.4
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round
+        ..isAntiAlias = true;
+
+      Offset? zeroOnEdge(
+        double x0,
+        double y0,
+        double f0,
+        double x1,
+        double y1,
+        double f1,
+      ) {
+        if (f0 == 0.0) return Offset(x0, y0);
+        if (f1 == 0.0) return Offset(x1, y1);
+        if (f0 * f1 > 0) return null;
+        final t = f0 / (f0 - f1);
+        return Offset(x0 + t * (x1 - x0), y0 + t * (y1 - y0));
+      }
+
+      // マーチングスクエアはセル毎の短い線分になる。
+      // PathMetric で点線化すると各断片が dash より短く、全部「線の先頭」になり実線に見える。
+      // 画面座標の進行方向への射影で位相を揃えて、隣接セルでも隙間が続くようにする。
+      void drawSegment(Offset a, Offset b) {
+        if (!dashed) {
+          canvas.drawLine(a, b, paint);
+          return;
+        }
+        const dashLen = 12.0;
+        const gapLen = 10.0;
+        const pattern = dashLen + gapLen;
+        final dx = b.dx - a.dx;
+        final dy = b.dy - a.dy;
+        final len = math.sqrt(dx * dx + dy * dy);
+        if (len < 1e-6) return;
+        final ux = dx / len;
+        final uy = dy / len;
+        // 同一方向の連続線分で位相がつながるよう、始点の射影でオフセット
+        var pos = a.dx * ux + a.dy * uy;
+        var drawn = 0.0;
+        while (drawn < len) {
+          var inPat = pos % pattern;
+          if (inPat < 0) inPat += pattern;
+          final drawDash = inPat < dashLen;
+          final remain =
+              drawDash ? (dashLen - inPat) : (pattern - inPat);
+          final seg = math.min(remain, len - drawn);
+          if (drawDash && seg > 0.35) {
+            final p0 = Offset(a.dx + ux * drawn, a.dy + uy * drawn);
+            final p1 =
+                Offset(a.dx + ux * (drawn + seg), a.dy + uy * (drawn + seg));
+            canvas.drawLine(p0, p1, paint);
+          }
+          drawn += seg;
+          pos += seg;
+        }
+      }
+
+      for (int i = 0; i < div; i++) {
+        final x0 = -range + i * step;
+        final x1 = x0 + step;
+        for (int j = 0; j < div; j++) {
+          final y0 = -range + j * step;
+          final y1 = y0 + step;
+          final f00 = metricGrid[i * numPoints + j];
+          final f10 = metricGrid[(i + 1) * numPoints + j];
+          final f11 = metricGrid[(i + 1) * numPoints + (j + 1)];
+          final f01 = metricGrid[i * numPoints + (j + 1)];
+
+          final crossings = <Offset>[];
+          void add(Offset? p) {
+            if (p != null) crossings.add(p);
+          }
+
+          add(zeroOnEdge(x0, y0, f00, x1, y0, f10));
+          add(zeroOnEdge(x1, y0, f10, x1, y1, f11));
+          add(zeroOnEdge(x1, y1, f11, x0, y1, f01));
+          add(zeroOnEdge(x0, y1, f01, x0, y0, f00));
+
+          if (crossings.length >= 2) {
+            drawSegment(
+              worldToScreen(crossings[0].dx, crossings[0].dy, 0),
+              worldToScreen(crossings[1].dx, crossings[1].dy, 0),
+            );
+            if (crossings.length >= 4) {
+              drawSegment(
+                worldToScreen(crossings[2].dx, crossings[2].dy, 0),
+                worldToScreen(crossings[3].dx, crossings[3].dy, 0),
+              );
+            }
+          }
+        }
+      }
+    }
+
+    // 観測点(赤)・波源(黄)・曲面(紫)と被らないオレンジ
+    const nodalColor = Color(0xFFFB8C00);
+    if (showNodalLines && nodalMetric != null) {
+      drawZeroContours(
+        metric: nodalMetric!,
+        color: nodalColor,
+        dashed: true,
+      );
+    }
+    if (showAntinodalLines && antinodalMetric != null) {
+      drawZeroContours(
+        metric: antinodalMetric!,
+        color: nodalColor,
+        dashed: false,
+      );
+    }
+
+    // 波源〜観測点を結ぶ方向の断面波形（切断平面 + z=0上の基線 + 各成分の変位曲線）
+    void drawOneCrossSection(RadialCrossSectionSpec spec) {
+      final sx = spec.start.x;
+      final sy = spec.start.y;
+      final ex = spec.end.x;
+      final ey = spec.end.y;
+      final dx = ex - sx;
+      final dy = ey - sy;
+      final dist = math.sqrt(dx * dx + dy * dy);
+      if (dist <= 1e-6) return;
+
+      final ux = dx / dist;
+      final uy = dy / dist;
+
+      // xy 上の直線を可視領域 [-range, range]^2 でクリップ（両方向＝無限平面の足元）
+      double tMin = double.negativeInfinity;
+      double tMax = double.infinity;
+      if (ux.abs() > 1e-9) {
+        final tA = (-range - sx) / ux;
+        final tB = (range - sx) / ux;
+        tMin = math.max(tMin, math.min(tA, tB));
+        tMax = math.min(tMax, math.max(tA, tB));
+      } else if (sx < -range || sx > range) {
+        return;
+      }
+      if (uy.abs() > 1e-9) {
+        final tA = (-range - sy) / uy;
+        final tB = (range - sy) / uy;
+        tMin = math.max(tMin, math.min(tA, tB));
+        tMax = math.min(tMax, math.max(tA, tB));
+      } else if (sy < -range || sy > range) {
+        return;
+      }
+      if (!tMin.isFinite || !tMax.isFinite || tMax <= tMin) return;
+
+      final x0 = sx + tMin * ux;
+      final y0 = sy + tMin * uy;
+      final x1 = sx + tMax * ux;
+      final y1 = sy + tMax * uy;
+
+      // z軸に平行な半透明の切断平面（xyは直線で拘束）
+      const zExtent = 2.8;
+      final cuttingPlanePaint = Paint()
+        ..color = spec.color.withOpacity(0.22)
+        ..style = PaintingStyle.fill
+        ..isAntiAlias = true;
+      final c1 = worldToScreen(x0, y0, -zExtent);
+      final c2 = worldToScreen(x1, y1, -zExtent);
+      final c3 = worldToScreen(x1, y1, zExtent);
+      final c4 = worldToScreen(x0, y0, zExtent);
+      final cuttingPath = Path()
+        ..moveTo(c1.dx, c1.dy)
+        ..lineTo(c2.dx, c2.dy)
+        ..lineTo(c3.dx, c3.dy)
+        ..lineTo(c4.dx, c4.dy)
+        ..close();
+      canvas.drawPath(cuttingPath, cuttingPlanePaint);
+      canvas.drawPath(
+        cuttingPath,
+        Paint()
+          ..color = spec.color.withOpacity(0.40)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.0,
+      );
+
+      final basePaint = Paint()
+        ..color = spec.color.withOpacity(0.55)
+        ..strokeWidth = 1.8
+        ..style = PaintingStyle.stroke;
+      canvas.drawLine(
+        worldToScreen(x0, y0, 0),
+        worldToScreen(x1, y1, 0),
+        basePaint,
+      );
+
+      // 切断平面上の変位曲線（領域内の直線全体）
+      final sectionPaint = Paint()
+        ..color = spec.color
+        ..strokeWidth = 3.2
+        ..style = PaintingStyle.stroke
+        ..isAntiAlias = true;
+      final sectionPath = Path();
+      const samples = 160;
+      for (int i = 0; i <= samples; i++) {
+        final tParam = tMin + (tMax - tMin) * i / samples;
+        final x = sx + tParam * ux;
+        final y = sy + tParam * uy;
+        final z = spec.zAt(x, y);
+        final p = worldToScreen(x, y, z);
+        if (i == 0) {
+          sectionPath.moveTo(p.dx, p.dy);
+        } else {
+          sectionPath.lineTo(p.dx, p.dy);
+        }
+      }
+      canvas.drawPath(sectionPath, sectionPaint);
+    }
+
+    for (final spec in radialCrossSections) {
+      drawOneCrossSection(spec);
+    }
+
+    // 観測点の合成変位（z軸平行・青単色）
+    if (showCrossSectionSum && radialCrossSections.isNotEmpty) {
+      final obs = radialCrossSections.first.end;
+      final sameEnd = radialCrossSections.every(
+        (s) =>
+            (s.end.x - obs.x).abs() < 1e-9 && (s.end.y - obs.y).abs() < 1e-9,
+      );
+      if (sameEnd) {
+        double sumZ = 0.0;
+        for (final spec in radialCrossSections) {
+          sumZ += spec.zAt(obs.x, obs.y);
+        }
+        canvas.drawLine(
+          worldToScreen(obs.x, obs.y, 0),
+          worldToScreen(obs.x, obs.y, sumZ),
+          Paint()
+            ..color = Colors.blueAccent
+            ..strokeWidth = 3.2
+            ..style = PaintingStyle.stroke
+            ..strokeCap = StrokeCap.round,
+        );
+        final tip = worldToScreen(obs.x, obs.y, sumZ);
+        canvas.drawCircle(
+          tip,
+          4.5,
+          Paint()..color = Colors.blueAccent,
+        );
+        canvas.drawCircle(
+          tip,
+          4.5,
+          Paint()
+            ..color = Colors.black54
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.0,
+        );
+      }
+    }
+
     final markerStroke = Paint()
       ..color = Colors.black.withOpacity(0.5)
       ..strokeWidth = 1.0
@@ -666,6 +969,26 @@ class WaveSurfacePainter extends CustomPainter {
         oldDelegate.showIntersectionLine != showIntersectionLine ||
         oldDelegate.showIntensityLine != showIntensityLine ||
         oldDelegate.showScreen != showScreen ||
-        oldDelegate.scale != scale;
+        oldDelegate.scale != scale ||
+        oldDelegate.showCrossSectionSum != showCrossSectionSum ||
+        oldDelegate.showNodalLines != showNodalLines ||
+        oldDelegate.showAntinodalLines != showAntinodalLines ||
+        oldDelegate.radialCrossSections.length != radialCrossSections.length ||
+        !_sameCrossSections(oldDelegate.radialCrossSections, radialCrossSections);
+  }
+
+  static bool _sameCrossSections(
+    List<RadialCrossSectionSpec> a,
+    List<RadialCrossSectionSpec> b,
+  ) {
+    if (a.length != b.length) return false;
+    for (int i = 0; i < a.length; i++) {
+      if (a[i].start != b[i].start ||
+          a[i].end != b[i].end ||
+          a[i].color != b[i].color) {
+        return false;
+      }
+    }
+    return true;
   }
 }

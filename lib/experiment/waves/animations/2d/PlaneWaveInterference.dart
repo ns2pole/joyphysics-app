@@ -12,6 +12,7 @@ final planeWaveInterference = createWaveVideo(
   <p>2つの異なる方向へ進む平面波が重なり合うことで干渉縞が生じます。</p>
   <p>合成波の変位 $z$ は、個々の波の変位 $z_1, z_2$ の和で表されます：</p>
   <p>\[ z = z_1 + z_2 \]</p>
+  <p>周期 $T_1 = T_2$ のとき、「節線」で弱め合いの曲線を表示できます（周期が異なると定常な節線はないため描画しません）。</p>
   """,
   simulation: PlaneWaveInterferenceSimulation(),
 );
@@ -49,7 +50,10 @@ class PlaneWaveInterferenceSimulation extends WaveSimulation {
       );
 
   @override
-  Set<String> get initialActiveIds => {'combined'};
+  Set<String> get initialActiveIds => {'combined', 'showNodalLines'};
+
+  bool _samePeriod(Map<String, double> params) =>
+      (params['periodT1']! - params['periodT2']!).abs() < 1e-9;
 
   @override
   List<Widget> buildControls(context, params, updateParam) {
@@ -91,12 +95,16 @@ class PlaneWaveInterferenceSimulation extends WaveSimulation {
   Widget buildExtraControls(context, activeIds, updateActiveIds) {
     return Wrap(
       spacing: 8,
+      alignment: WrapAlignment.center,
       children: [
         buildChip('波1', 'wave1', Colors.purpleAccent, activeIds, updateActiveIds,
             fontSize: 12),
         buildChip('波2', 'wave2', Colors.greenAccent, activeIds, updateActiveIds,
             fontSize: 12),
         buildChip('合成', 'combined', Colors.blueAccent, activeIds, updateActiveIds,
+            fontSize: 12),
+        buildChip('節線', 'showNodalLines', Colors.orange, activeIds,
+            updateActiveIds,
             fontSize: 12),
       ],
     );
@@ -114,6 +122,7 @@ class PlaneWaveInterferenceSimulation extends WaveSimulation {
       periodT2: params['periodT2']!,
       amplitude: 0.3,
     );
+    final canNodal = _samePeriod(params);
     return CustomPaint(
       size: Size.infinite,
       painter: WaveSurfacePainter(
@@ -126,6 +135,8 @@ class PlaneWaveInterferenceSimulation extends WaveSimulation {
         markers: [
           getObsMarker(params, label: '観測点'),
         ],
+        showNodalLines: canNodal && activeIds.contains('showNodalLines'),
+        nodalMetric: canNodal ? field.nodalMetric : null,
       ),
     );
   }

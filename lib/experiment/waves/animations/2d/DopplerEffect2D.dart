@@ -14,6 +14,7 @@ final dopplerEffect2D = createWaveVideo(
   <p>この $\tau$ は以下の関係式を満たします：</p>
   <p>$$t - \tau = \frac{\sqrt{(x - v\tau)^2 + y^2}}{V}$$</p>
   <p>ここで $V = \lambda / T$ は波の速さ、$v$ は音源の速度です。このシミュレーションでは、音源が原点を出発して $x$ 軸上を正の向きに移動する様子を描いています。</p>
+  <p>「断面」をオンにすると、その瞬間の音源と観測点を結ぶ直線上の変位が1次元の波形として見えます。</p>
   """,
   simulation: DopplerEffect2DSimulation(),
 );
@@ -43,6 +44,9 @@ class DopplerEffect2DSimulation extends WaveSimulation {
         obsX: 2.0,
         obsY: 0.0,
       );
+
+  @override
+  Set<String> get initialActiveIds => {'total', 'showCrossSection'};
 
   @override
   List<Widget> buildControls(context, params, updateParam) {
@@ -88,6 +92,22 @@ class DopplerEffect2DSimulation extends WaveSimulation {
   }
 
   @override
+  Widget buildExtraControls(context, activeIds, updateActiveIds) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        buildChip(
+          '断面',
+          'showCrossSection',
+          Colors.deepPurple,
+          activeIds,
+          updateActiveIds,
+        ),
+      ],
+    );
+  }
+
+  @override
   Widget buildAnimation(
       context, time, azimuth, tilt, scale, params, activeIds) {
     final field = DopplerEffect2DField(
@@ -97,7 +117,8 @@ class DopplerEffect2DSimulation extends WaveSimulation {
       amplitude: 0.4,
     );
 
-    final sourceX = params['vSource']! * time;
+    final source = math.Point(params['vSource']! * time, 0.0);
+    final obs = math.Point(params['obsX']!, params['obsY']!);
 
     return CustomPaint(
       size: Size.infinite,
@@ -109,8 +130,17 @@ class DopplerEffect2DSimulation extends WaveSimulation {
         activeComponentIds: activeIds,
         scale: scale,
         markers: [
-          WaveMarker(point: math.Point(sourceX, 0.0), color: Colors.yellow),
+          WaveMarker(point: source, color: Colors.yellow),
           getObsMarker(params, label: '観測点 (a, b)'),
+        ],
+        radialCrossSections: [
+          if (activeIds.contains('showCrossSection'))
+            RadialCrossSectionSpec(
+              start: source,
+              end: obs,
+              color: Colors.deepPurple,
+              zAt: (x, y) => field.z(x, y, time),
+            ),
         ],
       ),
     );

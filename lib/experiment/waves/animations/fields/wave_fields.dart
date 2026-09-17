@@ -788,66 +788,69 @@ class CircularInterferenceField extends WaveField {
   @override
   double phase(double x, double y, double t) {
     // Return phase of the first source for rough visualization
-    final v = lambda / periodT;
     final r1 = math.sqrt(x * x + (y - a) * (y - a));
     return 2 * math.pi * (t / periodT - r1 / lambda);
   }
 
-  @override
-  double z(double x, double y, double t) {
+  double z1(double x, double y, double t) {
     final v = lambda / periodT;
-
-    // Source 1: (0, a)
     final r1 = math.sqrt(x * x + (y - a) * (y - a));
     final tReach1 = r1 / v;
-    final z1 = (t >= tReach1)
+    return (t >= tReach1)
         ? amplitude * math.sin(2 * math.pi * (t / periodT - r1 / lambda))
         : 0.0;
+  }
 
-    // Source 2: (0, -a)
+  double z2(double x, double y, double t) {
+    final v = lambda / periodT;
     final r2 = math.sqrt(x * x + (y + a) * (y + a));
     final tReach2 = r2 / v;
-    final z2 = (t >= tReach2)
+    return (t >= tReach2)
         ? amplitude * math.sin(2 * math.pi * (t / periodT - r2 / lambda) + phi)
         : 0.0;
+  }
 
-    return z1 + z2;
+  @override
+  double z(double x, double y, double t) => z1(x, y, t) + z2(x, y, t);
+
+  /// 弱め合い節線の指標。ゼロ ⇔ δ=(2m+1)π
+  /// δ = 2π(r1-r2)/λ + φ
+  double nodalMetric(double x, double y) {
+    final r1 = math.sqrt(x * x + (y - a) * (y - a));
+    final r2 = math.sqrt(x * x + (y + a) * (y + a));
+    final delta = 2 * math.pi * (r1 - r2) / lambda + phi;
+    return math.cos(delta / 2);
+  }
+
+  /// 強め合い腹線の指標。ゼロ ⇔ δ=2mπ
+  double antinodalMetric(double x, double y) {
+    final r1 = math.sqrt(x * x + (y - a) * (y - a));
+    final r2 = math.sqrt(x * x + (y + a) * (y + a));
+    final delta = 2 * math.pi * (r1 - r2) / lambda + phi;
+    return math.sin(delta / 2);
   }
 
   @override
   List<WaveComponent> getComponents(
       double x, double y, double t, Set<String> activeIds) {
-    final v = lambda / periodT;
-
-    // Source 1
-    final r1 = math.sqrt(x * x + (y - a) * (y - a));
-    final tReach1 = r1 / v;
-    final z1 = (t >= tReach1)
-        ? amplitude * math.sin(2 * math.pi * (t / periodT - r1 / lambda))
-        : 0.0;
-
-    // Source 2
-    final r2 = math.sqrt(x * x + (y + a) * (y + a));
-    final tReach2 = r2 / v;
-    final z2 = (t >= tReach2)
-        ? amplitude * math.sin(2 * math.pi * (t / periodT - r2 / lambda) + phi)
-        : 0.0;
+    final v1 = z1(x, y, t);
+    final v2 = z2(x, y, t);
 
     final List<WaveComponent> res = [];
     if (activeIds.contains('wave1')) {
       res.add(WaveComponent(
-          id: 'wave1', label: '波1', color: Colors.purpleAccent, value: z1));
+          id: 'wave1', label: '波1', color: Colors.purpleAccent, value: v1));
     }
     if (activeIds.contains('wave2')) {
       res.add(WaveComponent(
-          id: 'wave2', label: '波2', color: Colors.greenAccent, value: z2));
+          id: 'wave2', label: '波2', color: Colors.greenAccent, value: v2));
     }
     if (activeIds.contains('combined')) {
       res.add(WaveComponent(
           id: 'combined',
           label: '合成波',
           color: Colors.blueAccent,
-          value: z1 + z2));
+          value: v1 + v2));
     }
     return res;
   }
@@ -966,6 +969,18 @@ class PlaneWaveInterferenceField extends WaveField {
     final z2 = (p2 > 0) ? amplitude * math.sin(p2) : 0.0;
 
     return z1 + z2;
+  }
+
+  /// 同周期のとき定常節線の指標。空間位相差 δ について cos(δ/2)。
+  double nodalMetric(double x, double y) {
+    const dOffset = 7.5;
+    final dir1 = x * math.cos(theta1) + y * math.sin(theta1);
+    final dir2 = x * math.cos(theta2) + y * math.sin(theta2);
+    // p = ωt - 2π(dir+dOffset)/λ  → 空間位相 = -2π(dir+dOffset)/λ
+    final phi1 = -2 * math.pi * (dir1 + dOffset) / lambda1;
+    final phi2 = -2 * math.pi * (dir2 + dOffset) / lambda2;
+    final delta = phi1 - phi2;
+    return math.cos(delta / 2);
   }
 
   @override
@@ -1933,6 +1948,29 @@ class CircularPlaneInterferenceField extends WaveField {
     final zP = (pP > 0) ? amplitude * math.sin(pP) : 0.0;
 
     return zC + zP;
+  }
+
+  /// 同周期のとき定常節線の指標。
+  /// argC = ωt - 2π r/λC,  pP = ωt - 2π(dir+dOffset)/λP
+  double nodalMetric(double x, double y) {
+    const dOffset = 7.5;
+    final r = math.sqrt(x * x + y * y);
+    final dir = x * math.cos(thetaP) + y * math.sin(thetaP);
+    final phiC = -2 * math.pi * r / lambdaC;
+    final phiP = -2 * math.pi * (dir + dOffset) / lambdaP;
+    final delta = phiC - phiP;
+    return math.cos(delta / 2);
+  }
+
+  /// 同周期のとき定常腹線の指標。ゼロ ⇔ δ=2mπ
+  double antinodalMetric(double x, double y) {
+    const dOffset = 7.5;
+    final r = math.sqrt(x * x + y * y);
+    final dir = x * math.cos(thetaP) + y * math.sin(thetaP);
+    final phiC = -2 * math.pi * r / lambdaC;
+    final phiP = -2 * math.pi * (dir + dOffset) / lambdaP;
+    final delta = phiC - phiP;
+    return math.sin(delta / 2);
   }
 
   @override

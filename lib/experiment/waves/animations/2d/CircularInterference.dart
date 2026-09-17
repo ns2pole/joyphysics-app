@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_math_fork/flutter_math.dart';
 import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import '../fields/wave_fields.dart';
 import '../painters/wave_surface_painter.dart';
@@ -13,6 +12,8 @@ final circularInterference = createWaveVideo(
   <p>2つの波源からの距離の差が、波長の整数倍なら強め合い、半波長の奇数倍なら弱め合います。</p>
   <p>強め合いの条件: $|r_1 - r_2| = m\lambda$</p>
   <p>弱め合いの条件: $|r_1 - r_2| = (m + 1/2)\lambda$</p>
+  <p>「節線」（オレンジ・点線）で弱め合い、「腹線」（オレンジ・実線）で強め合いの曲線を表示できます。</p>
+  <p>「断面1」「断面2」をオンにすると、各波源と観測点を結ぶ直線上の変位が見えます。観測点では2つの高さを足したものが合成の振れ幅です。</p>
   """,
   simulation: CircularInterferenceSimulation(),
 );
@@ -48,7 +49,8 @@ class CircularInterferenceSimulation extends WaveSimulation {
       );
 
   @override
-  Set<String> get initialActiveIds => {'combined'};
+  Set<String> get initialActiveIds =>
+      {'combined', 'cross1', 'cross2', 'showNodalLines', 'showAntinodalLines'};
 
   @override
   List<Widget> buildControls(context, params, updateParam) {
@@ -80,15 +82,43 @@ class CircularInterferenceSimulation extends WaveSimulation {
 
   @override
   Widget buildExtraControls(context, activeIds, updateActiveIds) {
-    return Wrap(
-      spacing: 8,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        buildChip('波1', 'wave1', Colors.purpleAccent, activeIds, updateActiveIds,
-            fontSize: 12),
-        buildChip('波2', 'wave2', Colors.greenAccent, activeIds, updateActiveIds,
-            fontSize: 12),
-        buildChip('合成', 'combined', Colors.blueAccent, activeIds, updateActiveIds,
-            fontSize: 12),
+        Wrap(
+          spacing: 8,
+          alignment: WrapAlignment.center,
+          children: [
+            buildChip('波1', 'wave1', Colors.purpleAccent, activeIds,
+                updateActiveIds,
+                fontSize: 12),
+            buildChip('波2', 'wave2', Colors.greenAccent, activeIds,
+                updateActiveIds,
+                fontSize: 12),
+            buildChip('合成', 'combined', Colors.blueAccent, activeIds,
+                updateActiveIds,
+                fontSize: 12),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Wrap(
+          spacing: 8,
+          alignment: WrapAlignment.center,
+          children: [
+            buildChip('節線', 'showNodalLines', Colors.orange, activeIds,
+                updateActiveIds,
+                fontSize: 12),
+            buildChip('腹線', 'showAntinodalLines', Colors.orange, activeIds,
+                updateActiveIds,
+                fontSize: 12),
+            buildChip('断面1', 'cross1', Colors.purpleAccent, activeIds,
+                updateActiveIds,
+                fontSize: 12),
+            buildChip('断面2', 'cross2', Colors.greenAccent, activeIds,
+                updateActiveIds,
+                fontSize: 12),
+          ],
+        ),
       ],
     );
   }
@@ -103,6 +133,24 @@ class CircularInterferenceSimulation extends WaveSimulation {
       phi: params['phi']!,
       amplitude: 0.3,
     );
+    final a = params['a']!;
+    final obs = math.Point(params['obsX']!, params['obsY']!);
+    final sections = <RadialCrossSectionSpec>[
+      if (activeIds.contains('cross1'))
+        RadialCrossSectionSpec(
+          start: math.Point(0.0, a),
+          end: obs,
+          color: Colors.purpleAccent,
+          zAt: (x, y) => field.z1(x, y, time),
+        ),
+      if (activeIds.contains('cross2'))
+        RadialCrossSectionSpec(
+          start: math.Point(0.0, -a),
+          end: obs,
+          color: Colors.greenAccent,
+          zAt: (x, y) => field.z2(x, y, time),
+        ),
+    ];
     return CustomPaint(
       size: Size.infinite,
       painter: WaveSurfacePainter(
@@ -113,11 +161,16 @@ class CircularInterferenceSimulation extends WaveSimulation {
         activeComponentIds: activeIds,
         scale: scale,
         markers: [
-          WaveMarker(point: math.Point(0.0, params['a']!), color: Colors.yellow),
-          WaveMarker(
-              point: math.Point(0.0, -params['a']!), color: Colors.yellow),
+          WaveMarker(point: math.Point(0.0, a), color: Colors.yellow),
+          WaveMarker(point: math.Point(0.0, -a), color: Colors.yellow),
           getObsMarker(params, label: '合成波の観測点'),
         ],
+        radialCrossSections: sections,
+        showCrossSectionSum: true,
+        showNodalLines: activeIds.contains('showNodalLines'),
+        nodalMetric: field.nodalMetric,
+        showAntinodalLines: activeIds.contains('showAntinodalLines'),
+        antinodalMetric: field.antinodalMetric,
       ),
     );
   }

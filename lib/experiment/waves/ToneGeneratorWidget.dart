@@ -85,6 +85,19 @@ class _ToneGeneratorWidgetState extends State<ToneGeneratorWidget> {
     }
   }
 
+  void _adjustFreq(int delta) {
+    // 中途半端な値は整数に丸めてから ±1Hz
+    final next = (freq.round() + delta)
+        .clamp(widget.minFreq.round(), widget.maxFreq.round())
+        .toDouble();
+    setState(() => freq = next);
+  }
+
+  String get _freqLabel {
+    final showInt = (freq - freq.roundToDouble()).abs() < 1e-9;
+    return showInt ? freq.round().toString() : freq.toStringAsFixed(1);
+  }
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -97,17 +110,35 @@ class _ToneGeneratorWidgetState extends State<ToneGeneratorWidget> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                "周波数: ${freq.toStringAsFixed(1)} Hz",
-                style: const TextStyle(fontSize: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                    tooltip: '-1 Hz',
+                    onPressed: freq <= widget.minFreq
+                        ? null
+                        : () => _adjustFreq(-1),
+                    icon: const Icon(Icons.remove_circle_outline),
+                  ),
+                  Text(
+                    "周波数: $_freqLabel Hz",
+                    style: const TextStyle(fontSize: 20),
+                  ),
+                  IconButton(
+                    tooltip: '+1 Hz',
+                    onPressed: freq >= widget.maxFreq
+                        ? null
+                        : () => _adjustFreq(1),
+                    icon: const Icon(Icons.add_circle_outline),
+                  ),
+                ],
               ),
-              const SizedBox(height: 8),
               Slider(
-                value: freq,
+                value: freq.clamp(widget.minFreq, widget.maxFreq),
                 min: widget.minFreq,
                 max: widget.maxFreq,
                 divisions: (widget.maxFreq - widget.minFreq).toInt(),
-                label: freq.toStringAsFixed(1),
+                label: '$_freqLabel Hz',
                 onChanged: (v) => setState(() => freq = v),
               ),
               const SizedBox(height: 8),

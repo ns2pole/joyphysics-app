@@ -228,11 +228,12 @@ class _RayPathPrimary {
 }
 
 final secondaryRainbowDroplet2D = createWaveVideo(
-  title: "副虹の光路 (単一水滴)",
+  title: "単一水滴の光路（副虹）",
   latex: r"""
   <div class="common-box">ポイント</div>
   <p>副虹は水滴内で<b>2回</b>内部反射して出射する光で形成されます。光線は水滴の<b>下半分</b>に入射します。</p>
   <p>主虹と同様、入射パラメータ $k$ を動かすと出射方向 $\phi$ が変化し、ある角度付近で光が集中します。副虹の観測角は主虹より大きく（約51°）、色の順序が<b>逆転</b>します（赤が内側、紫が外側）。</p>
+  <p>空に弧として見える副虹は多数の水滴が必要です（別項目「副虹（多数水滴）」）。</p>
   <p><b>理論式（$k$ から $\phi$）</b></p>
   <p>
     副虹は2回反射のため
@@ -380,19 +381,37 @@ final secondaryRainbowDroplet2D = createWaveVideo(
   height: 780,
 );
 
+/// 多数水滴による副虹（主虹との同時表示モード含む）
+final secondaryRainbowMultiDroplet2D = createWaveVideo(
+  title: "副虹（多数水滴）",
+  latex: r"""
+  <div class="common-box">ポイント</div>
+  <p>副虹も単一水滴の光路だけでは弧にはなりません。多数の水滴がそれぞれ約51°付近に光を送ることで、主虹の外側に色順が逆転した弧が見えます。</p>
+  <p><b>光線束</b>：副虹だけを多数水滴で表示します。</p>
+  <p><b>主虹・副虹</b>：主虹と副虹を同時に多数水滴で表示し、位置関係と色順の違いを比較できます。</p>
+  <p>機構の詳細は「単一水滴の光路（副虹）」を参照してください。</p>
+  """,
+  simulation: SecondaryRainbowDroplet2DSimulation(multiDroplet: true),
+  height: 780,
+);
+
 class SecondaryRainbowDroplet2DSimulation extends WaveSimulation {
-  SecondaryRainbowDroplet2DSimulation()
+  SecondaryRainbowDroplet2DSimulation({this.multiDroplet = false})
       : super(
-          title: "副虹の光路 (単一水滴)",
+          title: multiDroplet ? "副虹（多数水滴）" : "単一水滴の光路（副虹）",
           is3D: false,
           showTimeOverlay: false,
           enableTime: true,
         );
 
+  final bool multiDroplet;
+
   @override
-  Map<String, double> get initialParameters => const {
+  Map<String, double> get initialParameters => {
         'k': 0.92,
-        'viewMode': 0.0,
+        'viewMode': multiDroplet
+            ? _SecondaryRainbowViewMode.multiRayBundle.index.toDouble()
+            : _SecondaryRainbowViewMode.normal.index.toDouble(),
         'bundleRed': 1.0,
         'bundleBlue': 1.0,
         'bundleColor0': 1.0,
@@ -434,42 +453,56 @@ class SecondaryRainbowDroplet2DSimulation extends WaveSimulation {
     }
 
     return [
-      Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: [
-          ChoiceChip(
-            label: const Text('通常'),
-            selected: viewMode == _SecondaryRainbowViewMode.normal,
-            onSelected: (_) => updateParam('viewMode', 0.0),
-          ),
-          ChoiceChip(
-            label: const Text('極小水滴'),
-            selected: viewMode == _SecondaryRainbowViewMode.tinyDroplet,
-            onSelected: (_) => updateParam('viewMode', 1.0),
-          ),
-          ChoiceChip(
-            label: const Text('出射点拡大'),
-            selected: viewMode == _SecondaryRainbowViewMode.exitZoom,
-            onSelected: (_) => updateParam('viewMode', 2.0),
-          ),
-          ChoiceChip(
-            label: const Text('光線束(単一)'),
-            selected: viewMode == _SecondaryRainbowViewMode.singleRayBundle,
-            onSelected: (_) => updateParam('viewMode', 3.0),
-          ),
-          ChoiceChip(
-            label: const Text('光線束(多水滴)'),
-            selected: viewMode == _SecondaryRainbowViewMode.multiRayBundle,
-            onSelected: (_) => updateParam('viewMode', 4.0),
-          ),
-          ChoiceChip(
-            label: const Text('主虹・副虹'),
-            selected: viewMode == _SecondaryRainbowViewMode.primaryAndSecondary,
-            onSelected: (_) => updateParam('viewMode', 5.0),
-          ),
-        ],
-      ),
+      if (!multiDroplet)
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            ChoiceChip(
+              label: const Text('通常'),
+              selected: viewMode == _SecondaryRainbowViewMode.normal,
+              onSelected: (_) => updateParam('viewMode', 0.0),
+            ),
+            ChoiceChip(
+              label: const Text('極小水滴'),
+              selected: viewMode == _SecondaryRainbowViewMode.tinyDroplet,
+              onSelected: (_) => updateParam('viewMode', 1.0),
+            ),
+            ChoiceChip(
+              label: const Text('出射点拡大'),
+              selected: viewMode == _SecondaryRainbowViewMode.exitZoom,
+              onSelected: (_) => updateParam('viewMode', 2.0),
+            ),
+            ChoiceChip(
+              label: const Text('光線束'),
+              selected: viewMode == _SecondaryRainbowViewMode.singleRayBundle,
+              onSelected: (_) => updateParam('viewMode', 3.0),
+            ),
+          ],
+        ),
+      if (multiDroplet)
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            ChoiceChip(
+              label: const Text('光線束'),
+              selected: viewMode == _SecondaryRainbowViewMode.multiRayBundle,
+              onSelected: (_) => updateParam(
+                  'viewMode',
+                  _SecondaryRainbowViewMode.multiRayBundle.index.toDouble()),
+            ),
+            ChoiceChip(
+              label: const Text('主虹・副虹'),
+              selected:
+                  viewMode == _SecondaryRainbowViewMode.primaryAndSecondary,
+              onSelected: (_) => updateParam(
+                  'viewMode',
+                  _SecondaryRainbowViewMode.primaryAndSecondary.index
+                      .toDouble()),
+            ),
+          ],
+        ),
       if (_isSingleBundleMode(viewMode))
         Wrap(
           spacing: 14,
@@ -515,7 +548,8 @@ class SecondaryRainbowDroplet2DSimulation extends WaveSimulation {
               ),
           ],
         ),
-      if (!_isSingleBundleMode(viewMode) &&
+      if (!multiDroplet &&
+          !_isSingleBundleMode(viewMode) &&
           !_isMultiBundleMode(viewMode) &&
           !_isDualRainbowMode(viewMode))
         WaveParameterSlider(
@@ -541,7 +575,16 @@ class SecondaryRainbowDroplet2DSimulation extends WaveSimulation {
   Widget buildAnimation(
       context, time, azimuth, tilt, scale, params, activeIds) {
     final k = (params['k'] ?? 0.92).clamp(0.0, 0.999);
-    final viewMode = _viewModeFromParams(params);
+    var viewMode = _viewModeFromParams(params);
+    if (multiDroplet) {
+      if (viewMode != _SecondaryRainbowViewMode.multiRayBundle &&
+          viewMode != _SecondaryRainbowViewMode.primaryAndSecondary) {
+        viewMode = _SecondaryRainbowViewMode.multiRayBundle;
+      }
+    } else if (viewMode == _SecondaryRainbowViewMode.multiRayBundle ||
+        viewMode == _SecondaryRainbowViewMode.primaryAndSecondary) {
+      viewMode = _SecondaryRainbowViewMode.normal;
+    }
     final bundleSelection = _bundleSelectionFromParams(params);
     final multiColorSelection = _multiColorSelectionFromParams(params);
 

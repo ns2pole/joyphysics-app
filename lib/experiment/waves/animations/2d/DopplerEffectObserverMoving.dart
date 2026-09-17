@@ -15,6 +15,7 @@ final dopplerEffectObserverMoving = createWaveVideo(
   <p>観測される周波数 $f$ は以下のようになります：</p>
   <p>$$f = \frac{V + u \cos\theta}{V} f_0$$</p>
   <p>ここで $V$ は波の速さ、$u$ は観測者の速度、$\theta$ は観測者の移動方向と波の進行方向のなす角です。</p>
+  <p>「断面」をオンにすると、音源と観測者を結ぶ直線上の変位が1次元の波形として見えます。</p>
   """,
   simulation: DopplerEffectObserverMovingSimulation(),
 );
@@ -41,6 +42,9 @@ class DopplerEffectObserverMovingSimulation extends WaveSimulation {
         obsX: -4.0,
         obsY: 0.0,
       );
+
+  @override
+  Set<String> get initialActiveIds => {'total', 'showCrossSection'};
 
   @override
   List<Widget> buildControls(context, params, updateParam) {
@@ -72,6 +76,22 @@ class DopplerEffectObserverMovingSimulation extends WaveSimulation {
   }
 
   @override
+  Widget buildExtraControls(context, activeIds, updateActiveIds) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        buildChip(
+          '断面',
+          'showCrossSection',
+          Colors.deepPurple,
+          activeIds,
+          updateActiveIds,
+        ),
+      ],
+    );
+  }
+
+  @override
   Widget buildAnimation(
       context, time, azimuth, tilt, scale, params, activeIds) {
     final field = DopplerEffectObserverMovingField(
@@ -81,7 +101,11 @@ class DopplerEffectObserverMovingSimulation extends WaveSimulation {
     );
 
     // 観測者の位置 (x = obsX0 + u*t, 0)
-    final obsX = params['obsX']! + params['vObserver']! * time;
+    final obs = math.Point(
+      params['obsX']! + params['vObserver']! * time,
+      params['obsY'] ?? 0.0,
+    );
+    const source = math.Point(0.0, 0.0);
 
     return CustomPaint(
       size: Size.infinite,
@@ -94,12 +118,21 @@ class DopplerEffectObserverMovingSimulation extends WaveSimulation {
         scale: scale,
         markers: [
           // 音源は原点に固定 (黄色)
-          const WaveMarker(point: math.Point(0.0, 0.0), color: Colors.yellow),
+          const WaveMarker(point: source, color: Colors.yellow),
           // 観測者が移動 (赤色)
           WaveMarker(
-              point: math.Point(obsX, params['obsY'] ?? 0.0),
+              point: obs,
               color: Colors.red,
               label: '観測者'),
+        ],
+        radialCrossSections: [
+          if (activeIds.contains('showCrossSection'))
+            RadialCrossSectionSpec(
+              start: source,
+              end: obs,
+              color: Colors.deepPurple,
+              zAt: (x, y) => field.z(x, y, time),
+            ),
         ],
       ),
     );

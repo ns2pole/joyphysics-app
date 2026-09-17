@@ -125,13 +125,13 @@ class _RayOptics {
 }
 
 final rainbowDroplet2D = createWaveVideo(
-  title: "虹の光路 (単一水滴)",
+  title: "単一水滴の光路（主虹）",
   latex: r"""
   <div class="common-box">ポイント</div>
   <p>入射パラメータ $k$ を 0 から 1 の範囲で動かし、球状水滴での屈折→内部反射→出射を可視化します。</p>
   <p>赤色光 ($n=1.33$) と青色光 ($n=1.34$) の分散により、出射方向に差が生まれます。</p>
   <p><b>上半分だけ描いている理由</b>：水滴の下側も同様に光路が存在しますが、説明では「出射点付近の角度関係」が見やすい上側を主に表示しています。</p>
-  <p><b>虹とのつながり</b>：$k$ を連続に変えると出射方向（角度 $\phi$）が変化し、ある角度付近で出射光が集中します。波長（屈折率）の違いでその集中角がずれるため、赤と青で見える方向が分かれて「虹」になります。</p>
+  <p><b>虹とのつながり</b>：単一水滴では、ある角度付近に光が集中することと、波長でその角がずれることが分かります。空に弧として見える「虹」は、同様の水滴が多数あるときに起きます（別項目「主虹（多数水滴）」）。</p>
   <p><b>表示モード</b></p>
   <ul>
     <li><b>通常</b>：1本の光線で光路の折れ方を確認</li>
@@ -304,19 +304,37 @@ final rainbowDroplet2D = createWaveVideo(
   height: 780,
 );
 
+/// 多数水滴がピーク角で光を送り、弧として見える主虹
+final rainbowMultiDroplet2D = createWaveVideo(
+  title: "主虹（多数水滴）",
+  latex: r"""
+  <div class="common-box">ポイント</div>
+  <p>単一水滴では出射方向に光が集中する角度が決まりますが、<b>空に弧として見える虹</b>には多数の水滴が必要です。</p>
+  <p>ここでは多数の水滴を並べ、それぞれからピーク付近の光線が出る様子を示します。観測者の位置から見ると、約42°付近の円弧上に色が並びます。</p>
+  <p>機構の詳細（屈折・内部反射・$k$ と $\phi$）は「単一水滴の光路（主虹）」を参照してください。</p>
+  """,
+  simulation: RainbowDroplet2DSimulation(multiDroplet: true),
+  height: 780,
+);
+
 class RainbowDroplet2DSimulation extends WaveSimulation {
-  RainbowDroplet2DSimulation()
+  RainbowDroplet2DSimulation({this.multiDroplet = false})
       : super(
-          title: "虹の光路 (単一水滴)",
+          title: multiDroplet ? "主虹（多数水滴）" : "単一水滴の光路（主虹）",
           is3D: false,
           showTimeOverlay: false,
           enableTime: true,
         );
 
+  /// true のとき多数水滴表示専用（単一側のモード切替は出さない）
+  final bool multiDroplet;
+
   @override
-  Map<String, double> get initialParameters => const {
+  Map<String, double> get initialParameters => {
         'k': 0.82,
-        'viewMode': 0.0,
+        'viewMode': multiDroplet
+            ? _RainbowViewMode.multiRayBundle.index.toDouble()
+            : _RainbowViewMode.normal.index.toDouble(),
         'bundleRed': 1.0,
         'bundleBlue': 1.0,
         'bundleColor0': 1.0,
@@ -358,37 +376,33 @@ class RainbowDroplet2DSimulation extends WaveSimulation {
     }
 
     return [
-      Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: [
-          ChoiceChip(
-            label: const Text('通常'),
-            selected: viewMode == _RainbowViewMode.normal,
-            onSelected: (_) => updateParam('viewMode', 0.0),
-          ),
-          ChoiceChip(
-            label: const Text('極小水滴'),
-            selected: viewMode == _RainbowViewMode.tinyDroplet,
-            onSelected: (_) => updateParam('viewMode', 1.0),
-          ),
-          ChoiceChip(
-            label: const Text('出射点拡大'),
-            selected: viewMode == _RainbowViewMode.exitZoom,
-            onSelected: (_) => updateParam('viewMode', 2.0),
-          ),
-          ChoiceChip(
-            label: const Text('光線束(単一)'),
-            selected: viewMode == _RainbowViewMode.singleRayBundle,
-            onSelected: (_) => updateParam('viewMode', 3.0),
-          ),
-          ChoiceChip(
-            label: const Text('光線束(多水滴)'),
-            selected: viewMode == _RainbowViewMode.multiRayBundle,
-            onSelected: (_) => updateParam('viewMode', 4.0),
-          ),
-        ],
-      ),
+      if (!multiDroplet)
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            ChoiceChip(
+              label: const Text('通常'),
+              selected: viewMode == _RainbowViewMode.normal,
+              onSelected: (_) => updateParam('viewMode', 0.0),
+            ),
+            ChoiceChip(
+              label: const Text('極小水滴'),
+              selected: viewMode == _RainbowViewMode.tinyDroplet,
+              onSelected: (_) => updateParam('viewMode', 1.0),
+            ),
+            ChoiceChip(
+              label: const Text('出射点拡大'),
+              selected: viewMode == _RainbowViewMode.exitZoom,
+              onSelected: (_) => updateParam('viewMode', 2.0),
+            ),
+            ChoiceChip(
+              label: const Text('光線束'),
+              selected: viewMode == _RainbowViewMode.singleRayBundle,
+              onSelected: (_) => updateParam('viewMode', 3.0),
+            ),
+          ],
+        ),
       if (_isSingleBundleMode(viewMode))
         Wrap(
           spacing: 14,
@@ -414,7 +428,7 @@ class RainbowDroplet2DSimulation extends WaveSimulation {
             ),
           ],
         ),
-      if (_isMultiBundleMode(viewMode))
+      if (multiDroplet || _isMultiBundleMode(viewMode))
         Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -434,7 +448,9 @@ class RainbowDroplet2DSimulation extends WaveSimulation {
               ),
           ],
         ),
-      if (!_isSingleBundleMode(viewMode) && !_isMultiBundleMode(viewMode))
+      if (!multiDroplet &&
+          !_isSingleBundleMode(viewMode) &&
+          !_isMultiBundleMode(viewMode))
         WaveParameterSlider(
           label: 'k',
           value: metrics.k,
@@ -457,7 +473,12 @@ class RainbowDroplet2DSimulation extends WaveSimulation {
   Widget buildAnimation(
       context, time, azimuth, tilt, scale, params, activeIds) {
     final k = (params['k'] ?? 0.82).clamp(0.0, 0.999);
-    final viewMode = _viewModeFromParams(params);
+    var viewMode = _viewModeFromParams(params);
+    if (multiDroplet) {
+      viewMode = _RainbowViewMode.multiRayBundle;
+    } else if (viewMode == _RainbowViewMode.multiRayBundle) {
+      viewMode = _RainbowViewMode.normal;
+    }
     final bundleSelection = _bundleSelectionFromParams(params);
     final multiColorSelection = _multiColorSelectionFromParams(params);
 
