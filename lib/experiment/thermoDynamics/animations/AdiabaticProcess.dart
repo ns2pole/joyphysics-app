@@ -79,12 +79,22 @@ class _AdiabaticAnimationWidgetState extends State<AdiabaticAnimationWidget> {
   late List<ThermodynamicParticle> particles;
   double lastTime = 0.0;
   final int particleCount = 20;
+  final PvHistoryTracker pvHistory = PvHistoryTracker();
+
+  static double _temperatureFor(double volume) =>
+      300.0 * math.pow(0.5 / volume, 2.0 / 3.0);
+
+  static double _pressureFor(double volume) {
+    final double kAdia = 0.4 * math.pow(0.5, 5.0 / 3.0);
+    return kAdia / math.pow(volume, 5.0 / 3.0);
+  }
 
   @override
   void initState() {
     super.initState();
     lastTime = widget.time;
     _initParticles();
+    pvHistory.record(widget.volume, _pressureFor(widget.volume));
   }
 
   void _initParticles() {
@@ -103,18 +113,18 @@ class _AdiabaticAnimationWidgetState extends State<AdiabaticAnimationWidget> {
     if (dt > 0.1) dt = 0.02;
 
     // 温度 T の計算 (TV^{2/3} = const)
-    double temperature = 300.0 * math.pow(0.5 / widget.volume, 2.0 / 3.0);
+    double temperature = _temperatureFor(widget.volume);
     double speedScale = math.sqrt(temperature / 300.0);
     
     for (var p in particles) p.update(dt, speedScale);
+    pvHistory.record(widget.volume, _pressureFor(widget.volume));
     lastTime = widget.time;
   }
 
   @override
   Widget build(BuildContext context) {
-    double temperature = 300.0 * math.pow(0.5 / widget.volume, 2.0 / 3.0);
-    final double kAdia = 0.4 * math.pow(0.5, 5.0 / 3.0);
-    double pressure = kAdia / math.pow(widget.volume, 5.0 / 3.0);
+    double temperature = _temperatureFor(widget.volume);
+    double pressure = _pressureFor(widget.volume);
 
     return Column(
       children: [
@@ -128,6 +138,7 @@ class _AdiabaticAnimationWidgetState extends State<AdiabaticAnimationWidget> {
                 volume: widget.volume,
                 pressure: pressure,
                 temperature: temperature,
+                history: pvHistory.points,
               ),
             ),
           ),
@@ -144,6 +155,7 @@ class _AdiabaticAnimationWidgetState extends State<AdiabaticAnimationWidget> {
                 volume: widget.volume,
                 temperature: temperature,
                 wallColor: Colors.black, // 断熱容器
+                showHeater: false, // 断熱: 熱交換なし
                 cylinderWidthFactor: 0.233,
                 cylinderHeightFactor: 0.66,
                 personFeetPos: const Offset(0,0),
@@ -157,16 +169,21 @@ class _AdiabaticAnimationWidgetState extends State<AdiabaticAnimationWidget> {
 }
 
 class AdiabaticPVPainter extends BasePVPainter {
-  AdiabaticPVPainter({required double volume, required double pressure, required double temperature})
-      : super(volume: volume, pressure: pressure, temperature: temperature, label: "T = ${temperature.toStringAsFixed(0)} K");
+  AdiabaticPVPainter({
+    required double volume,
+    required double pressure,
+    required double temperature,
+    List<Offset>? history,
+  }) : super(
+          volume: volume,
+          pressure: pressure,
+          temperature: temperature,
+          label: "T = ${temperature.toStringAsFixed(0)} K",
+          history: history,
+        );
 
   @override
-  void paint(Canvas canvas, Size size) {
-    super.paint(canvas, size);
-    double padding = 35.0;
-    double w = size.width - padding * 2;
-    double h = size.height - padding * 2;
-
+  void drawExtraCurves(Canvas canvas, Size size, double padding, double w, double h) {
     const double vRef = 0.5;
     const double pRef = 0.4;
     

@@ -81,12 +81,17 @@ class _IsobaricAnimationWidgetState extends State<IsobaricAnimationWidget> {
   double temperature = 300.0;
   double lastTime = 0.0;
   final int particleCount = 20;
+  final PvHistoryTracker pvHistory = PvHistoryTracker();
+  static const double pressure = 0.4; // P固定
+
+  double get _volume => 0.3 * (temperature / 300.0);
 
   @override
   void initState() {
     super.initState();
     lastTime = widget.time;
     _initParticles();
+    pvHistory.record(_volume, pressure);
   }
 
   void _initParticles() {
@@ -120,12 +125,13 @@ class _IsobaricAnimationWidgetState extends State<IsobaricAnimationWidget> {
     temperature = temperature.clamp(275.0, 900.0);
     double speedScale = math.sqrt(temperature / 300.0);
     for (var p in particles) p.update(dt, speedScale);
+    pvHistory.record(_volume, pressure);
     lastTime = widget.time;
   }
 
   @override
   Widget build(BuildContext context) {
-    double volume = 0.3 * (temperature / 300.0); // 定圧変化 V ∝ T
+    final double volume = _volume;
     return Column(
       children: [
         Expanded(
@@ -136,9 +142,10 @@ class _IsobaricAnimationWidgetState extends State<IsobaricAnimationWidget> {
               size: Size.infinite,
               painter: BasePVPainter(
                 volume: volume,
-                pressure: 0.4, // P固定
+                pressure: pressure,
                 temperature: temperature,
                 label: "T = ${temperature.toStringAsFixed(0)} K",
+                history: pvHistory.points,
               ),
             ),
           ),

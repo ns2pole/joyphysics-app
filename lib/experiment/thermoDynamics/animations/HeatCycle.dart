@@ -101,16 +101,15 @@ class HeatCycleAnimationWidget extends StatefulWidget {
 class _HeatCycleAnimationWidgetState extends State<HeatCycleAnimationWidget> {
   late List<ThermodynamicParticle> particles;
   double temperature = 300.0;
-  double volume = 0.3; // 初期体積 (下端ストッパー位置)
+  double volume = 0.25; // 初期体積 (下端ストッパー位置)
   double pressure = 1.0;
   double heatFlux = 0.0;
   double lastTime = 0.0;
-  List<Offset> pvHistory = [];
-  Offset? _lastHistoryPoint;
+  final PvHistoryTracker pvHistory = PvHistoryTracker();
 
   final double ambientTemp = 300.0;
-  final double vMin = 0.3; // 下端ストッパー
-  final double vMax = 0.8; // 上端ストッパー
+  final double vMin = 0.25; // 下端ストッパー（ヒーターより上）
+  final double vMax = 0.9; // 上端ストッパー（シリンダー上端付近）
   final double pAtm = 1.0; // 大気圧相当
   final double pWeightUnit = 0.5; // 錘1つあたりの圧力増加
 
@@ -119,8 +118,9 @@ class _HeatCycleAnimationWidgetState extends State<HeatCycleAnimationWidget> {
     super.initState();
     lastTime = widget.time;
     _initParticles();
-    // 初期圧力計算
-    pressure = temperature / (volume * 1000.0); // 簡易化された状態方程式
+    // 初期: 下端・室温で P=1.0
+    pressure = 1.0;
+    pvHistory.record(volume, pressure / 4.0);
   }
 
   void _initParticles() {
@@ -150,9 +150,9 @@ class _HeatCycleAnimationWidgetState extends State<HeatCycleAnimationWidget> {
     // 熱流の計算 (表示用)
     heatFlux = (widget.isHeating ? 0.3 : 0.0) - (coolingRate * 0.002);
 
-    // 2. 圧力の計算 (P = T / V)
-    // 正規化された単位を使用。V=0.3, T=300 で P=1.0 になるように。
-    double pGas = (temperature / 300.0) * (0.3 / volume);
+    // 2. 圧力の計算 (P ∝ T/V)
+    // V=vMin, T=300 で P=1.0 になるように正規化
+    double pGas = (temperature / 300.0) * (vMin / volume);
     pressure = pGas;
 
     // 3. 負荷圧力の計算
@@ -166,17 +166,10 @@ class _HeatCycleAnimationWidgetState extends State<HeatCycleAnimationWidget> {
       dV = -0.2 * dt; // 下降
     }
 
-    double oldVolume = volume;
     volume = (volume + dV).clamp(vMin, vMax);
 
-    // 履歴の更新
-    // PV値を正規化して履歴に追加（必要以上に増えないように間引く）
-    final point = Offset(volume, pressure / 4.0);
-    if (_lastHistoryPoint == null || (_lastHistoryPoint! - point).distance > 0.01) {
-      pvHistory.add(point);
-      _lastHistoryPoint = point;
-      if (pvHistory.length > 500) pvHistory.removeAt(0);
-    }
+    // 履歴の更新（表示用に P を 4.0 で正規化）
+    pvHistory.record(volume, pressure / 4.0);
 
     // 粒子の更新
     double speedScale = math.sqrt(temperature / 300.0);
@@ -201,7 +194,7 @@ class _HeatCycleAnimationWidgetState extends State<HeatCycleAnimationWidget> {
                 pressure: pressure / 4.0, // 4.0はP軸の最大想定値
                 temperature: temperature,
                 label: "T = ${temperature.toStringAsFixed(0)} K",
-                history: pvHistory,
+                history: pvHistory.points,
               ),
             ),
           ),
@@ -223,6 +216,8 @@ class _HeatCycleAnimationWidgetState extends State<HeatCycleAnimationWidget> {
                 weights: widget.weights,
                 showTopStoppers: true,
                 showBottomStoppers: true,
+                topStopperVolume: vMax,
+                bottomStopperVolume: vMin,
               ),
             ),
           ),

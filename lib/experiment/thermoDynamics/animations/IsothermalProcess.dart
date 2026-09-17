@@ -81,6 +81,9 @@ class _IsothermalAnimationWidgetState extends State<IsothermalAnimationWidget> {
   final int particleCount = 20;
   double lastVolume = 0.5;
   double heatFlux = 0.0; // 正: 吸熱 (膨張), 負: 放熱 (圧縮)
+  final PvHistoryTracker pvHistory = PvHistoryTracker();
+
+  static const double _k = 0.5 * 0.4;
 
   @override
   void initState() {
@@ -88,6 +91,7 @@ class _IsothermalAnimationWidgetState extends State<IsothermalAnimationWidget> {
     lastTime = widget.time;
     lastVolume = widget.volume;
     _initParticles();
+    pvHistory.record(widget.volume, _k / widget.volume);
   }
 
   void _initParticles() {
@@ -117,14 +121,14 @@ class _IsothermalAnimationWidgetState extends State<IsothermalAnimationWidget> {
     // 等温なので T=300K 固定
     double speedScale = 1.0;
     for (var p in particles) p.update(dt, speedScale);
+    pvHistory.record(widget.volume, _k / widget.volume);
     lastTime = widget.time;
     lastVolume = widget.volume;
   }
 
   @override
   Widget build(BuildContext context) {
-    const double k = 0.5 * 0.4;
-    double currentP = k / widget.volume;
+    double currentP = _k / widget.volume;
 
     return Column(
       children: [
@@ -138,6 +142,7 @@ class _IsothermalAnimationWidgetState extends State<IsothermalAnimationWidget> {
                 volume: widget.volume,
                 pressure: currentP,
                 temperature: 300.0,
+                history: pvHistory.points,
               ),
             ),
           ),
@@ -153,7 +158,9 @@ class _IsothermalAnimationWidgetState extends State<IsothermalAnimationWidget> {
                 particles: particles,
                 volume: widget.volume,
                 temperature: 300.0,
+                // 等温: 体積変化に応じて熱浴が自動で吸熱・供給（手操作不要）
                 heatFlux: heatFlux,
+                isHeating: heatFlux > 0.05,
                 cylinderWidthFactor: 0.233,
                 cylinderHeightFactor: 0.66,
                 personFeetPos: const Offset(0,0), // ダミー。BaseGasPainter内でnullチェック
@@ -167,17 +174,21 @@ class _IsothermalAnimationWidgetState extends State<IsothermalAnimationWidget> {
 }
 
 class IsothermalPVPainter extends BasePVPainter {
-  IsothermalPVPainter({required double volume, required double pressure, required double temperature}) 
-      : super(volume: volume, pressure: pressure, temperature: temperature, label: "T = 300 K (const.)");
+  IsothermalPVPainter({
+    required double volume,
+    required double pressure,
+    required double temperature,
+    List<Offset>? history,
+  }) : super(
+          volume: volume,
+          pressure: pressure,
+          temperature: temperature,
+          label: "T = 300 K (const.)",
+          history: history,
+        );
 
   @override
-  void paint(Canvas canvas, Size size) {
-    super.paint(canvas, size);
-    double padding = 35.0;
-    double w = size.width - padding * 2;
-    double h = size.height - padding * 2;
-
-    // 等温曲線の描画
+  void drawExtraCurves(Canvas canvas, Size size, double padding, double w, double h) {
     const double k = 0.5 * 0.4;
     final curvePath = Path();
     bool started = false;

@@ -81,12 +81,15 @@ class _IsochoricAnimationWidgetState extends State<IsochoricAnimationWidget> {
   double temperature = 300.0;
   double lastTime = 0.0;
   final int particleCount = 20;
+  final PvHistoryTracker pvHistory = PvHistoryTracker();
+  static const double fixedVolume = 0.4;
 
   @override
   void initState() {
     super.initState();
     lastTime = widget.time;
     _initParticles();
+    pvHistory.record(fixedVolume, 0.9 * temperature / 1000.0);
   }
 
   void _initParticles() {
@@ -120,11 +123,13 @@ class _IsochoricAnimationWidgetState extends State<IsochoricAnimationWidget> {
     temperature = temperature.clamp(275.0, 1000.0);
     double speedScale = math.sqrt(temperature / 300.0);
     for (var p in particles) p.update(dt, speedScale);
+    pvHistory.record(fixedVolume, 0.9 * temperature / 1000.0);
     lastTime = widget.time;
   }
 
   @override
   Widget build(BuildContext context) {
+    final double pressure = 0.9 * temperature / 1000.0;
     return Column(
       children: [
         Expanded(
@@ -134,10 +139,11 @@ class _IsochoricAnimationWidgetState extends State<IsochoricAnimationWidget> {
             child: CustomPaint(
               size: Size.infinite,
               painter: BasePVPainter(
-                volume: 0.4, // 定積変化 V=0.4相当
-                pressure: 0.9 * temperature / 1000.0,
+                volume: fixedVolume,
+                pressure: pressure,
                 temperature: temperature,
                 label: "T = ${temperature.toStringAsFixed(0)} K",
+                history: pvHistory.points,
               ),
             ),
           ),
@@ -151,12 +157,15 @@ class _IsochoricAnimationWidgetState extends State<IsochoricAnimationWidget> {
               size: Size.infinite,
               painter: BaseGasPainter(
                 particles: particles,
-                volume: 0.4, // V固定
+                volume: fixedVolume,
                 temperature: temperature,
                 isHeating: widget.isHeating,
                 isCooling: widget.isCooling,
-                showBottomStoppers: false,
-                showTopStoppers: true, // ピストンを止めるためのストッパー
+                // 定積: ピストンを上下ストッパーで固定
+                showBottomStoppers: true,
+                showTopStoppers: true,
+                topStopperVolume: fixedVolume,
+                bottomStopperVolume: fixedVolume,
               ),
             ),
           ),

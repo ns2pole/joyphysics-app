@@ -32,6 +32,13 @@ class ThermodynamicParticle {
   }
 }
 
+/// シリンダー内の気体高さ係数（ピストン位置・ストッパー位置で共通）
+const double kGasHeightFactor = 0.9;
+/// ピストン上面が pistonY から上に伸びる量
+const double kPistonTopExtent = 15.0;
+/// ピストン下面が pistonY から下に伸びる量
+const double kPistonBottomExtent = 6.0;
+
 /// 熱力学シミュレーション用のベースGasPainter
 class BaseGasPainter extends CustomPainter {
   final List<ThermodynamicParticle> particles;
@@ -39,10 +46,15 @@ class BaseGasPainter extends CustomPainter {
   final double temperature;
   final bool isHeating;
   final bool isCooling;
+  final bool showHeater;
   final double heatFlux; // 正: 吸熱, 負: 放熱
   final int weights;
   final bool showTopStoppers;
   final bool showBottomStoppers;
+  /// 上側ストッパーを置く体積（ピストン位置と同じスケール）。showTopStoppers 時に使用。
+  final double? topStopperVolume;
+  /// 下側ストッパーを置く体積。showBottomStoppers 時に使用。
+  final double? bottomStopperVolume;
   final Color wallColor;
   final double wallThickness;
   final double cylinderWidthFactor; // 画面幅に対するシリンダー幅の割合
@@ -56,10 +68,13 @@ class BaseGasPainter extends CustomPainter {
     this.temperature = 300.0,
     this.isHeating = false,
     this.isCooling = false,
+    this.showHeater = true,
     this.heatFlux = 0.0,
     this.weights = 0,
     this.showTopStoppers = false,
     this.showBottomStoppers = false,
+    this.topStopperVolume,
+    this.bottomStopperVolume,
     this.wallColor = Colors.grey,
     this.wallThickness = 16.0,
     this.cylinderWidthFactor = 0.35,
@@ -105,9 +120,8 @@ class BaseGasPainter extends CustomPainter {
       ..lineTo(right, cylinderTopY);
     canvas.drawPath(cylinderPath, wallPaint);
 
-    // ピストンの位置計算
-    double currentGasHeight = cylinderMaxHeight * 0.9 * volume;
-    double pistonY = bottomY - currentGasHeight;
+    // ピストンの位置計算（ストッパーも同じ換算式を使う）
+    double pistonY = _pistonYForVolume(bottomY, cylinderMaxHeight, volume);
 
     // 熱交換の視覚化 (壁際の発光)
     _drawHeatFluxGlow(canvas, left, right, bottomY, pistonY, heatFlux);
@@ -117,28 +131,55 @@ class BaseGasPainter extends CustomPainter {
     canvas.drawRect(gasRect, Paint()..color = Colors.white);
     canvas.drawRect(gasRect, Paint()..color = Colors.black..strokeWidth = 1.0..style = PaintingStyle.stroke);
 
-    // ストッパー
-    if (showTopStoppers) {
-      _drawStoppers(canvas, left, right, cylinderTopY + cylinderMaxHeight * 0.1, true);
+    // ヒーター（断熱など熱交換しない過程では非表示）
+    if (showHeater) {
+      _drawHeater(canvas, left, right, bottomY, isHeating);
     }
-    if (showBottomStoppers) {
-      _drawStoppers(canvas, left, right, bottomY - cylinderMaxHeight * 0.1, false);
-    }
-
-    // ヒーター
-    _drawHeater(canvas, left, right, bottomY, isHeating);
 
     // ピストン
     final pistonPaint = Paint()..color = Colors.black..style = PaintingStyle.fill;
-    canvas.drawRect(Rect.fromLTRB(left + wallThickness/2, pistonY - 15, right - wallThickness/2, pistonY + 6), pistonPaint);
+    canvas.drawRect(
+      Rect.fromLTRB(
+        left + wallThickness / 2,
+        pistonY - kPistonTopExtent,
+        right - wallThickness / 2,
+        pistonY + kPistonBottomExtent,
+      ),
+      pistonPaint,
+    );
 
     // ロッド
     double rodLength = (personFeetPos != null) ? 40.0 : cylinderMaxHeight * 0.3;
-    double rodTopY = pistonY - 15 - rodLength;
-    canvas.drawRect(Rect.fromLTRB((left + right) / 2 - 5, rodTopY, (left + right) / 2 + 5, pistonY - 15), pistonPaint);
+    double rodTopY = pistonY - kPistonTopExtent - rodLength;
+    canvas.drawRect(
+      Rect.fromLTRB((left + right) / 2 - 5, rodTopY, (left + right) / 2 + 5, pistonY - kPistonTopExtent),
+      pistonPaint,
+    );
 
     // 錘
-    _drawWeights(canvas, (left + right) / 2, pistonY - 15, weights);
+    _drawWeights(canvas, (left + right) / 2, pistonY - kPistonTopExtent, weights);
+
+    // ストッパーはピストンの後に描き、移動限界で上面/下面に当たるように合わせる
+    final bool lockMode = showTopStoppers &&
+        showBottomStoppers &&
+        topStopperVolume != null &&
+        bottomStopperVolume != null &&
+        (topStopperVolume! - bottomStopperVolume!).abs() < 1e-6;
+
+    if (showTopStoppers) {
+      final v = topStopperVolume ?? volume;
+      final pistonAtStop = _pistonYForVolume(bottomY, cylinderMaxHeight, v);
+      // 定積ロック: ピストンを挟む / 移動限界: ピストン上面に接触
+      final y = lockMode ? pistonAtStop - 12.0 : pistonAtStop - kPistonTopExtent;
+      _drawStoppers(canvas, left, right, y, true);
+    }
+    if (showBottomStoppers) {
+      final v = bottomStopperVolume ?? volume;
+      final pistonAtStop = _pistonYForVolume(bottomY, cylinderMaxHeight, v);
+      // 定積ロック: ピストンを挟む / 移動限界: ピストン下面に接触
+      final y = lockMode ? pistonAtStop + 12.0 : pistonAtStop + kPistonBottomExtent;
+      _drawStoppers(canvas, left, right, y, false);
+    }
 
     // 人物
     if (personFeetPos != null) {
@@ -174,6 +215,11 @@ class BaseGasPainter extends CustomPainter {
       ..lineTo(right, bottomY)
       ..lineTo(right, pistonY);
     canvas.drawPath(gasPath, glowPaint);
+  }
+
+  /// volume に対応するピストン下面（気体上端）の Y 座標
+  static double _pistonYForVolume(double bottomY, double cylinderMaxHeight, double volume) {
+    return bottomY - cylinderMaxHeight * kGasHeightFactor * volume;
   }
 
   void _drawStoppers(Canvas canvas, double left, double right, double y, bool isTop) {
@@ -279,6 +325,9 @@ class BasePVPainter extends CustomPainter {
     _drawLabel(canvas, "P", Offset(padding - 20, padding - 10));
     _drawLabel(canvas, "V", Offset(size.width - padding + 5, size.height - padding - 5));
 
+    // 参考曲線などは軌跡の下に描く
+    drawExtraCurves(canvas, size, padding, w, h);
+
     // 軌跡の描画
     if (history != null && history!.length > 1) {
       final historyPaint = Paint()
@@ -304,6 +353,8 @@ class BasePVPainter extends CustomPainter {
     }
   }
 
+  /// 等温・断熱などの参考曲線を軌跡の下に描くためのフック
+  void drawExtraCurves(Canvas canvas, Size size, double padding, double w, double h) {}
   void _drawLabel(Canvas canvas, String text, Offset offset, {Color color = Colors.black}) {
     final tp = TextPainter(
       text: TextSpan(text: text, style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold)),
@@ -314,4 +365,24 @@ class BasePVPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant BasePVPainter oldDelegate) => true;
+}
+
+/// PV図上の状態点の軌跡を間引きながら記録する
+class PvHistoryTracker {
+  final List<Offset> points = [];
+  Offset? _last;
+  final int maxPoints;
+  final double minDistance;
+
+  PvHistoryTracker({this.maxPoints = 500, this.minDistance = 0.01});
+
+  /// BasePVPainter に渡すのと同じ正規化座標 (V, P) で記録する
+  void record(double volume, double pressure) {
+    final point = Offset(volume, pressure);
+    if (_last == null || (_last! - point).distance > minDistance) {
+      points.add(point);
+      _last = point;
+      if (points.length > maxPoints) points.removeAt(0);
+    }
+  }
 }
