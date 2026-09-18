@@ -66,18 +66,35 @@ workflows:
           cd ios && pod install && cd ..
       - name: Flutter build IPA
         script: |
-          set -e
+          set -euo pipefail
           VER_LINE=$(grep '^version:' pubspec.yaml | head -1 | awk '{print $2}' | tr -d "'\"")
           VERSION_NAME="${VER_LINE%+*}"
-          if [ -n "${APP_STORE_APPLE_ID:-}" ]; then
-            LATEST=$(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID" || echo "100")
-            VERSION_CODE=$((LATEST + 1))
-          else
-            VERSION_CODE="${VER_LINE#*+}"
-          fi
-          echo "Building $VERSION_NAME ($VERSION_CODE)"
+          PUBSPEC_CODE="${VER_LINE#*+}"
 
-          flutter build ios --release --config-only
+          LATEST=0
+          if [ -n "${APP_STORE_APPLE_ID:-}" ]; then
+            LATEST=$(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID" 2>/dev/null || true)
+            LATEST=$(echo "$LATEST" | tr -dc '0-9' | head -c 10)
+            [ -n "$LATEST" ] || LATEST=0
+          fi
+
+          # App Store 既存 (例: 56) と pubspec の大きい方+整合を取る
+          VERSION_CODE="$PUBSPEC_CODE"
+          if [ "$LATEST" -ge "$VERSION_CODE" ]; then
+            VERSION_CODE=$((LATEST + 1))
+          fi
+          echo "Building $VERSION_NAME ($VERSION_CODE) [pubspec=$PUBSPEC_CODE latest_asc=$LATEST]"
+
+          flutter build ios --release --config-only \
+            --build-name="$VERSION_NAME" \
+            --build-number="$VERSION_CODE"
+
+          # config-only 後に Xcode 側バージョンを明示同期（古い Info.plist=56 対策）
+          (
+            cd ios
+            agvtool new-marketing-version "$VERSION_NAME"
+            agvtool new-version -all "$VERSION_CODE"
+          )
 
           xcode-project use-profiles
 
@@ -85,6 +102,10 @@ workflows:
             echo "ERROR: /Users/builder/export_options.plist が生成されていません"
             exit 1
           fi
+
+          echo "=== version check ==="
+          /usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' ios/Runner/Info.plist || true
+          /usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' ios/Runner/Info.plist || true
 
           echo "=== com.joyphysics 用プロファイル ==="
           for f in "$HOME/Library/MobileDevice/Provisioning Profiles/"*.mobileprovision; do
