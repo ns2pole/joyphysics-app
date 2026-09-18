@@ -185,11 +185,14 @@ workflows:
           print(f"Wrote normalized PEM to {out} ({len(body)} bytes, {body.count(chr(10))} lines).")
           PY
 
+          # CLI は「PEM本文」か「@file:」「@env:」を取る。パス文字列そのものは不可。
+          # 正規化済みファイルを env に載せ直し、Codemagic 標準の @env: 形式で渡す。
+          export APP_STORE_CONNECT_PRIVATE_KEY="$(cat "$KEY_FILE")"
           app-store-connect publish \
             --path "$IPA_PATH" \
             --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
             --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
-            --private-key "$KEY_FILE" \
+            --private-key @env:APP_STORE_CONNECT_PRIVATE_KEY \
             --app-store \
             --release-type AFTER_APPROVAL \
             --cancel-previous-submissions \
