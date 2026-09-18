@@ -67,29 +67,15 @@ workflows:
       - name: Flutter build IPA
         script: |
           set -euo pipefail
-          VER_LINE=$(grep '^version:' pubspec.yaml | head -1 | awk '{print $2}' | tr -d "'\"")
-          VERSION_NAME="${VER_LINE%+*}"
-          PUBSPEC_CODE="${VER_LINE#*+}"
-
-          LATEST=0
-          if [ -n "${APP_STORE_APPLE_ID:-}" ]; then
-            LATEST=$(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID" 2>/dev/null || true)
-            LATEST=$(echo "$LATEST" | tr -dc '0-9' | head -c 10)
-            [ -n "$LATEST" ] || LATEST=0
-          fi
-
-          # App Store 既存 (例: 56) と pubspec の大きい方+整合を取る
-          VERSION_CODE="$PUBSPEC_CODE"
-          if [ "$LATEST" -ge "$VERSION_CODE" ]; then
-            VERSION_CODE=$((LATEST + 1))
-          fi
-          echo "Building $VERSION_NAME ($VERSION_CODE) [pubspec=$PUBSPEC_CODE latest_asc=$LATEST]"
+          chmod +x scripts/resolve_ios_release_version.sh
+          eval "$(./scripts/resolve_ios_release_version.sh)"
+          echo "Building $VERSION_NAME ($VERSION_CODE) [pubspec_build=$PUBSPEC_CODE asc=$LATEST_ASC]"
 
           flutter build ios --release --config-only \
             --build-name="$VERSION_NAME" \
             --build-number="$VERSION_CODE"
 
-          # config-only 後に Xcode 側バージョンを明示同期（古い Info.plist=56 対策）
+          # config-only 後に Xcode 側バージョンを明示同期（古い Info.plist 対策）
           (
             cd ios
             agvtool new-marketing-version "$VERSION_NAME"
