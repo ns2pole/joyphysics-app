@@ -195,12 +195,18 @@ workflows:
           # CLI は「PEM本文」か「@file:」「@env:」を取る。パス文字列そのものは不可。
           # 正規化済みファイルを env に載せ直し、Codemagic 標準の @env: 形式で渡す。
           export APP_STORE_CONNECT_PRIVATE_KEY="$(cat "$KEY_FILE")"
+
+          # App Store 審査提出には default locale (ja) の What's New が必須
+          WHATS_NEW_JA="${RELEASE_NOTES_JA:-メジャーアップデートです。バグ修正と改善を行いました。}"
+
           app-store-connect publish \
             --path "$IPA_PATH" \
             --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
             --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
             --private-key @env:APP_STORE_CONNECT_PRIVATE_KEY \
             --app-store \
+            --locale ja \
+            --whats-new "$WHATS_NEW_JA" \
             --release-type AFTER_APPROVAL \
             --cancel-previous-submissions \
             --copyright "2026 Shunsuke Nakamura"
