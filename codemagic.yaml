@@ -9,6 +9,7 @@
 # 2. 環境変数グループ appstore_credentials に Secret を 1 つだけ追加:
 #    APP_STORE_CONNECT_PRIVATE_KEY = AuthKey_ATBD5UGJTG.p8 の全文
 #    （./scripts/prepare_codemagic_env.sh で codemagic-env-paste.txt を生成）
+#    Secure として保存。YAML 側で \\n / 引用符 / base64 を正規化してから publish する。
 #
 # 3. Team settings → Code signing identities（Developer Portal 連携なしで可）
 #    - Upload: Apple Distribution 証明書 (.p12)
@@ -99,15 +100,99 @@ workflows:
             --build-name="$VERSION_NAME" \
             --build-number="$VERSION_CODE" \
             --export-options-plist=/Users/builder/export_options.plist
+      - name: Publish to App Store Connect
+        script: |
+          set -euo pipefail
+
+          KEY_FILE=/tmp/AuthKey.p8
+          IPA_PATH=$(ls -1 build/ios/ipa/*.ipa | head -1)
+          if [ -z "${IPA_PATH:-}" ] || [ ! -f "$IPA_PATH" ]; then
+            echo "ERROR: IPA not found under build/ios/ipa/"
+            exit 1
+          fi
+
+          if [ -z "${APP_STORE_CONNECT_PRIVATE_KEY:-}" ]; then
+            echo "ERROR: APP_STORE_CONNECT_PRIVATE_KEY is missing."
+            echo "Set the full PEM (BEGIN/END PRIVATE KEY) as a Secure variable in group appstore_credentials."
+            exit 1
+          fi
+
+          # Normalize env value: strip wrapping quotes, turn literal \n into newlines,
+          # or base64-decode when the value is not already PEM text.
+          python3 - <<'PY'
+          import base64
+          import os
+          import re
+          import sys
+
+          raw = os.environ.get("APP_STORE_CONNECT_PRIVATE_KEY", "")
+          if not raw or not raw.strip():
+              print("ERROR: APP_STORE_CONNECT_PRIVATE_KEY is empty after read.", file=sys.stderr)
+              sys.exit(1)
+
+          text = raw.strip()
+          if (text.startswith('"') and text.endswith('"')) or (text.startswith("'") and text.endswith("'")):
+              text = text[1:-1].strip()
+
+          # Prefer expanding literal \\n before base64 guess (common Codemagic paste form).
+          if "\\n" in text and "-----BEGIN" in text:
+              text = text.replace("\\n", "\n").replace("\\r", "\r")
+
+          def looks_like_pem(s: str) -> bool:
+              return "-----BEGIN" in s and "PRIVATE KEY-----" in s
+
+          if not looks_like_pem(text):
+              compact = re.sub(r"\s+", "", text)
+              decoded = None
+              for candidate in (compact, text):
+                  try:
+                      decoded = base64.b64decode(candidate, validate=False).decode("utf-8")
+                      if looks_like_pem(decoded):
+                          text = decoded.strip()
+                          break
+                  except Exception:
+                      decoded = None
+              if not looks_like_pem(text):
+                  print(
+                      "ERROR: APP_STORE_CONNECT_PRIVATE_KEY is not a valid PEM private key "
+                      "after normalizing quotes / literal \\\\n / base64.",
+                      file=sys.stderr,
+                  )
+                  print(
+                      "Paste the full AuthKey_*.p8 contents (including BEGIN/END lines) as Secure.",
+                      file=sys.stderr,
+                  )
+                  sys.exit(1)
+          else:
+              # Still expand any remaining literal escapes inside an otherwise PEM-looking blob.
+              if "\\n" in text:
+                  text = text.replace("\\n", "\n").replace("\\r", "\r")
+
+          # Ensure trailing newline for PEM parsers.
+          if not text.endswith("\n"):
+              text += "\n"
+
+          out = "/tmp/AuthKey.p8"
+          with open(out, "w", encoding="utf-8") as f:
+              f.write(text)
+
+          # Light validation without printing key material.
+          with open(out, encoding="utf-8") as f:
+              body = f.read()
+          if "-----BEGIN" not in body or "PRIVATE KEY-----" not in body or "-----END" not in body:
+              print("ERROR: Wrote key file but PEM markers are incomplete.", file=sys.stderr)
+              sys.exit(1)
+          print(f"Wrote normalized PEM to {out} ({len(body)} bytes, {body.count(chr(10))} lines).")
+          PY
+
+          app-store-connect publish \
+            --path "$IPA_PATH" \
+            --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
+            --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
+            --private-key "$KEY_FILE" \
+            --app-store \
+            --release-type AFTER_APPROVAL \
+            --cancel-previous-submissions \
+            --copyright "2026 Shunsuke Nakamura"
     artifacts:
       - build/ios/ipa/*.ipa
-    publishing:
-      app_store_connect:
-        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
-        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
-        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
-        submit_to_testflight: false
-        submit_to_app_store: true
-        cancel_previous_submissions: true
-        release_type: AFTER_APPROVAL
-        copyright: 2026 Shunsuke Nakamura
