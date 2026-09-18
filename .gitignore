@@ -83,6 +83,16 @@ fastlane/fastlane_session
 fastlane/Appfile.lock
 fastlane/Matchfile.lock
 
+# Local release tooling (venv / upload helpers)
+.tools/
+
+# Codemagic secrets / signing (never commit)
+codemagic-signing/
+codemagic-env-paste.txt
+*.p8
+*.p12
+*.mobileprovision
+.p12_password
 
 ios/Podfile
 ios/project.pbxproj

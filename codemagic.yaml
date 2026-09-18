@@ -1,0 +1,113 @@
+# Codemagic: iOS をクラウド Mac でビルドし App Store Connect へ提出
+#
+# Developer Portal 連携（UI）が FORBIDDEN でも動くよう、API Key は環境変数で渡す。
+#
+# === Codemagic アプリ設定でやること（初回のみ）===
+#
+# 1. Application → Environment variables → グループ appstore_credentials を作成
+#
+# 2. 環境変数グループ appstore_credentials に Secret を 1 つだけ追加:
+#    APP_STORE_CONNECT_PRIVATE_KEY = AuthKey_ATBD5UGJTG.p8 の全文
+#    （./scripts/prepare_codemagic_env.sh で codemagic-env-paste.txt を生成）
+#
+# 3. Team settings → Code signing identities（Developer Portal 連携なしで可）
+#    - Upload: Apple Distribution 証明書 (.p12)
+#      手元: codemagic-signing/joyphysics-distribution.p12
+#      パスワード: codemagic-signing/.p12_password（git 除外）
+#    - Upload: com.joyphysics の App Store プロビジョニング (.mobileprovision)
+#      手元: codemagic-signing/com.joyphysics.appstore.mobileprovision
+#
+# 4. ワークフロー ios-app-store-release を実行
+#
+# 参考: https://docs.codemagic.io/yaml-publishing/app-store-connect/
+
+workflows:
+  ios-app-store-release:
+    name: iOS App Store Release
+    max_build_duration: 120
+    instance_type: mac_mini_m2
+    environment:
+      groups:
+        - appstore_credentials
+      vars:
+        APP_STORE_CONNECT_KEY_IDENTIFIER: ATBD5UGJTG
+        APP_STORE_CONNECT_ISSUER_ID: c64fb6be-f1d2-4e04-80b5-2841def3da52
+        # App Store: 実験で学ぶ高校物理 ー joy-physics (bundle com.joyphysics)
+        APP_STORE_APPLE_ID: "6748957698"
+        RELEASE_NOTES_JA: |
+          メジャーアップデート（5.0.0）です。
+          ・熱力学・波動のアニメーションを改善
+          ・公式集にピンチズームと拡大縮小を追加
+          ・実験一覧の見やすさを改善
+          ・マインドマップを更新
+          ・その他の不具合修正と改善
+        RELEASE_NOTES_EN: |
+          Major update (5.0.0).
+          - Improved thermodynamics and wave animations
+          - Added pinch-zoom to formula sheets
+          - Clearer experiment list
+          - Updated mind maps
+          - Bug fixes and improvements
+      xcode: latest
+      flutter: stable
+      cocoapods: default
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.joyphysics
+    scripts:
+      - name: Flutter pub get
+        script: |
+          set -e
+          flutter pub get
+      - name: CocoaPods (ios)
+        script: |
+          set -e
+          cd ios && pod install && cd ..
+      - name: Flutter build IPA
+        script: |
+          set -e
+          VER_LINE=$(grep '^version:' pubspec.yaml | head -1 | awk '{print $2}' | tr -d "'\"")
+          VERSION_NAME="${VER_LINE%+*}"
+          if [ -n "${APP_STORE_APPLE_ID:-}" ]; then
+            LATEST=$(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID" || echo "100")
+            VERSION_CODE=$((LATEST + 1))
+          else
+            VERSION_CODE="${VER_LINE#*+}"
+          fi
+          echo "Building $VERSION_NAME ($VERSION_CODE)"
+
+          flutter build ios --release --config-only
+
+          xcode-project use-profiles
+
+          if [ ! -f /Users/builder/export_options.plist ]; then
+            echo "ERROR: /Users/builder/export_options.plist が生成されていません"
+            exit 1
+          fi
+
+          echo "=== com.joyphysics 用プロファイル ==="
+          for f in "$HOME/Library/MobileDevice/Provisioning Profiles/"*.mobileprovision; do
+            if security cms -D -i "$f" 2>/dev/null | grep -q '7K99YVR868.com.joyphysics'; then
+              echo "--- $f ---"
+              security cms -D -i "$f" | grep -E '<key>Name</key>|<key>UUID</key>' || true
+            fi
+          done
+          echo "=== export_options.plist ==="
+          cat /Users/builder/export_options.plist
+
+          flutter build ipa --release \
+            --build-name="$VERSION_NAME" \
+            --build-number="$VERSION_CODE" \
+            --export-options-plist=/Users/builder/export_options.plist
+    artifacts:
+      - build/ios/ipa/*.ipa
+    publishing:
+      app_store_connect:
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
+        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        submit_to_testflight: false
+        submit_to_app_store: true
+        cancel_previous_submissions: true
+        release_type: AFTER_APPROVAL
+        copyright: 2026 Shunsuke Nakamura
