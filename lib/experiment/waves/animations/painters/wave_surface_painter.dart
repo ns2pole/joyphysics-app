@@ -966,10 +966,34 @@ class WaveSurfacePainter extends CustomPainter {
       ..strokeWidth = 1.0
       ..style = PaintingStyle.stroke;
 
+    bool sameXy(math.Point<double> a, math.Point<double> b) =>
+        (a.x - b.x).abs() < 1e-9 && (a.y - b.y).abs() < 1e-9;
+
     for (final m in markers) {
       final comps = getComponents(m.point.x, m.point.y);
-      if (comps.isEmpty) continue;
-      final double mz = comps.last.value;
+      double? mz;
+      if (comps.isNotEmpty) {
+        mz = comps.last.value;
+      } else {
+        // 合成波などがオフでも、対応する断面があれば波源・観測点を残す
+        final matchingStarts = radialCrossSections
+            .where((s) => sameXy(s.start, m.point))
+            .toList();
+        if (matchingStarts.isNotEmpty) {
+          mz = matchingStarts.first.zAt(m.point.x, m.point.y);
+        } else {
+          final matchingEnds = radialCrossSections
+              .where((s) => sameXy(s.end, m.point))
+              .toList();
+          if (matchingEnds.isNotEmpty) {
+            mz = matchingEnds.fold<double>(
+              0.0,
+              (sum, s) => sum + s.zAt(m.point.x, m.point.y),
+            );
+          }
+        }
+      }
+      if (mz == null) continue;
       final p = worldToScreen(m.point.x, m.point.y, mz);
       final markerPaint = Paint()
         ..color = m.color

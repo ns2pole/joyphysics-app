@@ -2,62 +2,63 @@ require 'yaml'
 
 default_platform(:ios)
 
-platform :ios do
-  desc "Flutter Android と iOS のリリースを自動化"
-  lane :release_all do |options|
-    release_note = options[:notes] || "バグ修正と改善を行いました"
-    UI.message("release_note: #{release_note.inspect}")
+def load_pub_version
+  pubspec = YAML.load_file(File.expand_path("../pubspec.yaml", __dir__))
+  pub_version = pubspec["version"] # e.g. "5.0.0+101"
+  version_number, build_number = pub_version.split("+")
+  [version_number, build_number]
+end
 
-    # --- pubspec.yaml からバージョン取得 ---
-    pubspec = YAML.load_file("../pubspec.yaml")
-    pub_version = pubspec["version"]       # 例: "2.2.5+31"
-    version_number, build_number = pub_version.split("+")
+def release_note_text(options)
+  options[:notes] || File.read(File.expand_path("metadata/android/ja-JP/changelogs/#{load_pub_version[1]}.txt", __dir__)).strip
+rescue
+  options[:notes] || "バグ修正と改善を行いました"
+end
+
+platform :ios do
+  desc "iOS のみ: ビルドして App Store 審査提出"
+  lane :release_ios do |options|
+    release_note = release_note_text(options)
+    version_number, build_number = load_pub_version
+    UI.message("iOS release #{version_number} (#{build_number})")
+    UI.message("release_note: #{release_note.inspect}")
 
     uses_non_exempt = get_info_plist_value(
       path: "ios/Runner/Info.plist",
       key: "ITSAppUsesNonExemptEncryption"
     )
 
-    UI.message("versionName: #{version_number}, versionCode: #{build_number}")
-
-    #####################
-    # Flutter 共通ビルド
-    #####################
     sh("flutter clean")
     sh("flutter pub get")
-    sh("cd ../ios && pod install --repo-update && cd ..")
+    sh("cd ios && pod install --repo-update")
 
-    # Android AAB
-    sh("flutter build appbundle --release")
-
-    #####################
-    # iOS ビルド
-    #####################
     increment_version_number(
       version_number: version_number,
       xcodeproj: "ios/Runner.xcodeproj"
     )
-    
     increment_build_number(
       build_number: build_number,
       xcodeproj: "ios/Runner.xcodeproj"
     )
-    
+
     build_app(
       workspace: "ios/Runner.xcworkspace",
       scheme: "Runner",
       export_method: "app-store"
     )
-    
+
     deliver(
       username: "syunsukerunrun0306@yahoo.co.jp",
       submit_for_review: true,
+      automatic_release: false,
       force: true,
       languages: ["ja"],
       release_notes: { "ja" => release_note },
       skip_metadata: false,
       skip_screenshots: true,
-      promotional_text: { "ja" => "スマホセンサーを用いて、無料で物理実験を体験できます。また、実験動画と理論解説で、物理現象の理解に活用していただけます。" },
+      promotional_text: {
+        "ja" => "スマホセンサーを用いて、無料で物理実験を体験できます。また、実験動画と理論解説で、物理現象の理解に活用していただけます。"
+      },
       submission_information: {
         export_compliance_uses_encryption: uses_non_exempt || false,
         export_compliance_uses_non_exempt_encryption: uses_non_exempt || false,
@@ -67,37 +68,45 @@ platform :ios do
       }
     )
 
-    #####################
-    # Android changelog 自動生成
-    #####################
-    changelog_path = "./metadata/android/ja-JP/changelogs/#{build_number}.txt"
-    sh("mkdir -p #{File.dirname(changelog_path)}")
-    File.write(changelog_path, release_note)
-    UI.message("Android changelog generated at #{changelog_path}")
+    UI.success("✅ iOS release submitted for review")
+  end
 
-    #####################
-    # Android ビルド
-    #####################
-    gradle(
-      task: "assembleRelease",
-      project_dir: "./android",
-      properties: {
-        "versionName" => version_number,
-        "versionCode" => build_number
-      }
-    )
+end
 
-    #####################
-    # Android アップロード
-    #####################
+desc "互換用: iOS + Android を順に実行"
+lane :release_all do |options|
+  Fastlane::LaneManager.cruise_lane("ios", "release_ios", options)
+  Fastlane::LaneManager.cruise_lane("android", "release_android", options)
+end
+
+platform :android do
+  desc "Android のみ: AAB ビルドして Play Store 本番トラックへ審査提出"
+  lane :release_android do |options|
+    release_note = release_note_text(options)
+    version_number, build_number = load_pub_version
+    UI.message("Android release #{version_number} (#{build_number})")
+    UI.message("release_note: #{release_note.inspect}")
+
+    changelog_path = File.expand_path("metadata/android/ja-JP/changelogs/#{build_number}.txt", __dir__)
+    FileUtils.mkdir_p(File.dirname(changelog_path))
+    File.write(changelog_path, release_note) unless File.exist?(changelog_path)
+
+    sh("flutter clean")
+    sh("flutter pub get")
+    sh("flutter build appbundle --release")
+
     upload_to_play_store(
       package_name: "com.joyphysics",
-      json_key: "./fastlane/joy-physics-fastlane-49212c4fb3b6.json",
+      json_key: File.expand_path("joy-physics-fastlane-49212c4fb3b6.json", __dir__),
       track: "production",
+      release_status: "completed",
       aab: "build/app/outputs/bundle/release/app-release.aab",
-      metadata_path: "./fastlane/metadata/android"
+      metadata_path: File.expand_path("metadata/android", __dir__),
+      skip_upload_screenshots: true,
+      skip_upload_images: true,
+      changes_not_sent_for_review: false
     )
 
-    UI.success("✅ iOS & Android release complete")
+    UI.success("✅ Android release uploaded to production (review)")
   end
 end
