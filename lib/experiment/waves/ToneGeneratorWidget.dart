@@ -28,8 +28,8 @@ class _ToneGeneratorWidgetState extends State<ToneGeneratorWidget> {
   bool isPlaying = false;
   late double freq;
 
-  final int sampleRate = 44100;
-  final int durationMs = 60000; // 2秒分だけ生成 (無限ループじゃなく繰り返しで再生すれば十分)
+  final int sampleRate = 22050;
+  final int durationSec = 600;
 
   @override
   void initState() {
@@ -51,13 +51,14 @@ class _ToneGeneratorWidgetState extends State<ToneGeneratorWidget> {
   }
 
   Uint8List generateSineWave(double freq) {
-    final sampleCount = (sampleRate * durationMs / 1000).toInt();
+    final cycles = max(1, (freq * durationSec).round());
+    final sampleCount = max(sampleRate, (cycles * sampleRate / freq).round());
     final buffer = Int16List(sampleCount);
-
+    final step = 2 * pi * freq / sampleRate;
+    var phase = 0.0;
     for (int i = 0; i < sampleCount; i++) {
-      double t = i / sampleRate;
-      double val = sin(2 * pi * freq * t);
-      buffer[i] = (val * 32767).toInt();
+      buffer[i] = (sin(phase) * 32767).toInt();
+      phase += step;
     }
     return Uint8List.view(buffer.buffer);
   }
@@ -65,17 +66,29 @@ class _ToneGeneratorWidgetState extends State<ToneGeneratorWidget> {
   Future<void> playSound(double freq) async {
     if (isPlaying) return;
     setState(() => isPlaying = true);
+    await _start(freq);
+  }
 
-    final data = generateSineWave(freq);
-    await _player!.startPlayer(
-      fromDataBuffer: data,
-      codec: Codec.pcm16,
-      sampleRate: sampleRate,
-      numChannels: 1,
-      whenFinished: () {
-        setState(() => isPlaying = false);
-      },
-    );
+  Future<void> _start(double playFreq) async {
+    try {
+      final data = generateSineWave(playFreq);
+      await _player!.startPlayer(
+        fromDataBuffer: data,
+        codec: Codec.pcm16,
+        sampleRate: sampleRate,
+        numChannels: 1,
+        whenFinished: () {
+          if (!mounted) return;
+          if (isPlaying) {
+            _start(freq);
+          } else {
+            setState(() => isPlaying = false);
+          }
+        },
+      );
+    } catch (_) {
+      if (mounted) setState(() => isPlaying = false);
+    }
   }
 
   Future<void> stopSound() async {

@@ -42,6 +42,16 @@ class ThinFilmInterference2DSimulation extends WaveSimulation {
       {'incident', 'reflected1', 'reflected2', 'combined'};
 
   @override
+  List<WavefrontLayer> get wavefrontLayers => const [
+        WavefrontLayer(
+            id: 'incident', label: '入射', color: Colors.purpleAccent),
+        WavefrontLayer(
+            id: 'reflected1', label: '反射1', color: Colors.greenAccent),
+        WavefrontLayer(
+            id: 'reflected2', label: '反射2', color: Colors.orangeAccent),
+      ];
+
+  @override
   List<Widget> buildControls(context, params, updateParam) {
     final thetaDeg = (params['theta']! * 180 / math.pi);
     final sinTheta2 = math.sin(params['theta']!) / params['n']!;

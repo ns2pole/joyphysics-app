@@ -53,6 +53,14 @@ class CircularPlaneInterferenceSimulation extends WaveSimulation {
   Set<String> get initialActiveIds =>
       {'combined', 'showNodalLines', 'showAntinodalLines'};
 
+  @override
+  List<WavefrontLayer> get wavefrontLayers => const [
+        WavefrontLayer(
+            id: 'waveC', label: '円形波', color: Colors.purpleAccent),
+        WavefrontLayer(
+            id: 'waveP', label: '平面波', color: Colors.greenAccent),
+      ];
+
   bool _samePeriod(Map<String, double> params) =>
       (params['periodTC']! - params['periodTP']!).abs() < 1e-9;
 

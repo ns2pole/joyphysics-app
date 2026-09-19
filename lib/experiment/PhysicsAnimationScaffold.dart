@@ -25,6 +25,8 @@ class PhysicsAnimationScaffold extends StatefulWidget with HasHeight {
   final bool compactButtonSpacing;
   final double animationOffsetY;
   final bool showZoomButtons;
+  /// 真上から波面を見るモード。ON で tilt=π/2、OFF で直前の視点に戻す。
+  final bool wavefrontTopView;
 
   const PhysicsAnimationScaffold({
     super.key,
@@ -47,6 +49,7 @@ class PhysicsAnimationScaffold extends StatefulWidget with HasHeight {
     this.compactButtonSpacing = false,
     this.animationOffsetY = 0,
     this.showZoomButtons = false,
+    this.wavefrontTopView = false,
   });
 
   @override
@@ -73,6 +76,11 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
   double _tilt = _defaultTilt;
   double _scale = 1.0;
   double _baseScale = 1.0;
+
+  /// 波面真上ビューに入る直前の視点（OFF 時に復元）
+  double _savedAzimuth = _defaultAzimuth;
+  double _savedTilt = _defaultTilt;
+  bool _wavefrontTopViewActive = false;
 
   static const double _minScale = 0.5;
   static const double _maxScale = 3.0;
@@ -133,6 +141,34 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
         _time.value = _time.value + 0.02;
       }
     });
+
+    if (widget.wavefrontTopView) {
+      _enterWavefrontTopView();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant PhysicsAnimationScaffold oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.wavefrontTopView && !oldWidget.wavefrontTopView) {
+      setState(_enterWavefrontTopView);
+    } else if (!widget.wavefrontTopView && oldWidget.wavefrontTopView) {
+      setState(_exitWavefrontTopView);
+    }
+  }
+
+  void _enterWavefrontTopView() {
+    _savedAzimuth = _azimuth;
+    _savedTilt = _tilt;
+    _wavefrontTopViewActive = true;
+    _azimuth = _savedAzimuth;
+    _tilt = _tiltMax;
+  }
+
+  void _exitWavefrontTopView() {
+    _wavefrontTopViewActive = false;
+    _azimuth = _savedAzimuth;
+    _tilt = _savedTilt;
   }
 
   @override
@@ -257,7 +293,8 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
                               .clamp(_minScale, _maxScale);
 
                           // Handle Rotation (Pan) - only for 3D
-                          if (widget.is3D) {
+                          // 波面真上ビュー中は視点をロック（OFF で保存視点へ戻すため）
+                          if (widget.is3D && !_wavefrontTopViewActive) {
                             _azimuth =
                                 (_azimuth + details.focalPointDelta.dx * 0.01) %
                                     (2 * math.pi);

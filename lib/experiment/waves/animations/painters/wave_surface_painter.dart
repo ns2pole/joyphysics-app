@@ -39,14 +39,21 @@ class _ZeroContourCache {
     required int div,
     required double range,
     required double Function(double x, double y) metric,
+    bool Function(double x, double y)? include,
   }) {
     final n = div + 1;
     final step = (range * 2) / div;
     final grid = Float32List(n * n);
+    final mask = include == null ? null : Uint8List(n * n);
     for (int i = 0; i < n; i++) {
       final x = -range + i * step;
       for (int j = 0; j < n; j++) {
-        grid[i * n + j] = metric(x, -range + j * step);
+        final y = -range + j * step;
+        final idx = i * n + j;
+        grid[idx] = metric(x, y);
+        if (mask != null) {
+          mask[idx] = include!(x, y) ? 1 : 0;
+        }
       }
     }
 
@@ -87,6 +94,13 @@ class _ZeroContourCache {
         final f10 = grid[(i + 1) * n + j];
         final f11 = grid[(i + 1) * n + (j + 1)];
         final f01 = grid[i * n + (j + 1)];
+        if (mask != null &&
+            (mask[i * n + j] == 0 ||
+                mask[(i + 1) * n + j] == 0 ||
+                mask[(i + 1) * n + (j + 1)] == 0 ||
+                mask[i * n + (j + 1)] == 0)) {
+          continue;
+        }
         cross.clear();
         addCrossing(x0, y0, f00, x1, y0, f10, cross);
         addCrossing(x1, y0, f10, x1, y1, f11, cross);
@@ -108,6 +122,15 @@ class _ZeroContourCache {
     }
     return Float32List.fromList(out);
   }
+
+  /// 時間依存 metric 用（キャッシュなし）。毎フレーム粗いグリッドで計算する。
+  static Float32List marchOnce({
+    required int div,
+    required double range,
+    required double Function(double x, double y) metric,
+    bool Function(double x, double y)? include,
+  }) =>
+      _march(div: div, range: range, metric: metric, include: include);
 }
 
 class MediumSlabOverlay {
@@ -243,7 +266,8 @@ class WaveSurfacePainter extends CustomPainter {
     Offset worldToScreen(double x, double y, double z) =>
         transformer.worldToScreen(x, y, z);
 
-    double getPhase(double x, double y) => field.phase(x, y, time);
+    final topViewOn = showPeakLines ||
+        (activeComponentIds?.contains('showWavefrontTopView') ?? false);
     List<WaveComponent> getComponents(double x, double y) {
       if (activeComponentIds == null) {
         return [
@@ -316,8 +340,11 @@ class WaveSurfacePainter extends CustomPainter {
         final indices = <int>[];
 
         final baseColor = firstComps[compIdx].color;
-        final colorAbove = baseColor.withOpacity(0.8);
-        final colorBelow = baseColor.withOpacity(0.3);
+        final surfaceBase = topViewOn
+            ? (Color.lerp(baseColor, Colors.white, 0.42) ?? baseColor)
+            : baseColor;
+        final colorAbove = surfaceBase.withOpacity(topViewOn ? 0.32 : 0.8);
+        final colorBelow = surfaceBase.withOpacity(topViewOn ? 0.12 : 0.3);
 
         for (int i = 0; i < div; i++) {
           for (int j = 0; j < div; j++) {
@@ -586,7 +613,7 @@ class WaveSurfacePainter extends CustomPainter {
 
     // Mesh lines
     final meshPaint = Paint()
-      ..color = Colors.black.withOpacity(0.35)
+      ..color = Colors.black.withOpacity(topViewOn ? 0.16 : 0.35)
       ..strokeWidth = 0.8
       ..style = PaintingStyle.stroke;
 
@@ -621,25 +648,6 @@ class WaveSurfacePainter extends CustomPainter {
         }
       }
       canvas.drawPath(path, meshPaint);
-    }
-
-    // Peak lines
-    if (showPeakLines) {
-      final peakPaint = Paint()
-        ..color = const Color(0xFF6200EA)
-        ..strokeWidth = 2.0
-        ..style = PaintingStyle.stroke;
-      for (int i = 0; i <= div; i++) {
-        final x = -range + i * step;
-        for (int j = 0; j < div; j++) {
-          final phase1 = getPhase(x, -range + j * step);
-          if (math.sin(phase1) > 0.98) {
-            final p1 = gridPoints[i][j];
-            final p2 = gridPoints[i][j+1];
-            canvas.drawLine(p1, p2, peakPaint);
-          }
-        }
-      }
     }
 
     // Axes and Ticks
@@ -753,6 +761,7 @@ class WaveSurfacePainter extends CustomPainter {
     // 注意: 曲面グリッド(div=140)と同じ解像度で毎フレーム・点線細分化すると
     // UIスレッドが詰まって ANR（応答していません）になる。
     // metric は時間非依存なので世界座標の線分をキャッシュし、粗いグリッドで計算する。
+    // 真上視点では波面（山/谷）の後に描き、白の下線で波面の上でも読めるようにする。
     void drawZeroContours({
       required double Function(double x, double y) metric,
       required Color color,
@@ -768,9 +777,16 @@ class WaveSurfacePainter extends CustomPainter {
         metric: metric,
       );
 
+      final strokeW = topViewOn ? 3.0 : 2.4;
+      final halo = Paint()
+        ..color = const Color(0xE6FFFFFF)
+        ..strokeWidth = strokeW + 2.4
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round
+        ..isAntiAlias = true;
       final paint = Paint()
         ..color = color
-        ..strokeWidth = 2.4
+        ..strokeWidth = strokeW
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round
         ..isAntiAlias = true;
@@ -779,11 +795,16 @@ class WaveSurfacePainter extends CustomPainter {
       const gapLen = 10.0;
       const pattern = dashLen + gapLen;
 
+      void strokeSeg(Offset a, Offset b) {
+        if (topViewOn) canvas.drawLine(a, b, halo);
+        canvas.drawLine(a, b, paint);
+      }
+
       for (int k = 0; k + 3 < segs.length; k += 4) {
         final a = worldToScreen(segs[k], segs[k + 1], 0);
         final b = worldToScreen(segs[k + 2], segs[k + 3], 0);
         if (!dashed) {
-          canvas.drawLine(a, b, paint);
+          strokeSeg(a, b);
           continue;
         }
         // セル長の短い線分を while で点線分割すると drawCall 爆発→ANR。
@@ -797,29 +818,103 @@ class WaveSurfacePainter extends CustomPainter {
         var inPat = (a.dx * ux + a.dy * uy) % pattern;
         if (inPat < 0) inPat += pattern;
         if (inPat < dashLen) {
-          canvas.drawLine(a, b, paint);
+          strokeSeg(a, b);
         }
       }
     }
 
-    // 観測点(赤)・波源(黄)・曲面(紫)と被らないオレンジ
-    const nodalColor = Color(0xFFFB8C00);
-    if (showNodalLines && nodalMetric != null) {
-      drawZeroContours(
-        metric: nodalMetric!,
-        color: nodalColor,
-        dashed: true,
-        cacheTag: 1,
-      );
+    void drawNodalAntinodalLines() {
+      // 観測点(赤)・波源(黄)・曲面(紫)と被らないオレンジ
+      const nodalColor = Color(0xFFFB8C00);
+      if (showNodalLines && nodalMetric != null) {
+        drawZeroContours(
+          metric: nodalMetric!,
+          color: nodalColor,
+          dashed: true,
+          cacheTag: 1,
+        );
+      }
+      if (showAntinodalLines && antinodalMetric != null) {
+        drawZeroContours(
+          metric: antinodalMetric!,
+          color: nodalColor,
+          dashed: false,
+          cacheTag: 2,
+        );
+      }
     }
-    if (showAntinodalLines && antinodalMetric != null) {
-      drawZeroContours(
-        metric: antinodalMetric!,
-        color: nodalColor,
-        dashed: false,
-        cacheTag: 2,
-      );
+
+    // 斜め視点では波面より先に描く（曲面の上、波面は出ない）。
+    if (!topViewOn) drawNodalAntinodalLines();
+
+    // 真上から波面: 波ごとに cos(phase)=0 を山(実線)/谷(点線)で描く。
+    // 位相は時間依存のためキャッシュせず、未到達セルは描かない。
+    if (topViewOn) {
+      final layers = field.wavefrontLayers;
+      final selected = layers.where((layer) {
+        if (layers.length == 1) return true;
+        return activeComponentIds?.contains(layer.toggleId) ?? false;
+      }).toList();
+
+      const contourDiv = 48;
+      const dashLen = 12.0;
+      const gapLen = 10.0;
+      const pattern = dashLen + gapLen;
+
+      for (final layer in selected) {
+        final segs = _ZeroContourCache.marchOnce(
+          div: contourDiv,
+          range: range,
+          metric: (x, y) => math.cos(field.componentPhase(layer.id, x, y, time)),
+          include: (x, y) => field.hasReached(layer.id, x, y, time),
+        );
+
+        final crestPaint = Paint()
+          ..color = layer.lineColor
+          ..strokeWidth = 2.6
+          ..style = PaintingStyle.stroke
+          ..strokeCap = StrokeCap.round
+          ..isAntiAlias = true;
+        final troughPaint = Paint()
+          ..color = layer.lineColor
+          ..strokeWidth = 2.1
+          ..style = PaintingStyle.stroke
+          ..strokeCap = StrokeCap.round
+          ..isAntiAlias = true;
+
+        for (int k = 0; k + 3 < segs.length; k += 4) {
+          final x0 = segs[k];
+          final y0 = segs[k + 1];
+          final x1 = segs[k + 2];
+          final y1 = segs[k + 3];
+          final mx = 0.5 * (x0 + x1);
+          final my = 0.5 * (y0 + y1);
+          if (!field.hasReached(layer.id, mx, my, time)) continue;
+          final midPhase = field.componentPhase(layer.id, mx, my, time);
+          final isCrest = math.sin(midPhase) >= 0;
+          final a = worldToScreen(x0, y0, 0);
+          final b = worldToScreen(x1, y1, 0);
+          if (isCrest) {
+            canvas.drawLine(a, b, crestPaint);
+            continue;
+          }
+          final dx = b.dx - a.dx;
+          final dy = b.dy - a.dy;
+          final len = math.sqrt(dx * dx + dy * dy);
+          if (len < 0.35) continue;
+          final ux = dx / len;
+          final uy = dy / len;
+          var inPat = (a.dx * ux + a.dy * uy) % pattern;
+          if (inPat < 0) inPat += pattern;
+          if (inPat < dashLen) {
+            canvas.drawLine(a, b, troughPaint);
+          }
+        }
+      }
     }
+
+    // 真上視点では波面の上に節線・腹線を重ね、山/谷に埋もれないようにする。
+    if (topViewOn) drawNodalAntinodalLines();
 
     // 波源〜観測点を結ぶ方向の断面波形（切断平面 + z=0上の基線 + 各成分の変位曲線）
     void drawOneCrossSection(RadialCrossSectionSpec spec) {

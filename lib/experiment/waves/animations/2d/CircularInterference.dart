@@ -53,6 +53,12 @@ class CircularInterferenceSimulation extends WaveSimulation {
       {'combined', 'cross1', 'cross2', 'showNodalLines', 'showAntinodalLines'};
 
   @override
+  List<WavefrontLayer> get wavefrontLayers => const [
+        WavefrontLayer(id: 'wave1', label: '波1', color: Colors.purpleAccent),
+        WavefrontLayer(id: 'wave2', label: '波2', color: Colors.greenAccent),
+      ];
+
+  @override
   List<Widget> buildControls(context, params, updateParam) {
     return [
       Text(

@@ -40,6 +40,14 @@ class ReflectionLaw2DSimulation extends WaveSimulation {
   Set<String> get initialActiveIds => {'incident', 'reflected', 'combined'};
 
   @override
+  List<WavefrontLayer> get wavefrontLayers => const [
+        WavefrontLayer(
+            id: 'incident', label: '入射', color: Colors.purpleAccent),
+        WavefrontLayer(
+            id: 'reflected', label: '反射', color: Colors.greenAccent),
+      ];
+
+  @override
   List<Widget> buildControls(context, params, updateParam) {
     final thetaDeg = (params['theta']! * 180 / math.pi);
     return [

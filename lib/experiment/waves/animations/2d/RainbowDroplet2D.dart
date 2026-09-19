@@ -330,6 +330,9 @@ class RainbowDroplet2DSimulation extends WaveSimulation {
   final bool multiDroplet;
 
   @override
+  bool get enableWavefrontTopView => false;
+
+  @override
   Map<String, double> get initialParameters => {
         'k': 0.82,
         'viewMode': multiDroplet

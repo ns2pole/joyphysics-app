@@ -23,8 +23,8 @@ class _BeatExperimentWidgetState extends State<BeatExperimentWidget> {
   double freq1 = 440;
   double freq2 = 444;
 
-  final int sampleRate = 44100;
-  final int durationMs = 60000; // 60秒分の音データ
+  final int sampleRate = 22050;
+  final int durationSec = 600;
 
   @override
   void initState() {
@@ -49,13 +49,14 @@ class _BeatExperimentWidgetState extends State<BeatExperimentWidget> {
   }
 
   Uint8List generateSineWave(double freq) {
-    final sampleCount = (sampleRate * durationMs / 1000).toInt();
+    final cycles = max(1, (freq * durationSec).round());
+    final sampleCount = max(sampleRate, (cycles * sampleRate / freq).round());
     final buffer = Int16List(sampleCount);
-
+    final step = 2 * pi * freq / sampleRate;
+    var phase = 0.0;
     for (int i = 0; i < sampleCount; i++) {
-      double t = i / sampleRate;
-      double val = sin(2 * pi * freq * t);
-      buffer[i] = (val * 32767).toInt();
+      buffer[i] = (sin(phase) * 32767).toInt();
+      phase += step;
     }
     return Uint8List.view(buffer.buffer);
   }
@@ -63,17 +64,29 @@ class _BeatExperimentWidgetState extends State<BeatExperimentWidget> {
   Future<void> playSound1(double freq) async {
     if (isPlaying1) return;
     if (mounted) setState(() => isPlaying1 = true);
+    await _start1(freq);
+  }
 
-    final data = generateSineWave(freq);
-    await _player1!.startPlayer(
-      fromDataBuffer: data,
-      codec: Codec.pcm16,
-      sampleRate: sampleRate,
-      numChannels: 1,
-      whenFinished: () {
-        if (mounted) setState(() => isPlaying1 = false);
-      },
-    );
+  Future<void> _start1(double playFreq) async {
+    try {
+      final data = generateSineWave(playFreq);
+      await _player1!.startPlayer(
+        fromDataBuffer: data,
+        codec: Codec.pcm16,
+        sampleRate: sampleRate,
+        numChannels: 1,
+        whenFinished: () {
+          if (!mounted) return;
+          if (isPlaying1) {
+            _start1(freq1);
+          } else {
+            setState(() => isPlaying1 = false);
+          }
+        },
+      );
+    } catch (_) {
+      if (mounted) setState(() => isPlaying1 = false);
+    }
   }
 
   Future<void> stopSound1() async {
@@ -86,17 +99,29 @@ class _BeatExperimentWidgetState extends State<BeatExperimentWidget> {
   Future<void> playSound2(double freq) async {
     if (isPlaying2) return;
     if (mounted) setState(() => isPlaying2 = true);
+    await _start2(freq);
+  }
 
-    final data = generateSineWave(freq);
-    await _player2!.startPlayer(
-      fromDataBuffer: data,
-      codec: Codec.pcm16,
-      sampleRate: sampleRate,
-      numChannels: 1,
-      whenFinished: () {
-        if (mounted) setState(() => isPlaying2 = false);
-      },
-    );
+  Future<void> _start2(double playFreq) async {
+    try {
+      final data = generateSineWave(playFreq);
+      await _player2!.startPlayer(
+        fromDataBuffer: data,
+        codec: Codec.pcm16,
+        sampleRate: sampleRate,
+        numChannels: 1,
+        whenFinished: () {
+          if (!mounted) return;
+          if (isPlaying2) {
+            _start2(freq2);
+          } else {
+            setState(() => isPlaying2 = false);
+          }
+        },
+      );
+    } catch (_) {
+      if (mounted) setState(() => isPlaying2 = false);
+    }
   }
 
   Future<void> stopSound2() async {

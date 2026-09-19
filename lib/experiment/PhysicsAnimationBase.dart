@@ -85,6 +85,137 @@ abstract class PhysicsSimulation {
   /// キャンバス右下の拡大縮小ボタンを表示するか
   bool get showZoomButtons => false;
 
+  /// 「真上から波面を見る」トグルを出すか（2D曲面波動向け）
+  bool get enableWavefrontTopView => false;
+
+  /// 真上視点で出す波面レイヤー。干渉では波ごとに複数。
+  List<WavefrontLayer> get wavefrontLayers => const [
+        WavefrontLayer(id: 'total', label: '波面', color: Colors.blueAccent),
+      ];
+
+  /// チップ類 + 波面ビュー操作をまとめたコントロール
+  Widget? composeExtraControls(
+    BuildContext context,
+    Set<String> activeIds,
+    void Function(Set<String> ids) updateActiveIds,
+  ) {
+    final base = buildExtraControls(context, activeIds, updateActiveIds);
+    if (!enableWavefrontTopView) return base;
+    final panel = buildWavefrontViewPanel(activeIds, updateActiveIds);
+    if (base == null) return panel;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        base,
+        const SizedBox(height: 8),
+        panel,
+      ],
+    );
+  }
+
+  Widget buildWavefrontViewPanel(
+    Set<String> activeIds,
+    void Function(Set<String> ids) updateActiveIds,
+  ) {
+    final layers = wavefrontLayers;
+    final topOn = activeIds.contains('showWavefrontTopView');
+
+    void setTopView(bool on) {
+      final next = Set<String>.from(activeIds);
+      if (on) {
+        next.add('showWavefrontTopView');
+        for (final layer in layers) {
+          next.add(layer.toggleId);
+        }
+      } else {
+        next.remove('showWavefrontTopView');
+        for (final layer in layers) {
+          next.remove(layer.toggleId);
+        }
+      }
+      updateActiveIds(next);
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF4F7FB),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFD5DEEA)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Wrap(
+            spacing: 8,
+            runSpacing: 4,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            alignment: WrapAlignment.center,
+            children: [
+              FilterChip(
+                avatar: Icon(
+                  Icons.vertical_align_top,
+                  size: 16,
+                  color: topOn ? const Color(0xFF1565C0) : Colors.black54,
+                ),
+                label: const Text('真上から見る', style: TextStyle(fontSize: 12)),
+                selected: topOn,
+                onSelected: setTopView,
+                selectedColor: const Color(0xFFBBDEFB),
+                checkmarkColor: const Color(0xFF1565C0),
+                visualDensity: VisualDensity.compact,
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              if (topOn) const _WavefrontLegend(),
+            ],
+          ),
+          if (topOn && layers.length > 1) ...[
+            const SizedBox(height: 6),
+            Wrap(
+              spacing: 6,
+              runSpacing: 4,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              alignment: WrapAlignment.center,
+              children: [
+                const Text(
+                  '波面',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF546E7A),
+                  ),
+                ),
+                for (final layer in layers)
+                  FilterChip(
+                    avatar: CircleAvatar(
+                      backgroundColor: layer.lineColor,
+                      radius: 7,
+                    ),
+                    label: Text(layer.label, style: const TextStyle(fontSize: 11)),
+                    selected: activeIds.contains(layer.toggleId),
+                    onSelected: (val) {
+                      final next = Set<String>.from(activeIds);
+                      val
+                          ? next.add(layer.toggleId)
+                          : next.remove(layer.toggleId);
+                      updateActiveIds(next);
+                    },
+                    selectedColor: layer.color.withOpacity(0.28),
+                    checkmarkColor: layer.lineColor,
+                    side: BorderSide(color: layer.lineColor, width: 1.1),
+                    visualDensity: VisualDensity.compact,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    padding: EdgeInsets.zero,
+                  ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   /// アニメーション本体を構築
   Widget buildAnimation(
     BuildContext context,
@@ -145,6 +276,10 @@ abstract class WaveSimulation extends PhysicsSimulation {
 
   @override
   bool get showZoomButtons => true;
+
+  /// 3D 曲面表示の波動シミュレーションでは真上波面ビューを有効化
+  @override
+  bool get enableWavefrontTopView => is3D;
 
   /// 観測点位置を含む初期パラメータを生成するヘルパー
   Map<String, double> getInitialParamsWithObs({
@@ -267,6 +402,11 @@ class _PhysicsSimulationViewState extends State<PhysicsSimulationView> {
     });
   }
 
+  Widget? _buildExtraControls(BuildContext context) {
+    return widget.simulation
+        .composeExtraControls(context, _activeIds, _updateActiveIds);
+  }
+
   @override
   Widget build(BuildContext context) {
     return PhysicsAnimationScaffold(
@@ -285,9 +425,9 @@ class _PhysicsSimulationViewState extends State<PhysicsSimulationView> {
       height: widget.height,
       sliders:
           widget.simulation.buildControls(context, _parameters, _updateParam),
-      extraControls: widget.simulation.buildExtraControls(
-          context, _activeIds, _updateActiveIds),
+      extraControls: _buildExtraControls(context),
       showZoomButtons: widget.simulation.showZoomButtons,
+      wavefrontTopView: _activeIds.contains('showWavefrontTopView'),
       getMarkers: (time) => widget.simulation.getMarkers(_parameters, time),
       onMarkerDragged: (index, newPoint, time) {
         widget.simulation
@@ -328,6 +468,66 @@ Video createWaveVideo({
       PhysicsSimulationView(simulation: simulation, height: height),
     ],
   );
+}
+
+class _WavefrontLegend extends StatelessWidget {
+  const _WavefrontLegend();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _LegendMark(dashed: false),
+        SizedBox(width: 4),
+        Text('山', style: TextStyle(fontSize: 10, color: Color(0xFF546E7A))),
+        SizedBox(width: 10),
+        _LegendMark(dashed: true),
+        SizedBox(width: 4),
+        Text('谷', style: TextStyle(fontSize: 10, color: Color(0xFF546E7A))),
+      ],
+    );
+  }
+}
+
+class _LegendMark extends StatelessWidget {
+  const _LegendMark({required this.dashed});
+
+  final bool dashed;
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      size: const Size(18, 8),
+      painter: _LegendMarkPainter(dashed: dashed),
+    );
+  }
+}
+
+class _LegendMarkPainter extends CustomPainter {
+  _LegendMarkPainter({required this.dashed});
+
+  final bool dashed;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0xFF37474F)
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke;
+    final y = size.height / 2;
+    if (!dashed) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
+      return;
+    }
+    canvas.drawLine(Offset(0, y), Offset(7, y), paint);
+    canvas.drawLine(Offset(11, y), Offset(size.width, y), paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _LegendMarkPainter oldDelegate) =>
+      oldDelegate.dashed != dashed;
 }
 
 

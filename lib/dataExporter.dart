@@ -73,6 +73,7 @@ export './experiment/thermoDynamics/animations/HeatCycle.dart';
 
 // waves
 export './experiment/waves/closedPipeResonance.dart';
+export './experiment/waves/animations/1d/ClosedPipeWaterResonance1D.dart';
 export './experiment/waves/diffractionGrating.dart';
 export './experiment/waves/openPipeResonance.swift.dart';
 export './experiment/waves/spectroscopy.dart';
@@ -91,6 +92,7 @@ export './experiment/waves/animations/1d/FixedEndReflectionLine.dart';
 export './experiment/waves/animations/1d/FreeEndReflection1D.dart';
 export './experiment/waves/animations/1d/MovingReflector1D.dart';
 export './experiment/waves/animations/1d/PulseReflection1D.dart';
+export './experiment/waves/animations/1d/DrivenStringResonance1D.dart';
 export './experiment/waves/animations/1d/FreeEndReflectionLine.dart';
 export './experiment/waves/animations/1d/Refraction1D.dart';
 export './experiment/waves/animations/1d/ThinFilmInterference1D.dart';

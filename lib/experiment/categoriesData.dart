@@ -189,6 +189,7 @@ final categoriesData = <Category>[
         videos: [
           soundGenerate,
           closedPipeResonance,
+          closedPipeWaterResonance1D,
           openPipeResonance,
         ],
       ),
@@ -224,6 +225,7 @@ final categoriesData = <Category>[
           pulseReflection1D,
           fixedEndReflection1D,
           freeEndReflection1D,
+          drivenStringResonance1D,
           reflectionLaw2D,
           fixedReflection2D,
         ],

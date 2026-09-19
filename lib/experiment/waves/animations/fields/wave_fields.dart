@@ -16,6 +16,35 @@ class WaveComponent {
   });
 }
 
+/// 真上視点で描く1本の波面（山/谷）。合成波は位相が単純でないため含めない。
+class WavefrontLayer {
+  const WavefrontLayer({
+    required this.id,
+    required this.label,
+    required this.color,
+  });
+
+  final String id;
+  final String label;
+  final Color color;
+
+  String get toggleId => 'showWavefront:$id';
+
+  /// 曲面より一段濃い同系色（線用）
+  Color get lineColor {
+    final hsl = HSLColor.fromColor(color);
+    return hsl
+        .withSaturation((hsl.saturation * 1.15).clamp(0.0, 1.0))
+        .withLightness((hsl.lightness * 0.42).clamp(0.16, 0.36))
+        .toColor();
+  }
+
+  /// 真上ビュー時の曲面（同系で一段薄く）
+  Color get fadedSurfaceColor {
+    return Color.lerp(color, Colors.white, 0.42) ?? color;
+  }
+}
+
 class WaveMarker {
   final math.Point<double> point;
   final Color color;
@@ -36,6 +65,22 @@ abstract class WaveField {
   double phase(double x, double y, double t);
 
   double z(double x, double y, double t) => math.sin(phase(x, y, t));
+
+  /// 真上視点で山/谷を描く対象。既定は単一波。
+  List<WavefrontLayer> get wavefrontLayers => const [
+        WavefrontLayer(
+          id: 'total',
+          label: '波面',
+          color: Colors.blueAccent,
+        ),
+      ];
+
+  /// 変位 z = A sin(componentPhase) となる位相。未到達でも数式上の値を返す。
+  double componentPhase(String id, double x, double y, double t) =>
+      phase(x, y, t);
+
+  /// 波が (x,y) に到達しているか。未到達なら波面を描かない。
+  bool hasReached(String id, double x, double y, double t) => true;
 
   /// Returns a list of individual wave components at (x,y,t).
   /// [activeIds] is a set of component IDs that should be included.
@@ -81,6 +126,18 @@ class PlaneWaveField extends WaveField {
     // phase(x,y,t) is (k*path - omega*t)
     final p = -(phase(x, y, t) + k1 * dOffset);
     return (p > 0) ? amplitude * math.sin(p) : 0.0;
+  }
+
+  @override
+  double componentPhase(String id, double x, double y, double t) {
+    final k1 = 2 * math.pi / lambda;
+    const dOffset = 7.5;
+    return -(phase(x, y, t) + k1 * dOffset);
+  }
+
+  @override
+  bool hasReached(String id, double x, double y, double t) {
+    return componentPhase(id, x, y, t) > 0;
   }
 
   @override
@@ -170,6 +227,18 @@ class SlabRefractionWaveField extends WaveField {
     // which is - (phase(x,y,t) + k*dOffset)
     final p = -(phase(x, y, t) + k1 * dOffset);
     return (p > 0) ? amplitude * math.sin(p) : 0.0;
+  }
+
+  @override
+  double componentPhase(String id, double x, double y, double t) {
+    final k1 = 2 * math.pi / lambda;
+    const dOffset = 7.5;
+    return -(phase(x, y, t) + k1 * dOffset);
+  }
+
+  @override
+  bool hasReached(String id, double x, double y, double t) {
+    return componentPhase(id, x, y, t) > 0;
   }
 
   @override
@@ -303,6 +372,42 @@ class ReflectionWaveField extends WaveField {
           value: zi + zr));
     }
     return res;
+  }
+
+  @override
+  List<WavefrontLayer> get wavefrontLayers => const [
+        WavefrontLayer(
+            id: 'incident', label: '入射', color: Colors.purpleAccent),
+        WavefrontLayer(
+            id: 'reflected', label: '反射', color: Colors.greenAccent),
+      ];
+
+  @override
+  double componentPhase(String id, double x, double y, double t) {
+    final k = 2 * math.pi / lambda;
+    final omega = 2 * math.pi / periodT;
+    const dOffset = 7.5;
+    if (id == 'reflected') {
+      final dr = -x * math.cos(theta) + y * math.sin(theta) + dOffset;
+      final phaseR = omega * t - k * dr;
+      return isFixedEnd ? phaseR + math.pi : phaseR;
+    }
+    final di = x * math.cos(theta) + y * math.sin(theta) + dOffset;
+    return omega * t - k * di;
+  }
+
+  @override
+  bool hasReached(String id, double x, double y, double t) {
+    if (x > 0) return false;
+    final k = 2 * math.pi / lambda;
+    final omega = 2 * math.pi / periodT;
+    const dOffset = 7.5;
+    if (id == 'reflected') {
+      final dr = -x * math.cos(theta) + y * math.sin(theta) + dOffset;
+      return omega * t - k * dr > 0;
+    }
+    final di = x * math.cos(theta) + y * math.sin(theta) + dOffset;
+    return omega * t - k * di > 0;
   }
 
   @override
@@ -856,6 +961,33 @@ class CircularInterferenceField extends WaveField {
   }
 
   @override
+  List<WavefrontLayer> get wavefrontLayers => const [
+        WavefrontLayer(id: 'wave1', label: '波1', color: Colors.purpleAccent),
+        WavefrontLayer(id: 'wave2', label: '波2', color: Colors.greenAccent),
+      ];
+
+  @override
+  double componentPhase(String id, double x, double y, double t) {
+    if (id == 'wave2') {
+      final r2 = math.sqrt(x * x + (y + a) * (y + a));
+      return 2 * math.pi * (t / periodT - r2 / lambda) + phi;
+    }
+    final r1 = math.sqrt(x * x + (y - a) * (y - a));
+    return 2 * math.pi * (t / periodT - r1 / lambda);
+  }
+
+  @override
+  bool hasReached(String id, double x, double y, double t) {
+    final v = lambda / periodT;
+    if (id == 'wave2') {
+      final r2 = math.sqrt(x * x + (y + a) * (y + a));
+      return t >= r2 / v;
+    }
+    final r1 = math.sqrt(x * x + (y - a) * (y - a));
+    return t >= r1 / v;
+  }
+
+  @override
   bool operator ==(Object other) {
     return other is CircularInterferenceField &&
         other.lambda == lambda &&
@@ -895,6 +1027,13 @@ class CircularWaveField extends WaveField {
     final p = 2 * math.pi * (t / periodT - r / lambda);
     // Add small offset to avoid tReach exactly 0 issues
     return (t >= tReach) ? amplitude * math.sin(p) : 0.0;
+  }
+
+  @override
+  bool hasReached(String id, double x, double y, double t) {
+    final v = lambda / periodT;
+    final r = math.sqrt(x * x + y * y);
+    return t >= r / v;
   }
 
   @override
@@ -983,6 +1122,17 @@ class PlaneWaveInterferenceField extends WaveField {
     return math.cos(delta / 2);
   }
 
+  /// 同周期のとき定常腹線の指標。ゼロ ⇔ δ=2mπ
+  double antinodalMetric(double x, double y) {
+    const dOffset = 7.5;
+    final dir1 = x * math.cos(theta1) + y * math.sin(theta1);
+    final dir2 = x * math.cos(theta2) + y * math.sin(theta2);
+    final phi1 = -2 * math.pi * (dir1 + dOffset) / lambda1;
+    final phi2 = -2 * math.pi * (dir2 + dOffset) / lambda2;
+    final delta = phi1 - phi2;
+    return math.sin(delta / 2);
+  }
+
   @override
   List<WaveComponent> getComponents(
       double x, double y, double t, Set<String> activeIds) {
@@ -1013,6 +1163,28 @@ class PlaneWaveInterferenceField extends WaveField {
           value: z1 + z2));
     }
     return res;
+  }
+
+  @override
+  List<WavefrontLayer> get wavefrontLayers => const [
+        WavefrontLayer(id: 'wave1', label: '波1', color: Colors.purpleAccent),
+        WavefrontLayer(id: 'wave2', label: '波2', color: Colors.greenAccent),
+      ];
+
+  @override
+  double componentPhase(String id, double x, double y, double t) {
+    const dOffset = 7.5;
+    if (id == 'wave2') {
+      final k2 = 2 * math.pi / lambda2;
+      return -(phase2(x, y, t) + k2 * dOffset);
+    }
+    final k1 = 2 * math.pi / lambda1;
+    return -(phase(x, y, t) + k1 * dOffset);
+  }
+
+  @override
+  bool hasReached(String id, double x, double y, double t) {
+    return componentPhase(id, x, y, t) > 0;
   }
 
   @override
@@ -1161,6 +1333,60 @@ class ThinFilmInterference2DField extends WaveField {
   }
 
   @override
+  List<WavefrontLayer> get wavefrontLayers => const [
+        WavefrontLayer(
+            id: 'incident', label: '入射', color: Colors.purpleAccent),
+        WavefrontLayer(
+            id: 'reflected1', label: '反射1', color: Colors.greenAccent),
+        WavefrontLayer(
+            id: 'reflected2', label: '反射2', color: Colors.orangeAccent),
+      ];
+
+  @override
+  double componentPhase(String id, double x, double y, double t) {
+    final k1 = 2 * math.pi / lambda;
+    final k2 = n * k1;
+    final omega = 2 * math.pi / periodT;
+    final ky = k1 * math.sin(theta);
+    final kx1 = k1 * math.cos(theta);
+    final kx2Sq = k2 * k2 - ky * ky;
+    final kx2 = kx2Sq > 0 ? math.sqrt(kx2Sq) : 0.0;
+    const dOffset = 7.5;
+
+    if (id == 'reflected1') {
+      return omega * t - (kx1 * (-x) + ky * y + k1 * dOffset) + math.pi;
+    }
+    if (id == 'reflected2') {
+      if (x <= 0) {
+        return omega * t -
+            (kx1 * (-x) + ky * y + k1 * dOffset + 2 * kx2 * thicknessL);
+      }
+      return omega * t -
+          (kx2 * (thicknessL - x) + ky * y + k1 * dOffset + kx2 * thicknessL);
+    }
+    double distI;
+    if (x < 0) {
+      distI = kx1 * x + ky * y + k1 * dOffset;
+    } else if (x <= thicknessL) {
+      distI = kx2 * x + ky * y + k1 * dOffset;
+    } else {
+      distI = kx1 * (x - thicknessL) + kx2 * thicknessL + ky * y + k1 * dOffset;
+    }
+    return omega * t - distI;
+  }
+
+  @override
+  bool hasReached(String id, double x, double y, double t) {
+    if (id == 'reflected1' && x > 0) return false;
+    if (id == 'reflected2' && x > thicknessL) return false;
+    final p = componentPhase(id, x, y, t);
+    if (id == 'reflected1') {
+      return p - math.pi > 0;
+    }
+    return p > 0;
+  }
+
+  @override
   bool operator ==(Object other) {
     return other is ThinFilmInterference2DField &&
         other.theta == theta &&
@@ -1257,6 +1483,34 @@ class YoungDoubleSlitField extends WaveField {
           value: z1 + z2));
     }
     return res;
+  }
+
+  @override
+  List<WavefrontLayer> get wavefrontLayers => const [
+        WavefrontLayer(id: 'wave1', label: '波1', color: Colors.purpleAccent),
+        WavefrontLayer(id: 'wave2', label: '波2', color: Colors.greenAccent),
+      ];
+
+  @override
+  double componentPhase(String id, double x, double y, double t) {
+    if (id == 'wave2') {
+      final r2 = math.sqrt((x + 4) * (x + 4) + (y + a) * (y + a));
+      return 2 * math.pi * (t / periodT - r2 / lambda) + phi;
+    }
+    final r1 = math.sqrt((x + 4) * (x + 4) + (y - a) * (y - a));
+    return 2 * math.pi * (t / periodT - r1 / lambda);
+  }
+
+  @override
+  bool hasReached(String id, double x, double y, double t) {
+    if (x < -4) return false;
+    final v = lambda / periodT;
+    if (id == 'wave2') {
+      final r2 = math.sqrt((x + 4) * (x + 4) + (y + a) * (y + a));
+      return t >= r2 / v;
+    }
+    final r1 = math.sqrt((x + 4) * (x + 4) + (y - a) * (y - a));
+    return t >= r1 / v;
   }
 
   @override
@@ -1528,6 +1782,12 @@ class DopplerEffect2DField extends WaveField {
   }
 
   @override
+  bool hasReached(String id, double x, double y, double t) {
+    final V = lambda / periodT;
+    return x * x + y * y <= V * V * t * t;
+  }
+
+  @override
   List<WaveComponent> getComponents(
       double x, double y, double t, Set<String> activeIds) {
     if (activeIds.contains('total')) {
@@ -1680,6 +1940,12 @@ class DopplerEffectObserverMovingField extends WaveField {
     final V = lambda / periodT;
     if (x * x + y * y > V * V * t * t) return 0.0;
     return amplitude * math.sin(phase(x, y, t));
+  }
+
+  @override
+  bool hasReached(String id, double x, double y, double t) {
+    final V = lambda / periodT;
+    return x * x + y * y <= V * V * t * t;
   }
 
   @override
@@ -2002,6 +2268,34 @@ class CircularPlaneInterferenceField extends WaveField {
           value: zC + zP));
     }
     return res;
+  }
+
+  @override
+  List<WavefrontLayer> get wavefrontLayers => const [
+        WavefrontLayer(
+            id: 'waveC', label: '円形波', color: Colors.purpleAccent),
+        WavefrontLayer(
+            id: 'waveP', label: '平面波', color: Colors.greenAccent),
+      ];
+
+  @override
+  double componentPhase(String id, double x, double y, double t) {
+    if (id == 'waveP') {
+      const dOffset = 7.5;
+      final kP = 2 * math.pi / lambdaP;
+      return -(phasePlane(x, y, t) + kP * dOffset);
+    }
+    return phase(x, y, t);
+  }
+
+  @override
+  bool hasReached(String id, double x, double y, double t) {
+    if (id == 'waveP') {
+      return componentPhase(id, x, y, t) > 0;
+    }
+    final vC = lambdaC / periodTC;
+    final r = math.sqrt(x * x + y * y);
+    return t >= r / vC;
   }
 
   @override
