@@ -4,10 +4,10 @@ import 'package:joyphysics/experiment/ExperimentView.dart';
 import 'package:joyphysics/experiment/categoriesData.dart';
 import 'package:joyphysics/experiment/sensorListView.dart';
 import 'package:joyphysics/joy_physics_store_uris.dart';
-import 'package:joyphysics/store/ProductListPage.dart';
 import 'package:joyphysics/aboutView.dart';
 import 'package:joyphysics/model.dart';
 import 'package:joyphysics/formulaCollectionView.dart';
+import 'package:joyphysics/home_promo_links.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
@@ -39,6 +39,7 @@ class JoyPhysicsApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MaterialApp(
         navigatorKey: appNavigatorKey, // ← 同じキーを MaterialApp に渡す
+        navigatorObservers: [homeRouteObserver],
         debugShowCheckedModeBanner: false,
         title: 'アニメと実験で学ぶ高校物理',
         theme: ThemeData(
@@ -84,6 +85,8 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Column(
         children: [
+          const TutoringPromoLink(),
+          const SizedBox(height: 6),
           Image.asset('assets/init/profile_arrange.png', width: 90, height: 60),
           SizedBox(height: 4),
           Text('アニメと実験で学ぶ',
@@ -142,10 +145,9 @@ class CategoryList extends StatelessWidget {
     // ];
 
     // +1 = ヘッダー
-    // +3 = (スマホセンサー記事のテキスト, 解説記事のテキスト, 理論記事のテキスト)
-    // +1 = 物販ボタン
-    // アプリについてボタンは非表示
-    final totalCount = categories.length + 0 + 6; // 物理公式集ボタンぶん +1
+    // +2 = センサー / 公式集
+    // +1 = 他アプリ（微積ガチャ / 単位ガチャ）リンク
+    final totalCount = categories.length + 4;
 
     return ListView.builder(
       padding: EdgeInsets.zero,
@@ -158,121 +160,36 @@ class CategoryList extends StatelessWidget {
             child: _Header(),
           );
         }
-        // ---------- 先頭部分 ----------
         if (index == 1) {
-          final info = _buildInfoText(
-            kIsWeb
-                ? 'スマホのセンサーで測定するならアプリ版が便利です。Webでは記事内の測定値は0表示になることがあります。'
-                : 'スマホセンサーを活用！',
-          );
           return Column(
             children: [
-              info,
               if (kIsWeb) _buildSensorDownloadCta(context),
+              _buildSensorButton(context),
             ],
           );
         }
         if (index == 2) {
-          return _buildSensorButton(context);
-        }
-        if (index == 3) {
           return _buildFormulaButton(context);
         }
 
-        if (index == 4) {
-          return _buildInfoText('実験&アニメーション記事');
-        }
-
-        final adjustedIndex = index - 5;
+        final adjustedIndex = index - 3;
 
         // ---------- 実験カテゴリ ----------
         if (adjustedIndex < categories.length) {
           final cat = categories[adjustedIndex];
-          // 「熱力学」の場合は下に物販ボタンを追加
-          if (cat.name == '熱力学') {
-            return Column(
-              children: [
-                _buildCategoryButton(context, cat),
-                SizedBox(height: 16),
-                _buildShopButton(context),
-              ],
-            );
-          }
           return _buildCategoryButton(context, cat);
         }
 
-        // ---------- 理論記事 ----------
-        // final theoryIndex = adjustedIndex - categories.length;
-        // if (theoryIndex == 0) {
-        //   return _buildInfoText('理論記事45本 掲載中！');
-        // }
-        // if (theoryIndex >= 1 && theoryIndex <= theoryButtons.length) {
-        //   final tb = theoryButtons[theoryIndex - 1];
-        //   return _buildTheoryButton(context, tb);
-        // }
-
-        // ---------- アプリについて ----------
-        // アプリについてボタンは非表示
-        // if (index == totalCount - 1) {
-        //   return _buildAboutButton(context);
-        // }
+        // ---------- 単位ガチャ（末尾） ----------
+        if (index == totalCount - 1) {
+          return const UnitGachaPromoLink();
+        }
 
         return SizedBox.shrink();
       },
     );
   }
     // ---------------- UI ビルダー ----------------
-    Widget _buildShopButton(BuildContext context) => Padding(
-      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 75),
-      child: GestureDetector(
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => ProductListPage()),
-        ),
-        child: Container(
-          height: 60,
-          decoration: BoxDecoration(
-            // グラデーションを止めて単色の水色に変更
-            color: Color(0xFF64B5F6), // ← 水色（必要なら別の16進値に変えてください）
-            borderRadius: BorderRadius.circular(15),
-            boxShadow: [BoxShadow(blurRadius: 4, color: Colors.black26)],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.shopping_basket_outlined, color: Colors.white, size: 28),
-              SizedBox(width: 10),
-              Text(
-                '実験グッズ',
-                style: TextStyle(
-                  fontSize: 24,
-                  color: Colors.white,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-
-  Widget _buildInfoText(String text) => Padding(
-        padding: EdgeInsets.symmetric(vertical: 6, horizontal: 40),
-        child: Container(
-          padding: EdgeInsets.symmetric(vertical: 6, horizontal: 10),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.8),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Center(
-            child: Text(
-              text,
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 18, color: Colors.black87),
-            ),
-          ),
-        ),
-      );
-
   Widget _buildSensorDownloadCta(BuildContext context) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 40),
         child: Card(
@@ -329,7 +246,9 @@ class CategoryList extends StatelessWidget {
                 Text(
                   'センサーを使う！',
                   style: TextStyle(
-                    fontSize: 24,
+                    fontFamily: 'KeiFont',
+                    fontSize: 22,
+                    fontWeight: FontWeight.w300,
                     color: Colors.white,
                   ),
                 ),
@@ -361,7 +280,9 @@ class CategoryList extends StatelessWidget {
                 Text(
                   '物理公式集',
                   style: TextStyle(
-                    fontSize: 24,
+                    fontFamily: 'KeiFont',
+                    fontSize: 22,
+                    fontWeight: FontWeight.w300,
                     color: Colors.white,
                   ),
                 ),
@@ -381,7 +302,7 @@ class CategoryList extends StatelessWidget {
           child: Container(
             height: 60,
             decoration: BoxDecoration(
-              color: Color(0xFFC3734F).withOpacity(0.95),
+              color: Color(0xFFC3734F).withOpacity(0.9),
               borderRadius: BorderRadius.circular(15),
               boxShadow: [BoxShadow(blurRadius: 4, color: Colors.black26)],
             ),
@@ -393,7 +314,9 @@ class CategoryList extends StatelessWidget {
                 Text(
                   cat.name,
                   style: TextStyle(
-                    fontSize: 24,
+                    fontFamily: 'KeiFont',
+                    fontSize: 22,
+                    fontWeight: FontWeight.w300,
                     color: Colors.white,
                   ),
                 ),

@@ -33,6 +33,7 @@ dependencies:
   webview_flutter: ^4.2.0
   flutter_html: ^3.0.0
   url_launcher: ^6.1.7
+  flutter_svg: ^2.0.10+1
   flutter_math_fork: ^0.7.0
   cached_network_image: ^3.2.3
   flutter_sound: ^9.2.13  # ←バージョン番号は最新を確認
@@ -118,6 +119,7 @@ flutter:
     - assets/mindMap/
     - assets/mindMap/forTopics/
     - assets/icon/
+    - assets/app_badge/
     - assets/fonts/
     - assets/others/
     - assets/goods/
