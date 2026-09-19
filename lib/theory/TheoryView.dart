@@ -58,11 +58,19 @@ class TheoryListView extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4), // 画像と文字の間隔
-                    Text(
-                      Category.getMindMapLabelByName(categoryName),
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.black54,
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.92),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        Category.getMindMapLabelByName(categoryName),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.black54,
+                        ),
                       ),
                     ),
                   ],

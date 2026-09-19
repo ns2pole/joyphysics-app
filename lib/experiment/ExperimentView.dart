@@ -46,97 +46,140 @@ class _VideoListViewState extends State<VideoListView> {
 
     final overallImageAsset = widget.category.getMindMapAsset();
 
+    // home (ContentView) と同じ配置: 背景を全面に敷き、その上に SafeArea + コンテンツ
     return Scaffold(
-      appBar: AppBar(title: Text(widget.category.name)),
-      body: CustomScrollView(
-        slivers: [
-          // ─── 全体像画像 ───
-          if (overallImageAsset != null)
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 9.0, horizontal: 0),
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => PhysicsFullscreenImagePage(
-                          imageAsset: overallImageAsset,
-                          title: widget.category.getMindMapLabel(),
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Image.asset('assets/init/init.png', fit: BoxFit.cover),
+          ),
+          Positioned.fill(
+            child: Container(color: Colors.white.withOpacity(0.7)),
+          ),
+          SafeArea(
+            child: Column(
+              children: [
+                SizedBox(
+                  height: kToolbarHeight,
+                  child: AppBar(
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                    scrolledUnderElevation: 0,
+                    surfaceTintColor: Colors.transparent,
+                    title: Text(widget.category.name),
+                  ),
+                ),
+                Expanded(
+                  child: CustomScrollView(
+                    slivers: [
+                      // ─── 全体像画像 ───
+                      if (overallImageAsset != null)
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 9.0, horizontal: 0),
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => PhysicsFullscreenImagePage(
+                                      imageAsset: overallImageAsset,
+                                      title: widget.category.getMindMapLabel(),
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: AspectRatio(
+                                      aspectRatio: 16 / 9,
+                                      child: Image.asset(
+                                        overallImageAsset,
+                                        fit: BoxFit.cover,
+                                        width: double.infinity,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4), // 画像と文字の間隔
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.92),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      widget.category.getMindMapLabel(),
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.black54,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: AspectRatio(
-                          aspectRatio: 16 / 9,
-                          child: Image.asset(
-                            overallImageAsset,
-                            fit: BoxFit.cover,
-                            width: double.infinity,
+
+                      // ─── 単元一覧 / 公式一覧 トグル ───
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 8, horizontal: 16),
+                          child: Center(
+                            child: ToggleButtons(
+                              constraints: const BoxConstraints(
+                                  minWidth: 120, minHeight: 40),
+                              borderRadius: BorderRadius.circular(8),
+                              isSelected: [
+                                viewMode == VideoViewMode.byCategory,
+                                viewMode == VideoViewMode.byFormula,
+                              ],
+                              onPressed: (i) => setState(() {
+                                viewMode = i == 0
+                                    ? VideoViewMode.byCategory
+                                    : VideoViewMode.byFormula;
+                              }),
+                              children: const [
+                                Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 16),
+                                  child: Text('単元一覧',
+                                      style: TextStyle(fontSize: 20)),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 16),
+                                  child: Text('公式一覧',
+                                      style: TextStyle(fontSize: 20)),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                      const SizedBox(height: 4), // 画像と文字の間隔
-                      Text(
-                        widget.category.getMindMapLabel(),
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.black54,
+
+                      // ─── コンテンツ本体（一覧 or 公式） ───
+                      if (viewMode == VideoViewMode.byCategory)
+                        _VideoCategoryList(
+                          subcategories: widget.category.subcategories,
+                          // 熱力学は項目が少ないのでプルダウンせず全表示
+                          flat: widget.category.name == '熱力学',
+                        )
+                      else
+                        FormulaList(
+                          groupedFormulas: groupMap,
+                          flat: widget.category.name == '熱力学',
                         ),
-                      ),
                     ],
                   ),
                 ),
-              ),
-            ),
-
-          // ─── 単元一覧 / 公式一覧 トグル ───
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-              child: Center(
-                child: ToggleButtons(
-                  constraints: const BoxConstraints(minWidth: 120, minHeight: 40),
-                  borderRadius: BorderRadius.circular(8),
-                  isSelected: [
-                    viewMode == VideoViewMode.byCategory,
-                    viewMode == VideoViewMode.byFormula,
-                  ],
-                  onPressed: (i) => setState(() {
-                    viewMode = i == 0 ? VideoViewMode.byCategory : VideoViewMode.byFormula;
-                  }),
-                  children: const [
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16),
-                      child: Text('単元一覧', style: TextStyle(fontSize: 20)),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16),
-                      child: Text('公式一覧', style: TextStyle(fontSize: 20)),
-                    ),
-                  ],
-                ),
-              ),
+              ],
             ),
           ),
-
-          // ─── コンテンツ本体（一覧 or 公式） ───
-          if (viewMode == VideoViewMode.byCategory)
-            _VideoCategoryList(
-              subcategories: widget.category.subcategories,
-              // 熱力学は項目が少ないのでプルダウンせず全表示
-              flat: widget.category.name == '熱力学',
-            )
-          else
-            FormulaList(
-              groupedFormulas: groupMap,
-              flat: widget.category.name == '熱力学',
-            ),
         ],
       ),
     );
@@ -548,6 +591,8 @@ class _VideoDetailViewState extends State<VideoDetailView> {
                 enableTime: sim.enableTime,
                 showTimeOverlay: sim.enableTime && sim.showTimeOverlay,
                 showZoomButtons: sim.showZoomButtons,
+                wavefrontTopView:
+                    state.activeIds.contains('showWavefrontTopView'),
                 enableWideWebSplit: false, // VideoDetailView 側で左右分割するため、二重分割は抑止
                 onReset: resetAll,
                 getMarkers: (time) => sim.getMarkers(state.parameters, time),
@@ -635,7 +680,7 @@ class _VideoDetailViewState extends State<VideoDetailView> {
             setState(() => state.activeIds = ids);
           }
 
-          final extra = sim.buildExtraControls(
+          final extra = sim.composeExtraControls(
             context,
             state.activeIds,
             updateActiveIds,
