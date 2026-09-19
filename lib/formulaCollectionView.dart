@@ -12,15 +12,24 @@ class _FormulaCollectionViewState extends State<FormulaCollectionView> {
   final _transformController = TransformationController();
   double _scale = 1.0;
   Orientation? _orientation;
+  bool _beginnerMode = true;
 
-  static const _images = <String>[
+  static const _normalImages = <String>[
     'assets/others/physics_formulas_1.png',
     'assets/others/physics_formulas_2.png',
+  ];
+
+  static const _beginnerImages = <String>[
+    'assets/others/physics_formulas_beginner_1.png',
+    'assets/others/physics_formulas_beginner_2.png',
   ];
 
   static const _minScale = 1.0;
   static const _maxScale = 6.0;
   static const _zoomStep = 0.5;
+
+  List<String> get _images =>
+      _beginnerMode ? _beginnerImages : _normalImages;
 
   @override
   void initState() {
@@ -86,6 +95,11 @@ class _FormulaCollectionViewState extends State<FormulaCollectionView> {
     _applyScale(current - _zoomStep);
   }
 
+  void _setBeginnerMode(bool enabled) {
+    if (_beginnerMode == enabled) return;
+    setState(() => _beginnerMode = enabled);
+  }
+
   @override
   Widget build(BuildContext context) {
     final canZoomOut = _scale > _minScale + 0.01;
@@ -97,6 +111,21 @@ class _FormulaCollectionViewState extends State<FormulaCollectionView> {
       backgroundColor: Colors.black,
       appBar: AppBar(
         title: const Text('物理公式集'),
+        actions: isPortrait
+            ? null
+            : [
+                Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: Center(
+                    child: _BeginnerToggle(
+                      beginnerMode: _beginnerMode,
+                      onChanged: _setBeginnerMode,
+                      compact: true,
+                      onDarkBackground: false,
+                    ),
+                  ),
+                ),
+              ],
       ),
       body: Stack(
         key: _viewerKey,
@@ -120,8 +149,7 @@ class _FormulaCollectionViewState extends State<FormulaCollectionView> {
                           isPortrait ? Axis.vertical : Axis.horizontal,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        for (final path in _images)
-                          Image.asset(path),
+                        for (final path in _images) Image.asset(path),
                       ],
                     ),
                   ),
@@ -129,6 +157,19 @@ class _FormulaCollectionViewState extends State<FormulaCollectionView> {
               );
             },
           ),
+          if (isPortrait)
+            Positioned(
+              top: 12,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: _BeginnerToggle(
+                  beginnerMode: _beginnerMode,
+                  onChanged: _setBeginnerMode,
+                  onDarkBackground: true,
+                ),
+              ),
+            ),
           Positioned(
             right: 16,
             bottom: 16 + MediaQuery.of(context).padding.bottom,
@@ -152,6 +193,126 @@ class _FormulaCollectionViewState extends State<FormulaCollectionView> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _BeginnerToggle extends StatelessWidget {
+  final bool beginnerMode;
+  final ValueChanged<bool> onChanged;
+  final bool compact;
+  final bool onDarkBackground;
+
+  const _BeginnerToggle({
+    required this.beginnerMode,
+    required this.onChanged,
+    this.compact = false,
+    this.onDarkBackground = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final labelColor =
+        onDarkBackground ? Colors.white : Colors.black87;
+    final shellColor = onDarkBackground
+        ? Colors.white.withValues(alpha: 0.16)
+        : Colors.black.withValues(alpha: 0.08);
+
+    return Material(
+      color: shellColor,
+      borderRadius: BorderRadius.circular(20),
+      clipBehavior: Clip.antiAlias,
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: compact ? 6 : 8,
+          vertical: compact ? 4 : 6,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'ビギナー',
+              style: TextStyle(
+                color: labelColor,
+                fontSize: compact ? 12 : 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(width: compact ? 6 : 8),
+            _BeginnerModeButton(
+              label: 'OFF',
+              selected: !beginnerMode,
+              compact: compact,
+              onDarkBackground: onDarkBackground,
+              onPressed: () => onChanged(false),
+            ),
+            SizedBox(width: compact ? 4 : 6),
+            _BeginnerModeButton(
+              label: 'ON',
+              selected: beginnerMode,
+              compact: compact,
+              onDarkBackground: onDarkBackground,
+              onPressed: () => onChanged(true),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _BeginnerModeButton extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final bool compact;
+  final bool onDarkBackground;
+  final VoidCallback onPressed;
+
+  const _BeginnerModeButton({
+    required this.label,
+    required this.selected,
+    required this.compact,
+    required this.onDarkBackground,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final Color bg;
+    final Color fg;
+    if (onDarkBackground) {
+      bg = selected
+          ? Colors.white.withValues(alpha: 0.92)
+          : Colors.white.withValues(alpha: 0.12);
+      fg = selected ? Colors.black87 : Colors.white70;
+    } else {
+      bg = selected
+          ? Theme.of(context).colorScheme.primary
+          : Colors.black.withValues(alpha: 0.06);
+      fg = selected ? Colors.white : Colors.black54;
+    }
+
+    return Material(
+      color: bg,
+      borderRadius: BorderRadius.circular(14),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onPressed,
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: compact ? 10 : 12,
+            vertical: compact ? 4 : 6,
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: fg,
+              fontSize: compact ? 12 : 13,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
       ),
     );
   }
