@@ -165,8 +165,8 @@ class DrivenStringResonance1DSimulation extends WaveSimulation {
       WaveParameterSlider(
         label: 'スロー',
         value: params['slowMo']!,
-        min: 5.0,
-        max: 500.0,
+        min: 10.0,
+        max: 100.0,
         onChanged: (val) => updateParam('slowMo', val),
       ),
       const SizedBox(height: 4),
@@ -282,7 +282,7 @@ class _DrivenStringBoardState extends State<DrivenStringBoard> {
       wallDt = 1.0 / 60.0;
     }
     if (wallDt > 0) {
-      final slowMo = widget.slowMo.clamp(5.0, 500.0);
+      final slowMo = widget.slowMo.clamp(10.0, 100.0);
       _simTime += wallDt / slowMo;
       _rebuildProfile();
     }

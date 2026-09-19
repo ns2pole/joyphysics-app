@@ -44,15 +44,16 @@ class _ZeroContourCache {
     final n = div + 1;
     final step = (range * 2) / div;
     final grid = Float32List(n * n);
-    final mask = include == null ? null : Uint8List(n * n);
+    final includeFn = include;
+    final mask = includeFn == null ? null : Uint8List(n * n);
     for (int i = 0; i < n; i++) {
       final x = -range + i * step;
       for (int j = 0; j < n; j++) {
         final y = -range + j * step;
         final idx = i * n + j;
         grid[idx] = metric(x, y);
-        if (mask != null) {
-          mask[idx] = include!(x, y) ? 1 : 0;
+        if (includeFn != null && mask != null) {
+          mask[idx] = includeFn(x, y) ? 1 : 0;
         }
       }
     }
