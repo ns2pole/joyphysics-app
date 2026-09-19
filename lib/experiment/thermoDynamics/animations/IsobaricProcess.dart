@@ -252,17 +252,20 @@ class _IsobaricAnimationWidgetState extends State<IsobaricAnimationWidget> {
   double lastTime = 0.0;
   final int particleCount = 24;
   final PvHistoryTracker pvHistory = PvHistoryTracker();
-  static const double pressure = 0.4; // P固定
   static const double ambientTemp = 300.0;
+  static final double _vAxisMaxL =
+      IdealGasRef.v0L * (IsobaricSimulation.maxTemp / IdealGasRef.t0K) * 1.08;
+  static const double _pAxisMaxHPa = IdealGasRef.p0HPa * 1.25;
 
   double get _volume => 0.3 * (temperature / 300.0);
+  double get _volumeL => IdealGasRef.v0L * (temperature / IdealGasRef.t0K);
 
   @override
   void initState() {
     super.initState();
     lastTime = widget.time;
     _initParticles();
-    pvHistory.record(_volume, pressure);
+    pvHistory.record(_volumeL, IdealGasRef.p0HPa);
     widget.onTemperatureChanged?.call(temperature);
   }
 
@@ -304,7 +307,7 @@ class _IsobaricAnimationWidgetState extends State<IsobaricAnimationWidget> {
     for (var p in particles) {
       p.update(dt, speedScale);
     }
-    pvHistory.record(_volume, pressure);
+    pvHistory.record(_volumeL, IdealGasRef.p0HPa);
     lastTime = widget.time;
     widget.onTemperatureChanged?.call(temperature);
   }
@@ -349,10 +352,14 @@ class _IsobaricAnimationWidgetState extends State<IsobaricAnimationWidget> {
             child: CustomPaint(
               size: Size.infinite,
               painter: BasePVPainter(
-                volume: volume,
-                pressure: pressure,
+                volume: volumeL,
+                pressure: pressureHPa,
                 temperature: temperature,
                 history: pvHistory.points,
+                volumeAxisMax: _vAxisMaxL,
+                pressureAxisMax: _pAxisMaxHPa,
+                volumeUnit: 'L',
+                pressureUnit: 'hPa',
               ),
             ),
           ),

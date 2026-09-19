@@ -973,6 +973,9 @@ class BasePVPainter extends CustomPainter {
   final double volumeAxisMax;
   /// 縦軸の最大値（pressure と同じ単位）。
   final double pressureAxisMax;
+  /// 目盛りに付ける単位（例: `L`, `hPa`）。空なら数値のみ。
+  final String volumeUnit;
+  final String pressureUnit;
 
   BasePVPainter({
     required this.volume,
@@ -982,24 +985,38 @@ class BasePVPainter extends CustomPainter {
     this.history,
     this.volumeAxisMax = 1.0,
     this.pressureAxisMax = 1.0,
+    this.volumeUnit = '',
+    this.pressureUnit = '',
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = Colors.black..strokeWidth = 2.0..style = PaintingStyle.stroke;
-    double padding = 35.0;
-    double w = size.width - padding * 2;
-    double h = size.height - padding * 2;
-    Offset origin = Offset(padding, size.height - padding);
+    final paint = Paint()
+      ..color = Colors.black
+      ..strokeWidth = 2.0
+      ..style = PaintingStyle.stroke;
+    // 現在値ラベル（例: `1013 hPa`）用に広めの余白
+    const double padding = 56.0;
+    final double w = size.width - padding * 2;
+    final double h = size.height - padding * 2;
+    final Offset origin = Offset(padding, size.height - padding);
     final double vMax = volumeAxisMax <= 0 ? 1.0 : volumeAxisMax;
     final double pMax = pressureAxisMax <= 0 ? 1.0 : pressureAxisMax;
 
     // 軸
     canvas.drawLine(origin, Offset(padding, padding), paint);
-    canvas.drawLine(origin, Offset(size.width - padding, size.height - padding), paint);
-    
-    _drawLabel(canvas, "P", Offset(padding - 20, padding - 10));
-    _drawLabel(canvas, "V", Offset(size.width - padding + 5, size.height - padding - 5));
+    canvas.drawLine(
+      origin,
+      Offset(size.width - padding, size.height - padding),
+      paint,
+    );
+
+    _drawLabel(canvas, 'P', Offset(padding - 18, padding - 14));
+    _drawLabel(
+      canvas,
+      'V',
+      Offset(size.width - padding + 4, size.height - padding - 4),
+    );
 
     // 参考曲線などは軌跡の下に描く
     drawExtraCurves(canvas, size, padding, w, h);
@@ -1012,31 +1029,186 @@ class BasePVPainter extends CustomPainter {
         ..style = PaintingStyle.stroke;
       final path = Path();
       for (int i = 0; i < history!.length; i++) {
-        double x = padding + (history![i].dx / vMax) * w;
-        double y = size.height - padding - (history![i].dy / pMax) * h;
-        if (i == 0) path.moveTo(x, y); else path.lineTo(x, y);
+        final double x = padding + (history![i].dx / vMax) * w;
+        final double y =
+            size.height - padding - (history![i].dy / pMax) * h;
+        if (i == 0) {
+          path.moveTo(x, y);
+        } else {
+          path.lineTo(x, y);
+        }
       }
       canvas.drawPath(path, historyPaint);
     }
 
-    // 現在の状態点
-    double currentX = padding + (volume / vMax) * w;
-    double currentY = size.height - padding - (pressure / pMax) * h;
-    canvas.drawCircle(Offset(currentX, currentY), 5, Paint()..color = Colors.red..style = PaintingStyle.fill);
+    // 現在の状態点（軸外にはみ出さないようクランプ）
+    final double currentX =
+        (padding + (volume / vMax) * w).clamp(padding, size.width - padding);
+    final double currentY = (size.height - padding - (pressure / pMax) * h)
+        .clamp(padding, size.height - padding);
+    final Offset state = Offset(currentX, currentY);
+
+    // 状態点から軸へ水平・垂直の点線
+    final guidePaint = Paint()
+      ..color = Colors.red.withOpacity(0.65)
+      ..strokeWidth = 1.2
+      ..style = PaintingStyle.stroke;
+    _drawDashedLine(canvas, state, Offset(padding, currentY), guidePaint);
+    _drawDashedLine(
+      canvas,
+      state,
+      Offset(currentX, size.height - padding),
+      guidePaint,
+    );
+
+    // 目盛り（軸上の短いティック）
+    final tickPaint = Paint()
+      ..color = Colors.red.shade700
+      ..strokeWidth = 1.5
+      ..style = PaintingStyle.stroke;
+    canvas.drawLine(
+      Offset(currentX, size.height - padding - 5),
+      Offset(currentX, size.height - padding + 5),
+      tickPaint,
+    );
+    canvas.drawLine(
+      Offset(padding - 5, currentY),
+      Offset(padding + 5, currentY),
+      tickPaint,
+    );
+
+    // 目盛り位置に現在値を表示
+    final String vText = _axisTickText(volume, volumeUnit);
+    final String pText = _axisTickText(pressure, pressureUnit);
+    _drawCenteredLabel(
+      canvas,
+      vText,
+      Offset(currentX, size.height - padding + 8),
+      color: Colors.red.shade700,
+      fontSize: 11,
+    );
+    _drawRightAlignedLabel(
+      canvas,
+      pText,
+      Offset(padding - 8, currentY),
+      color: Colors.red.shade700,
+      fontSize: 11,
+    );
+
+    canvas.drawCircle(
+      state,
+      5,
+      Paint()
+        ..color = Colors.red
+        ..style = PaintingStyle.fill,
+    );
 
     if (label != null) {
-      _drawLabel(canvas, label!, Offset(currentX + 10, currentY - 10), color: Colors.red);
+      _drawLabel(
+        canvas,
+        label!,
+        Offset(currentX + 10, currentY - 10),
+        color: Colors.red,
+      );
     }
   }
 
   /// 等温・断熱などの参考曲線を軌跡の下に描くためのフック
   void drawExtraCurves(Canvas canvas, Size size, double padding, double w, double h) {}
-  void _drawLabel(Canvas canvas, String text, Offset offset, {Color color = Colors.black}) {
+
+  String _formatAxisValue(double v) {
+    final double a = v.abs();
+    if (a >= 100) return v.toStringAsFixed(0);
+    if (a >= 10) return v.toStringAsFixed(1);
+    return v.toStringAsFixed(2);
+  }
+
+  String _axisTickText(double v, String unit) {
+    final String num = _formatAxisValue(v);
+    if (unit.isEmpty) return num;
+    return '$num $unit';
+  }
+
+  void _drawDashedLine(Canvas canvas, Offset start, Offset end, Paint paint) {
+    final Offset delta = end - start;
+    final double len = delta.distance;
+    if (len <= 0.0) return;
+    final Offset unit = delta / len;
+    const double dash = 5.0;
+    const double gap = 4.0;
+    double d = 0.0;
+    while (d < len) {
+      final Offset s = start + unit * d;
+      final Offset e = start + unit * math.min(d + dash, len);
+      canvas.drawLine(s, e, paint);
+      d += dash + gap;
+    }
+  }
+
+  void _drawLabel(
+    Canvas canvas,
+    String text,
+    Offset offset, {
+    Color color = Colors.black,
+    double fontSize = 12,
+  }) {
     final tp = TextPainter(
-      text: TextSpan(text: text, style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold)),
-      textDirection: TextDirection.ltr
+      text: TextSpan(
+        text: text,
+        style: TextStyle(
+          color: color,
+          fontSize: fontSize,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
     )..layout();
     tp.paint(canvas, offset);
+  }
+
+  void _drawCenteredLabel(
+    Canvas canvas,
+    String text,
+    Offset topCenter, {
+    Color color = Colors.black,
+    double fontSize = 12,
+  }) {
+    final tp = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: TextStyle(
+          color: color,
+          fontSize: fontSize,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    tp.paint(canvas, Offset(topCenter.dx - tp.width / 2, topCenter.dy));
+  }
+
+  void _drawRightAlignedLabel(
+    Canvas canvas,
+    String text,
+    Offset midRight, {
+    Color color = Colors.black,
+    double fontSize = 12,
+  }) {
+    final tp = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: TextStyle(
+          color: color,
+          fontSize: fontSize,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    tp.paint(
+      canvas,
+      Offset(midRight.dx - tp.width, midRight.dy - tp.height / 2),
+    );
   }
 
   @override

@@ -563,7 +563,7 @@ class HeatCycleAnimationWidget extends StatefulWidget {
   static const double p1 = 2026.0 / IdealGasRef.p0HPa;
   /// 荷物 +300 hPa → 荷重 1313 hPa
   static const double pCargoLoad = 1313.0 / IdealGasRef.p0HPa;
-  /// PV図用。P≲2 でも余白を残す
+  /// PV図用。P≲2 でも余白を残す（旧正規化表示スケール）
   static const double pDisplayScale = 2.5;
   /// 厚い伝熱壁（見た目）。放熱もこれに合わせて遅くする
   static const double wallThickness = 12.0;
@@ -605,7 +605,14 @@ class _HeatCycleAnimationWidgetState extends State<HeatCycleAnimationWidget> {
   static const double vMax = HeatCycleAnimationWidget.vMax;
   static const double p0 = HeatCycleAnimationWidget.p0;
   static const double p1 = HeatCycleAnimationWidget.p1;
-  static const double pDisplayScale = HeatCycleAnimationWidget.pDisplayScale;
+  static final double _vAxisMaxL =
+      IdealGasRef.v0L * (vMax / vMin) * 1.05;
+  static final double _pAxisMaxHPa = IdealGasRef.p0HPa *
+      (HeatCycleSimulation.maxTemp / ambientTemp) *
+      1.05;
+
+  double get _volumeL => IdealGasRef.v0L * (volume / vMin);
+  double get _pressureHPa => pressure * IdealGasRef.p0HPa;
 
   /// 荷物あり → 1313 hPa。なしなら錘サイクル（P0 / P1）。同時搭載しない。
   double get _pLoad {
@@ -634,7 +641,7 @@ class _HeatCycleAnimationWidgetState extends State<HeatCycleAnimationWidget> {
     lastTime = widget.time;
     _initParticles();
     pressure = _pGas(temperature, volume);
-    pvHistory.record(volume, pressure / pDisplayScale);
+    pvHistory.record(_volumeL, _pressureHPa);
     widget.onTemperatureChanged?.call(temperature);
     widget.onStateChanged?.call(volume, pressure);
   }
@@ -703,7 +710,7 @@ class _HeatCycleAnimationWidgetState extends State<HeatCycleAnimationWidget> {
       heatingWithoutSideInsulation: !insulated && widget.isHeating,
     ) * 0.55;
 
-    pvHistory.record(volume, pressure / pDisplayScale);
+    pvHistory.record(_volumeL, _pressureHPa);
 
     final double speedScale = math.sqrt(temperature / ambientTemp);
     for (var p in particles) {
@@ -738,12 +745,14 @@ class _HeatCycleAnimationWidgetState extends State<HeatCycleAnimationWidget> {
             child: CustomPaint(
               size: Size.infinite,
               painter: BasePVPainter(
-                volume: volume,
-                pressure: pressure / pDisplayScale,
+                volume: volumeL,
+                pressure: pressureHPa,
                 temperature: temperature,
                 history: pvHistory.points,
-                volumeAxisMax: 1.0,
-                pressureAxisMax: 1.0,
+                volumeAxisMax: _vAxisMaxL,
+                pressureAxisMax: _pAxisMaxHPa,
+                volumeUnit: 'L',
+                pressureUnit: 'hPa',
               ),
             ),
           ),

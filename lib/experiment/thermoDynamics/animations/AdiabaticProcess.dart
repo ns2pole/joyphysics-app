@@ -299,6 +299,8 @@ class AdiabaticPVPainter extends BasePVPainter {
           temperature: temperatureK,
           volumeAxisMax: volumeAxisMaxL,
           pressureAxisMax: pressureAxisMaxHPa,
+          volumeUnit: 'L',
+          pressureUnit: 'hPa',
           history: history,
         );
 

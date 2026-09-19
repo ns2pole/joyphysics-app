@@ -254,13 +254,19 @@ class _IsochoricAnimationWidgetState extends State<IsochoricAnimationWidget> {
   final PvHistoryTracker pvHistory = PvHistoryTracker();
   static const double fixedVolume = 0.4;
   static const double ambientTemp = 300.0;
+  static const double _vAxisMaxL = IdealGasRef.vVisMaxL * 1.05;
+  static final double _pAxisMaxHPa =
+      IdealGasRef.p0HPa * (IsochoricSimulation.maxTemp / IdealGasRef.t0K) * 1.08;
 
   @override
   void initState() {
     super.initState();
     lastTime = widget.time;
     _initParticles();
-    pvHistory.record(fixedVolume, 0.9 * temperature / 1000.0);
+    pvHistory.record(
+      IdealGasRef.v0L,
+      IdealGasRef.p0HPa * (temperature / IdealGasRef.t0K),
+    );
     widget.onTemperatureChanged?.call(temperature);
   }
 
@@ -304,14 +310,16 @@ class _IsochoricAnimationWidgetState extends State<IsochoricAnimationWidget> {
     for (var p in particles) {
       p.update(dt, speedScale);
     }
-    pvHistory.record(fixedVolume, 0.9 * temperature / 1000.0);
+    pvHistory.record(
+      IdealGasRef.v0L,
+      IdealGasRef.p0HPa * (temperature / IdealGasRef.t0K),
+    );
     lastTime = widget.time;
     widget.onTemperatureChanged?.call(temperature);
   }
 
   @override
   Widget build(BuildContext context) {
-    final double pressure = 0.9 * temperature / 1000.0;
     final bool heatingActive =
         widget.isHeating && temperature < IsochoricSimulation.maxTemp - 0.5;
     final bool coolingActive =
@@ -349,10 +357,14 @@ class _IsochoricAnimationWidgetState extends State<IsochoricAnimationWidget> {
             child: CustomPaint(
               size: Size.infinite,
               painter: BasePVPainter(
-                volume: fixedVolume,
-                pressure: pressure,
+                volume: volumeL,
+                pressure: pressureHPa,
                 temperature: temperature,
                 history: pvHistory.points,
+                volumeAxisMax: _vAxisMaxL,
+                pressureAxisMax: _pAxisMaxHPa,
+                volumeUnit: 'L',
+                pressureUnit: 'hPa',
               ),
             ),
           ),
