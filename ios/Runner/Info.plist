@@ -21,11 +21,11 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>5.0.0</string>
+	<string>5.0.2</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>102</string>
+	<string>104</string>
 	<key>NSMotionUsageDescription</key>
 	<string>This app requires access to motion sensors and barometer to obtain acceleration and atmospheric pressure data.</string>
 	<key>NSMicrophoneUsageDescription</key>

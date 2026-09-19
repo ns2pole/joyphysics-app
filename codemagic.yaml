@@ -36,18 +36,14 @@ workflows:
         # App Store: 実験で学ぶ高校物理 ー joy-physics (bundle com.joyphysics)
         APP_STORE_APPLE_ID: "6748957698"
         RELEASE_NOTES_JA: |
-          メジャーアップデート（5.0.0）です。
-          ・熱力学・波動のアニメーションを改善
-          ・公式集にピンチズームと拡大縮小を追加
-          ・実験一覧の見やすさを改善
-          ・マインドマップを更新
+          ・波動実験（閉管水位・駆動弦）と波面ビューを追加
+          ・熱力学のPV図をリットル・ヘクトパスカル表示に改善
+          ・実験・理論一覧の見た目を調整
           ・その他の不具合修正と改善
         RELEASE_NOTES_EN: |
-          Major update (5.0.0).
-          - Improved thermodynamics and wave animations
-          - Added pinch-zoom to formula sheets
-          - Clearer experiment list
-          - Updated mind maps
+          - Added closed-pipe water level and driven-string wave experiments
+          - Improved PV diagram units (L / hPa)
+          - UI polish for experiment and theory lists
           - Bug fixes and improvements
       xcode: latest
       flutter: stable
