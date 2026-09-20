@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:joyphysics/model.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
-import 'package:joyphysics/dataExporter.dart';
 import 'package:joyphysics/experiment/ExperimentView.dart';
 import 'package:joyphysics/experiment/dynamics/AccelerometerExperimentWidget.dart';
+import 'package:joyphysics/experiment/dynamics/GyroscopeExperimentWidget.dart';
 import 'package:joyphysics/experiment/dynamics/BarometerExperimentWidget.dart';
 import 'package:joyphysics/experiment/electroMagnetism/MagnetometerExperimentWidget.dart';
 import 'package:joyphysics/experiment/waves/LuxMeasurementWidget.dart';
 import 'package:joyphysics/experiment/waves/FrequencyMeasureWidget.dart';
+import 'package:joyphysics/experiment/sensorArticlesData.dart';
 import 'package:joyphysics/experiment/sensor_availability.dart';
 import 'package:joyphysics/experiment/sensor_availability_types.dart';
 import 'package:joyphysics/shared_components.dart';
@@ -23,6 +24,7 @@ class SensorListView extends StatefulWidget {
 class _SensorListViewState extends State<SensorListView> {
   final Map<String, SensorAvailability> _availability = {
     '加速度センサー': SensorAvailability.checking,
+    'ジャイロセンサー': SensorAvailability.checking,
     '気圧センサー': SensorAvailability.checking,
     '磁気センサー': SensorAvailability.checking,
     '周波数センサー': SensorAvailability.checking,
@@ -31,6 +33,7 @@ class _SensorListViewState extends State<SensorListView> {
 
   final Map<String, SensorKind> _sensorKinds = const {
     '加速度センサー': SensorKind.accelerometer,
+    'ジャイロセンサー': SensorKind.gyroscope,
     '気圧センサー': SensorKind.barometer,
     '磁気センサー': SensorKind.magnetometer,
     '周波数センサー': SensorKind.microphone,
@@ -102,6 +105,12 @@ class _SensorListViewState extends State<SensorListView> {
       'key': '加速度センサー',
     },
     {
+      'name': 'ジャイロセンサー',
+      'icon': Icons.rotate_right,
+      'widget': GyroscopeExperimentWidget(),
+      'key': 'ジャイロセンサー',
+    },
+    {
       'name': '気圧センサー',
       'icon': Icons.compress,
       'widget': BarometerExperimentWidget(),
@@ -128,13 +137,6 @@ class _SensorListViewState extends State<SensorListView> {
       },
   ];
 
-  final Map<String, List<Video>> articlesByCategory = {
-    '加速度センサー': [accelerometer],
-    '気圧センサー': [barometer],
-    '磁気センサー': [magnetometer],
-    '周波数センサー': [frequencyAndDoReMi, beat, doppler, dopplerObserverMoving],
-    '光センサー': [luxMeasurement],
-  };
 
   @override
   Widget build(BuildContext context) {
@@ -204,7 +206,7 @@ class _SensorListViewState extends State<SensorListView> {
         style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
       ),
       initiallyExpanded: true,
-      children: articlesByCategory.entries.map((entry) {
+      children: sensorArticlesByCategory.entries.map((entry) {
         final categoryName = entry.key;
         final videos = entry.value;
         return _buildCategory(context, categoryName, videos);
@@ -214,9 +216,11 @@ class _SensorListViewState extends State<SensorListView> {
 
   Widget _buildCategory(
       BuildContext context, String categoryName, List<Video> videos) {
+    final bool hasLinkedSensor = _sensorKinds.containsKey(categoryName);
     final bool isAvailable =
-        (_availability[categoryName] ?? SensorAvailability.unavailable).isAvailable;
-    final bool articleUsable = isAvailable || kIsWeb;
+        (_availability[categoryName] ?? SensorAvailability.unavailable)
+            .isAvailable;
+    final bool articleUsable = !hasLinkedSensor || isAvailable || kIsWeb;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -225,7 +229,7 @@ class _SensorListViewState extends State<SensorListView> {
             name: categoryName, disabled: !articleUsable, fontSize: 16),
         ...videos.map((video) {
           return Padding(
-            padding: EdgeInsets.symmetric(horizontal: 32, vertical: 2),
+            padding: EdgeInsets.symmetric(horizontal: 32 / 3, vertical: 2),
             child: ListTile(
               contentPadding: EdgeInsets.symmetric(horizontal: 0),
               leading: Opacity(
@@ -252,11 +256,7 @@ class _SensorListViewState extends State<SensorListView> {
               enabled: articleUsable,
               onTap: articleUsable
                   ? () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => VideoDetailView(video: video)),
-                      );
+                      openVideoDetail(context, video);
                     }
                   : null,
             ),

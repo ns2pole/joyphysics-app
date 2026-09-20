@@ -34,6 +34,13 @@ final categoriesData = <Category>[
         ],
       ),
       Subcategory(
+        name: '2体問題',
+        videos: [
+          twoBodySpring1D,
+          twoBodyKepler2D,
+        ],
+      ),
+      Subcategory(
         name: '円運動',
         videos: [
           centripetalForceDisappears
@@ -56,6 +63,7 @@ final categoriesData = <Category>[
       Subcategory(
         name: 'ケプラーの法則',
         videos: [
+          keplerLaws2D,
           planets,
           moonOrbit,
           jupiter,
@@ -156,12 +164,18 @@ final categoriesData = <Category>[
     gifUrl: 'assets/init/wave.gif',
     subcategories: [
       Subcategory(
+        name: '縦波横波',
+        videos: [
+          coupledOscillatorLongitudinal1D,
+          coupledOscillatorTransverse1D,
+        ],
+      ),
+      Subcategory(
         name: '1次元波動',
         videos: [
           waveEquation1D,
           superposition1D,
           beating1D,
-          twoSource1D,
         ],
       ),
       Subcategory(
@@ -169,51 +183,21 @@ final categoriesData = <Category>[
         videos: [
           planeWave,
           circularWave,
+        ],
+      ),
+      Subcategory(
+        name: '干渉',
+        videos: [
+          twoSource1D,
           planeWaveInterference,
           circularPlaneInterference,
           circularInterference,
-        ],
-      ),
-      Subcategory(
-        name: 'ドップラー効果',
-        videos: [
-          dopplerEffect1D,
-          dopplerEffectObserverMoving1D,
-          dopplerEffect2D,
-          dopplerEffectObserverMoving,
-          movingReflector1D,
-        ],
-      ),
-      Subcategory(
-        name: '音波',
-        videos: [
-          soundGenerate,
-          closedPipeResonance,
-          closedPipeWaterResonance1D,
-          openPipeResonance,
-        ],
-      ),
-      Subcategory(
-        name: '光波',
-        videos: [
-          diffractionGrating,
-          spectroscopy,
           thinFilmInterference1D,
           thinFilmInterference2D,
-          youngDoubleSlit,
         ],
       ),
       Subcategory(
-        name: '虹',
-        videos: [
-          rainbowDroplet2D,
-          secondaryRainbowDroplet2D,
-          rainbowMultiDroplet2D,
-          secondaryRainbowMultiDroplet2D,
-        ],
-      ),
-      Subcategory(
-        name: '屈折,屈折率',
+        name: '屈折',
         videos: [
           refraction1D,
           refractionLaw,
@@ -225,9 +209,50 @@ final categoriesData = <Category>[
           pulseReflection1D,
           fixedEndReflection1D,
           freeEndReflection1D,
-          drivenStringResonance1D,
           reflectionLaw2D,
           fixedReflection2D,
+        ],
+      ),
+      Subcategory(
+        name: 'ドップラー効果',
+        videos: [
+          dopplerEffect1D,
+          dopplerEffectObserverMoving1D,
+          dopplerEffect2D,
+          dopplerEffectObserverMoving,
+          movingReflector1D,
+          dopplerMovingWall,
+        ],
+      ),
+      Subcategory(
+        name: '気柱の振動',
+        videos: [
+          closedPipeResonance,
+          closedPipeWaterResonance1D,
+          openPipeResonance,
+        ],
+      ),
+      Subcategory(
+        name: '弦の振動',
+        videos: [
+          drivenStringResonance1D,
+        ],
+      ),
+      Subcategory(
+        name: '光波',
+        videos: [
+          diffractionGrating,
+          spectroscopy,
+          youngDoubleSlit,
+        ],
+      ),
+      Subcategory(
+        name: '光の分散',
+        videos: [
+          rainbowDroplet2D,
+          secondaryRainbowDroplet2D,
+          rainbowMultiDroplet2D,
+          secondaryRainbowMultiDroplet2D,
         ],
       ),
       // Subcategory(

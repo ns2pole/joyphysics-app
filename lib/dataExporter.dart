@@ -18,9 +18,14 @@ export './experiment/dynamics/staticFriction.dart';
 export './experiment/dynamics/verticalSpringOscillation.dart';
 export './experiment/dynamics/barometer.dart';
 export './experiment/dynamics/accelerometer.dart';
+export './experiment/dynamics/gyroscope.dart';
 export './experiment/dynamics/AccelerometerExperimentWidget.dart';
+export './experiment/dynamics/GyroscopeExperimentWidget.dart';
 export './experiment/dynamics/BarometerExperimentWidget.dart';
 export './experiment/dynamics/centripetalForceDisappears.dart';
+export './experiment/dynamics/animations/twoBodySpring1D.dart';
+export './experiment/dynamics/animations/keplerLaws2D.dart';
+export './experiment/dynamics/animations/twoBodyKepler2D.dart';
 
 
 // electroMagnetism
@@ -80,6 +85,7 @@ export './experiment/waves/spectroscopy.dart';
 export './experiment/waves/beat.dart';
 export './experiment/waves/doppler.dart';
 export './experiment/waves/dopplerObserverMoving.dart';
+export './experiment/waves/dopplerMovingWall.dart';
 export './experiment/waves/luxMeasurement.dart';
 export './experiment/waves/LuxMeasurementWidget.dart';
 export './experiment/waves/FrequencyMeasureWidget.dart';
@@ -99,6 +105,8 @@ export './experiment/waves/animations/1d/ThinFilmInterference1D.dart';
 export './experiment/waves/animations/1d/Superposition1D.dart';
 export './experiment/waves/animations/1d/Beating1D.dart';
 export './experiment/waves/animations/1d/TwoSource1D.dart';
+export './experiment/waves/animations/1d/CoupledOscillatorTransverse1D.dart';
+export './experiment/waves/animations/1d/CoupledOscillatorLongitudinal1D.dart';
 export './experiment/waves/animations/1d/WaveEquation1D.dart';
 export './experiment/waves/animations/1d/DopplerEffect1D.dart';
 export './experiment/waves/animations/1d/DopplerEffectObserverMoving1D.dart';

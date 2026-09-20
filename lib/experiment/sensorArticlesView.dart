@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:joyphysics/LatexView.dart';
-import 'package:joyphysics/dataExporter.dart';
+import 'package:joyphysics/experiment/sensorArticlesData.dart';
 import 'package:joyphysics/model.dart';
 import 'package:joyphysics/joy_physics_store_uris.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -19,19 +19,6 @@ class SensorArticlesView extends StatelessWidget {
       webOnlyWindowName: '_blank',
     );
   }
-
-  static final Map<String, List<Video>> _articlesByCategory = {
-    '加速度センサー': [accelerometer],
-    '気圧センサー': [barometer],
-    '磁気センサー': [magnetometer],
-    '周波数センサー': [
-      frequencyAndDoReMi,
-      beat,
-      doppler,
-      dopplerObserverMoving,
-    ],
-    '光センサー': [luxMeasurement],
-  };
 
   @override
   Widget build(BuildContext context) {
@@ -81,7 +68,7 @@ class SensorArticlesView extends StatelessWidget {
             ),
             const SizedBox(height: 8),
           ],
-          ..._articlesByCategory.entries.map((entry) {
+          ...sensorArticlesByCategory.entries.map((entry) {
             final categoryName = entry.key;
             final videos = entry.value;
             return _ArticleCategoryTile(
@@ -117,6 +104,7 @@ class _ArticleCategoryTile extends StatelessWidget {
         children: videos
             .map(
               (video) => ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16 / 3),
                 title: Text(video.title),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => Navigator.push(

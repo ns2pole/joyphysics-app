@@ -40,6 +40,31 @@ final List<FormulaEntry> formulaListData = [
     categoryName: "バネ・単振動",
   ),
   FormulaEntry(
+    latex: "\\mu \\ddot{R} = -k(R-\\ell)",
+    relatedVideo: twoBodySpring1D,
+    categoryName: "2体問題",
+  ),
+  FormulaEntry(
+    latex: "T = 2\\pi \\sqrt{\\frac{\\mu}{k}}",
+    relatedVideo: twoBodySpring1D,
+    categoryName: "2体問題",
+  ),
+  FormulaEntry(
+    latex: "a = a_1 + a_2",
+    relatedVideo: twoBodyKepler2D,
+    categoryName: "2体問題",
+  ),
+  FormulaEntry(
+    latex: "\\frac{m_1}{m_2} = \\frac{a_2}{a_1}",
+    relatedVideo: twoBodyKepler2D,
+    categoryName: "2体問題",
+  ),
+  FormulaEntry(
+    latex: "\\frac{T^{2}}{a^{3}} = \\frac{4\\pi^{2}}{G(m_1+m_2)}",
+    relatedVideo: twoBodyKepler2D,
+    categoryName: "2体問題",
+  ),
+  FormulaEntry(
     latex: "F_{s} = \\mu_{s} N",
     relatedVideo: staticFriction,
     categoryName: "摩擦力",
@@ -68,6 +93,21 @@ final List<FormulaEntry> formulaListData = [
     latex: "\\tfrac12 m_{1} v_{1}^{2} + \\tfrac12 m_{2} v_{2}^{2} = \\tfrac12 m_{1} v_{1}'^{2} + \\tfrac12 m_{2} v_{2}'^{2}",
     relatedVideo: elasticCollision2D,
     categoryName: "弾性衝突",
+  ),
+  FormulaEntry(
+    latex: "r = \\frac{a(1-e^{2})}{1+e\\cos\\theta}",
+    relatedVideo: keplerLaws2D,
+    categoryName: "ケプラーの法則",
+  ),
+  FormulaEntry(
+    latex: "nt = u - e\\sin u",
+    relatedVideo: keplerLaws2D,
+    categoryName: "ケプラーの法則",
+  ),
+  FormulaEntry(
+    latex: "\\frac{T^{2}}{a^{3}} = \\frac{4\\pi^{2}}{GM}",
+    relatedVideo: keplerLaws2D,
+    categoryName: "ケプラーの法則",
   ),
   FormulaEntry(
     latex: "\\frac{T^{2}}{a^{3}} = \\frac{4\\pi^{2}}{GM}",
@@ -170,6 +210,16 @@ final List<FormulaEntry> formulaListData = [
     categoryName: "うなり",
   ),
   FormulaEntry(
+    latex: "\\omega_n = 2\\sqrt{\\frac{k}{m}}\\,\\sin\\frac{n\\pi}{2(N+1)}",
+    relatedVideo: coupledOscillatorLongitudinal1D,
+    categoryName: "縦波横波",
+  ),
+  FormulaEntry(
+    latex: "\\omega_n = 2\\sqrt{\\frac{k}{m}}\\,\\sin\\frac{n\\pi}{2(N+1)}",
+    relatedVideo: coupledOscillatorTransverse1D,
+    categoryName: "縦波横波",
+  ),
+  FormulaEntry(
     latex: "f' = f  \\frac{v \\pm v_{\\text{観測者}}}{v}",
       relatedVideo: dopplerObserverMoving,
       categoryName: "ドップラー効果",
@@ -178,6 +228,11 @@ final List<FormulaEntry> formulaListData = [
     latex: "f' = f  \\frac{v \\mp v_{\\text{音源}}}{v} ",
       relatedVideo: doppler,
       categoryName: "ドップラー効果",
+  ),
+  FormulaEntry(
+    latex: "u = v \\left|\\frac{f - f_{\\mathrm{ref}}}{f + f_{\\mathrm{ref}}}\\right|",
+    relatedVideo: dopplerMovingWall,
+    categoryName: "ドップラー効果",
   ),
   FormulaEntry(
     latex: "d \\sin\\theta = n\\lambda",
