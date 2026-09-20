@@ -7,6 +7,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import 'package:joyphysics/main.dart';
 
@@ -17,5 +18,21 @@ void main() {
 
     // At least the app should mount without throwing.
     expect(find.byType(MaterialApp), findsOneWidget);
+  });
+
+  testWidgets('Home shows version under the title', (WidgetTester tester) async {
+    PackageInfo.setMockInitialValues(
+      appName: 'joyphysics',
+      packageName: 'com.joyphysics',
+      version: '6.0.0',
+      buildNumber: '105',
+      buildSignature: '',
+    );
+
+    await tester.pumpWidget(JoyPhysicsApp());
+    await tester.pump();
+
+    expect(find.text('高校物理'), findsOneWidget);
+    expect(find.text('ver 6.0.0'), findsOneWidget);
   });
 }

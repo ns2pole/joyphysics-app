@@ -33,7 +33,7 @@ const _unitGachaComments = [
 ];
 const _unitGachaCommentCursorKey = 'unit_gacha_comment_cursor';
 const _calculusGachaCommentCursorKey = 'calculus_gacha_comment_cursor';
-const _calculusGachaCommentCount = 4;
+const _calculusGachaCommentCount = 3;
 /// 単元対応コメント（開くたびに 1/2 の確率）
 const _calculusGachaTopicsCommentIndex = 5;
 
@@ -553,12 +553,6 @@ class _CalculusGachaComment extends StatelessWidget {
           ],
         );
       case 1:
-        return Text(
-          'まもなく2000ダウンロード',
-          style: style,
-          textAlign: TextAlign.center,
-        );
-      case 2:
         return Text(
           '電車を降り忘れるレベルで楽しい！',
           style: style,

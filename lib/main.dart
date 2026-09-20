@@ -8,10 +8,12 @@ import 'package:joyphysics/aboutView.dart';
 import 'package:joyphysics/model.dart';
 import 'package:joyphysics/formulaCollectionView.dart';
 import 'package:joyphysics/home_promo_links.dart';
+import 'package:joyphysics/search/article_search_page.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
-import 'package:joyphysics/dataExporter.dart' show thinFilmInterference1D, rainbowDroplet2D, secondaryRainbowDroplet2D;
+import 'package:joyphysics/dataExporter.dart' show thinFilmInterference1D, rainbowDroplet2D, secondaryRainbowDroplet2D, twoBodySpring1D, keplerLaws2D, twoBodyKepler2D, coupledOscillatorTransverse1D, coupledOscillatorLongitudinal1D;
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 // 共有の navigatorKey を1つだけ作る
@@ -72,6 +74,21 @@ class JoyPhysicsApp extends StatelessWidget {
             case '/waves/secondary-rainbow-droplet-2d':
               page = VideoDetailView(video: secondaryRainbowDroplet2D);
               break;
+            case '/dynamics/two-body-spring-1d':
+              page = VideoDetailView(video: twoBodySpring1D);
+              break;
+            case '/dynamics/kepler-laws-2d':
+              page = VideoDetailView(video: keplerLaws2D);
+              break;
+            case '/dynamics/two-body-kepler-2d':
+              page = VideoDetailView(video: twoBodyKepler2D);
+              break;
+            case '/waves/coupled-oscillator-transverse-1d':
+              page = VideoDetailView(video: coupledOscillatorTransverse1D);
+              break;
+            case '/waves/coupled-oscillator-longitudinal-1d':
+              page = VideoDetailView(video: coupledOscillatorLongitudinal1D);
+              break;
             default:
               page = ContentView();
               break;
@@ -98,9 +115,43 @@ class _Header extends StatelessWidget {
                   fontFamily: 'KeiFont',fontSize: 34, color: Colors.black,
                   height: 1.0, // 行間を揃える
                   )),
-
+          const SizedBox(height: 6),
+          const _AppVersionLabel(),
         ],
       );
+}
+
+class _AppVersionLabel extends StatefulWidget {
+  const _AppVersionLabel();
+
+  @override
+  State<_AppVersionLabel> createState() => _AppVersionLabelState();
+}
+
+class _AppVersionLabelState extends State<_AppVersionLabel> {
+  late final Future<PackageInfo> _packageInfo = PackageInfo.fromPlatform();
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<PackageInfo>(
+      future: _packageInfo,
+      builder: (context, snapshot) {
+        final version = snapshot.data?.version;
+        if (version == null || version.isEmpty) {
+          return const SizedBox.shrink();
+        }
+        return Text(
+          'ver $version',
+          style: const TextStyle(
+            fontFamily: 'KeiFont',
+            fontSize: 13,
+            color: Colors.black45,
+            height: 1.0,
+          ),
+        );
+      },
+    );
+  }
 }
 
 
@@ -163,6 +214,7 @@ class CategoryList extends StatelessWidget {
         if (index == 1) {
           return Column(
             children: [
+              const HomeArticleSearchBox(),
               if (kIsWeb) _buildSensorDownloadCta(context),
               _buildSensorButton(context),
             ],
