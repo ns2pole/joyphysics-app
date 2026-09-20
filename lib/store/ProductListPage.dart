@@ -296,7 +296,7 @@ class _ProductListPageState extends State<ProductListPage> {
       if (item == null) return;
 
       if (item is Video) {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => VideoDetailView(video: item)));
+        openVideoDetail(context, item);
         return;
       }
       if (item is String) {
@@ -305,7 +305,7 @@ class _ProductListPageState extends State<ProductListPage> {
       }
       if (item is Map) {
         if (item['video'] is Video) {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => VideoDetailView(video: item['video'])));
+          openVideoDetail(context, item['video'] as Video);
           return;
         }
         final url = item['url'] ?? item['videoURL'] ?? item['link'];

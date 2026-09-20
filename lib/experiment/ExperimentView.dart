@@ -46,7 +46,7 @@ class _VideoListViewState extends State<VideoListView> {
 
     final overallImageAsset = widget.category.getMindMapAsset();
 
-    // home (ContentView) と同じ配置: 背景を全面に敷き、その上に SafeArea + コンテンツ
+    // home (ContentView) と同じ配置だが、一覧は白オーバーレイを少し厚くして背景を薄くする
     return Scaffold(
       body: Stack(
         children: [
@@ -54,7 +54,7 @@ class _VideoListViewState extends State<VideoListView> {
             child: Image.asset('assets/init/init.png', fit: BoxFit.cover),
           ),
           Positioned.fill(
-            child: Container(color: Colors.white.withOpacity(0.7)),
+            child: Container(color: Colors.white.withOpacity(0.82)),
           ),
           SafeArea(
             child: Column(
@@ -224,6 +224,7 @@ class _VideoCategoryList extends StatelessWidget {
     final hasIcon = v.iconName != null && v.iconName!.trim().isNotEmpty;
 
     final tileCore = ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16 / 3),
       // ★ iconName 未設定なら空スペースを確保（❌を出さない）
       leading: hasIcon
           ? FutureBuilder<String>(
@@ -242,38 +243,19 @@ class _VideoCategoryList extends StatelessWidget {
               },
             )
           : const SizedBox(width: 48, height: 27),
-      title: Wrap(
-        crossAxisAlignment: WrapCrossAlignment.center,
-        spacing: 10,
-        runSpacing: 5,
-        children: [
-          Container(
-            constraints: BoxConstraints(
-              maxWidth: MediaQuery.of(context).size.width - 150,
-            ),
-            child: Text(
-              v.title,
-              style: const TextStyle(fontSize: 16),
-              maxLines: 2,           // ← 2行まで表示
-              softWrap: true,        // ← 改行許可
-              overflow: TextOverflow.ellipsis, // 3行目以降は省略
-            ),
-          ),
-          PhysicsBadge(
-            isNew: v.isNew ?? false,
-            isSimulation: v.isSimulation ?? false,
-            isExperiment: v.isExperiment ?? false,
-            isSmartPhoneOnly: v.isSmartPhoneOnly ?? false,
-            opacity: disabled ? 0.6 : 1.0,
-          ),
-        ],
+      title: TitleWithPhysicsBadge(
+        title: v.title,
+        badge: PhysicsBadge(
+          isNew: v.isNew ?? false,
+          isSimulation: v.isSimulation ?? false,
+          isExperiment: v.isExperiment ?? false,
+          isSmartPhoneOnly: v.isSmartPhoneOnly ?? false,
+          opacity: disabled ? 0.6 : 1.0,
+        ),
       ),
       onTap: disabled
           ? null
-          : () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => VideoDetailView(video: v)),
-              ),
+          : () => openVideoDetail(context, v),
     );
 
     final row = Column(
@@ -283,8 +265,8 @@ class _VideoCategoryList extends StatelessWidget {
           Divider(
             thickness: 1.0,
             height: 0,
-            indent: 16,
-            endIndent: 16,
+            indent: 16 / 3,
+            endIndent: 16 / 3,
             color: Colors.grey[300],
           ),
         const SizedBox(height: 0),
@@ -482,7 +464,32 @@ class _SubcategoryFlatList extends StatelessWidget {
   }
 }
 
-// 以降は元のまま（必要箇所のみ微修正）
+Future<void> openVideoDetail(BuildContext context, Video video) async {
+  if (video.playsSound) {
+    final proceed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('音が出ます'),
+        content: const Text('この記事ではスピーカーから音が出ます。周囲に注意してください。'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('戻る'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+    if (proceed != true || !context.mounted) return;
+  }
+  await Navigator.push(
+    context,
+    MaterialPageRoute(builder: (_) => VideoDetailView(video: video)),
+  );
+}
 
 class VideoDetailView extends StatefulWidget {
   final Video video;
@@ -495,15 +502,7 @@ class VideoDetailView extends StatefulWidget {
 class _VideoDetailViewState extends State<VideoDetailView> {
   List<_EmbeddedSimState> _simStates = [];
 
-  String get _pageTitle {
-    final v = widget.video;
-    final prefix = (v.isExperiment == true)
-        ? '【実験】'
-        : (v.isSimulation == true)
-            ? '【アニメ】'
-            : '';
-    return '$prefix${v.title}';
-  }
+  String get _pageTitle => widget.video.title;
 
   bool _isWideWeb(BuildContext context) {
     if (!kIsWeb) return false;
@@ -635,7 +634,10 @@ class _VideoDetailViewState extends State<VideoDetailView> {
           width: double.infinity,
           child: AspectRatio(
             aspectRatio: 16 / 9,
-            child: PhysicsYouTubePlayer(videoURL: widget.video.videoURL),
+            child: PhysicsYouTubePlayer(
+              videoURL: widget.video.videoURL,
+              warnHighPitchSound: widget.video.warnsHighPitchSound,
+            ),
           ),
         ),
       );
@@ -806,7 +808,10 @@ class _VideoDetailViewState extends State<VideoDetailView> {
                 child: SizedBox(
                   height: 200,
                   width: double.infinity,
-                  child: PhysicsYouTubePlayer(videoURL: widget.video.videoURL),
+                  child: PhysicsYouTubePlayer(
+                    videoURL: widget.video.videoURL,
+                    warnHighPitchSound: widget.video.warnsHighPitchSound,
+                  ),
                 ),
               ),
             // 3. 解説・ポイント
@@ -865,15 +870,10 @@ class FormulaList extends StatelessWidget {
       children: [
         InkWell(
           onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => VideoDetailView(video: f.relatedVideo),
-              ),
-            );
+            openVideoDetail(context, f.relatedVideo);
           },
           child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16 / 3),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -881,31 +881,21 @@ class FormulaList extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Flexible(
-                            child: Text(
-                              f.relatedVideo.title,
-                              style: const TextStyle(
-                                fontSize: 17,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              maxLines: 2,
-                              softWrap: true,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          PhysicsBadge(
-                            isNew: f.relatedVideo.isNew ?? false,
-                            isSimulation: f.relatedVideo.isSimulation ?? false,
-                            isExperiment: f.relatedVideo.isExperiment ?? false,
-                            isSmartPhoneOnly: f.relatedVideo.isSmartPhoneOnly ?? false,
-                            width: 68,
-                            height: 45,
-                          ),
-                        ],
+                      TitleWithPhysicsBadge(
+                        title: f.relatedVideo.title,
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        badge: PhysicsBadge(
+                          isNew: f.relatedVideo.isNew ?? false,
+                          isSimulation: f.relatedVideo.isSimulation ?? false,
+                          isExperiment: f.relatedVideo.isExperiment ?? false,
+                          isSmartPhoneOnly:
+                              f.relatedVideo.isSmartPhoneOnly ?? false,
+                          width: 68,
+                          height: 45,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Math.tex(
@@ -928,8 +918,8 @@ class FormulaList extends StatelessWidget {
           Divider(
             thickness: 1.0,
             height: 0,
-            indent: 16,
-            endIndent: 16,
+            indent: 16 / 3,
+            endIndent: 16 / 3,
             color: Colors.grey[300],
           ),
       ],

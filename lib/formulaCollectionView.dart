@@ -108,86 +108,112 @@ class _FormulaCollectionViewState extends State<FormulaCollectionView> {
         MediaQuery.orientationOf(context) == Orientation.portrait;
 
     return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        title: const Text('物理公式集'),
-        actions: isPortrait
-            ? null
-            : [
-                Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: Center(
-                    child: _BeginnerToggle(
-                      beginnerMode: _beginnerMode,
-                      onChanged: _setBeginnerMode,
-                      compact: true,
-                      onDarkBackground: false,
-                    ),
-                  ),
-                ),
-              ],
-      ),
       body: Stack(
-        key: _viewerKey,
         children: [
-          LayoutBuilder(
-            builder: (context, constraints) {
-              // 画像端までパンできれば十分（外側への余白パンは不要）
-              return InteractiveViewer(
-                transformationController: _transformController,
-                minScale: _minScale,
-                maxScale: _maxScale,
-                boundaryMargin: EdgeInsets.zero,
-                clipBehavior: Clip.hardEdge,
-                child: SizedBox(
-                  width: constraints.maxWidth,
-                  height: constraints.maxHeight,
-                  child: FittedBox(
-                    fit: BoxFit.contain,
-                    child: Flex(
-                      direction:
-                          isPortrait ? Axis.vertical : Axis.horizontal,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        for (final path in _images) Image.asset(path),
-                      ],
-                    ),
+          Positioned.fill(
+            child: Image.asset('assets/init/init.png', fit: BoxFit.cover),
+          ),
+          Positioned.fill(
+            child: Container(color: Colors.white.withOpacity(0.82)),
+          ),
+          SafeArea(
+            child: Column(
+              children: [
+                SizedBox(
+                  height: kToolbarHeight,
+                  child: AppBar(
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                    scrolledUnderElevation: 0,
+                    surfaceTintColor: Colors.transparent,
+                    title: const Text('物理公式集'),
+                    actions: isPortrait
+                        ? null
+                        : [
+                            Padding(
+                              padding: const EdgeInsets.only(right: 12),
+                              child: Center(
+                                child: _BeginnerToggle(
+                                  beginnerMode: _beginnerMode,
+                                  onChanged: _setBeginnerMode,
+                                  compact: true,
+                                  onDarkBackground: false,
+                                ),
+                              ),
+                            ),
+                          ],
                   ),
                 ),
-              );
-            },
-          ),
-          if (isPortrait)
-            Positioned(
-              top: 12,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: _BeginnerToggle(
-                  beginnerMode: _beginnerMode,
-                  onChanged: _setBeginnerMode,
-                  onDarkBackground: true,
-                ),
-              ),
-            ),
-          Positioned(
-            right: 16,
-            bottom: 16 + MediaQuery.of(context).padding.bottom,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _ZoomButton(
-                  icon: Icons.add,
-                  tooltip: '拡大',
-                  enabled: canZoomIn,
-                  onPressed: _zoomIn,
-                ),
-                const SizedBox(height: 8),
-                _ZoomButton(
-                  icon: Icons.remove,
-                  tooltip: '縮小',
-                  enabled: canZoomOut,
-                  onPressed: _zoomOut,
+                Expanded(
+                  child: Stack(
+                    key: _viewerKey,
+                    children: [
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          // 画像端までパンできれば十分（外側への余白パンは不要）
+                          return InteractiveViewer(
+                            transformationController: _transformController,
+                            minScale: _minScale,
+                            maxScale: _maxScale,
+                            boundaryMargin: EdgeInsets.zero,
+                            clipBehavior: Clip.hardEdge,
+                            child: SizedBox(
+                              width: constraints.maxWidth,
+                              height: constraints.maxHeight,
+                              child: FittedBox(
+                                fit: BoxFit.contain,
+                                child: Flex(
+                                  direction: isPortrait
+                                      ? Axis.vertical
+                                      : Axis.horizontal,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    for (final path in _images)
+                                      Image.asset(path),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      if (isPortrait)
+                        Positioned(
+                          top: 12,
+                          left: 0,
+                          right: 0,
+                          child: Center(
+                            child: _BeginnerToggle(
+                              beginnerMode: _beginnerMode,
+                              onChanged: _setBeginnerMode,
+                              onDarkBackground: false,
+                            ),
+                          ),
+                        ),
+                      Positioned(
+                        right: 16,
+                        bottom: 16,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _ZoomButton(
+                              icon: Icons.add,
+                              tooltip: '拡大',
+                              enabled: canZoomIn,
+                              onPressed: _zoomIn,
+                            ),
+                            const SizedBox(height: 8),
+                            _ZoomButton(
+                              icon: Icons.remove,
+                              tooltip: '縮小',
+                              enabled: canZoomOut,
+                              onPressed: _zoomOut,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -334,12 +360,13 @@ class _ZoomButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white.withValues(alpha: enabled ? 0.22 : 0.1),
+      color: Colors.white.withValues(alpha: enabled ? 0.92 : 0.55),
+      elevation: 2,
       shape: const CircleBorder(),
       clipBehavior: Clip.antiAlias,
       child: IconButton(
         onPressed: enabled ? onPressed : null,
-        icon: Icon(icon, color: enabled ? Colors.white : Colors.white38),
+        icon: Icon(icon, color: enabled ? Colors.black87 : Colors.black38),
         tooltip: tooltip,
       ),
     );

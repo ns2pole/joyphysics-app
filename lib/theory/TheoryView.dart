@@ -85,13 +85,13 @@ class TheoryListView extends StatelessWidget {
                 SectionHeader(name: sub.name, fontSize: 20),
               for (final topic in sub.topics.where((t) => t.inPreparation != true))
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child: Material(
                       color: Colors.blue[50]?.withOpacity(0.1),
                       child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16 / 3),
                         title: parseTextWithMath(topic.title, isNew: topic.isNew),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () {
@@ -113,7 +113,7 @@ class TheoryListView extends StatelessWidget {
                 SectionHeader(name: sub.name, disabled: true, fontSize: 20),
               for (final topic in sub.topics.where((t) => t.inPreparation == true))
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                   child: Stack(
                     children: [
                       ClipRRect(
@@ -121,7 +121,7 @@ class TheoryListView extends StatelessWidget {
                         child: Material(
                           color: Colors.grey[200],
                           child: ListTile(
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16 / 3),
                             title: Opacity(
                               opacity: 0.6,
                               child: parseTextWithMath(topic.title, isNew: topic.isNew),

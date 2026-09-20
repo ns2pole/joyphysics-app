@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:youtube_player_iframe/youtube_player_iframe.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+import 'package:joyphysics/experiment/high_pitch_sound_warning.dart';
 import 'package:joyphysics/model.dart';
 
 /// 共通の全画面画像表示ページ（公式集と同じ +/- ズーム・画像端までのパン）
@@ -187,63 +188,95 @@ class _FullscreenZoomButton extends StatelessWidget {
 class PhysicsYouTubePlayer extends StatefulWidget {
   final String? videoURL;
   final double height;
-  const PhysicsYouTubePlayer({super.key, required this.videoURL, this.height = 200});
+  final bool warnHighPitchSound;
+  const PhysicsYouTubePlayer({
+    super.key,
+    required this.videoURL,
+    this.height = 200,
+    this.warnHighPitchSound = false,
+  });
 
   @override
   State<PhysicsYouTubePlayer> createState() => _PhysicsYouTubePlayerState();
 }
 
 class _PhysicsYouTubePlayerState extends State<PhysicsYouTubePlayer> {
-  YoutubePlayerController? _controller;
+  WebViewController? _webView;
 
   @override
   void initState() {
     super.initState();
-    _initController();
+    if (!widget.warnHighPitchSound) {
+      _initWebView();
+    }
   }
 
   @override
   void didUpdateWidget(PhysicsYouTubePlayer oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.videoURL != oldWidget.videoURL) {
-      _controller?.close();
-      _initController();
-    }
-  }
-
-  void _initController() {
-    if (widget.videoURL != null && widget.videoURL!.isNotEmpty) {
-      final videoId = extractVideoId(widget.videoURL!);
-      if (videoId.isNotEmpty) {
-        _controller = YoutubePlayerController.fromVideoId(
-          videoId: videoId,
-          params: const YoutubePlayerParams(
-            showControls: true,
-            showFullscreenButton: true,
-            origin: 'https://www.youtube-nocookie.com',
-          ),
-        );
+      _webView = null;
+      if (!widget.warnHighPitchSound) {
+        _initWebView();
       }
     }
   }
 
-  @override
-  void dispose() {
-    _controller?.close();
-    super.dispose();
+  void _initWebView() {
+    final raw = widget.videoURL;
+    if (raw == null || raw.trim().isEmpty) return;
+    final videoId = extractVideoId(raw);
+    if (!RegExp(r'^[a-zA-Z0-9_-]{11}$').hasMatch(videoId)) return;
+
+    final html = '''
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <style>
+    html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+    iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  </style>
+</head>
+<body>
+  <iframe
+    src="https://www.youtube.com/embed/$videoId?playsinline=1&rel=0"
+    referrerpolicy="strict-origin-when-cross-origin"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+    allowfullscreen>
+  </iframe>
+</body>
+</html>
+''';
+
+    _webView = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(const Color(0xFF000000))
+      ..loadHtmlString(html, baseUrl: 'https://www.youtube.com');
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_controller == null) {
+    final hasUrl =
+        widget.videoURL != null && widget.videoURL!.trim().isNotEmpty;
+    if (!hasUrl) {
       return const SizedBox.shrink();
     }
     return SizedBox(
       height: widget.height,
       width: double.infinity,
       child: RepaintBoundary(
-        child: YoutubePlayer(
-          controller: _controller!,
+        child: HighPitchPlayGate(
+          enabled: widget.warnHighPitchSound,
+          onConfirmed: () async {
+            if (_webView != null || !mounted) return;
+            setState(_initWebView);
+          },
+          child: _webView == null
+              ? const ColoredBox(color: Colors.black)
+              : WebViewWidget(controller: _webView!),
         ),
       ),
     );
@@ -299,6 +332,45 @@ class PhysicsBadge extends StatelessWidget {
         height: height,
         fit: BoxFit.contain,
       ),
+    );
+  }
+}
+
+/// タイトル末尾の直後にバッジを置く（2行に折れても最終行の文字の後ろ）。
+/// [Wrap] だと2行タイトルが幅を使い切りバッジだけ次行へ落ち、
+/// [Row] だと短いタイトルでもバッジが右端に寄る。
+class TitleWithPhysicsBadge extends StatelessWidget {
+  final String title;
+  final PhysicsBadge badge;
+  final TextStyle? style;
+  final int maxLines;
+
+  const TitleWithPhysicsBadge({
+    super.key,
+    required this.title,
+    required this.badge,
+    this.style,
+    this.maxLines = 2,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Text.rich(
+      TextSpan(
+        style: style ?? const TextStyle(fontSize: 16),
+        children: [
+          TextSpan(text: title),
+          WidgetSpan(
+            alignment: PlaceholderAlignment.middle,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 8),
+              child: badge,
+            ),
+          ),
+        ],
+      ),
+      maxLines: maxLines,
+      overflow: TextOverflow.ellipsis,
     );
   }
 }

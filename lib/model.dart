@@ -13,6 +13,8 @@ class Video {
   final bool? isSmartPhoneOnly;
   final bool? isSimulation; // シミュレーション・アニメーションかどうか
   final bool? isExperiment; // 実験かどうか
+  final bool playsSound;
+  final bool warnsHighPitchSound;
   final String? latex;
   final List<Widget>? experimentWidgets; // 複数のWidgetを許可
 
@@ -28,6 +30,8 @@ class Video {
     this.isSmartPhoneOnly,
     this.isSimulation,
     this.isExperiment,
+    this.playsSound = false,
+    this.warnsHighPitchSound = false,
     this.latex,
     this.experimentWidgets, // ← optional, default null
   });
@@ -121,8 +125,10 @@ String extractVideoId(String videoUrl) {
     return videoUrl;
   }
   
-  // youtube.com/watch?v= 形式
-  final watchMatch = RegExp(r'(?:youtube\.com/watch\?v=|youtu\.be/)([a-zA-Z0-9_-]{11})').firstMatch(videoUrl);
+  // youtube.com/watch?v= / youtu.be / shorts 形式
+  final watchMatch = RegExp(
+          r'(?:youtube\.com/watch\?v=|youtu\.be/|youtube\.com/shorts/)([a-zA-Z0-9_-]{11})')
+      .firstMatch(videoUrl);
   if (watchMatch != null) {
     return watchMatch.group(1)!;
   }

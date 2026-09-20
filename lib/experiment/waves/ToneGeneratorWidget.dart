@@ -4,12 +4,14 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
+import 'package:joyphysics/experiment/high_pitch_sound_warning.dart';
 
 class ToneGeneratorWidget extends StatefulWidget {
   final double initialFreq;
   final double minFreq;
   final double maxFreq;
   final double height; // 👈 高さを追加
+  final bool warnHighPitchSound;
 
   const ToneGeneratorWidget({
     Key? key,
@@ -17,6 +19,7 @@ class ToneGeneratorWidget extends StatefulWidget {
     this.minFreq = 100.0,
     this.maxFreq = 3000.0,
     this.height = 400, // デフォルト高さ
+    this.warnHighPitchSound = false,
   }) : super(key: key);
 
   @override
@@ -26,6 +29,8 @@ class ToneGeneratorWidget extends StatefulWidget {
 class _ToneGeneratorWidgetState extends State<ToneGeneratorWidget> {
   FlutterSoundPlayer? _player;
   bool isPlaying = false;
+  bool _highPitchConfirmed = false;
+  bool _confirmingHighPitch = false;
   late double freq;
 
   final int sampleRate = 22050;
@@ -65,6 +70,14 @@ class _ToneGeneratorWidgetState extends State<ToneGeneratorWidget> {
 
   Future<void> playSound(double freq) async {
     if (isPlaying) return;
+    if (widget.warnHighPitchSound && !_highPitchConfirmed) {
+      if (_confirmingHighPitch) return;
+      _confirmingHighPitch = true;
+      final ok = await confirmHighPitchSound(context);
+      _confirmingHighPitch = false;
+      if (!ok || !mounted) return;
+      _highPitchConfirmed = true;
+    }
     setState(() => isPlaying = true);
     await _start(freq);
   }

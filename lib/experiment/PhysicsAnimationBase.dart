@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
 import 'package:joyphysics/model.dart';
 import 'package:joyphysics/experiment/HasHeight.dart';
@@ -13,20 +14,39 @@ const TextStyle commonFormulaStyle = TextStyle(
   fontWeight: FontWeight.w900,
 );
 
-/// 数式を表示するための共通ウィジェット
-class FormulaDisplay extends StatelessWidget {
+/// 数式を表示するための共通ウィジェット。
+/// TeX 解析は初回フレームをブロックするので、1フレーム遅らせてアニメを先に出す。
+class FormulaDisplay extends StatefulWidget {
   final String tex;
   final TextStyle? style;
 
   const FormulaDisplay(this.tex, {super.key, this.style});
 
   @override
+  State<FormulaDisplay> createState() => _FormulaDisplayState();
+}
+
+class _FormulaDisplayState extends State<FormulaDisplay> {
+  bool _ready = false;
+
+  @override
+  void initState() {
+    super.initState();
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (mounted) setState(() => _ready = true);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (!_ready) {
+      return const SizedBox(height: 28);
+    }
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Math.tex(
-        tex,
-        textStyle: commonFormulaStyle.merge(style),
+        widget.tex,
+        textStyle: commonFormulaStyle.merge(widget.style),
       ),
     );
   }
@@ -332,6 +352,7 @@ abstract class WaveSimulation extends PhysicsSimulation {
       point: math.Point(params['obsX']!, params['obsY'] ?? 0.0),
       color: Colors.red,
       label: label,
+      showZDisplacement: true,
     );
   }
 
@@ -454,6 +475,7 @@ Video createWaveVideo({
   required String latex,
   required PhysicsSimulation simulation,
   double height = 650,
+  bool playsSound = false,
 }) {
   return Video(
     category: 'waves',
@@ -463,6 +485,7 @@ Video createWaveVideo({
     equipment: [],
     costRating: "★",
     isSimulation: true,
+    playsSound: playsSound,
     latex: latex,
     experimentWidgets: [
       PhysicsSimulationView(simulation: simulation, height: height),
