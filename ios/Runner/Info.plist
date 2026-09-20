@@ -25,7 +25,7 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>105</string>
+	<string>106</string>
 	<key>NSMotionUsageDescription</key>
 	<string>This app requires access to motion sensors and barometer to obtain acceleration, angular velocity, and atmospheric pressure data.</string>
 	<key>NSMicrophoneUsageDescription</key>

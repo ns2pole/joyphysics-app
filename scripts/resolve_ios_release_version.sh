@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Resolve next iOS marketing version + build number for Codemagic / local release.
-# Policy: always increment past App Store AND pubspec.
-#   build  = max(pubspec_build, asc_latest) + 1
-#   name   = bump patch of pubspec version (5.0.0 -> 5.0.1)
+# Policy:
+#   name   = pubspec marketing version as-is (e.g. 6.0.0), unless FORCE_VERSION_NAME set
+#   build  = max(pubspec_build, asc_latest) + 1, unless FORCE_VERSION_CODE set
 #
 # Usage:
 #   eval "$(./scripts/resolve_ios_release_version.sh)"
@@ -12,7 +12,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
 VER_LINE=$(grep '^version:' pubspec.yaml | head -1 | awk '{print $2}' | tr -d "'\"")
-VERSION_NAME="${VER_LINE%+*}"
+VERSION_NAME="${FORCE_VERSION_NAME:-${VER_LINE%+*}}"
 PUBSPEC_CODE="${VER_LINE#*+}"
 PUBSPEC_CODE=$(echo "$PUBSPEC_CODE" | tr -dc '0-9')
 [ -n "$PUBSPEC_CODE" ] || PUBSPEC_CODE=0
@@ -24,22 +24,16 @@ if [ -n "${APP_STORE_APPLE_ID:-}" ] && command -v app-store-connect >/dev/null 2
   [ -n "$LATEST" ] || LATEST=0
 fi
 
-BASE="$PUBSPEC_CODE"
-if [ "$LATEST" -gt "$BASE" ]; then
-  BASE="$LATEST"
+if [ -n "${FORCE_VERSION_CODE:-}" ]; then
+  VERSION_CODE="$FORCE_VERSION_CODE"
+else
+  # pubspec 側で既に上げてあるならそれを採用。ASC の方が大きければ +1。
+  if [ "$PUBSPEC_CODE" -gt "$LATEST" ]; then
+    VERSION_CODE="$PUBSPEC_CODE"
+  else
+    VERSION_CODE=$((LATEST + 1))
+  fi
 fi
-VERSION_CODE=$((BASE + 1))
-
-# bump patch: 5.0.0 -> 5.0.1
-IFS='.' read -r MAJOR MINOR PATCH <<EOF
-${VERSION_NAME}
-EOF
-MAJOR=${MAJOR:-0}
-MINOR=${MINOR:-0}
-PATCH=${PATCH:-0}
-PATCH=$(echo "$PATCH" | tr -dc '0-9')
-[ -n "$PATCH" ] || PATCH=0
-VERSION_NAME="${MAJOR}.${MINOR}.$((PATCH + 1))"
 
 # shellcheck disable=SC2034
 export VERSION_NAME VERSION_CODE PUBSPEC_CODE LATEST

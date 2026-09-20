@@ -39,14 +39,16 @@ workflows:
         # App Store: 実験で学ぶ高校物理 ー joy-physics (bundle com.joyphysics)
         APP_STORE_APPLE_ID: "6748957698"
         RELEASE_NOTES_JA: |
-          ・波動実験（閉管水位・駆動弦）と波面ビューを追加
-          ・熱力学のPV図をリットル・ヘクトパスカル表示に改善
-          ・実験・理論一覧の見た目を調整
+          メジャーアップデート（6.0.0）です。
+          ・ケプラーの3法則・2体問題（重力・ばね）を追加
+          ・連成振動（横波・縦波）とドップラー反射を追加
+          ・ジャイロセンサー実験と記事検索を追加
           ・その他の不具合修正と改善
         RELEASE_NOTES_EN: |
-          - Added closed-pipe water level and driven-string wave experiments
-          - Improved PV diagram units (L / hPa)
-          - UI polish for experiment and theory lists
+          Major update (6.0.0).
+          - Added Kepler's laws and two-body problem animations
+          - Added coupled oscillations and Doppler reflection experiments
+          - Added gyro sensor experiment and article search
           - Bug fixes and improvements
       xcode: latest
       flutter: stable
