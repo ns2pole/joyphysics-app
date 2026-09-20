@@ -28,7 +28,7 @@ class CircularWaveSimulation extends WaveSimulation {
   Map<String, double> get initialParameters => getInitialParamsWithObs(
         baseParams: {
           'lambda': 2.0,
-          'periodT': 1.0,
+          'periodT': 0.7,
         },
         obsX: 2.0,
         obsY: 0.0,

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import '../fields/wave_fields.dart';
 import '../painters/wave_line_painter.dart';
+import '../utils/coordinate_transformer.dart';
 import '../widgets/wave_slider.dart';
 
 final waveEquation1D = createWaveVideo(
@@ -197,9 +198,12 @@ class PositionIndicatorPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final double unitScale = (size.width / 12) * scale;
-    final xPos = center.dx + positionA * unitScale;
+    final transformer = WaveCoordinateTransformer(
+      size: size,
+      scale: scale,
+      is3D: false,
+    );
+    final xPos = transformer.worldToScreen(positionA, 0.0, 0.0).dx;
     
     final paint = Paint()
       ..color = Colors.red.withOpacity(0.5)

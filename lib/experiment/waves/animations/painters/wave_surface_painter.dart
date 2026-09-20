@@ -7,13 +7,61 @@ import 'package:flutter/material.dart' as material;
 
 import '../fields/wave_fields.dart';
 import '../utils/coordinate_transformer.dart';
+import 'contour_dash.dart';
 
 /// 節線・腹線の世界座標線分キャッシュ（metric は時間非依存）。
 class _ZeroContourCache {
   static final Map<int, Float32List> _byTag = {};
+  static final Map<int, Float32List> _gridByTag = {};
   static WaveField? _field;
   static int? _div;
   static double? _range;
+
+  static void _resetIfNeeded({
+    required WaveField field,
+    required int div,
+    required double range,
+  }) {
+    if (_field != field || _div != div || _range != range) {
+      _field = field;
+      _div = div;
+      _range = range;
+      _byTag.clear();
+      _gridByTag.clear();
+    }
+  }
+
+  static Float32List _fillGrid({
+    required int div,
+    required double range,
+    required double Function(double x, double y) metric,
+  }) {
+    final n = div + 1;
+    final step = (range * 2) / div;
+    final grid = Float32List(n * n);
+    for (int i = 0; i < n; i++) {
+      final x = -range + i * step;
+      for (int j = 0; j < n; j++) {
+        grid[i * n + j] = metric(x, -range + j * step);
+      }
+    }
+    return grid;
+  }
+
+  static Float32List _grid({
+    required WaveField field,
+    required int tag,
+    required int div,
+    required double range,
+    required double Function(double x, double y) metric,
+  }) {
+    _resetIfNeeded(field: field, div: div, range: range);
+    final cached = _gridByTag[tag];
+    if (cached != null) return cached;
+    final built = _fillGrid(div: div, range: range, metric: metric);
+    _gridByTag[tag] = built;
+    return built;
+  }
 
   static Float32List segments({
     required WaveField field,
@@ -21,39 +69,48 @@ class _ZeroContourCache {
     required int div,
     required double range,
     required double Function(double x, double y) metric,
+    bool Function(double x, double y)? include,
   }) {
-    if (_field != field || _div != div || _range != range) {
-      _field = field;
-      _div = div;
-      _range = range;
-      _byTag.clear();
+    _resetIfNeeded(field: field, div: div, range: range);
+    final grid = _grid(
+      field: field,
+      tag: tag,
+      div: div,
+      range: range,
+      metric: metric,
+    );
+    if (include == null) {
+      final cached = _byTag[tag];
+      if (cached != null) return cached;
+      final built = _marchCells(div: div, range: range, grid: grid);
+      _byTag[tag] = built;
+      return built;
     }
-    final cached = _byTag[tag];
-    if (cached != null) return cached;
-    final built = _march(div: div, range: range, metric: metric);
-    _byTag[tag] = built;
-    return built;
+    // 到達マスクは時間依存なので、metric グリッドだけ再利用してセルを再抽出する。
+    return _marchCells(
+      div: div,
+      range: range,
+      grid: grid,
+      include: include,
+    );
   }
 
-  static Float32List _march({
+  static Float32List _marchCells({
     required int div,
     required double range,
-    required double Function(double x, double y) metric,
+    required Float32List grid,
     bool Function(double x, double y)? include,
   }) {
     final n = div + 1;
     final step = (range * 2) / div;
-    final grid = Float32List(n * n);
     final includeFn = include;
-    final mask = includeFn == null ? null : Uint8List(n * n);
-    for (int i = 0; i < n; i++) {
-      final x = -range + i * step;
-      for (int j = 0; j < n; j++) {
-        final y = -range + j * step;
-        final idx = i * n + j;
-        grid[idx] = metric(x, y);
-        if (includeFn != null && mask != null) {
-          mask[idx] = includeFn(x, y) ? 1 : 0;
+    Uint8List? mask;
+    if (includeFn != null) {
+      mask = Uint8List(n * n);
+      for (int i = 0; i < n; i++) {
+        final x = -range + i * step;
+        for (int j = 0; j < n; j++) {
+          mask[i * n + j] = includeFn(x, -range + j * step) ? 1 : 0;
         }
       }
     }
@@ -122,6 +179,20 @@ class _ZeroContourCache {
       }
     }
     return Float32List.fromList(out);
+  }
+
+  static Float32List _march({
+    required int div,
+    required double range,
+    required double Function(double x, double y) metric,
+    bool Function(double x, double y)? include,
+  }) {
+    return _marchCells(
+      div: div,
+      range: range,
+      grid: _fillGrid(div: div, range: range, metric: metric),
+      include: include,
+    );
   }
 
   /// 時間依存 metric 用（キャッシュなし）。毎フレーム粗いグリッドで計算する。
@@ -228,7 +299,7 @@ class WaveSurfacePainter extends CustomPainter {
   final double scale;
   /// 波源→観測点方向の1次元断面（複数可）
   final List<RadialCrossSectionSpec> radialCrossSections;
-  /// 同一観測点で複数断面があるとき、合成変位を青の縦線で表示する
+  /// 同一観測点で複数断面があるとき、合成変位を赤の縦線で表示する
   final bool showCrossSectionSum;
   /// 弱め合いの節線（nodalMetric のゼロ等高線）
   final bool showNodalLines;
@@ -759,10 +830,9 @@ class WaveSurfacePainter extends CustomPainter {
     drawAxis(0, 0, 3.5, Colors.blue, zAxisLabel);
 
     // 節線・腹線: metric のゼロ等高線を z=0 上に描く。
-    // 注意: 曲面グリッド(div=140)と同じ解像度で毎フレーム・点線細分化すると
-    // UIスレッドが詰まって ANR（応答していません）になる。
-    // metric は時間非依存なので世界座標の線分をキャッシュし、粗いグリッドで計算する。
-    // 真上視点では波面（山/谷）の後に描き、白の下線で波面の上でも読めるようにする。
+    // 曲面グリッド(div=140)と同じ解像度で毎フレーム計算すると重いので、
+    // metric グリッドは時間非依存としてキャッシュし、粗いグリッドで計算する。
+    // 未干渉セルのマスクだけ毎フレームかけ、点線はポリライン化して drawPath 1回。
     void drawZeroContours({
       required double Function(double x, double y) metric,
       required Color color,
@@ -776,61 +846,44 @@ class WaveSurfacePainter extends CustomPainter {
         div: contourDiv,
         range: range,
         metric: metric,
+        include: (x, y) => field.interferenceHasReached(x, y, time),
       );
 
-      final strokeW = topViewOn ? 3.0 : 2.4;
-      final halo = Paint()
-        ..color = const Color(0xE6FFFFFF)
-        ..strokeWidth = strokeW + 2.4
-        ..style = PaintingStyle.stroke
-        ..strokeCap = StrokeCap.round
-        ..isAntiAlias = true;
       final paint = Paint()
         ..color = color
-        ..strokeWidth = strokeW
+        ..strokeWidth = dashed ? 2.1 : 2.6
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round
         ..isAntiAlias = true;
 
-      const dashLen = 12.0;
-      const gapLen = 10.0;
-      const pattern = dashLen + gapLen;
-
-      void strokeSeg(Offset a, Offset b) {
-        if (topViewOn) canvas.drawLine(a, b, halo);
-        canvas.drawLine(a, b, paint);
-      }
-
-      for (int k = 0; k + 3 < segs.length; k += 4) {
-        final a = worldToScreen(segs[k], segs[k + 1], 0);
-        final b = worldToScreen(segs[k + 2], segs[k + 3], 0);
-        if (!dashed) {
-          strokeSeg(a, b);
-          continue;
+      if (!dashed) {
+        for (int k = 0; k + 3 < segs.length; k += 4) {
+          canvas.drawLine(
+            worldToScreen(segs[k], segs[k + 1], 0),
+            worldToScreen(segs[k + 2], segs[k + 3], 0),
+            paint,
+          );
         }
-        // セル長の短い線分を while で点線分割すると drawCall 爆発→ANR。
-        // 始点の射影位相で「描く／飛ばす」を決め、線分あたり最大1回だけ描く。
-        final dx = b.dx - a.dx;
-        final dy = b.dy - a.dy;
-        final len = math.sqrt(dx * dx + dy * dy);
-        if (len < 0.35) continue;
-        final ux = dx / len;
-        final uy = dy / len;
-        var inPat = (a.dx * ux + a.dy * uy) % pattern;
-        if (inPat < 0) inPat += pattern;
-        if (inPat < dashLen) {
-          strokeSeg(a, b);
-        }
+        return;
       }
+      // セル線分をポリラインに繋ぎ、パス長で点線を切って drawPath 1回。
+      // 線分ごとの while 分割は drawCall 爆発→ANR の原因だったので使わない。
+      final screenPolys = [
+        for (final poly in stitchContourPolylines(segs))
+          [for (final p in poly) worldToScreen(p.x, p.y, 0)],
+      ];
+      canvas.drawPath(
+        dashedPolylinePath(screenPolys),
+        paint,
+      );
     }
 
     void drawNodalAntinodalLines() {
-      // 観測点(赤)・波源(黄)・曲面(紫)と被らないオレンジ
-      const nodalColor = Color(0xFFFB8C00);
+      const lineColor = Colors.orangeAccent;
       if (showNodalLines && nodalMetric != null) {
         drawZeroContours(
           metric: nodalMetric!,
-          color: nodalColor,
+          color: lineColor,
           dashed: true,
           cacheTag: 1,
         );
@@ -838,7 +891,7 @@ class WaveSurfacePainter extends CustomPainter {
       if (showAntinodalLines && antinodalMetric != null) {
         drawZeroContours(
           metric: antinodalMetric!,
-          color: nodalColor,
+          color: lineColor,
           dashed: false,
           cacheTag: 2,
         );
@@ -858,9 +911,6 @@ class WaveSurfacePainter extends CustomPainter {
       }).toList();
 
       const contourDiv = 48;
-      const dashLen = 12.0;
-      const gapLen = 10.0;
-      const pattern = dashLen + gapLen;
 
       for (final layer in selected) {
         final segs = _ZeroContourCache.marchOnce(
@@ -883,6 +933,7 @@ class WaveSurfacePainter extends CustomPainter {
           ..strokeCap = StrokeCap.round
           ..isAntiAlias = true;
 
+        final troughSegs = <double>[];
         for (int k = 0; k + 3 < segs.length; k += 4) {
           final x0 = segs[k];
           final y0 = segs[k + 1];
@@ -893,24 +944,26 @@ class WaveSurfacePainter extends CustomPainter {
           if (!field.hasReached(layer.id, mx, my, time)) continue;
           final midPhase = field.componentPhase(layer.id, mx, my, time);
           final isCrest = math.sin(midPhase) >= 0;
-          final a = worldToScreen(x0, y0, 0);
-          final b = worldToScreen(x1, y1, 0);
           if (isCrest) {
-            canvas.drawLine(a, b, crestPaint);
+            canvas.drawLine(
+              worldToScreen(x0, y0, 0),
+              worldToScreen(x1, y1, 0),
+              crestPaint,
+            );
             continue;
           }
-          final dx = b.dx - a.dx;
-          final dy = b.dy - a.dy;
-          final len = math.sqrt(dx * dx + dy * dy);
-          if (len < 0.35) continue;
-          final ux = dx / len;
-          final uy = dy / len;
-          var inPat = (a.dx * ux + a.dy * uy) % pattern;
-          if (inPat < 0) inPat += pattern;
-          if (inPat < dashLen) {
-            canvas.drawLine(a, b, troughPaint);
-          }
+          troughSegs
+            ..add(x0)
+            ..add(y0)
+            ..add(x1)
+            ..add(y1);
         }
+        if (troughSegs.isEmpty) continue;
+        final screenPolys = [
+          for (final poly in stitchContourPolylines(troughSegs))
+            [for (final p in poly) worldToScreen(p.x, p.y, 0)],
+        ];
+        canvas.drawPath(dashedPolylinePath(screenPolys), troughPaint);
       }
     }
 
@@ -1019,8 +1072,8 @@ class WaveSurfacePainter extends CustomPainter {
       drawOneCrossSection(spec);
     }
 
-    // 観測点の合成変位（z軸平行・青単色）
-    if (showCrossSectionSum && radialCrossSections.isNotEmpty) {
+    // 観測点の合成変位（複数断面のときだけ。1本ならマーカーの showZDisplacement に任せる）
+    if (showCrossSectionSum && radialCrossSections.length > 1) {
       final obs = radialCrossSections.first.end;
       final sameEnd = radialCrossSections.every(
         (s) =>
@@ -1035,7 +1088,7 @@ class WaveSurfacePainter extends CustomPainter {
           worldToScreen(obs.x, obs.y, 0),
           worldToScreen(obs.x, obs.y, sumZ),
           Paint()
-            ..color = Colors.blueAccent
+            ..color = Colors.red
             ..strokeWidth = 3.2
             ..style = PaintingStyle.stroke
             ..strokeCap = StrokeCap.round,
@@ -1044,7 +1097,7 @@ class WaveSurfacePainter extends CustomPainter {
         canvas.drawCircle(
           tip,
           4.5,
-          Paint()..color = Colors.blueAccent,
+          Paint()..color = Colors.red,
         );
         canvas.drawCircle(
           tip,
@@ -1090,7 +1143,23 @@ class WaveSurfacePainter extends CustomPainter {
         }
       }
       if (mz == null) continue;
+      final p0 = worldToScreen(m.point.x, m.point.y, 0);
       final p = worldToScreen(m.point.x, m.point.y, mz);
+      final coveredBySum = showCrossSectionSum &&
+          radialCrossSections.length > 1 &&
+          radialCrossSections.every((s) => sameXy(s.end, m.point));
+      if (m.showZDisplacement && !coveredBySum) {
+        canvas.drawLine(
+          p0,
+          p,
+          Paint()
+            ..color = Colors.red
+            ..strokeWidth = 2.8
+            ..style = PaintingStyle.stroke
+            ..strokeCap = StrokeCap.round
+            ..isAntiAlias = true,
+        );
+      }
       final markerPaint = Paint()
         ..color = m.color
         ..style = PaintingStyle.fill;

@@ -7,10 +7,10 @@ import '../widgets/wave_slider.dart';
 import 'dart:math' as math;
 
 final planeWave = createWaveVideo(
-  title: "平面波",
+  title: "直線波",
   latex: r"""
   <div class="common-box">解説</div>
-  <p>進行方向に垂直な平面上で位相が等しい波です。</p>
+  <p>進行方向に垂直な直線上で位相が等しい波です。2次元では波面が直線になるため、3次元の平面波に対応する波を直線波と呼びます。</p>
   """,
   simulation: PlaneWaveSimulation(),
 );
@@ -18,7 +18,7 @@ final planeWave = createWaveVideo(
 class PlaneWaveSimulation extends WaveSimulation {
   PlaneWaveSimulation()
       : super(
-          title: "平面波",
+          title: "直線波",
           is3D: true,
           formula: const FormulaDisplay(
               r'z(x,y,t)=A\sin\left(2\pi\left(\frac{t}{T} - \frac{x\cos\theta+y\sin\theta}{\lambda}\right)\right)'),
@@ -29,7 +29,7 @@ class PlaneWaveSimulation extends WaveSimulation {
         baseParams: {
           'theta': 0.0,
           'lambda': 2.0,
-          'periodT': 1.0,
+          'periodT': 0.7,
         },
         obsX: 0.0,
         obsY: 0.0,

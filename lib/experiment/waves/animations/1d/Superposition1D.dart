@@ -31,7 +31,7 @@ class Superposition1DSimulation extends WaveSimulation {
   Map<String, double> get initialParameters => getInitialParamsWithObs(
         baseParams: {
           'lambda': 2.0,
-          'periodT': 1.0,
+          'periodT': kDefaultWavePeriodT,
           'pulseWidth': 2.0,
           'isTriangle': 0.0, // 0 for sine, 1 for triangle
           'isOpposite': 0.0, // 0 for Pattern 1, 1 for Pattern 2
@@ -68,13 +68,17 @@ class Superposition1DSimulation extends WaveSimulation {
         ),
       ),
       Text(
-        '速度 v = ${(params['lambda']! / params['periodT']!).toStringAsFixed(2)}   幅 W = ${params['pulseWidth']!.toStringAsFixed(2)}',
+        'T = ${kDefaultWavePeriodT.toStringAsFixed(1)}（固定）   '
+        '速度 v = ${(params['lambda']! / kDefaultWavePeriodT).toStringAsFixed(2)}   '
+        '幅 W = ${params['pulseWidth']!.toStringAsFixed(2)}',
         style: const TextStyle(fontSize: 12),
       ),
-      LambdaSlider(
+      WaveParameterSlider(
         label: '速度',
-        value: params['lambda']!,
-        onChanged: (v) => updateParam('lambda', v),
+        value: params['lambda']! / kDefaultWavePeriodT,
+        min: 0.3,
+        max: 8.0,
+        onChanged: (v) => updateParam('lambda', v * kDefaultWavePeriodT),
       ),
       ThicknessLSlider(
         label: 'パルス幅',
@@ -127,7 +131,7 @@ class Superposition1DSimulation extends WaveSimulation {
       context, time, azimuth, tilt, scale, params, activeIds) {
     final field = PulseSuperpositionField(
       lambda: params['lambda']!,
-      periodT: params['periodT']!,
+      periodT: kDefaultWavePeriodT,
       pulseWidth: params['pulseWidth']!,
       shape:
           params['isTriangle'] == 1.0 ? PulseShape.triangle : PulseShape.sine,

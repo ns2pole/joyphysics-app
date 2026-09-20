@@ -36,7 +36,7 @@ class DopplerEffectObserverMovingSimulation extends WaveSimulation {
   Map<String, double> get initialParameters => getInitialParamsWithObs(
         baseParams: {
           'lambda': 2.0,
-          'periodT': 1.0,
+          'periodT': 0.7,
           'vObserver': 0.8,
         },
         obsX: -4.0,
@@ -121,9 +121,11 @@ class DopplerEffectObserverMovingSimulation extends WaveSimulation {
           const WaveMarker(point: source, color: Colors.yellow),
           // 観測者が移動 (赤色)
           WaveMarker(
-              point: obs,
-              color: Colors.red,
-              label: '観測者'),
+            point: obs,
+            color: Colors.red,
+            label: '観測者',
+            showZDisplacement: true,
+          ),
         ],
         radialCrossSections: [
           if (activeIds.contains('showCrossSection'))
@@ -145,7 +147,12 @@ class DopplerEffectObserverMovingSimulation extends WaveSimulation {
     final obsY = parameters['obsY'] ?? 0.0;
     return [
       const WaveMarker(point: math.Point(0.0, 0.0), color: Colors.yellow),
-      WaveMarker(point: math.Point(obsX, obsY), color: Colors.red, label: '観測者'),
+      WaveMarker(
+        point: math.Point(obsX, obsY),
+        color: Colors.red,
+        label: '観測者',
+        showZDisplacement: true,
+      ),
     ];
   }
 

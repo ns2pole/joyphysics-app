@@ -127,6 +127,7 @@ class ThinFilmInterference1DSimulation extends WaveSimulation {
         scale: scale,
         activeComponentIds: activeIds,
         scaleFactor: scaleFactor,
+        baseSpeed: 2.0 / kDefaultWavePeriodT,
         rows: const [
           ThinFilmWavelengthRow(lambdaNm: 650, color: Color(0xFFE53935)), // red
           ThinFilmWavelengthRow(lambdaNm: 600, color: Color(0xFFFB8C00)), // orange

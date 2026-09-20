@@ -34,7 +34,7 @@ class PulseReflection1DSimulation extends WaveSimulation {
   Map<String, double> get initialParameters => getInitialParamsWithObs(
         baseParams: {
           'lambda': 2.0,
-          'periodT': 1.0,
+          'periodT': kDefaultWavePeriodT,
           'pulseWidth': 2.0,
           'isFixedEnd': 1.0, // 1 for fixed, 0 for free
           'shapeType': 0.0, // 0: sine(half), 1: sine(full), 2: triangle
@@ -47,17 +47,19 @@ class PulseReflection1DSimulation extends WaveSimulation {
 
   @override
   List<Widget> buildControls(context, params, updateParam) {
+    final periodT = kDefaultWavePeriodT;
+    final speed = params['lambda']! / periodT;
     return [
       Text(
-        '速度 v = ${(params['lambda']! / params['periodT']!).toStringAsFixed(2)}',
+        'T = ${periodT.toStringAsFixed(1)}（固定）   速度 v = ${speed.toStringAsFixed(2)}',
         style: const TextStyle(fontSize: 12),
       ),
       WaveParameterSlider(
         label: '速度',
-        value: params['lambda']!,
-        min: 0.1,
-        max: 5.0,
-        onChanged: (v) => updateParam('lambda', v),
+        value: speed,
+        min: 0.3,
+        max: 8.0,
+        onChanged: (v) => updateParam('lambda', v * periodT),
       ),
       const SizedBox(height: 8),
       Row(
@@ -145,7 +147,7 @@ class PulseReflection1DSimulation extends WaveSimulation {
 
     final field = PulseReflectionField(
       lambda: params['lambda']!,
-      periodT: params['periodT']!,
+      periodT: kDefaultWavePeriodT,
       pulseWidth: params['pulseWidth']!,
       shape: shape,
       amplitude: 0.6,

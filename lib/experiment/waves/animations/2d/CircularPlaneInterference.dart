@@ -6,12 +6,12 @@ import '../widgets/wave_slider.dart';
 import 'dart:math' as math;
 
 final circularPlaneInterference = createWaveVideo(
-  title: "円形波と平面波の干渉",
+  title: "円形波と直線波の干渉",
   latex: r"""
   <div class="common-box">解説</div>
-  <p>中心から広がる円形波と、一方向に進む平面波が重なり合うことで干渉縞が生じます。</p>
-  <p>平面波は $x$ 軸の負の方向からやってくるように設定されています。</p>
-  <p>合成波の変位 $z$ は、円形波の変位 $z_C$ と平面波の変位 $z_P$ の和です：</p>
+  <p>中心から広がる円形波と、一方向に進む直線波が重なり合うことで干渉縞が生じます。</p>
+  <p>直線波は $x$ 軸の負の方向からやってくるように設定されています。</p>
+  <p>合成波の変位 $z$ は、円形波の変位 $z_C$ と直線波の変位 $z_P$ の和です：</p>
   <p>\[ z = z_C + z_P \]</p>
   <p>周期 $T_C = T_P$ のとき、「節線」（オレンジ・点線）で弱め合い、「腹線」（オレンジ・実線）で強め合いの曲線を表示できます（周期が異なると定常な節線・腹線はないため描画しません）。</p>
   """,
@@ -21,7 +21,7 @@ final circularPlaneInterference = createWaveVideo(
 class CircularPlaneInterferenceSimulation extends WaveSimulation {
   CircularPlaneInterferenceSimulation()
       : super(
-          title: "円形波と平面波の干渉",
+          title: "円形波と直線波の干渉",
           is3D: true,
           formula: const Column(
             children: [
@@ -40,10 +40,10 @@ class CircularPlaneInterferenceSimulation extends WaveSimulation {
   Map<String, double> get initialParameters => getInitialParamsWithObs(
         baseParams: {
           'lambdaC': 1.0,
-          'periodTC': 1.0,
+          'periodTC': 0.7,
           'thetaP': 0.0, // X軸に垂直な波面（X正方向へ進行）
           'lambdaP': 1.0,
-          'periodTP': 1.0,
+          'periodTP': 0.7,
         },
         obsX: 0.0,
         obsY: 0.0,
@@ -58,7 +58,7 @@ class CircularPlaneInterferenceSimulation extends WaveSimulation {
         WavefrontLayer(
             id: 'waveC', label: '円形波', color: Colors.purpleAccent),
         WavefrontLayer(
-            id: 'waveP', label: '平面波', color: Colors.greenAccent),
+            id: 'waveP', label: '直線波', color: Colors.greenAccent),
       ];
 
   bool _samePeriod(Map<String, double> params) =>
@@ -79,7 +79,7 @@ class CircularPlaneInterferenceSimulation extends WaveSimulation {
         onChanged: (v) => updateParam('periodTC', v),
       ),
       const SizedBox(height: 8),
-      const Text('平面波のパラメータ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+      const Text('直線波のパラメータ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
       ThetaSlider(
         value: params['thetaP']!,
         maxDeg: 360,
@@ -107,14 +107,14 @@ class CircularPlaneInterferenceSimulation extends WaveSimulation {
       children: [
         buildChip('円形波', 'waveC', Colors.purpleAccent, activeIds, updateActiveIds,
             fontSize: 12),
-        buildChip('平面波', 'waveP', Colors.greenAccent, activeIds, updateActiveIds,
+        buildChip('直線波', 'waveP', Colors.greenAccent, activeIds, updateActiveIds,
             fontSize: 12),
         buildChip('合成', 'combined', Colors.blueAccent, activeIds, updateActiveIds,
             fontSize: 12),
-        buildChip('節線', 'showNodalLines', Colors.orange, activeIds,
+        buildChip('節線', 'showNodalLines', Colors.orangeAccent, activeIds,
             updateActiveIds,
             fontSize: 12),
-        buildChip('腹線', 'showAntinodalLines', Colors.orange, activeIds,
+        buildChip('腹線', 'showAntinodalLines', Colors.orangeAccent, activeIds,
             updateActiveIds,
             fontSize: 12),
       ],

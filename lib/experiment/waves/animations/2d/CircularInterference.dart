@@ -11,7 +11,7 @@ final circularInterference = createWaveVideo(
   <div class="common-box">ポイント</div>
   <p>2つの波源からの距離の差が、波長の整数倍なら強め合い、半波長の奇数倍なら弱め合います。</p>
   <p>強め合いの条件: $|r_1 - r_2| = m\lambda$</p>
-  <p>弱め合いの条件: $|r_1 - r_2| = (m + 1/2)\lambda$</p>
+  <p>弱め合いの条件: $|r_1 - r_2| = \bigl(m + \frac{1}{2}\bigr)\lambda$</p>
   <p>「節線」（オレンジ・点線）で弱め合い、「腹線」（オレンジ・実線）で強め合いの曲線を表示できます。</p>
   <p>「断面1」「断面2」をオンにすると、各波源と観測点を結ぶ直線上の変位が見えます。観測点では2つの高さを足したものが合成の振れ幅です。</p>
   """,
@@ -40,7 +40,7 @@ class CircularInterferenceSimulation extends WaveSimulation {
   Map<String, double> get initialParameters => getInitialParamsWithObs(
         baseParams: {
           'lambda': 2.0,
-          'periodT': 1.0,
+          'periodT': 0.7,
           'a': 2.0,
           'phi': 0.0,
         },
@@ -111,10 +111,10 @@ class CircularInterferenceSimulation extends WaveSimulation {
           spacing: 8,
           alignment: WrapAlignment.center,
           children: [
-            buildChip('節線', 'showNodalLines', Colors.orange, activeIds,
+            buildChip('節線', 'showNodalLines', Colors.orangeAccent, activeIds,
                 updateActiveIds,
                 fontSize: 12),
-            buildChip('腹線', 'showAntinodalLines', Colors.orange, activeIds,
+            buildChip('腹線', 'showAntinodalLines', Colors.orangeAccent, activeIds,
                 updateActiveIds,
                 fontSize: 12),
             buildChip('断面1', 'cross1', Colors.purpleAccent, activeIds,

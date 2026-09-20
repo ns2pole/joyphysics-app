@@ -6,10 +6,10 @@ import '../widgets/wave_slider.dart';
 import 'dart:math' as math;
 
 final planeWaveInterference = createWaveVideo(
-  title: "平面波干渉",
+  title: "直線波干渉",
   latex: r"""
   <div class="common-box">解説</div>
-  <p>2つの異なる方向へ進む平面波が重なり合うことで干渉縞が生じます。</p>
+  <p>2つの異なる方向へ進む直線波が重なり合うことで干渉縞が生じます。</p>
   <p>合成波の変位 $z$ は、個々の波の変位 $z_1, z_2$ の和で表されます：</p>
   <p>\[ z = z_1 + z_2 \]</p>
   <p>周期 $T_1 = T_2$ のとき、「節線」（オレンジ・点線）で弱め合い、「腹線」（オレンジ・実線）で強め合いの曲線を表示できます（周期が異なると定常な節線・腹線はないため描画しません）。</p>
@@ -20,7 +20,7 @@ final planeWaveInterference = createWaveVideo(
 class PlaneWaveInterferenceSimulation extends WaveSimulation {
   PlaneWaveInterferenceSimulation()
       : super(
-          title: "平面波干渉",
+          title: "直線波干渉",
           is3D: true,
           formula: const Column(
             children: [
@@ -40,10 +40,10 @@ class PlaneWaveInterferenceSimulation extends WaveSimulation {
         baseParams: {
           'theta1': 0.0,
           'lambda1': 1.0,
-          'periodT1': 1.0,
+          'periodT1': 0.7,
           'theta2': math.pi / 4,
           'lambda2': 1.0,
-          'periodT2': 1.0,
+          'periodT2': 0.7,
         },
         obsX: 0.0,
         obsY: 0.0,
@@ -110,10 +110,10 @@ class PlaneWaveInterferenceSimulation extends WaveSimulation {
             fontSize: 12),
         buildChip('合成', 'combined', Colors.blueAccent, activeIds, updateActiveIds,
             fontSize: 12),
-        buildChip('節線', 'showNodalLines', Colors.orange, activeIds,
+        buildChip('節線', 'showNodalLines', Colors.orangeAccent, activeIds,
             updateActiveIds,
             fontSize: 12),
-        buildChip('腹線', 'showAntinodalLines', Colors.orange, activeIds,
+        buildChip('腹線', 'showAntinodalLines', Colors.orangeAccent, activeIds,
             updateActiveIds,
             fontSize: 12),
       ],

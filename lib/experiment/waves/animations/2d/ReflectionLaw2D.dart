@@ -30,7 +30,7 @@ class ReflectionLaw2DSimulation extends WaveSimulation {
         baseParams: {
           'theta': 30 * math.pi / 180,
           'lambda': 2.5,
-          'periodT': 1.0,
+          'periodT': 0.7,
         },
         obsX: -2.0,
         obsY: 0.0,

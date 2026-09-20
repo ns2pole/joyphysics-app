@@ -1,9 +1,20 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import '../fields/wave_fields.dart';
 import '../painters/wave_line_painter.dart';
 import '../widgets/wave_slider.dart';
+
+/// 入射を上・反射を下に少しずらして軸分けする。
+const kMovingReflectorIncidentAxisY = 0.9;
+const kMovingReflectorReflectedAxisY = -0.9;
+const kMovingReflectorAxisOffsets = <String, double>{
+  'incident': kMovingReflectorIncidentAxisY,
+  'reflected': kMovingReflectorReflectedAxisY,
+};
+const kMovingReflectorAxisLabels = <String, String>{
+  'incident': '入射',
+  'reflected': '反射',
+};
 
 final movingReflector1D = createWaveVideo(
   title: "動く物体による反射",
@@ -26,7 +37,7 @@ class MovingReflector1DSimulation extends WaveSimulation {
           is3D: false,
           formula: const Column(
             children: [
-              FormulaDisplay(r'y_i = A \sin \left\{ 2\pi \left( \frac{t}{T} - \frac{x}{\lambda} \right) \right\}'),
+              FormulaDisplay(r'y_i = A \sin \left\{ 2\pi \left( \frac{t}{T} - \frac{x - x_s}{\lambda} \right) \right\}'),
               SizedBox(height: 4),
               FormulaDisplay(r'y_r = \pm A \sin \left\{ 2\pi \left( \frac{t}{T_r} + \frac{x}{\lambda_r} \right) + \phi \right\}'),
               SizedBox(height: 8),
@@ -36,16 +47,13 @@ class MovingReflector1DSimulation extends WaveSimulation {
         );
 
   @override
-  Map<String, double> get initialParameters => getInitialParamsWithObs(
-        baseParams: {
-          'lambda': 2.0,
-          'periodT': 1.0,
-          'vReflector': 0.4,
-          'x0': 2.0,
-          'isFixedEnd': 1.0, // 1 for fixed, 0 for free
-        },
-        obsX: -2.0,
-      );
+  Map<String, double> get initialParameters => {
+        'lambda': 2.0,
+        'periodT': 0.7,
+        'vReflector': 0.4,
+        'x0': 2.0,
+        'isFixedEnd': 1.0, // 1 for fixed, 0 for free
+      };
 
   @override
   Set<String> get initialActiveIds => {'incident', 'reflected'};
@@ -75,6 +83,14 @@ class MovingReflector1DSimulation extends WaveSimulation {
         max: c * 0.8,
         onChanged: (v) => updateParam('vReflector', v),
       ),
+      WaveParameterSlider(
+        label: '初期位置 x₀',
+        value: params['x0']!,
+        min: -5.0,
+        max: 5.0,
+        labelWidth: 92,
+        onChanged: (v) => updateParam('x0', v),
+      ),
       Row(
         children: [
           const Text('端条件: ', style: TextStyle(fontSize: 12)),
@@ -95,7 +111,6 @@ class MovingReflector1DSimulation extends WaveSimulation {
           ),
         ],
       ),
-      ...buildObsSliders(params, updateParam, is2D: false),
     ];
   }
 
@@ -139,9 +154,8 @@ class MovingReflector1DSimulation extends WaveSimulation {
         showBoundaryLine: true,
         activeComponentIds: activeIds,
         scale: scale,
-        markers: [
-          getObsMarker(params, label: '観測点 a'),
-        ],
+        componentAxisOffsets: kMovingReflectorAxisOffsets,
+        componentAxisLabels: kMovingReflectorAxisLabels,
       ),
     );
   }

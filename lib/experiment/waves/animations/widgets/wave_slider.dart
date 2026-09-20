@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
+/// T スライダーが無い記事も含め、波動アニメの既定周期。
+const double kDefaultWavePeriodT = 0.7;
+
 /// 波動パラメータ調整用の共通スライダーウィジェット
 class WaveParameterSlider extends StatelessWidget {
   final String label;
@@ -8,6 +11,10 @@ class WaveParameterSlider extends StatelessWidget {
   final double min;
   final double max;
   final ValueChanged<double> onChanged;
+  final int maxLines;
+  final TextAlign labelAlign;
+  final double labelWidth;
+  final bool labelAbove;
 
   const WaveParameterSlider({
     super.key,
@@ -16,15 +23,29 @@ class WaveParameterSlider extends StatelessWidget {
     required this.min,
     required this.max,
     required this.onChanged,
+    this.maxLines = 1,
+    this.labelAlign = TextAlign.start,
+    this.labelWidth = 56,
+    this.labelAbove = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    final labelText = Text(
+      label,
+      style: const TextStyle(fontWeight: FontWeight.bold),
+      maxLines: maxLines,
+      textAlign: labelAlign,
+      softWrap: maxLines > 1,
+      overflow: maxLines > 1 ? TextOverflow.clip : TextOverflow.visible,
+    );
+    final sliderRow = Row(
       children: [
-        SizedBox(
-            width: 44,
-            child: Text(label, style: const TextStyle(fontWeight: FontWeight.bold))),
+        if (!labelAbove)
+          SizedBox(
+            width: labelWidth,
+            child: labelText,
+          ),
         Expanded(
           child: Slider(
             value: value.clamp(min, max),
@@ -43,6 +64,15 @@ class WaveParameterSlider extends StatelessWidget {
         ),
       ],
     );
+    if (!labelAbove) return sliderRow;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        labelText,
+        sliderRow,
+      ],
+    );
   }
 }
 
@@ -52,7 +82,7 @@ class LambdaSlider extends WaveParameterSlider {
     required super.value,
     required super.onChanged,
     String label = 'λ',
-  }) : super(label: label, min: 0.1, max: 1.5);
+  }) : super(label: label, min: 0.1, max: 5.0);
 }
 
 class PeriodTSlider extends WaveParameterSlider {

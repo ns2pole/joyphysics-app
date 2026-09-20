@@ -142,18 +142,13 @@ final rainbowDroplet2D = createWaveVideo(
   <p><b>理論式（$k$ から $\phi$）</b></p>
   <p>
     入射角 $i$ と屈折角 $r$ を
-    \[
-      i=\arcsin k,\qquad r=\arcsin\left(\frac{k}{n}\right)
-    \]
+    \[ i=\arcsin k \]
+    \[ r=\arcsin\left(\dfrac{k}{n}\right) \]
     とすると、主虹（屈折→内部反射→出射）の出射方向は
-    \[
-      \phi(k)=4r-2i
-      =4\arcsin\left(\frac{k}{n}\right)-2\arcsin(k)\quad(\mathrm{rad})
-    \]
+    \[ \phi(k)=4r-2i\ \ (\mathrm{rad}) \]
+    \[ 4r-2i=4\arcsin\left(\dfrac{k}{n}\right)-2\arcsin(k) \]
     です。度数表示では
-    \[
-      \phi_{\deg}(k)=\frac{180}{\pi}\left(4\arcsin\left(\frac{k}{n}\right)-2\arcsin(k)\right)
-    \]
+    \[ \phi_{\deg}(k)=\dfrac{180}{\pi}\,\phi(k) \]
     となります（赤: $n=1.33$、青: $n=1.34$）。
   </p>
   <p><b>理論曲線（度数表示）</b></p>

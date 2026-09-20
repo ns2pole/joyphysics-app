@@ -1,6 +1,12 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
+/// 曲面の可視領域は [-5, 5]。直線波の波面は左端 x=-5（θ=0）から入る。
+/// 以前は 7.5 で画面外から来ていたため、T=0.5 だと約 0.6 秒空いて見えた。
+const double kPlaneWaveStartOffset = 5.0;
+
+/// 直線波が左端に入るまでの待ち（波速 v=λ/T で距離に換算し、開始オフセットへ加算）。
+const double kPlaneWaveEntryDelay = 0.1;
 
 class WaveComponent {
   final String id;
@@ -49,11 +55,14 @@ class WaveMarker {
   final math.Point<double> point;
   final Color color;
   final String? label;
+  /// 2D曲面で、観測点の変位を z=0〜変位の縦点線で示す
+  final bool showZDisplacement;
 
   const WaveMarker({
     required this.point,
     this.color = Colors.yellow,
     this.label,
+    this.showZDisplacement = false,
   });
 }
 
@@ -81,6 +90,16 @@ abstract class WaveField {
 
   /// 波が (x,y) に到達しているか。未到達なら波面を描かない。
   bool hasReached(String id, double x, double y, double t) => true;
+
+  /// 重ね合わせ（干渉）が起きているか。すべての波面層が到達しているとき true。
+  bool interferenceHasReached(double x, double y, double t) {
+    final layers = wavefrontLayers;
+    if (layers.isEmpty) return true;
+    for (final layer in layers) {
+      if (!hasReached(layer.id, x, y, t)) return false;
+    }
+    return true;
+  }
 
   /// Returns a list of individual wave components at (x,y,t).
   /// [activeIds] is a set of component IDs that should be included.
@@ -113,6 +132,10 @@ class PlaneWaveField extends WaveField {
 
   final double amplitude;
 
+  /// 可視左端までの距離 + 待ち時間ぶんの伝播距離。波の式の t は変えない。
+  double get _startOffset =>
+      kPlaneWaveStartOffset + (lambda / periodT) * kPlaneWaveEntryDelay;
+
   @override
   double phase(double x, double y, double t) {
     final dir = x * math.cos(theta) + y * math.sin(theta);
@@ -122,7 +145,7 @@ class PlaneWaveField extends WaveField {
   @override
   double z(double x, double y, double t) {
     final k1 = 2 * math.pi / lambda;
-    const dOffset = 7.5;
+    final dOffset = _startOffset;
     // phase(x,y,t) is (k*path - omega*t)
     final p = -(phase(x, y, t) + k1 * dOffset);
     return (p > 0) ? amplitude * math.sin(p) : 0.0;
@@ -131,7 +154,7 @@ class PlaneWaveField extends WaveField {
   @override
   double componentPhase(String id, double x, double y, double t) {
     final k1 = 2 * math.pi / lambda;
-    const dOffset = 7.5;
+    final dOffset = _startOffset;
     return -(phase(x, y, t) + k1 * dOffset);
   }
 
@@ -147,7 +170,7 @@ class PlaneWaveField extends WaveField {
       return [
         WaveComponent(
           id: 'total',
-          label: '平面波',
+          label: '直線波',
           color: Colors.blueAccent,
           value: z(x, y, t),
         ),
@@ -1097,7 +1120,7 @@ class PlaneWaveInterferenceField extends WaveField {
 
   @override
   double z(double x, double y, double t) {
-    const dOffset = 7.5;
+    const dOffset = kPlaneWaveStartOffset;
     final k1 = 2 * math.pi / lambda1;
     final k2 = 2 * math.pi / lambda2;
 
@@ -1112,7 +1135,7 @@ class PlaneWaveInterferenceField extends WaveField {
 
   /// 同周期のとき定常節線の指標。空間位相差 δ について cos(δ/2)。
   double nodalMetric(double x, double y) {
-    const dOffset = 7.5;
+    const dOffset = kPlaneWaveStartOffset;
     final dir1 = x * math.cos(theta1) + y * math.sin(theta1);
     final dir2 = x * math.cos(theta2) + y * math.sin(theta2);
     // p = ωt - 2π(dir+dOffset)/λ  → 空間位相 = -2π(dir+dOffset)/λ
@@ -1124,7 +1147,7 @@ class PlaneWaveInterferenceField extends WaveField {
 
   /// 同周期のとき定常腹線の指標。ゼロ ⇔ δ=2mπ
   double antinodalMetric(double x, double y) {
-    const dOffset = 7.5;
+    const dOffset = kPlaneWaveStartOffset;
     final dir1 = x * math.cos(theta1) + y * math.sin(theta1);
     final dir2 = x * math.cos(theta2) + y * math.sin(theta2);
     final phi1 = -2 * math.pi * (dir1 + dOffset) / lambda1;
@@ -1136,7 +1159,7 @@ class PlaneWaveInterferenceField extends WaveField {
   @override
   List<WaveComponent> getComponents(
       double x, double y, double t, Set<String> activeIds) {
-    const dOffset = 7.5;
+    const dOffset = kPlaneWaveStartOffset;
     final k1 = 2 * math.pi / lambda1;
     final k2 = 2 * math.pi / lambda2;
 
@@ -1173,7 +1196,7 @@ class PlaneWaveInterferenceField extends WaveField {
 
   @override
   double componentPhase(String id, double x, double y, double t) {
-    const dOffset = 7.5;
+    const dOffset = kPlaneWaveStartOffset;
     if (id == 'wave2') {
       final k2 = 2 * math.pi / lambda2;
       return -(phase2(x, y, t) + k2 * dOffset);
@@ -1445,6 +1468,25 @@ class YoungDoubleSlitField extends WaveField {
         : 0.0;
 
     return z1 + z2;
+  }
+
+  /// 弱め合い節線の指標。ゼロ ⇔ δ=(2m+1)π
+  /// δ = 2π(r1-r2)/λ + φ
+  double nodalMetric(double x, double y) {
+    if (x < -4) return 1.0;
+    final r1 = math.sqrt((x + 4) * (x + 4) + (y - a) * (y - a));
+    final r2 = math.sqrt((x + 4) * (x + 4) + (y + a) * (y + a));
+    final delta = 2 * math.pi * (r1 - r2) / lambda + phi;
+    return math.cos(delta / 2);
+  }
+
+  /// 強め合い腹線の指標。ゼロ ⇔ δ=2mπ
+  double antinodalMetric(double x, double y) {
+    if (x < -4) return 1.0;
+    final r1 = math.sqrt((x + 4) * (x + 4) + (y - a) * (y - a));
+    final r2 = math.sqrt((x + 4) * (x + 4) + (y + a) * (y + a));
+    final delta = 2 * math.pi * (r1 - r2) / lambda + phi;
+    return math.sin(delta / 2);
   }
 
   @override
@@ -1984,6 +2026,9 @@ class MovingReflectorField extends WaveField {
   final bool isFixedEnd;
   final double amplitude;
 
+  /// 1次元固定端反射と同じく、波は左端の外から入る。
+  static const double sourceX = -7.5;
+
   const MovingReflectorField({
     required this.lambda,
     required this.periodT,
@@ -1995,66 +2040,57 @@ class MovingReflectorField extends WaveField {
 
   @override
   double phase(double x, double y, double t) {
-    // 基本的な入射波の位相
-    return 2 * math.pi * (x / lambda - t / periodT);
+    return 2 * math.pi * (t / periodT - (x - sourceX) / lambda);
+  }
+
+  double _incidentAt(double x, double t) {
+    if (x > x0 + v * t) return 0.0;
+    final phaseI = phase(x, 0, t);
+    if (phaseI <= 0) return 0.0;
+    return amplitude * math.sin(phaseI);
+  }
+
+  double _reflectedAt(double x, double t) {
+    final xm = x0 + v * t;
+    if (x > xm) return 0.0;
+    final c = lambda / periodT;
+    final denom = c + v;
+    if (denom.abs() < 1e-12) return 0.0;
+    final tau = (c * t + x - x0) / denom;
+    if (tau < 0) return 0.0;
+    final xmTau = x0 + v * tau;
+    final phaseRef =
+        2 * math.pi * (tau / periodT - (xmTau - sourceX) / lambda);
+    if (phaseRef <= 0) return 0.0;
+    final yr = amplitude * math.sin(phaseRef);
+    return isFixedEnd ? -yr : yr;
   }
 
   @override
   double z(double x, double y, double t) {
-    // 反射体の位置 x_m = x0 + v*t
-    final xm = x0 + v * t;
-    if (x > xm) return 0.0;
-
-    final c = lambda / periodT;
-    final k = 2 * math.pi / lambda;
-    final omega = 2 * math.pi / periodT;
-
-    // 反射時刻 tau の計算: c(t - tau) = xm(tau) - x = x0 + v*tau - x
-    // tau(c + v) = ct + x - x0
-    final tau = (c * t + x - x0) / (c + v);
-
-    // 入射波
-    final phaseIn = k * x - omega * t;
-    final yi = amplitude * math.sin(phaseIn);
-
-    // 反射波 (反射時の位相を保持)
-    final phaseRefAtTau = k * (x0 + v * tau) - omega * tau;
-    double yr = amplitude * math.sin(phaseRefAtTau);
-    if (isFixedEnd) yr = -yr;
-
-    return yi + yr;
+    return _incidentAt(x, t) + _reflectedAt(x, t);
   }
 
   @override
   List<WaveComponent> getComponents(
       double x, double y, double t, Set<String> activeIds) {
-    final xm = x0 + v * t;
-    if (x > xm) return [];
-
-    final c = lambda / periodT;
-    final k = 2 * math.pi / lambda;
-    final omega = 2 * math.pi / periodT;
-    final tau = (c * t + x - x0) / (c + v);
+    if (x > x0 + v * t) return [];
 
     final List<WaveComponent> res = [];
     if (activeIds.contains('incident')) {
-      final phaseIn = k * x - omega * t;
       res.add(WaveComponent(
         id: 'incident',
         label: '入射波',
         color: Colors.purpleAccent,
-        value: amplitude * math.sin(phaseIn),
+        value: _incidentAt(x, t),
       ));
     }
     if (activeIds.contains('reflected')) {
-      final phaseRefAtTau = k * (x0 + v * tau) - omega * tau;
-      double val = amplitude * math.sin(phaseRefAtTau);
-      if (isFixedEnd) val = -val;
       res.add(WaveComponent(
         id: 'reflected',
         label: '反射波',
         color: Colors.greenAccent,
-        value: val,
+        value: _reflectedAt(x, t),
       ));
     }
     return res;
@@ -2208,7 +2244,7 @@ class CircularPlaneInterferenceField extends WaveField {
     final r = math.sqrt(x * x + y * y);
     final zC = (t >= r / vC) ? amplitude * math.sin(phase(x, y, t)) : 0.0;
 
-    const dOffset = 7.5;
+    const dOffset = kPlaneWaveStartOffset;
     final kP = 2 * math.pi / lambdaP;
     final pP = -(phasePlane(x, y, t) + kP * dOffset);
     final zP = (pP > 0) ? amplitude * math.sin(pP) : 0.0;
@@ -2219,7 +2255,7 @@ class CircularPlaneInterferenceField extends WaveField {
   /// 同周期のとき定常節線の指標。
   /// argC = ωt - 2π r/λC,  pP = ωt - 2π(dir+dOffset)/λP
   double nodalMetric(double x, double y) {
-    const dOffset = 7.5;
+    const dOffset = kPlaneWaveStartOffset;
     final r = math.sqrt(x * x + y * y);
     final dir = x * math.cos(thetaP) + y * math.sin(thetaP);
     final phiC = -2 * math.pi * r / lambdaC;
@@ -2230,7 +2266,7 @@ class CircularPlaneInterferenceField extends WaveField {
 
   /// 同周期のとき定常腹線の指標。ゼロ ⇔ δ=2mπ
   double antinodalMetric(double x, double y) {
-    const dOffset = 7.5;
+    const dOffset = kPlaneWaveStartOffset;
     final r = math.sqrt(x * x + y * y);
     final dir = x * math.cos(thetaP) + y * math.sin(thetaP);
     final phiC = -2 * math.pi * r / lambdaC;
@@ -2246,7 +2282,7 @@ class CircularPlaneInterferenceField extends WaveField {
     final r = math.sqrt(x * x + y * y);
     final zC = (t >= r / vC) ? amplitude * math.sin(phase(x, y, t)) : 0.0;
 
-    const dOffset = 7.5;
+    const dOffset = kPlaneWaveStartOffset;
     final kP = 2 * math.pi / lambdaP;
     final pP = -(phasePlane(x, y, t) + kP * dOffset);
     final zP = (pP > 0) ? amplitude * math.sin(pP) : 0.0;
@@ -2258,7 +2294,7 @@ class CircularPlaneInterferenceField extends WaveField {
     }
     if (activeIds.contains('waveP')) {
       res.add(WaveComponent(
-          id: 'waveP', label: '平面波', color: Colors.greenAccent, value: zP));
+          id: 'waveP', label: '直線波', color: Colors.greenAccent, value: zP));
     }
     if (activeIds.contains('combined')) {
       res.add(WaveComponent(
@@ -2275,13 +2311,13 @@ class CircularPlaneInterferenceField extends WaveField {
         WavefrontLayer(
             id: 'waveC', label: '円形波', color: Colors.purpleAccent),
         WavefrontLayer(
-            id: 'waveP', label: '平面波', color: Colors.greenAccent),
+            id: 'waveP', label: '直線波', color: Colors.greenAccent),
       ];
 
   @override
   double componentPhase(String id, double x, double y, double t) {
     if (id == 'waveP') {
-      const dOffset = 7.5;
+      const dOffset = kPlaneWaveStartOffset;
       final kP = 2 * math.pi / lambdaP;
       return -(phasePlane(x, y, t) + kP * dOffset);
     }

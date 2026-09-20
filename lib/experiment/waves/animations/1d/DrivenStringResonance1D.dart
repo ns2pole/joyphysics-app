@@ -4,18 +4,20 @@ import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import '../widgets/wave_slider.dart';
 
 final drivenStringResonance1D = createWaveVideo(
-  title: "駆動弦の定在波（反射の積み上がり）",
+  title: "弦上の定在波(駆動)",
   latex: r"""
   <div class="common-box">ポイント</div>
-  <p>左端はバイブレータによる<strong>駆動</strong>（$y(0,t)=g(t)$）、右端は<strong>固定端</strong>（$y(L)=0$）です。</p>
-  <p>進行波の多重反射の合成（$g(\tau)=A\sin(2\pi\tau/T)$、$\tau&lt;0$ では $0$）：</p>
+  <p>左端はバイブレータによる<strong>駆動</strong>（$y(0,t)=A\sin\dfrac{2\pi t}{T}$）、右端は<strong>固定端</strong>（$y(L)=0$）です。</p>
+  <p>進行波の多重反射の合成（括弧の中が負の項は $0$）：</p>
   <p>
-  $$y=\sum_{n=0}\Big[
-  g\!\left(t-\frac{2nL+x}{v}\right)
-  -g\!\left(t-\frac{2(n+1)L-x}{v}\right)
-  \Big]$$
+  $$\begin{aligned}
+  y=A\sum_{n=0}\Big[
+  &\,\sin\frac{2\pi}{T}\left(t-\frac{2nL+x}{v}\right)\\
+  &-\sin\frac{2\pi}{T}\left(t-\frac{2(n+1)L-x}{v}\right)
+  \Big]
+  \end{aligned}$$
   </p>
-  <p>右端固定のたびに符号が反転し、左端では駆動条件を満たす次の右向き波が足されます。共振は $f\approx n\,v/(2L)$（$f/f_1\approx 1,2,3,\ldots$）です。</p>
+  <p>右端固定のたびに符号が反転し、左端では駆動条件を満たす次の右向き波が足されます。共振は $f\fallingdotseq\dfrac{nv}{2L}$（$\dfrac{f}{f_1}\fallingdotseq 1,2,3,\ldots$）です。</p>
   """,
   simulation: DrivenStringResonance1DSimulation(),
   height: 720,
@@ -44,16 +46,16 @@ int? _nearestResonanceMode(double ratio) {
 class DrivenStringResonance1DSimulation extends WaveSimulation {
   DrivenStringResonance1DSimulation()
       : super(
-          title: "駆動弦の定在波（反射の積み上がり）",
+          title: "弦上の定在波(駆動)",
           is3D: false,
           showTimeOverlay: false,
           formula: const Column(
             children: [
               FormulaDisplay(
-                  r'g(\tau)=A\sin(2\pi\tau/T)\ (\tau\ge0)'),
+                  r'y(0,t)=A\sin\frac{2\pi t}{T}'),
               SizedBox(height: 4),
               FormulaDisplay(
-                  r'y=\sum_n\big[g(t-\tfrac{2nL+x}{v})-g(t-\tfrac{2(n+1)L-x}{v})\big]'),
+                  r'y=A\sum_n\big[\sin\frac{2\pi}{T}(t-\tfrac{2nL+x}{v})-\sin\frac{2\pi}{T}(t-\tfrac{2(n+1)L-x}{v})\big]'),
             ],
           ),
         );
@@ -407,39 +409,49 @@ class DrivenStringApparatusPainter extends CustomPainter {
     final w = size.width;
     final h = size.height;
 
-    final leftPad = w * 0.06;
-    final rightPad = w * 0.22;
+    // 左右は装置（バイブレータ／人物）に必要な分だけ。y-t グラフと同じく余白はほぼなし。
+    const edgePad = 8.0;
+    const leftExtent = 48.0;
+    const rightAfterStringEnd = 80.0;
     final stringY = h * 0.38;
     final ampScale = h * 0.045 * scale;
 
+    final pulleyR = 16.0;
+    const pulleyClearance = 4.0;
+    final arm = pulleyR + pulleyClearance;
+    final aX = edgePad + leftExtent;
+    final stringEndXMax = w - rightAfterStringEnd;
+    final maxStringW = (stringEndXMax - arm - aX).clamp(40.0, w);
     final Lnorm = ((length - 0.40) / 0.60).clamp(0.0, 1.0);
-    final maxStringW = w - leftPad - rightPad - w * 0.14;
     final minStringW = maxStringW * 0.45;
     final stringW = minStringW + (maxStringW - minStringW) * Lnorm;
-
-    final aX = leftPad + w * 0.12;
-    final pulleyR = 16.0;
-    // 弦は滑車の「上」に乗り、右端から下がる（中心に3本が集まらない）
     final bX = aX + stringW;
-    final pulleyCenter = Offset(bX, stringY + pulleyR);
-    final hangX = pulleyCenter.dx + pulleyR;
+    // 台の右上端から右上45°に棒を伸ばし、その先が滑車中心。
+    // 糸は滑車頂点（12時）に乗り、右上1/4を回って3時から下がる。
+    final pulleyCenter = Offset(bX + arm, stringY + pulleyR);
+    // 有効な固定端は滑車中心の横座標（頂点）。水平弦はここで節、以降は鉛直。
+    final stringEndX = pulleyCenter.dx;
+    final hangStart = Offset(pulleyCenter.dx + pulleyR, pulleyCenter.dy);
+    final hangX = hangStart.dx;
 
     final floorY = h * 0.88;
     final personX = hangX + 28;
     final personFeet = Offset(personX, floorY);
 
     final tensionNorm = ((tension - 10.0) / 90.0).clamp(0.0, 1.0);
-    final handY = stringY + pulleyR * 2 + 24 + tensionNorm * 18;
+    final handY = hangStart.dy + pulleyR + 24 + tensionNorm * 18;
 
-    // 台は滑車半径分下げ、弦は台上に浮く。滑車は角から上・右へ出っ張る
-    final benchTop = stringY + pulleyR;
+    // 糸は台上に半径2個分＋すき間だけ浮く（頂点に乗るため）
+    final benchTop = stringY + pulleyR + arm;
     final benchLeft = aX - 48;
     final benchRight = bX;
     final benchBottom = math.min(floorY - 8, stringY + h * 0.28);
+    final benchCorner = Offset(benchRight, benchTop);
     _drawHatchedBench(
       canvas,
       Rect.fromLTRB(benchLeft, benchTop, benchRight, benchBottom),
     );
+    _drawPulleySupportRod(canvas, benchCorner, pulleyCenter);
 
     final vibBody = Rect.fromCenter(
       center: Offset(aX - 28, stringY),
@@ -485,7 +497,7 @@ class DrivenStringApparatusPainter extends CustomPainter {
     final path = Path();
     for (var i = 0; i < y.length; i++) {
       final tt = i / (y.length - 1);
-      final x = aX + tt * (bX - aX);
+      final x = aX + tt * (stringEndX - aX);
       final yy = stringY - (y[i] / visualRefAmp) * ampScale * 0.45;
       if (i == 0) {
         path.moveTo(x, yy);
@@ -497,7 +509,7 @@ class DrivenStringApparatusPainter extends CustomPainter {
 
     canvas.drawLine(
       Offset(aX, stringY),
-      Offset(bX, stringY),
+      Offset(stringEndX, stringY),
       Paint()
         ..color = Colors.black12
         ..strokeWidth = 1,
@@ -506,12 +518,12 @@ class DrivenStringApparatusPainter extends CustomPainter {
     _drawLabel(canvas, Offset(aX + 4, stringY + 22), 'A');
     _drawLabel(
       canvas,
-      Offset((aX + bX) / 2 - 28, stringY + 26),
+      Offset((aX + stringEndX) / 2 - 28, stringY + 26),
       'L = ${length.toStringAsFixed(2)} m',
     );
-    _drawLabel(canvas, Offset(bX - 18, stringY - 18), 'B');
+    _drawLabel(canvas, Offset(stringEndX - 20, stringY - 20), 'B');
 
-    // 台の右上角に定滑車。弦は12時で乗り、右（3時）から下がる
+    // 定滑車：糸は12時で乗り、右上1/4を回って3時から下がる
     canvas.drawCircle(pulleyCenter, pulleyR, Paint()..color = Colors.white);
     canvas.drawCircle(
       pulleyCenter,
@@ -536,7 +548,7 @@ class DrivenStringApparatusPainter extends CustomPainter {
     );
     canvas.drawCircle(pulleyCenter, 2.2, Paint()..color = Colors.black87);
     _drawLabel(
-        canvas, Offset(pulleyCenter.dx + pulleyR + 6, stringY - 36), '定滑車');
+        canvas, Offset(pulleyCenter.dx + pulleyR + 4, stringY - 42), '定滑車');
 
     final pulleyStringPaint = Paint()
       ..color = const Color(0xFF1565C0)
@@ -554,7 +566,7 @@ class DrivenStringApparatusPainter extends CustomPainter {
 
     final handPos = Offset(hangX, handY + 36);
     canvas.drawLine(
-      Offset(hangX, pulleyCenter.dy),
+      hangStart,
       handPos,
       pulleyStringPaint,
     );
@@ -588,6 +600,41 @@ class DrivenStringApparatusPainter extends CustomPainter {
       textDirection: TextDirection.ltr,
     )..layout(maxWidth: w - 24);
     tp.paint(canvas, Offset(w - tp.width - 12, 8));
+  }
+
+  void _drawPulleySupportRod(Canvas canvas, Offset corner, Offset center) {
+    final mount = Rect.fromCenter(
+      center: Offset(corner.dx - 5, corner.dy + 5),
+      width: 16,
+      height: 12,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(mount, const Radius.circular(2)),
+      Paint()..color = const Color(0xFF546E7A),
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(mount, const Radius.circular(2)),
+      Paint()
+        ..color = Colors.black87
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.2,
+    );
+    canvas.drawLine(
+      corner,
+      center,
+      Paint()
+        ..color = const Color(0xFF455A64)
+        ..strokeWidth = 6.0
+        ..strokeCap = StrokeCap.round,
+    );
+    canvas.drawLine(
+      corner,
+      center,
+      Paint()
+        ..color = const Color(0xFF90A4AE)
+        ..strokeWidth = 3.0
+        ..strokeCap = StrokeCap.round,
+    );
   }
 
   void _drawHatchedBench(Canvas canvas, Rect rect) {

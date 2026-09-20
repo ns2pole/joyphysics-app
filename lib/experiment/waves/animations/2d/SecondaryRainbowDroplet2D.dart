@@ -237,10 +237,8 @@ final secondaryRainbowDroplet2D = createWaveVideo(
   <p><b>理論式（$k$ から $\phi$）</b></p>
   <p>
     副虹は2回反射のため
-    \[
-      \phi(k)=\pi-(6r-2i)
-      =\pi-\left(6\arcsin\frac{k}{n}-2\arcsin k\right)\quad(\mathrm{rad})
-    \]
+    \[ \phi(k)=\pi-(6r-2i)\ \ (\mathrm{rad}) \]
+    \[ 6r-2i=6\arcsin\dfrac{k}{n}-2\arcsin k \]
     となります。$\phi$ は $k$ に対して<b>極小</b>（約51°）を取り、その付近で光が集中します。
   </p>
   <p><b>理論曲線（$\phi=\pi-6r+2i$・極小あり）</b></p>

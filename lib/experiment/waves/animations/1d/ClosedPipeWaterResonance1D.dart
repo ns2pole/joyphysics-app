@@ -7,18 +7,19 @@ import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import '../widgets/wave_slider.dart';
 
 final closedPipeWaterResonance1D = createWaveVideo(
-  title: "気柱の共鳴（閉管・水位）",
+  title: "気柱の振動(閉管)",
   latex: r"""
   <div class="common-box">ポイント</div>
   <p>水面が閉口（変位の節）、上端が開口（変位の腹）です。開口は圧力駆動 $p(0)=\varepsilon\sin(2\pi f t)$ で、変位そのものは固定しません。</p>
   <p>開口端補正 $\Delta l$ だけ実際の反射位置が管の外に出ます。共振条件は</p>
-  <p>$$L+\Delta l=(2n-1)\dfrac{\lambda}{4},\quad
-  f_n=\dfrac{(2n-1)v}{4(L+\Delta l)},\quad
-  \Delta l=0.6r\ \text{または}\ 0.8r$$</p>
+  <p>$$L+\Delta l=(2n-1)\dfrac{\lambda}{4}$$</p>
+  <p>$$f_n=\dfrac{(2n-1)v}{4(L+\Delta l)}$$</p>
+  <p>$$\Delta l=0.6r\ \text{または}\ 0.8r$$</p>
   <p>変位は開口から入り、水面（固定端）と開口（自由端）で反射して積み上がります。音速が速いので画面はスロー再生です。破線は管の外の仮想腹（$\Delta l$）です。</p>
   """,
   simulation: ClosedPipeWaterResonance1DSimulation(),
   height: 720,
+  playsSound: true,
 );
 
 const double _soundSpeed = 340.0;
@@ -58,18 +59,22 @@ double _resonanceCloseness(double f, double f1) {
   return (1 - x) * (1 - x);
 }
 
-double _toneVolume(double f, double f1) =>
-    0.22 + 0.38 * _resonanceCloseness(f, f1);
+/// PCM振幅。共鳴から外れると小さく、共鳴で大きく聞こえる。
+double _toneAmplitude(double f, double f1) =>
+    0.05 + 0.62 * _resonanceCloseness(f, f1);
 
 class ClosedPipeWaterResonance1DSimulation extends WaveSimulation {
+  @override
+  bool get showZoomButtons => false;
+
   ClosedPipeWaterResonance1DSimulation()
       : super(
-          title: "気柱の共鳴（閉管・水位）",
+          title: "気柱の振動(閉管)",
           is3D: false,
           showTimeOverlay: false,
           formula: const Column(
             children: [
-              FormulaDisplay(r'L+\Delta l=(2n-1)\lambda/4'),
+              FormulaDisplay(r'L+\Delta l=(2n-1)\frac{\lambda}{4}'),
               SizedBox(height: 4),
               FormulaDisplay(r'\Delta l = 0.6r\ \mathrm{or}\ 0.8r'),
             ],
@@ -83,7 +88,7 @@ class ClosedPipeWaterResonance1DSimulation extends WaveSimulation {
         'length': 0.20,
         'radiusCm': 1.10,
         'deltaCoeff': 0.6,
-        'slowMo': 2000.0,
+        'slowMo': 300.0,
       };
 
   @override
@@ -119,6 +124,7 @@ class ClosedPipeWaterResonance1DSimulation extends WaveSimulation {
           height: 1.35,
         ),
       ),
+      _ClosedPipeToneControl(key: const ValueKey('closedPipeTone'), freq: f, f1: f1),
       WaveParameterSlider(
         label: 'f[Hz]',
         value: params['freq']!,
@@ -144,10 +150,9 @@ class ClosedPipeWaterResonance1DSimulation extends WaveSimulation {
         label: 'スロー',
         value: params['slowMo']!,
         min: 50.0,
-        max: 5000.0,
+        max: 1500.0,
         onChanged: (val) => updateParam('slowMo', val),
       ),
-      _ClosedPipeToneControl(key: const ValueKey('closedPipeTone'), freq: f, f1: f1),
       const SizedBox(height: 4),
       const Text('開口端補正 Δl',
           style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
@@ -255,7 +260,7 @@ class _ClosedPipeWaterBoardState extends State<ClosedPipeWaterBoard> {
     }
     if (wallDt > 0.2) wallDt = 1.0 / 60.0;
     if (wallDt > 0) {
-      _simTime += wallDt / widget.slowMo.clamp(50.0, 5000.0);
+      _simTime += wallDt / widget.slowMo.clamp(50.0, 1500.0);
     }
     _lastTime = t;
   }
@@ -344,16 +349,19 @@ class ClosedPipeWaterPainter extends CustomPainter {
         ..strokeWidth = 2,
     );
 
-    // Δl dashed tube extension
+    // Δl 領域（管の外の仮想部分）
+    canvas.drawRect(
+      Rect.fromLTRB(tubeLeft, virtY, tubeRight, openY),
+      Paint()..color = const Color(0xFFFFE0B2).withValues(alpha: 0.45),
+    );
     final dashPaint = Paint()
       ..color = Colors.black54
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.2;
-    _drawDashedLine(canvas, Offset(tubeLeft, virtY), Offset(tubeLeft, openY), dashPaint);
+    _drawDashedLine(
+        canvas, Offset(tubeLeft, virtY), Offset(tubeLeft, openY), dashPaint);
     _drawDashedLine(
         canvas, Offset(tubeRight, virtY), Offset(tubeRight, openY), dashPaint);
-    _drawDashedLine(
-        canvas, Offset(tubeLeft, virtY), Offset(tubeRight, virtY), dashPaint);
 
     // Speaker / driver above opening
     final sp = Rect.fromCenter(
@@ -434,24 +442,66 @@ class ClosedPipeWaterPainter extends CustomPainter {
     canvas.drawCircle(
         Offset(cx + xiTop, virtY), 3, Paint()..color = const Color(0xFFE65100));
 
+    final crossL = tubeLeft - 16;
+    final crossR = tubeRight + 16;
+    final nodePaint = Paint()
+      ..color = const Color(0xFF37474F)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.3;
+    final antinodePaint = Paint()
+      ..color = const Color(0xFFE65100)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.3;
+    final openingPaint = Paint()
+      ..color = Colors.black87
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.6;
+
+    double yOf(double xPhys) =>
+        waterY - (leff <= 0 ? 0.0 : (xPhys / leff) * (waterY - virtY));
+
+    void drawGuide(double y, String label, Paint paint, {double labelX = 0}) {
+      _drawDashedLine(canvas, Offset(crossL, y), Offset(crossR, y), paint);
+      _drawLabel(canvas, Offset(labelX == 0 ? crossL - 22 : labelX, y - 6), label);
+    }
+
+    // 管の入り口（開口端補正の境目）
+    drawGuide(openY, '開口', openingPaint, labelX: crossR + 4);
+
+    if (mode != null) {
+      final odd = 2 * mode - 1;
+      final lam = 4 * leff / odd;
+      for (var k = 0;; k++) {
+        final x = k * lam / 2;
+        if (x > leff - 1e-9) break;
+        drawGuide(yOf(x), '節', nodePaint);
+      }
+      for (var k = 0;; k++) {
+        final x = (2 * k + 1) * lam / 4;
+        if (x > leff + 1e-9) break;
+        drawGuide(yOf(x), '腹', antinodePaint);
+      }
+    } else {
+      drawGuide(waterY, '節', nodePaint);
+      drawGuide(virtY, '腹', antinodePaint);
+    }
+
     // Dimension labels
     _drawVDim(
       canvas,
-      tubeRight + 10,
+      tubeRight + 44,
       waterY,
       openY,
       'L = ${(length * 100).toStringAsFixed(1)} cm',
     );
     _drawVDim(
       canvas,
-      tubeRight + 10,
+      tubeRight + 44,
       openY,
       virtY,
       'Δl = ${(dl * 100).toStringAsFixed(2)} cm',
     );
 
-    _drawLabel(canvas, Offset(tubeLeft - 18, waterY - 4), '節');
-    _drawLabel(canvas, Offset(tubeLeft - 18, virtY - 4), '腹');
     _drawLabel(canvas, Offset(tubeLeft - 4, (openY + waterY) / 2), '気柱');
     _drawLabel(canvas, Offset(tubeLeft + 6, (waterY + tubeBottom) / 2), '水');
 
@@ -584,23 +634,32 @@ class _ClosedPipeToneControl extends StatefulWidget {
 
 class _ClosedPipeToneControlState extends State<_ClosedPipeToneControl> {
   static const int _sampleRate = 22050;
-  static const int _durationSec = 600;
+  static const int _durationSec = 20;
 
   final FlutterSoundPlayer _player = FlutterSoundPlayer();
-  bool _on = false;
+  bool _on = true;
   bool _ready = false;
   int _gen = 0;
   double _playingFreq = -1;
+  double _playingAmp = -1;
   Timer? _freqDebounce;
+
+  @override
+  void initState() {
+    super.initState();
+    _startTone();
+  }
 
   @override
   void didUpdateWidget(covariant _ClosedPipeToneControl oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (!_on) return;
-    _applyVolume();
-    if ((widget.freq - _playingFreq).abs() < 0.25) return;
+    final amp = _toneAmplitude(widget.freq, widget.f1);
+    final freqChanged = (widget.freq - _playingFreq).abs() >= 0.25;
+    final ampChanged = (_playingAmp - amp).abs() >= 0.01;
+    if (!freqChanged && !ampChanged) return;
     _freqDebounce?.cancel();
-    _freqDebounce = Timer(const Duration(milliseconds: 140), () {
+    _freqDebounce = Timer(const Duration(milliseconds: 80), () {
       if (mounted && _on) _startTone();
     });
   }
@@ -621,27 +680,19 @@ class _ClosedPipeToneControlState extends State<_ClosedPipeToneControl> {
     _ready = true;
   }
 
-  double _volume() => _toneVolume(widget.freq, widget.f1);
-
-  Future<void> _applyVolume() async {
-    if (!_ready || !_on) return;
-    try {
-      await _player.setVolume(_volume());
-    } catch (_) {}
-  }
-
-  /// 周期数を整数にして、始点・終点がゼロ交差になる正弦波（約4分）
-  Uint8List _sine(double freq) {
+  /// 周期数を整数にして、始点・終点がゼロ交差になる正弦波
+  Uint8List _sine(double freq, double amplitude) {
     final cycles = math.max(1, (freq * _durationSec).round());
     final n = math.max(_sampleRate, (cycles * _sampleRate / freq).round());
     final fade = 900;
     final buf = Int16List(n);
     final step = 2 * math.pi * freq / _sampleRate;
+    final peak = amplitude.clamp(0.0, 0.95);
     var phase = 0.0;
     for (var i = 0; i < n; i++) {
       var env = 1.0;
       if (i < fade) env = i / fade;
-      buf[i] = (math.sin(phase) * env * 0.38 * 32767).toInt();
+      buf[i] = (math.sin(phase) * env * peak * 32767).toInt();
       phase += step;
     }
     return Uint8List.view(buf.buffer);
@@ -649,6 +700,7 @@ class _ClosedPipeToneControlState extends State<_ClosedPipeToneControl> {
 
   Future<void> _startTone() async {
     final gen = ++_gen;
+    final amp = _toneAmplitude(widget.freq, widget.f1);
     try {
       await _ensureOpen();
       if (!mounted || !_on || gen != _gen) return;
@@ -657,10 +709,9 @@ class _ClosedPipeToneControlState extends State<_ClosedPipeToneControl> {
       }
       if (!mounted || !_on || gen != _gen) return;
       _playingFreq = widget.freq;
-      await _player.setVolume(_volume());
-      if (!mounted || !_on || gen != _gen) return;
+      _playingAmp = amp;
       await _player.startPlayer(
-        fromDataBuffer: _sine(widget.freq),
+        fromDataBuffer: _sine(widget.freq, amp),
         codec: Codec.pcm16,
         sampleRate: _sampleRate,
         numChannels: 1,
@@ -671,46 +722,6 @@ class _ClosedPipeToneControlState extends State<_ClosedPipeToneControl> {
     } catch (_) {}
   }
 
-  Future<void> _stopTone() async {
-    _gen++;
-    _playingFreq = -1;
-    _freqDebounce?.cancel();
-    try {
-      if (_ready && _player.isPlaying) {
-        await _player.stopPlayer();
-      }
-    } catch (_) {}
-  }
-
-  Future<void> _setOn(bool on) async {
-    setState(() => _on = on);
-    if (on) {
-      await _startTone();
-    } else {
-      await _stopTone();
-    }
-  }
-
   @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        const Text(
-          '音も出す',
-          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(width: 8),
-        Text(
-          _on ? '共鳴付近で少し大きくなります' : '',
-          style: const TextStyle(fontSize: 11, color: Colors.black54),
-        ),
-        const Spacer(),
-        Switch.adaptive(
-          value: _on,
-          onChanged: _setOn,
-          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        ),
-      ],
-    );
-  }
+  Widget build(BuildContext context) => const SizedBox.shrink();
 }

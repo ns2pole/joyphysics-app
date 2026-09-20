@@ -13,6 +13,7 @@ final youngDoubleSlit = createWaveVideo(
   <p>2つのスリットを通過した光が干渉し、スクリーン上に明暗の縞模様（干渉縞）を作ります。</p>
   <p>明線の条件: $d \sin \theta = m\lambda$</p>
   <p>明線間隔: $\Delta x = \frac{L\lambda}{d}$</p>
+  <p>「節線」（オレンジ・点線）で弱め合い、「腹線」（オレンジ・実線）で強め合いの曲線を表示できます。</p>
   """,
   simulation: YoungDoubleSlitSimulation(),
 );
@@ -28,7 +29,7 @@ class YoungDoubleSlitSimulation extends WaveSimulation {
   @override
   Map<String, double> get initialParameters => {
         'lambda': 0.8,
-        'periodT': 1.0,
+        'periodT': 0.7,
         'a': 1.0,
         'phi': 0.0,
         'showIntersectionLine': 1.0, // 1.0 for true, 0.0 for false
@@ -37,7 +38,13 @@ class YoungDoubleSlitSimulation extends WaveSimulation {
 
   @override
   Set<String> get initialActiveIds =>
-      {'combined', 'showIntersectionLine', 'showScreen'};
+      {
+        'combined',
+        'showIntersectionLine',
+        'showScreen',
+        'showNodalLines',
+        'showAntinodalLines'
+      };
 
   @override
   List<WavefrontLayer> get wavefrontLayers => const [
@@ -94,18 +101,24 @@ class YoungDoubleSlitSimulation extends WaveSimulation {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        Wrap(
+          spacing: 4,
+          runSpacing: 4,
+          alignment: WrapAlignment.center,
           children: [
             buildChip('波1', 'wave1', Colors.purpleAccent, activeIds,
                 updateActiveIds,
                 fontSize: 10),
-            const SizedBox(width: 4),
             buildChip('波2', 'wave2', Colors.greenAccent, activeIds,
                 updateActiveIds,
                 fontSize: 10),
-            const SizedBox(width: 4),
             buildChip('合成', 'combined', Colors.yellow, activeIds,
+                updateActiveIds,
+                fontSize: 10),
+            buildChip('節線', 'showNodalLines', Colors.orangeAccent, activeIds,
+                updateActiveIds,
+                fontSize: 10),
+            buildChip('腹線', 'showAntinodalLines', Colors.orangeAccent, activeIds,
                 updateActiveIds,
                 fontSize: 10),
           ],
@@ -180,6 +193,10 @@ class YoungDoubleSlitSimulation extends WaveSimulation {
         showIntersectionLine: activeIds.contains('showIntersectionLine'),
         showIntensityLine: activeIds.contains('showIntensityLine'),
         showScreen: activeIds.contains('showScreen'),
+        showNodalLines: activeIds.contains('showNodalLines'),
+        nodalMetric: field.nodalMetric,
+        showAntinodalLines: activeIds.contains('showAntinodalLines'),
+        antinodalMetric: field.antinodalMetric,
       ),
     );
   }

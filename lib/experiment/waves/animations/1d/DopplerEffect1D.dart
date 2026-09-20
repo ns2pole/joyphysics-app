@@ -40,7 +40,7 @@ class DopplerEffect1DSimulation extends WaveSimulation {
   Map<String, double> get initialParameters => getInitialParamsWithObs(
         baseParams: {
           'lambda': 2.0,
-          'periodT': 1.0,
+          'periodT': 0.7,
           'vSource': 0.8,
         },
         obsX: 2.0,

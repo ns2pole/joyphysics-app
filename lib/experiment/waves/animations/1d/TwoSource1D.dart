@@ -6,7 +6,7 @@ import '../painters/wave_line_painter.dart';
 import '../widgets/wave_slider.dart';
 
 final twoSource1D = createWaveVideo(
-  title: "2音源の干渉(1次元)",
+  title: "1次元干渉",
   latex: r"""
   <div class="common-box">ポイント</div>
   <p>2つの音源から発生した波が重なり合う様子を観察します。</p>
@@ -18,7 +18,7 @@ final twoSource1D = createWaveVideo(
 class TwoSource1DSimulation extends WaveSimulation {
   TwoSource1DSimulation()
       : super(
-          title: "2音源の干渉(1次元)",
+          title: "1次元干渉",
           is3D: false,
           formula: const Column(
             children: [
@@ -31,7 +31,7 @@ class TwoSource1DSimulation extends WaveSimulation {
   Map<String, double> get initialParameters => getInitialParamsWithObs(
         baseParams: {
           'lambda': 1.0,
-          'periodT': 1.0,
+          'periodT': 0.7,
           'distanceD': 2.0,
           'phaseShift': 0.0,
         },

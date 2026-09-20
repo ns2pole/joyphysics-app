@@ -8,11 +8,13 @@ import '../painters/wave_surface_painter.dart';
 import '../widgets/wave_slider.dart';
 
 final refraction1D = createWaveVideo(
-  title: "1次元波動",
+  title: "1次元屈折",
   latex: r"""
   <div class="common-box">ポイント</div>
   <p>異なる媒質の境界で波の速さが変わると、波長も変化します。周波数は変化しません。</p>
   <p>$n = \frac{v_1}{v_2} = \frac{\lambda_1}{\lambda_2}$</p>
+  <div class="common-box">注意</div>
+  <p>実際には、屈折率が異なる境界面では透過（屈折）と同時に反射も起きます。このシミュレーションでは、波長の変化を見やすくするため、反射波は描いていません。</p>
   """,
   simulation: Refraction1DSimulation(),
 );
@@ -20,7 +22,7 @@ final refraction1D = createWaveVideo(
 class Refraction1DSimulation extends WaveSimulation {
   Refraction1DSimulation()
       : super(
-          title: "1次元波動",
+          title: "1次元屈折",
           is3D: false,
           formula: const Column(
             children: [
@@ -28,7 +30,7 @@ class Refraction1DSimulation extends WaveSimulation {
                   r'\color{#B38CFF}{z_1 = A \sin\left(2\pi\left(\frac{t}{T} - \frac{x}{\lambda_1}\right)\right)}'),
               SizedBox(height: 4),
               FormulaDisplay(
-                  r'\color{#FFB800}{z_2 = A \sin\left(2\pi\left(\frac{t}{T} - \frac{x}{\lambda_1/n}\right)\right)}'),
+                  r'\color{#FFB800}{z_2 = A \sin\left(2\pi\left(\frac{t}{T} - \frac{x}{\frac{\lambda_1}{n}}\right)\right)}'),
             ],
           ),
         );
@@ -37,9 +39,9 @@ class Refraction1DSimulation extends WaveSimulation {
   Map<String, double> get initialParameters => getInitialParamsWithObs(
         baseParams: {
           'lambda': 2.0,
-          'periodT': 1.0,
+          'periodT': 0.7,
           'n': 1.5,
-          'thicknessL': 2.0,
+          'thicknessL': 3.0,
         },
         obsX: 2.0,
       );

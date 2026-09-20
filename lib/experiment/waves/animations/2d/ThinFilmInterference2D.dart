@@ -29,7 +29,7 @@ class ThinFilmInterference2DSimulation extends WaveSimulation {
         baseParams: {
           'theta': 30 * math.pi / 180,
           'lambda': 2.0,
-          'periodT': 1.0,
+          'periodT': 0.7,
           'n': 1.5,
           'thicknessL': 2.0,
         },

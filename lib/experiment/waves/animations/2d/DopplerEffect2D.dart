@@ -13,7 +13,7 @@ final dopplerEffect2D = createWaveVideo(
   <p>時刻 $t$、位置 $(x, y)$ で観測される波は、それより前の時刻 $\tau$（放射時刻：retarded time）に音源から放出されたものです。</p>
   <p>この $\tau$ は以下の関係式を満たします：</p>
   <p>$$t - \tau = \frac{\sqrt{(x - v\tau)^2 + y^2}}{V}$$</p>
-  <p>ここで $V = \lambda / T$ は波の速さ、$v$ は音源の速度です。このシミュレーションでは、音源が原点を出発して $x$ 軸上を正の向きに移動する様子を描いています。</p>
+  <p>ここで $V = \frac{\lambda}{T}$ は波の速さ、$v$ は音源の速度です。このシミュレーションでは、音源が原点を出発して $x$ 軸上を正の向きに移動する様子を描いています。</p>
   <p>「断面」をオンにすると、その瞬間の音源と観測点を結ぶ直線上の変位が1次元の波形として見えます。</p>
   """,
   simulation: DopplerEffect2DSimulation(),
@@ -38,7 +38,7 @@ class DopplerEffect2DSimulation extends WaveSimulation {
   Map<String, double> get initialParameters => getInitialParamsWithObs(
         baseParams: {
           'lambda': 2.0,
-          'periodT': 1.0,
+          'periodT': 0.7,
           'vSource': 0.8,
         },
         obsX: 2.0,

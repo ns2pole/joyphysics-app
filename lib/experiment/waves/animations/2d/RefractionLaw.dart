@@ -7,11 +7,13 @@ import '../widgets/wave_slider.dart';
 import 'dart:math' as math;
 
 final refractionLaw = createWaveVideo(
-  title: "2次元波動(屈折の法則)",
+  title: "2次元直線波の屈折",
   latex: r"""
   <div class="common-box">ポイント</div>
   <p>スネルの法則: $n_1 \sin \theta_1 = n_2 \sin \theta_2$</p>
   <p>屈折率の大きい媒質に入ると、波長が短くなり、進む方向が法線に近づきます。</p>
+  <div class="common-box">注意</div>
+  <p>実際には、屈折率が異なる境界面では透過（屈折）と同時に反射も起きます。このシミュレーションでは、波長と進行方向の変化を見やすくするため、反射波は描いていません。</p>
   """,
   simulation: RefractionLawSimulation(),
 );
@@ -19,7 +21,7 @@ final refractionLaw = createWaveVideo(
 class RefractionLawSimulation extends WaveSimulation {
   RefractionLawSimulation()
       : super(
-          title: "2次元波動 (屈折の法則)",
+          title: "2次元直線波の屈折",
           is3D: true,
           formula: const FormulaDisplay(r'n_1\sin\theta_1=n_2\sin\theta_2'),
         );
@@ -29,9 +31,9 @@ class RefractionLawSimulation extends WaveSimulation {
         baseParams: {
           'theta': 25 * math.pi / 180,
           'lambda': 2.0,
-          'periodT': 1.0,
+          'periodT': 0.7,
           'n2': 1.5,
-          'slabWidth': 1.0,
+          'slabWidth': 3.0,
         },
         obsX: 2.0,
         obsY: 0.0,

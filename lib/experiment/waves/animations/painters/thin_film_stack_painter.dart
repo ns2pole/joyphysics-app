@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../utils/coordinate_transformer.dart';
+import '../widgets/wave_slider.dart';
 
 class ThinFilmWavelengthRow {
   final int lambdaNm;
@@ -19,7 +20,8 @@ class ThinFilmStackPainter extends CustomPainter {
     required this.activeComponentIds,
     this.scaleFactor = 250.0,
     this.glowGamma = 1.35,
-    this.baseSpeed = 2.0,
+    // 500nm（内部λ=2）で T=0.7。色ごとの速さは揃えたまま。
+    this.baseSpeed = 2.0 / kDefaultWavePeriodT,
   });
 
   final double time;
@@ -32,7 +34,7 @@ class ThinFilmStackPainter extends CustomPainter {
   final double glowGamma;
   final double baseSpeed;
 
-  static const double _worldRange = 5.0; // x in [-5,5] like WaveLinePainter
+  static const double _worldRange = WaveCoordinateTransformer.lineWorldHalfRange;
 
   @override
   void paint(Canvas canvas, Size size) {

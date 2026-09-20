@@ -13,6 +13,12 @@ class WaveCoordinateTransformer {
 
   static const double cos45 = 0.70710678118;
 
+  /// 1D ライン描画のワールド x は [-5, 5]（[WaveLinePainter] と同じ）。
+  static const double lineWorldHalfRange = 5.0;
+
+  /// 波の式の y-t グラフ並みに、左右余白はラベルが切れない程度だけ。
+  static const double lineEdgePadPx = 8.0;
+
   WaveCoordinateTransformer({
     required this.size,
     required this.scale,
@@ -25,7 +31,8 @@ class WaveCoordinateTransformer {
     if (is3D) {
       return 50.0 * scale;
     } else {
-      return (size.width / 12) * scale;
+      final usable = math.max(1.0, size.width - 2 * lineEdgePadPx);
+      return (usable / (2 * lineWorldHalfRange)) * scale;
     }
   }
 
