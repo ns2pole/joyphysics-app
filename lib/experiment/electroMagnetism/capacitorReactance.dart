@@ -33,7 +33,7 @@ X_C &= \frac{1}{2\pi f C} \\
 \end{aligned}
 $$</p>
 
-<p>オームの法則（交流では $I = V/X_C$）より、電流の実効値 $I$ は</p>
+<p>オームの法則（交流では $I = \frac{V}{X_C}$）より、電流の実効値 $I$ は</p>
 <p>$$
 \begin{aligned}
 I &= \frac{V}{X_C} = \frac{2.0}{1.06\times10^{3}} \\

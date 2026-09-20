@@ -3,7 +3,7 @@ final buoyancyComparison = Video(
   isExperiment: true,
   category: 'dynamics', // ← 追加
     iconName: "buoyancyComparison",
-    title: "浮力（食塩水・普通の水・油での比較）",
+    title: "浮力(食塩水・普通の水・油での比較)",
     videoURL: "44vPx_0XeO0",
     equipment: ["ガラス容器", "木", "塩", "油"],
     costRating: "★☆☆", latex: r"""
@@ -30,7 +30,7 @@ final buoyancyComparison = Video(
             \Leftrightarrow \ l_{fluid} &= L\frac{\rho}{\rho_{fluid}}
                 \end{aligned}$$
         </p>
-        <p>ここで木材の密度 $\rho = m/(\pi r^2 L)=0.509\,[\mathrm{g/cm^3}]$。</p>
+        <p>ここで木材の密度 $\rho = \frac{m}{\pi r^2 L}=0.509\,[\mathrm{g/cm^3}]$。</p>
         <p>よって、</p>
         <p>
         $$ l_{salt} = 20 \times \frac{0.509}{1.20} \fallingdotseq 8.48\,[\mathrm{cm}] $$

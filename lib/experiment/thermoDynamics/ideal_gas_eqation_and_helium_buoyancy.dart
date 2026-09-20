@@ -26,7 +26,7 @@ $$\Delta m=\frac{F_{\rm net}}{g}=(\rho_{\rm air}-\rho_{\rm He})\,V - m_{\rm bag}
   <li>$V$: 袋の体積 [m$^3$]</li>
   <li>$m_{\rm bag}$: 袋の質量 [kg]</li>
   <li>$\rho_{\rm air}$: 空気密度 [kg/m$^3$]（25℃, 1 atm で $\fallingdotseq1.184$）</li>
-  <li>$\rho_{\rm He}$: ヘリウム密度 [kg/m$^3$]（25℃, 1 atm で $M P/(RT)\fallingdotseq0.164$）</li>
+  <li>$\rho_{\rm He}$: ヘリウム密度 [kg/m$^3$]（25℃, 1 atm で $\frac{MP}{RT}\fallingdotseq0.164$）</li>
 </ul>
 
 <div class="common-box">問題設定</div>

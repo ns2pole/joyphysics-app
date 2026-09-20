@@ -143,7 +143,7 @@ $$
 <div class="theory-common-box">補題 6（区分和の極限：区分求積）</div>
 
 
-**主張.** $\Delta\phi=2\pi/N$ とすると $N\Delta\phi=2\pi$ 固定なので，極限 $N\to\infty$ を取れば
+**主張.** $\Delta\phi=\frac{2\pi}{N}$ とすると $N\Delta\phi=2\pi$ 固定なので，極限 $N\to\infty$ を取れば
 $$
 \mathbf{B}(0)=\lim_{N\to\infty}\mathbf{B}_N(0)
 = \frac{\mu_0 I}{4\pi R}\cdot 2\pi\,\hat{\mathbf{z}}

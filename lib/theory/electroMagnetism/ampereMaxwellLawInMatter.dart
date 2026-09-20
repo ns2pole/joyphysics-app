@@ -35,7 +35,7 @@ $$
 
 <div class="theory-common-box">定理：アンペールの法則</div>
 <p>
-電場が時間的に変化しない場合（$\partial\vec D/\partial t=0$）には変位電流項が消え、アンペールの法則の形に還元される：
+電場が時間的に変化しない場合（$\frac{\partial\vec D}{\partial t}=0$）には変位電流項が消え、アンペールの法則の形に還元される：
 $$
 \oint_{\partial S}\vec H\cdot d\vec r = I_{\mathrm{自由}}(S).
 $$

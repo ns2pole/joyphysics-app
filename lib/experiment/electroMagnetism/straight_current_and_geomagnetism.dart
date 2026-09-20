@@ -57,25 +57,25 @@ B_{\text{wire}}=2.0\times10^{-5}\ \mathrm{T}\ (=20\ \mu\mathrm{T})
 \cos\theta=\frac{(\overrightarrow{B}_{\text{tot}})_y}{|\overrightarrow{B}_{\text{tot}}|}
 \]
 \[
-\cos\theta=\frac{3.0\times10^{-5}}{3.606\times10^{-5}}\approx 0.8321
+\cos\theta=\frac{3.0\times10^{-5}}{3.606\times10^{-5}}\fallingdotseq 0.8321
 \]
 同様に確認：
 \[
 \sin\theta=\frac{|(\overrightarrow{B}_{\text{tot}})_x|}{|\overrightarrow{B}_{\text{tot}}|}
 \]
 \[
-\sin\theta=\frac{2.0\times10^{-5}}{3.606\times10^{-5}}\approx 0.5547
+\sin\theta=\frac{2.0\times10^{-5}}{3.606\times10^{-5}}\fallingdotseq 0.5547
 \]
 したがって
 \[
-\theta\approx \cos^{-1}(0.8321)\approx 33.7^\circ
+\theta\fallingdotseq \cos^{-1}(0.8321)\fallingdotseq 33.7^\circ
 \]
 方向は「北から<b>西へ</b> \(33.7^\circ\)」。</p>
 
 <div class="common-box">答え</div>
 <p>
-\(\overrightarrow{B}_{\text{tot}}=\big(-20,\ 30\big)\ \mu\mathrm{T}\)、\(|\overrightarrow{B}_{\text{tot}}|\approx 36.1\ \mu\mathrm{T}\)。<br/>
-方位磁石は<b>北から西へ \(33.7^\circ\)</b>の方向を指す（方位角 \(\approx 326.3^\circ\)）。</p>
+\(\overrightarrow{B}_{\text{tot}}=\big(-20,\ 30\big)\ \mu\mathrm{T}\)、\(|\overrightarrow{B}_{\text{tot}}|\fallingdotseq 36.1\ \mu\mathrm{T}\)。<br/>
+方位磁石は<b>北から西へ \(33.7^\circ\)</b>の方向を指す（方位角 \(\fallingdotseq 326.3^\circ\)）。</p>
 
 <hr/>
 <p style="font-size:0.95em;">

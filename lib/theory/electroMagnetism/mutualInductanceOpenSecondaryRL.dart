@@ -37,7 +37,7 @@ E_{\mathrm{rms}} &= \text{二次の誘起起電力（実効値）} \\[2pt]
 E_{\text{peak}} &= \text{二次の誘起起電力（ピーク）} \\[2pt]
 &= M\,\omega\,I_{1,\mathrm{peak}} \\[6pt]
 k &= \text{結合係数} \\[2pt]
-&\approx 0.98 \\[6pt]
+&\fallingdotseq 0.98 \\[6pt]
 M &= \text{相互インダクタンス} \\[2pt]
 &= k\sqrt{L_1 L_2} \\[6pt]
 f &= \text{周波数} \\[2pt]
@@ -59,7 +59,7 @@ v_1(t) &= R_1\,i_1(t) \;+\; L_1\,i_1'(t) \;+\; M\,i_2'(t) \\[6pt]
 
 <div class="common-box">問題設定／幾何</div>
 \begin{aligned}
-& \text{一次・二次は同軸で面を共有し（}k\approx 1\text{）、容量は無視する。} \\[4pt]
+& \text{一次・二次は同軸で面を共有し（}k\fallingdotseq 1\text{）、容量は無視する。} \\[4pt]
 & \text{一次は電圧源 }V_{1,\mathrm{rms}}\text{ で正弦駆動する。} \\[4pt]
 & \text{二次は }R_2\text{ と }R_{\mathrm{in}}\text{ の直列（開放二次を高抵抗で閉回路化）とみなす。} \\[4pt]
 & \text{観測量は }V_{2,\mathrm{rms}}\text{（電圧計の読み）とする。}
@@ -116,7 +116,7 @@ E_{\mathrm{rms}} &= v_R \;+\; v_L \\[4pt]
 \dfrac{V_{2,\mathrm{rms}}}{V_{1,\mathrm{rms}}}
 &= \dfrac{M}{L_1} \\[4pt]
 &= k\,\sqrt{\dfrac{L_2}{L_1}} \\[4pt]
-&\approx k\,\dfrac{N_2}{N_1}
+&\fallingdotseq k\,\dfrac{N_2}{N_1}
 \end{aligned}
 </div>
 
@@ -131,13 +131,13 @@ I_{1,\mathrm{rms}}
 = \dfrac{V_{1,\mathrm{rms}}}{\omega L_1}\,
   \dfrac{1}{\sqrt{1 + \Bigl(\dfrac{R_1}{\omega L_1}\Bigr)^{2}}} \\[2pt]
 &\Rightarrow I_{1,\mathrm{rms}}
-\approx \dfrac{V_{1,\mathrm{rms}}}{\omega L_1}
+\fallingdotseq \dfrac{V_{1,\mathrm{rms}}}{\omega L_1}
 \end{aligned}
 
 \begin{aligned}
 E_{\mathrm{rms}}
 &= M\,\omega\,I_{1,\mathrm{rms}} \\[2pt]
-&\approx M\,\omega\,\dfrac{V_{1,\mathrm{rms}}}{\omega L_1} \\[2pt]
+&\fallingdotseq M\,\omega\,\dfrac{V_{1,\mathrm{rms}}}{\omega L_1} \\[2pt]
 &= \dfrac{M}{L_1}\,V_{1,\mathrm{rms}}
 \end{aligned}
 
@@ -147,21 +147,21 @@ R_{in} \gg \omega L_2,\,R_2
 = R_{in}\,\sqrt{1 + \Bigl(\dfrac{R_2}{R_{in}}\Bigr)^{2}
                  + \Bigl(\dfrac{\omega L_2}{R_{in}}\Bigr)^{2}} \\[2pt]
 &\Rightarrow \sqrt{(R_2+R_{in})^{2} + (\omega L_2)^{2}}
-\approx R_{in} \\[4pt]
+\fallingdotseq R_{in} \\[4pt]
 \Rightarrow V_{2,\mathrm{rms}}
 &= i_{2,\mathrm{rms}}\,R_{in} \\[2pt]
 &= \dfrac{E_{\mathrm{rms}}}{\sqrt{(R_2+R_{in})^{2} + (\omega L_2)^{2}}}\,R_{in} \\[2pt]
-&\approx E_{\mathrm{rms}}
+&\fallingdotseq E_{\mathrm{rms}}
 \end{aligned}
 
 \begin{aligned}
 \Leftrightarrow\ \dfrac{V_{2,\mathrm{rms}}}{V_{1,\mathrm{rms}}}
-&\approx \dfrac{E_{\mathrm{rms}}}{V_{1,\mathrm{rms}}} \\[2pt]
+&\fallingdotseq \dfrac{E_{\mathrm{rms}}}{V_{1,\mathrm{rms}}} \\[2pt]
 &= \dfrac{M}{L_1} \\[6pt]
 \Leftrightarrow\ \dfrac{M}{L_1}
 &= \dfrac{k\sqrt{L_1L_2}}{L_1} \\[2pt]
 &= k\,\sqrt{\dfrac{L_2}{L_1}} \\[2pt]
-&\approx k\,\dfrac{N_2}{N_1}\qquad\bigl(L\propto N^{2}\bigr)
+&\fallingdotseq k\,\dfrac{N_2}{N_1}\qquad\bigl(L\propto N^{2}\bigr)
 \end{aligned}
 </div>
 
@@ -173,7 +173,7 @@ N_2/N_1 &= 2 \\[2pt]
 \Rightarrow\ L_2 &= 40\,\mu\mathrm{H} \\[2pt]
 R_2 &= 20\,\Omega \\[2pt]
 R_{\mathrm{in}} &= 10\,\mathrm{M}\Omega \\[2pt]
-k &\approx 1.00 \\[2pt]
+k &\fallingdotseq 1.00 \\[2pt]
 M &= k\sqrt{L_1 L_2} \\[2pt]
 &= \sqrt{10\times 40}\times 10^{-6}\,\mathrm{H} \\[2pt]
 &= \boxed{2.00\times 10^{-5}\,\mathrm{H}} \\[6pt]
@@ -222,7 +222,7 @@ V_{2,\mathrm{rms}}^{(\infty)} &= \dfrac{M}{L_1}\,V_{1,\mathrm{rms}} \\[2pt]
 <div class="common-box">注記</div>
 \begin{aligned}
 & V_{2,\mathrm{rms}} \text{ は低周波で } \propto \omega,\ \text{高周波で } \to (M/L_1)V_1 \\[2pt]
-& \text{巻数比と結合 }(kN_2/N_1)\text{ が高周波極限の伝達比を与える（ここでは }k\approx 1\text{）。} \\[2pt]
+& \text{巻数比と結合 }(kN_2/N_1)\text{ が高周波極限の伝達比を与える（ここでは }k\fallingdotseq 1\text{）。} \\[2pt]
 & R_{\mathrm{in}}\ \text{は大きいほど }V_2\ \text{の読みが }E_{\mathrm{rms}}\ \text{に近づく}
 \end{aligned}
 """,

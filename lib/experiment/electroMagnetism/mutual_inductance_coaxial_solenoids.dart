@@ -7,7 +7,7 @@ final mutual_inductance_coaxial_solenoids = Video(
   title: "同軸ソレノイド：相互インダクタンスと外側誘導起電力（内側LR, 2V, 70 kHz, R=200Ω／ピーク→RMS, ℓ=0.20 m）",
   videoURL: "",
   equipment: [
-    "紙筒/円筒芯（内：直径≈10 mm, 外：直径≈20 mm）",
+    "紙筒/円筒芯（内：直径≒10 mm, 外：直径≒20 mm）",
     "ポリウレタン銅線",
     "関数発振器（出力 2 V_rms, 70 kHz）",
     "抵抗 200 Ω（内側直列）",
@@ -78,22 +78,22 @@ L_1 & = \left(8.873\ \mu\mathrm{H/m}\right)\times 0.20 \\
     & = 1.7746\ \mu\mathrm{H} \\[6pt]
 X_{L1} & = \omega L_1 \\
       & = (4.3982\times10^{5})\times(1.7746\times10^{-6}) \\
-      & \approx \boxed{0.7806\ \Omega} \\[6pt]
+      & \fallingdotseq \boxed{0.7806\ \Omega} \\[6pt]
 Z_1 & = \sqrt{R_1^2 + X_{L1}^2} \\
     & = \sqrt{200^2 + 0.7806^2} \\
-    & \approx \boxed{200.0015\ \Omega} \\[6pt]
+    & \fallingdotseq \boxed{200.0015\ \Omega} \\[6pt]
 V_{1} & = \sqrt{2}\times 2 \\
                     & = \boxed{2\sqrt{2}\ \mathrm{V}} \\[6pt]
 I_{1} & = \dfrac{V_{1}}{Z_1} \\
-                    & \approx \dfrac{2\sqrt{2}}{200.0015} \\
-                    & \approx \boxed{0.01414\ \mathrm{A}}
+                    & \fallingdotseq \dfrac{2\sqrt{2}}{200.0015} \\
+                    & \fallingdotseq \boxed{0.01414\ \mathrm{A}}
 \end{aligned}
 \]
 \[
 \begin{aligned}
 \phi & = \arctan\!\left(\dfrac{\omega L_1}{R_1}\right) \\
      & = \arctan\!\left(\dfrac{0.7806}{200}\right) \\
-     & \approx \boxed{0.224^\circ}
+     & \fallingdotseq \boxed{0.224^\circ}
 \end{aligned}
 \]
 
@@ -112,13 +112,13 @@ v_2(t) & = -\,M\,\dfrac{di_1}{dt} \\[6pt]
        & = M\,I_{1}\,\omega\,\sin(\omega t - \phi) \\[6pt]
 V_{2} & = M\,\omega\,I_{1} \\
                     & = (3.553\times10^{-6})\times(4.3982\times10^{5})\times(0.01414) \\
-                    & \approx \boxed{22.1\ \mathrm{mV}}
+                    & \fallingdotseq \boxed{22.1\ \mathrm{mV}}
 \end{aligned}
 \]
 \[
 \begin{aligned}
 V_{2,\mathrm{rms}} & = \dfrac{V_{2}}{\sqrt{2}} \\
-                   & \approx \boxed{15.6\ \mathrm{mV}}
+                   & \fallingdotseq \boxed{15.6\ \mathrm{mV}}
 \end{aligned}
 \]
 
@@ -126,9 +126,9 @@ V_{2,\mathrm{rms}} & = \dfrac{V_{2}}{\sqrt{2}} \\
 \[
 \begin{aligned}
 \dfrac{V_{2,\mathrm{rms}}}{\ell} & = (17.765\times10^{-6})\times(4.3982\times10^{5})\times\left(\dfrac{2}{Z_1}\right) \\
-                                 & \approx 0.07813\ \mathrm{V/m} \\[4pt]
+                                 & \fallingdotseq 0.07813\ \mathrm{V/m} \\[4pt]
 V_{2,\mathrm{rms}} & = 0.07813\times 0.20 \\
-                   & \approx 15.6\ \mathrm{mV}
+                   & \fallingdotseq 15.6\ \mathrm{mV}
 \end{aligned}
 \]
 

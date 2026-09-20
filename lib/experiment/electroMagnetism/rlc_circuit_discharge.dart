@@ -28,21 +28,21 @@ final rlc_circuit_discharge = Video(
 \begin{aligned}
 T_{LC} &= 2\pi\sqrt{LC}\\
        &= 2\pi\sqrt{(5.0\,\mathrm{mH})(22\,\mu\mathrm{F})}\\
-       &\approx 2.0839\times 10^{-3}\ \mathrm{s} \\
-       &\approx \boxed{2.084\ \mathrm{ms}}
+       &\fallingdotseq 2.0839\times 10^{-3}\ \mathrm{s} \\
+       &\fallingdotseq \boxed{2.084\ \mathrm{ms}}
 \end{aligned}
 \]
 
 <div class="common-box">実RLC（不足減衰・振動しつつ減衰）</div>
-<p>不足減衰の判定： \(R<2\sqrt{L/C}\)。
-数値的に \(2\sqrt{L/C}\approx 30.15\ \Omega > 10\ \Omega\) より不足減衰。</p>
+<p>不足減衰の判定： \(R<2\sqrt{\frac{L}{C}}\)。
+数値的に \(2\sqrt{\frac{L}{C}}\fallingdotseq 30.15\ \Omega > 10\ \Omega\) より不足減衰。</p>
 
 <p>このときの振動周期 \(T\) は</p>
 \[
 \begin{aligned}
 T &= \frac{2\pi}{\sqrt{\dfrac{1}{LC}-\left(\dfrac{R}{2L}\right)^2}}\\
   &= \frac{2\pi}{\sqrt{\dfrac{1}{(5.0\,\mathrm{mH})(22\,\mu\mathrm{F})}-\left(\dfrac{10}{2\cdot 5.0\,\mathrm{mH}}\right)^2}}\\
-  &\approx \boxed{2.209\ \mathrm{ms}}
+  &\fallingdotseq \boxed{2.209\ \mathrm{ms}}
 \end{aligned}
 \]
 
@@ -50,8 +50,8 @@ T &= \frac{2\pi}{\sqrt{\dfrac{1}{LC}-\left(\dfrac{R}{2L}\right)^2}}\\
 \[
 \begin{aligned}
 \frac{T - T_{LC}}{T_{LC}}\times 100\% 
-&\approx \frac{2.209 - 2.084}{2.084}\times 100\%\\
-&\approx \boxed{+6.00\%}\quad(\text{実RLCの方が長い})
+&\fallingdotseq \frac{2.209 - 2.084}{2.084}\times 100\%\\
+&\fallingdotseq \boxed{+6.00\%}\quad(\text{実RLCの方が長い})
 \end{aligned}
 \]
 

@@ -25,6 +25,6 @@ final jupiter = Video(
         <p>ケプラー第3法則の定数項：</p>
         $$\frac{4\pi^2}{GM} = \frac{4 \times \pi^2}{1.27 \times 10^{17}} \fallingdotseq 3.11 \times 10^{-16} \ \mathrm{[s^2\cdot m^{-3}]}$$
 
-        <p>表で計算した $T^2 / a^3$ とよく一致していることが確認できた。</p>
+        <p>表で計算した $\frac{T^2}{a^3}$ とよく一致していることが確認できた。</p>
     """
 );

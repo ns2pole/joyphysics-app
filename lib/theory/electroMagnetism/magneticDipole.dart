@@ -411,8 +411,8 @@ $$\begin{aligned}
 &= \displaystyle \frac{\mu_0 I}{4\pi}\cdot\frac{1}{r^3}\cdot\frac{1}{I}\big(3\hat{r}(\hat{r}\cdot\vec m)-\vec m\big) + O\!\Bigl(\frac{a^2}{r^4}\Bigr)\\[6pt]
 &= \displaystyle \frac{\mu_0}{4\pi r^3}\Bigl(-\vec m + 3(\vec m \cdot \hat{r})\hat{r}\Bigr) +O\!\Bigl(\frac{a^2}{r^4}\Bigr)
 \end{aligned}$$
-ここで、$r$に比べて$a$が十分小さいとして、$\displaystyle O(a^2/r^4)$の項を無視すると、所望の式が得られる。　Q.E.D<br>
-※ 誤差項は四極子以上の高次多極成分に相当し、磁場では $\displaystyle O(a^2/r^4)$ 程度。
+ここで、$r$に比べて$a$が十分小さいとして、$\displaystyle O\bigl(\frac{a^2}{r^4}\bigr)$の項を無視すると、所望の式が得られる。　Q.E.D<br>
+※ 誤差項は四極子以上の高次多極成分に相当し、磁場では $\displaystyle O\bigl(\frac{a^2}{r^4}\bigr)$ 程度。
 <div class="paragraph-box">補足</div><br>
 最後に軸上（$\displaystyle \hat{r}\parallel\vec m$）の特殊例を示すと、$\displaystyle \hat{r}\cdot\vec m=|\vec m|$ だから
 $$\begin{aligned}
