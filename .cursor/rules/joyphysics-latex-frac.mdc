@@ -1,0 +1,33 @@
+---
+description: 記事の数式は分数を \frac にし、インラインでも \displaystyle
+alwaysApply: true
+---
+
+# LaTeX：`\frac` + インラインでも `\displaystyle`
+
+実験記事（`Video.latex` / `FormulaDisplay`）、理論記事（`latexContent`）、公式リストの **表示用数式** に適用する。
+
+## 分数
+
+斜線 `a/b` は禁止。`\dfrac` / `\tfrac` も使わず `\frac{分子}{分母}`。
+
+## スタイル
+
+インライン `$...$` でも、式は基本 `\displaystyle` を付ける（分数・和・積・根号付きの式は必須）。`$$...$$` はもともと display なので重複して付けなくてよい。単独記号 `$a$` までは不要。
+
+```tex
+% ❌ BAD
+$T=2\pi/n$
+$\frac{T^{2}}{a^{3}}=\frac{4\pi^{2}}{GM}$
+$n=\sqrt{\dfrac{GM}{a^{3}}}$
+
+% ✅ GOOD
+$\displaystyle T=\frac{2\pi}{n}$
+$\displaystyle \frac{T^{2}}{a^{3}}=\frac{4\pi^{2}}{GM}$
+$$n=\sqrt{\frac{GM}{a^{3}}}$$
+```
+
+## 例外（斜線のまま）
+
+- 単位: `\mathrm{m/s}`, `\mathrm{kg/m^3}`
+- Dart の除算、URL・パス

@@ -1,0 +1,32 @@
+---
+description: Pixel 接続中は flutter 監視を勝手に常時維持する（ユーザーに確認しない）
+alwaysApply: true
+---
+
+# JoyPhysics 無線デバッグ監視（絶対維持）
+
+ユーザーに「監視してる？」「やれ」と聞かれなくても、**このリポジトリで作業するときは毎回・勝手に**次を実行する。
+
+## 必須動作
+
+1. ターン開始時（またはスマホ/flutter/監視の話題が出たとき）に状態確認:
+   - `adb devices` で Pixel (`adb-59181JEKB09093`) が見えるか
+   - `launchctl print gui/$(id -u)/com.joyphysics.watchforever` が `state = running` か
+   - `flutter_tools.snapshot run -d adb-59181` が生きているか
+2. 欠けていたら**黙って即復活**（確認質問しない）:
+   - 監視: `scripts/start_joyphysics_watch.sh` または launchd kickstart
+   - flutter が死んで端末がある: 監視スクリプトが起動する。だめなら `flutter run -d adb-59181JEKB09093-we56an._adb-tls-connect._tcp`（`JAVA_HOME` 付き）
+3. 復活したら一言だけ報告（例: 「監視を復活した」）。生きていれば余計に聞かない。
+
+## 禁止
+
+- 「監視しますか？」「再起動しますか？」と聞かない
+- nohup だけの弱い監視に戻さない（必ず launchd `com.joyphysics.watchforever` / KeepAlive）
+- ユーザーが止めると言わない限り、監視を意図的に止めない
+
+## 参照
+
+- `scripts/joyphysics_watch_forever.py`
+- `scripts/start_joyphysics_watch.sh`
+- LaunchAgent: `~/Library/LaunchAgents/com.joyphysics.watchforever.plist`
+- ログ: `/tmp/joyphysics_watch_forever.log`
