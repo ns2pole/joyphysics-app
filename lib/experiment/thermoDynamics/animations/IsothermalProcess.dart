@@ -13,7 +13,8 @@ final isothermalProcess = createWaveVideo(
   <p>気体の温度 $T$ を一定に保ったまま状態を変化させることを等温変化といいます。</p>
   <p>薄い伝熱壁の容器を外気に触れさせておくと、気体は外気温と同じ温度に保たれるため等温過程になります。</p>
   <p>ボイルの法則より、温度が一定のとき、気体の圧力 $P$ は体積 $V$ に反比例します。</p>
-  <p>$$PV = \text{一定} \quad \text{または} \quad P \propto \frac{1}{V}$$</p>
+  <p>$$PV = \text{一定}$$</p>
+  <p>$$P \propto \dfrac{1}{V}$$</p>
   <p>熱力学第一法則 $Q = \Delta U + W$ において、温度が変わらないため内部エネルギーの変化 $\Delta U = 0$ となり、外部から加えた熱 $Q$ はすべて気体が外部へ行う仕事 $W$ に等しくなります（あるいは外部から仕事を受けると、その分だけ熱を放出します）。</p>
   """,
   simulation: IsothermalSimulation(),
@@ -86,27 +87,31 @@ class IsothermalSimulation extends PhysicsSimulation {
       ValueListenableBuilder<bool>(
         valueListenable: autoCycle,
         builder: (context, autoOn, _) {
-          return SizedBox(
-            height: 72,
-            child: autoOn
-                ? const SizedBox.shrink()
-                : WaveParameterSlider(
-                    label: "ピストンの押し引き (体積 V [L])",
-                    value: params['volume']!,
-                    min: IdealGasRef.vMinL,
-                    max: IdealGasRef.vVisMaxL,
-                    onChanged: (v) {
-                      final cur = params['volume']!;
-                      const maxStepL = 0.012;
-                      final next = v <= cur
-                          ? math.max(v, cur - maxStepL)
-                          : math.min(v, cur + maxStepL);
-                      updateParam(
-                        'volume',
-                        next.clamp(IdealGasRef.vMinL, IdealGasRef.vVisMaxL),
-                      );
-                    },
-                  ),
+          return Visibility(
+            visible: !autoOn,
+            maintainSize: true,
+            maintainAnimation: true,
+            maintainState: true,
+            child: WaveParameterSlider(
+              label: "ピストンの押し引き\n(体積 V [L])",
+              maxLines: 2,
+              labelAlign: TextAlign.center,
+              labelAbove: true,
+              value: params['volume']!,
+              min: IdealGasRef.vMinL,
+              max: IdealGasRef.vVisMaxL,
+              onChanged: (v) {
+                final cur = params['volume']!;
+                const maxStepL = 0.012;
+                final next = v <= cur
+                    ? math.max(v, cur - maxStepL)
+                    : math.min(v, cur + maxStepL);
+                updateParam(
+                  'volume',
+                  next.clamp(IdealGasRef.vMinL, IdealGasRef.vVisMaxL),
+                );
+              },
+            ),
           );
         },
       ),

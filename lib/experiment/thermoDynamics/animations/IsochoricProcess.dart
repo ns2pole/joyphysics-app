@@ -11,7 +11,8 @@ final isochoricProcess = createWaveVideo(
   <div class="common-box">定積変化（等積変化）</div>
   <p>気体の体積 $V$ を一定に保ったまま状態を変化させることを定積変化といいます。</p>
   <p>ボイル・シャルルの法則 $\frac{PV}{T} = \text{一定}$ より、$V$ が一定のとき、圧力 $P$ は絶対温度 $T$ に比例します。</p>
-  <p>$$P \propto T \quad \text{または} \quad \frac{P}{T} = \text{一定}$$</p>
+  <p>$$P \propto T$$</p>
+  <p>$$\dfrac{P}{T} = \text{一定}$$</p>
   <p>熱力学第一法則 $Q = \Delta U + W$ において、体積が変化しないため仕事 $W = P\Delta V = 0$ となり、加えた熱 $Q$ はすべて内部エネルギーの増加（温度上昇）に使われます。</p>
   """,
   simulation: IsochoricSimulation(),
@@ -146,35 +147,33 @@ class IsochoricSimulation extends PhysicsSimulation {
         if (autoOn) {
           _latestActiveIds = Set<String>.from(activeIds);
           _scheduleAutoTick();
-          return const SizedBox(height: 118);
+        } else {
+          if (atMax && activeIds.contains('heating')) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!activeIds.contains('heating')) return;
+              updateActiveIds(Set<String>.from(activeIds)..remove('heating'));
+            });
+          }
+          if (!activeIds.contains('insulated') &&
+              activeIds.contains('heating')) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!activeIds.contains('heating')) return;
+              updateActiveIds(Set<String>.from(activeIds)..remove('heating'));
+            });
+          }
         }
 
-        if (atMax && activeIds.contains('heating')) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!activeIds.contains('heating')) return;
-            updateActiveIds(Set<String>.from(activeIds)..remove('heating'));
-          });
-        }
-        if (!activeIds.contains('insulated') && activeIds.contains('heating')) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!activeIds.contains('heating')) return;
-            updateActiveIds(Set<String>.from(activeIds)..remove('heating'));
-          });
-        }
-
-        return SizedBox(
-          height: 118,
-          child: Align(
-            alignment: Alignment.topCenter,
-            child: buildThermoInsulationHeatControls(
-              activeIds: activeIds,
-              updateActiveIds: updateActiveIds,
-              atMaxTemp: atMax,
-              atMinTemp: atMin,
-              coolingRequiresUninsulated: true,
-              heatingRequiresInsulation: true,
-            ),
-          ),
+        return buildThermoInsulationHeatControls(
+          activeIds: activeIds,
+          updateActiveIds: updateActiveIds,
+          atMaxTemp: atMax,
+          atMinTemp: atMin,
+          coolingRequiresUninsulated: true,
+          heatingRequiresInsulation: true,
+          controlsEnabled: !autoOn,
+          autoOn: autoOn,
+          onAutoChanged: _setAuto,
+          statusLabel: autoOn ? _autoSession.statusLabel : null,
         );
       },
     );
@@ -186,40 +185,21 @@ class IsochoricSimulation extends PhysicsSimulation {
     final bool isHeating = activeIds.contains('heating');
     final bool isCooling = activeIds.contains('cooling');
     final bool isInsulated = activeIds.contains('insulated');
-    return Column(
-      children: [
-        Expanded(
-          child: IsochoricAnimationWidget(
-            time: time,
-            isHeating: isHeating,
-            isCooling: isCooling,
-            isInsulated: isInsulated,
-            scale: scale,
-            onTemperatureChanged: (t) {
-              final thresh = autoCycle.value ? 0.05 : 0.25;
-              if ((temperature.value - t).abs() > thresh) {
-                temperature.value = t;
-              } else if (autoCycle.value) {
-                temperature.value = t;
-              }
-              if (autoCycle.value) _scheduleAutoTick();
-            },
-          ),
-        ),
-        AnimatedBuilder(
-          animation: Listenable.merge([autoCycle, temperature]),
-          builder: (context, _) {
-            final autoOn = autoCycle.value;
-            return buildThermoAutoToggle(
-              autoOn: autoOn,
-              onChanged: _setAuto,
-              statusLabel: autoOn
-                  ? _autoSession.statusLabel
-                  : null,
-            );
-          },
-        ),
-      ],
+    return IsochoricAnimationWidget(
+      time: time,
+      isHeating: isHeating,
+      isCooling: isCooling,
+      isInsulated: isInsulated,
+      scale: scale,
+      onTemperatureChanged: (t) {
+        final thresh = autoCycle.value ? 0.05 : 0.25;
+        if ((temperature.value - t).abs() > thresh) {
+          temperature.value = t;
+        } else if (autoCycle.value) {
+          temperature.value = t;
+        }
+        if (autoCycle.value) _scheduleAutoTick();
+      },
     );
   }
 }

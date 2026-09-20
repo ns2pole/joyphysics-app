@@ -13,7 +13,8 @@ final adiabaticProcess = createWaveVideo(
   <p>外部と熱のやり取りがない状態（断熱状態）で気体の状態を変化させることを断熱変化といいます。</p>
   <p>薄い伝熱壁の容器でも、側面・底面を断熱材で覆えば外気と熱をやり取りせず、断熱過程になります。</p>
   <p>単原子分子理想気体の場合、ポアソンの法則により以下の関係が成り立ちます。</p>
-  <p>$$PV^{5/3} = \text{一定} \quad \text{または} \quad TV^{2/3} = \text{一定}$$</p>
+  <p>$$PV^{\frac{5}{3}} = \text{一定}$$</p>
+  <p>$$TV^{\frac{2}{3}} = \text{一定}$$</p>
   <p>熱力学第一法則 $Q = \Delta U + W$ において、$Q = 0$ となるため、気体が外部へ仕事 $W$ を行うと内部エネルギーがその分だけ減少し（温度低下）、逆に外部から仕事をされると内部エネルギーが増加します（断熱圧縮による温度上昇）。</p>
   """,
   simulation: AdiabaticSimulation(),
@@ -24,7 +25,7 @@ class AdiabaticSimulation extends PhysicsSimulation {
   AdiabaticSimulation()
       : super(
           title: "断熱変化",
-          formula: const FormulaDisplay(r'Q = 0, \quad PV^{\gamma} = \text{const.} \ (\gamma=5/3)'),
+          formula: const FormulaDisplay(r'Q = 0, \quad PV^{\gamma} = \text{const.} \ (\gamma=\frac{5}{3})'),
           aspectRatio: 0.66,
         );
 
@@ -33,9 +34,12 @@ class AdiabaticSimulation extends PhysicsSimulation {
   bool _autoTickScheduled = false;
   DateTime? _lastAutoTickAt;
 
+  /// Auto の往復レンジ上限（スライダー max の 2.0 L までは使わない）
+  static const double _autoFarVolumeL = 1.8;
+
   final ThermoVolumeAutoSession _autoSession = ThermoVolumeAutoSession(
-    homeVolume: IdealGasRef.v0L,
-    farVolume: IdealGasRef.vVisMaxL,
+    homeVolume: IdealGasRef.vMinL,
+    farVolume: _autoFarVolumeL,
     speedLps: 0.45,
   );
 
@@ -49,7 +53,7 @@ class AdiabaticSimulation extends PhysicsSimulation {
     autoCycle.value = enabled;
     if (enabled) {
       _autoSession.reset();
-      _updateParam?.call('volume', IdealGasRef.v0L);
+      _updateParam?.call('volume', _autoSession.homeVolume);
       _scheduleAutoTick();
     }
   }
@@ -85,17 +89,21 @@ class AdiabaticSimulation extends PhysicsSimulation {
       ValueListenableBuilder<bool>(
         valueListenable: autoCycle,
         builder: (context, autoOn, _) {
-          return SizedBox(
-            height: 72,
-            child: autoOn
-                ? const SizedBox.shrink()
-                : WaveParameterSlider(
-                    label: "ピストンの押し引き (体積 V [L])",
-                    value: params['volume']!,
-                    min: IdealGasRef.vMinL,
-                    max: IdealGasRef.vVisMaxL,
-                    onChanged: (v) => updateParam('volume', v),
-                  ),
+          return Visibility(
+            visible: !autoOn,
+            maintainSize: true,
+            maintainAnimation: true,
+            maintainState: true,
+            child: WaveParameterSlider(
+              label: "ピストンの押し引き\n(体積 V [L])",
+              maxLines: 2,
+              labelAlign: TextAlign.center,
+              labelAbove: true,
+              value: params['volume']!,
+              min: IdealGasRef.vMinL,
+              max: IdealGasRef.vVisMaxL,
+              onChanged: (v) => updateParam('volume', v),
+            ),
           );
         },
       ),
@@ -105,7 +113,7 @@ class AdiabaticSimulation extends PhysicsSimulation {
           "容器本体は薄い伝熱壁ですが、側面・底面を断熱材で覆っているため外気と熱のやり取りがありません（断熱過程）。"
           "スライダーでピストンを押し引きしてください。"
           "初期状態は単原子分子理想気体・1.0 L・300 K・1013 hPa です。"
-          "Auto では 1.0 L ⇄ 2.0 L の往復（端で約2秒停止）を繰り返します。",
+          "Auto ではスライダー最小（0.30 L）⇄ 1.8 L の往復（端で約2秒停止）を繰り返します。",
         ),
       ),
     ];
@@ -254,7 +262,7 @@ class _AdiabaticAnimationWidgetState extends State<AdiabaticAnimationWidget> {
                     showHeater: false,
                     showInsulationCovers: true,
                     showOuterVessel: true,
-                    cylinderWidthFactor: 0.233,
+                    cylinderWidthFactor: 0.1165,
                     cylinderHeightFactor: 0.66,
                     personFeetPos: const Offset(0, 0),
                   ),

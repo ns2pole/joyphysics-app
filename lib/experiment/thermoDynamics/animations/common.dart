@@ -1224,14 +1224,20 @@ class PvHistoryTracker {
 
   PvHistoryTracker({this.maxPoints = 500, this.minDistance = 0.01});
 
-  /// BasePVPainter に渡すのと同じ正規化座標 (V, P) で記録する
+  /// BasePVPainter に渡すのと同じ正規化座標 (V, P) で記録する。
+  /// [maxPoints] が 0 以下なら点数制限なし（軌跡を消さない）。
   void record(double volume, double pressure) {
     final point = Offset(volume, pressure);
     if (_last == null || (_last! - point).distance > minDistance) {
       points.add(point);
       _last = point;
-      if (points.length > maxPoints) points.removeAt(0);
+      if (maxPoints > 0 && points.length > maxPoints) points.removeAt(0);
     }
+  }
+
+  void clear() {
+    points.clear();
+    _last = null;
   }
 }
 
@@ -1326,7 +1332,7 @@ Widget buildThermoAutoToggle({
   );
 }
 
-/// 断熱（中央上）＋ 加熱/冷却（その下）の共通コントロール
+/// Auto トグル＋断熱・冷却・加熱を1行に並べる共通コントロール（定積・定圧・熱サイクル）
 Widget buildThermoInsulationHeatControls({
   required Set<String> activeIds,
   required void Function(Set<String>) updateActiveIds,
@@ -1339,6 +1345,9 @@ Widget buildThermoInsulationHeatControls({
   bool heatingRequiresInsulation = false,
   /// false のとき全チップ操作不可（Auto 運転中など）
   bool controlsEnabled = true,
+  bool? autoOn,
+  ValueChanged<bool>? onAutoChanged,
+  String? statusLabel,
 }) {
   final bool insulated = activeIds.contains('insulated');
   final bool heatingEnabled = controlsEnabled &&
@@ -1348,6 +1357,7 @@ Widget buildThermoInsulationHeatControls({
       showCooling &&
       (!coolingRequiresUninsulated || !insulated);
   final bool insulationEnabled = controlsEnabled;
+  final bool showAuto = autoOn != null && onAutoChanged != null;
 
   FilterChip chip({
     required String label,
@@ -1359,95 +1369,128 @@ Widget buildThermoInsulationHeatControls({
     return FilterChip(
       label: Text(
         label,
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
       ),
       selected: selected,
       onSelected: enabled ? onSelected : null,
       selectedColor: color.withOpacity(0.35),
       checkmarkColor: color,
-      labelPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-      visualDensity: VisualDensity.comfortable,
+      labelPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+      visualDensity: VisualDensity.compact,
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
     );
   }
 
-  return Column(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      Center(
-        child: chip(
-          label: '断熱',
-          color: Colors.brown,
-          selected: insulated,
-          enabled: insulationEnabled,
-          onSelected: (val) {
-            final next = Set<String>.from(activeIds);
-            if (val) {
-              next.add('insulated');
-              // 断熱を戻したら冷却（氷水）は解除
-              if (coolingRequiresUninsulated) {
-                next.remove('cooling');
-              }
-            } else {
+  final chips = <Widget>[
+    chip(
+      label: '断熱',
+      color: Colors.brown,
+      selected: insulated,
+      enabled: insulationEnabled,
+      onSelected: (val) {
+        final next = Set<String>.from(activeIds);
+        if (val) {
+          next.add('insulated');
+          // 断熱を戻したら冷却（氷水）は解除
+          if (coolingRequiresUninsulated) {
+            next.remove('cooling');
+          }
+        } else {
+          next.remove('insulated');
+          // 断熱を外すと加熱は効かないので自動OFF
+          if (heatingRequiresInsulation) {
+            next.remove('heating');
+          }
+        }
+        updateActiveIds(next);
+      },
+    ),
+    if (showCooling)
+      chip(
+        label: '冷却',
+        color: Colors.blue,
+        selected: activeIds.contains('cooling'),
+        enabled: coolingEnabled,
+        onSelected: (val) {
+          final next = Set<String>.from(activeIds);
+          if (val) {
+            next.add('cooling');
+            next.remove('heating');
+            if (coolingRequiresUninsulated) {
               next.remove('insulated');
-              // 断熱を外すと加熱は効かないので自動OFF
-              if (heatingRequiresInsulation) {
-                next.remove('heating');
-              }
             }
-            updateActiveIds(next);
-          },
-        ),
+          } else {
+            next.remove('cooling');
+          }
+          updateActiveIds(next);
+        },
       ),
-      const SizedBox(height: 10),
-      Center(
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            chip(
-              label: '加熱',
-              color: Colors.orange,
-              selected: activeIds.contains('heating'),
-              enabled: heatingEnabled,
-              onSelected: (val) {
-                final next = Set<String>.from(activeIds);
-                if (val) {
-                  next.add('heating');
-                  next.remove('cooling');
-                  if (heatingRequiresInsulation) {
-                    next.add('insulated');
-                  }
-                } else {
-                  next.remove('heating');
-                }
-                updateActiveIds(next);
-              },
+    chip(
+      label: '加熱',
+      color: Colors.orange,
+      selected: activeIds.contains('heating'),
+      enabled: heatingEnabled,
+      onSelected: (val) {
+        final next = Set<String>.from(activeIds);
+        if (val) {
+          next.add('heating');
+          next.remove('cooling');
+          if (heatingRequiresInsulation) {
+            next.add('insulated');
+          }
+        } else {
+          next.remove('heating');
+        }
+        updateActiveIds(next);
+      },
+    ),
+  ];
+
+  final row = FittedBox(
+    fit: BoxFit.scaleDown,
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (showAuto) ...[
+          const Text(
+            'Auto',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
             ),
-            if (showCooling) ...[
-              const SizedBox(width: 16),
-              chip(
-                label: '冷却',
-                color: Colors.blue,
-                selected: activeIds.contains('cooling'),
-                enabled: coolingEnabled,
-                onSelected: (val) {
-                  final next = Set<String>.from(activeIds);
-                  if (val) {
-                    next.add('cooling');
-                    next.remove('heating');
-                    if (coolingRequiresUninsulated) {
-                      next.remove('insulated');
-                    }
-                  } else {
-                    next.remove('cooling');
-                  }
-                  updateActiveIds(next);
-                },
-              ),
-            ],
-          ],
+          ),
+          Switch(
+            value: autoOn!,
+            onChanged: onAutoChanged,
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          const SizedBox(width: 4),
+        ],
+        for (int i = 0; i < chips.length; i++) ...[
+          if (i > 0) const SizedBox(width: 8),
+          chips[i],
+        ],
+      ],
+    ),
+  );
+
+  if (!showAuto) {
+    return Center(child: row);
+  }
+
+  return Padding(
+    padding: const EdgeInsets.only(top: 4, bottom: 2),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        buildThermoAutoStatusBox(
+          autoOn == true ? (statusLabel ?? '自動サイクル中') : null,
         ),
-      ),
-    ],
+        const SizedBox(height: 4),
+        Center(child: row),
+      ],
+    ),
   );
 }
