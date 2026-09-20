@@ -38,6 +38,8 @@ import AVFoundation
         switch sensorType {
         case "accelerometer":
           result(motionManager.isAccelerometerAvailable)
+        case "gyroscope":
+          result(motionManager.isGyroAvailable)
         case "barometer":
           result(CMAltimeter.isRelativeAltitudeAvailable())
         case "magnetometer":

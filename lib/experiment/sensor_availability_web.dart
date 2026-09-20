@@ -7,6 +7,7 @@ bool _hasWindowProp(String name) => js_util.hasProperty(html.window, name);
 Future<SensorAvailability> checkSensorAvailability(SensorKind kind) async {
   switch (kind) {
     case SensorKind.accelerometer:
+    case SensorKind.gyroscope:
       if (!_hasWindowProp('DeviceMotionEvent')) return SensorAvailability.unavailable;
       final ctor = js_util.getProperty(html.window, 'DeviceMotionEvent');
       if (js_util.hasProperty(ctor, 'requestPermission')) {
@@ -37,6 +38,7 @@ Future<SensorAvailability> requestSensorPermission(SensorKind kind) async {
   try {
     switch (kind) {
       case SensorKind.accelerometer:
+      case SensorKind.gyroscope:
         if (!_hasWindowProp('DeviceMotionEvent')) return SensorAvailability.unavailable;
         final ctor = js_util.getProperty(html.window, 'DeviceMotionEvent');
         if (!js_util.hasProperty(ctor, 'requestPermission')) {

@@ -1,5 +1,6 @@
 enum SensorKind {
   accelerometer,
+  gyroscope,
   barometer,
   magnetometer,
   microphone,

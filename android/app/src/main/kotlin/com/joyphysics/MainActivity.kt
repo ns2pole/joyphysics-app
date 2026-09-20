@@ -31,6 +31,7 @@ class MainActivity : FlutterActivity() {
                     val sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
                     val available = when (sensorType) {
                         "accelerometer" -> sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null
+                        "gyroscope" -> hasGyroscope(sensorManager)
                         "barometer" -> sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE) != null
                         "magnetometer" -> sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD) != null
                         "light" -> sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT) != null
@@ -79,6 +80,13 @@ class MainActivity : FlutterActivity() {
                 }
             }
         }
+    }
+
+    private fun hasGyroscope(sensorManager: SensorManager): Boolean {
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) != null) return true
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE, false) != null) return true
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE_UNCALIBRATED) != null) return true
+        return packageManager.hasSystemFeature(PackageManager.FEATURE_SENSOR_GYROSCOPE)
     }
 }
 
