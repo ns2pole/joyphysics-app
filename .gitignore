@@ -98,3 +98,4 @@ ios/Podfile
 ios/project.pbxproj
 ios/Podfile.lock
 Runner.app.dSYM.zip
+.codemagic_api_token

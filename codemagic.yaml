@@ -19,6 +19,9 @@
 #      手元: codemagic-signing/com.joyphysics.appstore.mobileprovision
 #
 # 4. ワークフロー ios-app-store-release を実行
+#    UI の Start の代わりに API でも可（初回だけ API token が必要）:
+#      Account settings → API token → .codemagic_api_token に保存
+#      ./scripts/start_codemagic_build.sh
 #
 # 参考: https://docs.codemagic.io/yaml-publishing/app-store-connect/
 
