@@ -2,12 +2,14 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:joyphysics/experiment/HasHeight.dart';
+import 'package:joyphysics/experiment/playback_controls.dart';
 import 'waves/animations/fields/wave_fields.dart';
 import 'waves/animations/utils/coordinate_transformer.dart';
 
 class PhysicsAnimationScaffold extends StatefulWidget with HasHeight {
   final String title;
   final Widget? formula;
+  final Widget? situation;
   final List<Widget>? sliders;
   final Widget? extraControls;
   final Widget Function(BuildContext context, double time, double azimuth, double tilt, double scale) animationBuilder;
@@ -15,6 +17,7 @@ class PhysicsAnimationScaffold extends StatefulWidget with HasHeight {
   final double height;
   final bool is3D;
   final double aspectRatio;
+  final double Function(double width)? aspectRatioForWidth;
   final Color? backgroundColor;
   final bool enableWideWebSplit;
   final List<WaveMarker> Function(double time)? getMarkers;
@@ -32,6 +35,7 @@ class PhysicsAnimationScaffold extends StatefulWidget with HasHeight {
     super.key,
     required this.title,
     this.formula,
+    this.situation,
     this.sliders,
     this.extraControls,
     required this.animationBuilder,
@@ -39,6 +43,7 @@ class PhysicsAnimationScaffold extends StatefulWidget with HasHeight {
     this.height = 650,
     this.is3D = false,
     this.aspectRatio = 1.0,
+    this.aspectRatioForWidth,
     this.backgroundColor,
     this.enableWideWebSplit = true,
     this.getMarkers,
@@ -195,49 +200,27 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
   }
 
   Widget _buildPlayPauseResetButtons() {
-    const btnSize = 26.0;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.45),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          IconButton(
-            visualDensity: VisualDensity.compact,
-            iconSize: btnSize,
-            color: Colors.white,
-            tooltip: _isPlaying ? '停止' : '再生',
-            onPressed: _togglePlayPause,
-            icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
-          ),
-          Container(
-            width: 1,
-            height: btnSize,
-            color: Colors.white.withOpacity(0.25),
-          ),
-          IconButton(
-            visualDensity: VisualDensity.compact,
-            iconSize: btnSize,
-            color: Colors.white,
-            tooltip: 'リセット',
-            onPressed: _reset,
-            icon: const Icon(Icons.restore),
-          ),
-        ],
-      ),
+    return PlayPauseResetButtons(
+      playing: _isPlaying,
+      onPlayPause: _togglePlayPause,
+      onReset: _reset,
     );
   }
 
   Widget _buildAnimationArea() {
-    return ValueListenableBuilder<double>(
+    return LayoutBuilder(
+      builder: (context, outer) {
+        final width = outer.maxWidth;
+        final aspect = width.isFinite && widget.aspectRatioForWidth != null
+            ? widget.aspectRatioForWidth!(width)
+            : widget.aspectRatio;
+        return ValueListenableBuilder<double>(
       valueListenable: _time,
       builder: (context, rawTime, _) {
         final time = widget.enableTime ? rawTime : 0.0;
         return Center(
           child: AspectRatio(
-            aspectRatio: widget.aspectRatio, // 正方形以外も許可するように変更
+            aspectRatio: aspect,
             child: Stack(
               children: [
                 LayoutBuilder(
@@ -375,6 +358,8 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
         );
       },
     );
+      },
+    );
   }
 
   Widget _buildRightPanel({
@@ -389,6 +374,11 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
           Padding(
             padding: const EdgeInsets.fromLTRB(8, 8, 8, 4),
             child: widget.formula!,
+          ),
+        if (includeFormula && widget.situation != null)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+            child: widget.situation!,
           ),
         // 再生/停止/リセット（数式の下に中央寄せ）
         if (widget.enableTime && showPlayButtons)
@@ -481,8 +471,13 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
               // 数式（formula / buildFormulaOverlay）
               if (widget.formula != null)
                 Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
                   child: widget.formula!,
+                ),
+              if (widget.situation != null)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                  child: widget.situation!,
                 ),
               // 再生/停止/リセット（数式の下に中央寄せ・縦レイアウト用）
               if (widget.enableTime)

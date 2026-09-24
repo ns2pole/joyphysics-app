@@ -72,6 +72,12 @@ abstract class PhysicsSimulation {
     this.enableTime = true,
   });
 
+  /// 数式とアニメのあいだに置く、慣性系から見た状況。
+  String? get situation => null;
+
+  /// キャンバス幅に応じた縦横比。未使用のシミュレーションは [aspectRatio] のまま。
+  double aspectRatioForWidth(double width) => aspectRatio;
+
   /// 初期パラメータ
   Map<String, double> get initialParameters;
 
@@ -423,6 +429,19 @@ class _PhysicsSimulationViewState extends State<PhysicsSimulationView> {
     });
   }
 
+  Widget? _situationLine(String? text) {
+    if (text == null || text.isEmpty) return null;
+    return Text(
+      text,
+      textAlign: TextAlign.center,
+      style: const TextStyle(
+        fontSize: 14,
+        height: 1.45,
+        color: Color(0xFF37474F),
+      ),
+    );
+  }
+
   Widget? _buildExtraControls(BuildContext context) {
     return widget.simulation
         .composeExtraControls(context, _activeIds, _updateActiveIds);
@@ -434,11 +453,13 @@ class _PhysicsSimulationViewState extends State<PhysicsSimulationView> {
       title: widget.simulation.title,
       formula: widget.simulation.buildFormulaOverlay(_parameters) ??
           widget.simulation.formula,
+      situation: _situationLine(widget.simulation.situation),
       compactButtonSpacing:
           widget.simulation.useCompactButtonSpacing(_parameters),
       animationOffsetY: widget.simulation.animationOffsetY(_parameters),
       is3D: widget.simulation.is3D,
       aspectRatio: widget.simulation.aspectRatio,
+      aspectRatioForWidth: widget.simulation.aspectRatioForWidth,
       // Safety: when time is disabled, never show any time overlay UI.
       enableTime: widget.simulation.enableTime,
       showTimeOverlay:
