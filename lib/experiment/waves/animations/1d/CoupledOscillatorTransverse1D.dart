@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
+import 'package:joyphysics/experiment/playback_controls.dart';
 import 'coupled_oscillator_transverse_physics.dart';
 
 final coupledOscillatorTransverse1D = createWaveVideo(
@@ -17,8 +18,6 @@ final coupledOscillatorTransverse1D = createWaveVideo(
   \end{aligned}$$</p>
   <p>$$\omega_n=2\sqrt{\dfrac{k}{m}}\,\sin\dfrac{n\pi}{2(N+1)}$$</p>
   <p>各モードの形は固定端の定在波と同じで、両端は常に節である。$N$ を大きくすると、連続な弦の固定端定在波に近づく。</p>
-  <div class="common-box">使い方</div>
-  <p>初期は1つの質点だけを上にずらしてある。停止中に $N$（2〜100）を変え、質点を上下にドラッグして初期形を決め、Start で運動が始まる。</p>
   """,
   simulation: CoupledOscillatorTransverse1DSimulation(),
 );
@@ -35,14 +34,17 @@ class CoupledOscillatorTransverse1DSimulation extends PhysicsSimulation {
           showTimeOverlay: false,
         );
 
-  final ValueNotifier<bool> running = ValueNotifier(false);
   final ValueNotifier<double> simTime = ValueNotifier(0.0);
+
+  late final PlaybackLoop _loop = PlaybackLoop(onTick: (dt) {
+    simTime.value += dt;
+  });
+
+  ValueNotifier<bool> get running => _loop.running;
 
   CoupledOscillatorModes? _frozen;
   Map<String, double> _latestParams = {};
   void Function(String key, double value)? _updateParam;
-  bool _tickScheduled = false;
-  DateTime? _lastTickAt;
   int _dragIndex = -1;
 
   @override
@@ -88,38 +90,23 @@ class CoupledOscillatorTransverse1DSimulation extends PhysicsSimulation {
     return projectCoupledOscillator(y0: _ysOf(params), v0: _vsOf(params));
   }
 
+  bool get _inSession => _frozen != null;
+
   void start() {
     if (running.value) return;
-    _frozen = _modesOf(_params);
-    simTime.value = 0.0;
-    _lastTickAt = null;
-    running.value = true;
-    _scheduleTick();
+    if (_frozen == null) {
+      _frozen = _modesOf(_params);
+      simTime.value = 0.0;
+    }
+    _loop.start();
   }
+
+  void pause() => _loop.pause();
 
   void resetMotion() {
-    running.value = false;
+    _loop.reset();
     simTime.value = 0.0;
     _frozen = null;
-    _lastTickAt = null;
-  }
-
-  void _scheduleTick() {
-    if (!running.value || _tickScheduled) return;
-    _tickScheduled = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _tickScheduled = false;
-      if (!running.value) return;
-      final now = DateTime.now();
-      final dt = _lastTickAt == null
-          ? 1 / 60
-          : (now.difference(_lastTickAt!).inMicroseconds / 1e6)
-              .clamp(0.0, 0.05)
-              .toDouble();
-      _lastTickAt = now;
-      simTime.value += dt;
-      if (running.value) _scheduleTick();
-    });
   }
 
   void _setN(
@@ -167,21 +154,11 @@ class CoupledOscillatorTransverse1DSimulation extends PhysicsSimulation {
     return ValueListenableBuilder<bool>(
       valueListenable: running,
       builder: (context, isRunning, _) {
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            FilledButton.icon(
-              onPressed: isRunning ? null : start,
-              icon: const Icon(Icons.play_arrow),
-              label: const Text('Start'),
-            ),
-            const SizedBox(width: 12),
-            OutlinedButton.icon(
-              onPressed: resetMotion,
-              icon: const Icon(Icons.restore),
-              label: const Text('リセット'),
-            ),
-          ],
+        return PlayPauseResetButtons(
+          playing: isRunning,
+          onPlayPause: isRunning ? pause : start,
+          onReset: resetMotion,
+          playTooltip: _inSession ? '再開' : '再生',
         );
       },
     );
@@ -212,25 +189,9 @@ class CoupledOscillatorTransverse1DSimulation extends PhysicsSimulation {
                 value: n,
                 min: kCoupledOscillatorMinN,
                 max: kCoupledOscillatorMaxN,
-                enabled: !isRunning,
+                enabled: !_inSession,
                 onChanged: (v) => _setN(v, updateParam),
               ),
-              if (isRunning)
-                const Padding(
-                  padding: EdgeInsets.only(top: 8),
-                  child: Text(
-                    '運動中は N と初期形をロックしています。リセット後に変更できます。',
-                    style: TextStyle(fontSize: 11, color: Color(0xFF546E7A)),
-                  ),
-                )
-              else
-                const Padding(
-                  padding: EdgeInsets.only(top: 8),
-                  child: Text(
-                    '質点を上下にドラッグして初期形を変えられます。',
-                    style: TextStyle(fontSize: 11, color: Color(0xFF546E7A)),
-                  ),
-                ),
             ],
           );
         },
@@ -253,10 +214,10 @@ class CoupledOscillatorTransverse1DSimulation extends PhysicsSimulation {
       animation: Listenable.merge([running, simTime]),
       builder: (context, _) {
         final live = _modesOf(parameters);
-        final modes = (running.value && _frozen != null) ? _frozen! : live;
-        final t = running.value ? simTime.value : 0.0;
+        final modes = _inSession ? _frozen! : live;
+        final t = _inSession ? simTime.value : 0.0;
         final snap = evolveCoupledOscillator(modes, t);
-        final mode = running.value
+        final mode = _inSession
             ? dominantModeIndex(modes)
             : parameters['mode']!.round().clamp(0, modes.nMasses);
         final pureMode = (mode != null && mode >= 1) ? mode : 0;
@@ -273,7 +234,7 @@ class CoupledOscillatorTransverse1DSimulation extends PhysicsSimulation {
         return LayoutBuilder(
           builder: (context, constraints) {
             final sized = SizedBox.expand(child: canvas);
-            if (running.value) return sized;
+            if (_inSession) return sized;
             return RawGestureDetector(
               behavior: HitTestBehavior.opaque,
               gestures: {
@@ -590,10 +551,11 @@ class _CoupledOscillatorPainter extends CustomPainter {
             text: 't = ${time.toStringAsFixed(2)}    N = $nMasses\n$modeLine',
             style: numStyle,
           ),
-          TextSpan(
-            text: running ? '運動中' : '質点をドラッグして Start',
-            style: statusStyle,
-          ),
+          if (running)
+            const TextSpan(
+              text: '運動中',
+              style: statusStyle,
+            ),
         ],
       ),
       textDirection: TextDirection.ltr,

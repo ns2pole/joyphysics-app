@@ -15,7 +15,6 @@ final dopplerEffectObserverMoving = createWaveVideo(
   <p>観測される周波数 $f$ は以下のようになります：</p>
   <p>$$f = \frac{V + u \cos\theta}{V} f_0$$</p>
   <p>ここで $V$ は波の速さ、$u$ は観測者の速度、$\theta$ は観測者の移動方向と波の進行方向のなす角です。</p>
-  <p>「断面」をオンにすると、音源と観測者を結ぶ直線上の変位が1次元の波形として見えます。</p>
   """,
   simulation: DopplerEffectObserverMovingSimulation(),
 );

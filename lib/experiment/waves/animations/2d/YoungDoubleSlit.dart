@@ -13,7 +13,6 @@ final youngDoubleSlit = createWaveVideo(
   <p>2つのスリットを通過した光が干渉し、スクリーン上に明暗の縞模様（干渉縞）を作ります。</p>
   <p>明線の条件: $d \sin \theta = m\lambda$</p>
   <p>明線間隔: $\Delta x = \frac{L\lambda}{d}$</p>
-  <p>「節線」（オレンジ・点線）で弱め合い、「腹線」（オレンジ・実線）で強め合いの曲線を表示できます。</p>
   """,
   simulation: YoungDoubleSlitSimulation(),
 );

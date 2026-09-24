@@ -13,7 +13,7 @@ final circularPlaneInterference = createWaveVideo(
   <p>直線波は $x$ 軸の負の方向からやってくるように設定されています。</p>
   <p>合成波の変位 $z$ は、円形波の変位 $z_C$ と直線波の変位 $z_P$ の和です：</p>
   <p>\[ z = z_C + z_P \]</p>
-  <p>周期 $T_C = T_P$ のとき、「節線」（オレンジ・点線）で弱め合い、「腹線」（オレンジ・実線）で強め合いの曲線を表示できます（周期が異なると定常な節線・腹線はないため描画しません）。</p>
+  <p>周期が異なると、定常な節線・腹線はありません。</p>
   """,
   simulation: CircularPlaneInterferenceSimulation(),
 );

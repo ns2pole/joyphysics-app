@@ -10,7 +10,6 @@ final circularWave = createWaveVideo(
   latex: r"""
   <div class="common-box">解説</div>
   <p>点源から周囲に円形に広がる波です。</p>
-  <p>「断面」をオンにすると、波源と観測点を結ぶ直線上の変位が1次元の波形として見えます。</p>
   """,
   simulation: CircularWaveSimulation(),
 );

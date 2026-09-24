@@ -30,7 +30,7 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.text('Start'), findsOneWidget);
+    expect(find.byIcon(Icons.play_arrow), findsOneWidget);
     expect(find.text('n=1'), findsNothing);
     expect(find.text('n=2'), findsNothing);
     expect(find.byIcon(Icons.add), findsOneWidget);

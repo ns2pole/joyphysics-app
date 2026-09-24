@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
+import 'package:joyphysics/experiment/playback_controls.dart';
 import 'coupled_oscillator_transverse_physics.dart';
 
 final coupledOscillatorLongitudinal1D = createWaveVideo(
@@ -17,8 +18,6 @@ final coupledOscillatorLongitudinal1D = createWaveVideo(
   \end{aligned}$$</p>
   <p>$$\omega_n=2\sqrt{\dfrac{k}{m}}\,\sin\dfrac{n\pi}{2(N+1)}$$</p>
   <p>密なところ（圧縮）と疎なところ（伸長）が交互に進むのが縦波である。$N$ を大きくすると連続な媒質の疎密波に近づく。</p>
-  <div class="common-box">使い方</div>
-  <p>初期は1つの質点だけを右にずらしてある。停止中に $N$（2〜50）を変え、質点を左右にドラッグして初期形を決め、▶ で運動が始まる。⏸ で一時停止すると、隣り合う質点（と壁）の各区間の中央に疎密を示す。リセットで初期形の編集に戻る。下のパネルは同じ変位 $u_j$ を横波として同期表示し、平衡位置の刻みを付ける。</p>
   """,
   simulation: CoupledOscillatorLongitudinal1DSimulation(),
 );
@@ -35,15 +34,18 @@ class CoupledOscillatorLongitudinal1DSimulation extends PhysicsSimulation {
           showTimeOverlay: false,
         );
 
-  final ValueNotifier<bool> running = ValueNotifier(false);
   final ValueNotifier<double> simTime = ValueNotifier(0.0);
+
+  late final PlaybackLoop _loop = PlaybackLoop(onTick: (dt) {
+    simTime.value += dt;
+  });
+
+  ValueNotifier<bool> get running => _loop.running;
 
   CoupledOscillatorModes? _frozen;
   CoupledOscillatorSnapshot? _pausedSnapshot;
   Map<String, double> _latestParams = {};
   void Function(String key, double value)? _updateParam;
-  bool _tickScheduled = false;
-  DateTime? _lastTickAt;
   int _dragIndex = -1;
 
   @override
@@ -99,46 +101,20 @@ class CoupledOscillatorLongitudinal1DSimulation extends PhysicsSimulation {
       simTime.value = 0.0;
     }
     _pausedSnapshot = null;
-    _lastTickAt = null;
-    running.value = true;
-    _scheduleTick();
+    _loop.start();
   }
 
   void pause() {
     if (!running.value || _frozen == null) return;
-    // 停止フレームを保持（表示が t=0 に戻らないようにする）
     _pausedSnapshot = evolveCoupledOscillator(_frozen!, simTime.value);
-    running.value = false;
-    _lastTickAt = null;
+    _loop.pause();
   }
 
   void resetMotion() {
-    final wasRunning = running.value;
-    running.value = false;
+    _loop.reset();
     simTime.value = 0.0;
     _frozen = null;
     _pausedSnapshot = null;
-    _lastTickAt = null;
-    // すでに停止中だと running が変わらず、N スライダがロックされたままになる。
-    if (!wasRunning) running.notifyListeners();
-  }
-
-  void _scheduleTick() {
-    if (!running.value || _tickScheduled) return;
-    _tickScheduled = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _tickScheduled = false;
-      if (!running.value) return;
-      final now = DateTime.now();
-      final dt = _lastTickAt == null
-          ? 1 / 60
-          : (now.difference(_lastTickAt!).inMicroseconds / 1e6)
-              .clamp(0.0, 0.05)
-              .toDouble();
-      _lastTickAt = now;
-      simTime.value += dt;
-      if (running.value) _scheduleTick();
-    });
   }
 
   void _setN(
@@ -184,45 +160,11 @@ class CoupledOscillatorLongitudinal1DSimulation extends PhysicsSimulation {
       valueListenable: running,
       builder: (context, isRunning, _) {
         final inSession = _inSession;
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // ラベル幅が変わると Pause タップがリセットにずれるため、固定サイズのアイコンのみ。
-            DecoratedBox(
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.45),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    visualDensity: VisualDensity.compact,
-                    iconSize: 26,
-                    color: Colors.white,
-                    tooltip: isRunning
-                        ? '一時停止'
-                        : (inSession ? '再開' : 'Start'),
-                    onPressed: isRunning ? pause : start,
-                    icon: Icon(isRunning ? Icons.pause : Icons.play_arrow),
-                  ),
-                  Container(
-                    width: 1,
-                    height: 26,
-                    color: Colors.white.withValues(alpha: 0.25),
-                  ),
-                  IconButton(
-                    visualDensity: VisualDensity.compact,
-                    iconSize: 26,
-                    color: Colors.white,
-                    tooltip: 'リセット',
-                    onPressed: resetMotion,
-                    icon: const Icon(Icons.restore),
-                  ),
-                ],
-              ),
-            ),
-          ],
+        return PlayPauseResetButtons(
+          playing: isRunning,
+          onPlayPause: isRunning ? pause : start,
+          onReset: resetMotion,
+          playTooltip: inSession ? '再開' : '再生',
         );
       },
     );
@@ -256,24 +198,6 @@ class CoupledOscillatorLongitudinal1DSimulation extends PhysicsSimulation {
                 enabled: !isRunning,
                 onChanged: (v) => _setN(v, updateParam),
               ),
-              if (_inSession)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Text(
-                    isRunning
-                        ? '運動中は N と初期形をロックしています。⏸ のあと N を変えると編集に戻ります。'
-                        : '一時停止中。▶ で続きから。N を変えるかリセットで初期形の編集に戻れます。',
-                    style: const TextStyle(fontSize: 11, color: Color(0xFF546E7A)),
-                  ),
-                )
-              else
-                const Padding(
-                  padding: EdgeInsets.only(top: 8),
-                  child: Text(
-                    '質点を左右にドラッグして初期形を変えられます。下は同じ変位の横波表示です。',
-                    style: TextStyle(fontSize: 11, color: Color(0xFF546E7A)),
-                  ),
-                ),
             ],
           );
         },
@@ -672,14 +596,11 @@ class _LongitudinalPainter extends CustomPainter {
             text: 't = ${time.toStringAsFixed(2)}    N = $nMasses\n',
             style: numStyle,
           ),
-          TextSpan(
-            text: running
-                ? '運動中'
-                : paused
-                    ? '一時停止'
-                    : '質点を左右にドラッグして Start',
-            style: statusStyle,
-          ),
+          if (running || paused)
+            TextSpan(
+              text: running ? '運動中' : '一時停止',
+              style: statusStyle,
+            ),
         ],
       ),
       textDirection: TextDirection.ltr,
