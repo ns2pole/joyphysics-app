@@ -3,13 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import './common.dart';
 import './heat_cycle_auto.dart';
+import './heat_cycle_energy.dart';
 
 final heatCycleProcess = createWaveVideo(
-  title: "熱サイクル",
+  title: "熱機関と熱サイクル",
   latex: r"""
-  <div class="common-box">熱サイクル</div>
+  <div class="common-box">熱機関と熱サイクル</div>
   <p>理想気体の状態方程式 \(\frac{PV}{T}=\text{一定}\) のもとで、ピストンに \(+300\,\mathrm{hPa}\) 相当の荷物を載せ、加熱して持ち上げるサイクルを観察します。</p>
   <p>はじめは定積で昇圧し、\(1313\,\mathrm{hPa}\) で釣り合うと定圧で持ち上がります。体積が上端まで増えると加熱は自動で止まります。荷物を取り外すと、厚い壁からの放熱で体積が戻り、下端で荷物を載せ直して一周します。</p>
+  <p>一周すると内部エネルギーの変化は \(0\) なので、気体がした仕事 \(W\) は、与えた熱 \(Q\) と捨てた熱 \(Q'\) の差になります。</p>
+  <p>$$W = Q - Q'$$</p>
+  <p>熱効率は、与えた熱のうち仕事になった割合です。</p>
+  <p>$$\eta = \frac{W}{Q} = 1 - \frac{Q'}{Q}$$</p>
   <ol>
     <li><b>断熱ON・荷物あり・加熱</b>：定積で \(1313\,\mathrm{hPa}\) まで昇圧したあと、定圧で上ストッパーまで持ち上がります。</li>
     <li><b>上端で加熱停止</b>：体積が増えなくなったら加熱を止めます。</li>
@@ -25,7 +30,7 @@ final heatCycleProcess = createWaveVideo(
 class HeatCycleSimulation extends PhysicsSimulation {
   HeatCycleSimulation()
       : super(
-          title: "熱サイクル",
+          title: "熱機関と熱サイクル",
           formula: const FormulaDisplay(r'\frac{PV}{T} = \text{const.}'),
           aspectRatio: 0.66,
         );
@@ -376,6 +381,7 @@ class _HeatCycleAnimationWidgetState extends State<HeatCycleAnimationWidget> {
   double heatFlux = 0.0;
   double lastTime = 0.0;
   final PvHistoryTracker pvHistory = PvHistoryTracker(maxPoints: 0);
+  final HeatCycleEnergyLedger energy = HeatCycleEnergyLedger();
 
   static const double ambientTemp = HeatCycleAnimationWidget.ambientTemp;
   static const double vMin = HeatCycleAnimationWidget.vMin;
@@ -400,6 +406,7 @@ class _HeatCycleAnimationWidgetState extends State<HeatCycleAnimationWidget> {
     pressure = _pGas(temperature, volume);
     heatFlux = 0.0;
     pvHistory.clear();
+    energy.reset();
     lastTime = widget.time;
     _initParticles();
     widget.onTemperatureChanged?.call(temperature);
@@ -472,6 +479,12 @@ class _HeatCycleAnimationWidgetState extends State<HeatCycleAnimationWidget> {
     ) * 0.55;
 
     pvHistory.record(_volumeL, _pressureHPa);
+    energy.sample(
+      temperatureK: temperature,
+      volumeL: _volumeL,
+      pressureHPa: _pressureHPa,
+      cargoOn: widget.cargoOn,
+    );
 
     final double speedScale = math.sqrt(temperature / ambientTemp);
     for (var p in particles) {
@@ -516,6 +529,11 @@ class _HeatCycleAnimationWidgetState extends State<HeatCycleAnimationWidget> {
             ),
           ),
         ),
+        if (energy.completed > 0)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 4),
+            child: _HeatCycleEnergyReadout(ledger: energy),
+          ),
         const Divider(height: 1, color: Colors.black26),
         Expanded(
           flex: 11,
@@ -598,6 +616,41 @@ class _HeatCycleAnimationWidgetState extends State<HeatCycleAnimationWidget> {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _HeatCycleEnergyReadout extends StatelessWidget {
+  const _HeatCycleEnergyReadout({required this.ledger});
+
+  final HeatCycleEnergyLedger ledger;
+
+  @override
+  Widget build(BuildContext context) {
+    final q = ledger.closedHeatInJ ?? 0;
+    final qp = ledger.closedHeatOutJ ?? 0;
+    final w = ledger.closedWorkJ;
+    final eta = ledger.closedEfficiency ?? 0;
+    String j(double v) => '${v.toStringAsFixed(1)} J';
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.92),
+        border: Border.all(color: Colors.black26),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        '一周  Q = ${j(q)}（与えた熱）   Q\' = ${j(qp)}（捨てた熱）\n'
+        'W = Q − Q\' = ${j(w)}    熱効率 η = W/Q = ${(eta * 100).toStringAsFixed(1)} %',
+        style: const TextStyle(
+          fontSize: 12,
+          height: 1.35,
+          fontWeight: FontWeight.w600,
+          color: Colors.black87,
+        ),
+      ),
     );
   }
 }
