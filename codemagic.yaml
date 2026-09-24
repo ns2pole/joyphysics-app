@@ -39,11 +39,19 @@ workflows:
         # App Store: 実験で学ぶ高校物理 ー joy-physics (bundle com.joyphysics)
         APP_STORE_APPLE_ID: "6748957698"
         RELEASE_NOTES_JA: |
-          アップデート（7.0.0 / 2026-09-24）です。
-          ・表示・動作の改善と不具合修正
+          メジャーアップデート（7.0.0）です。
+          ・落下・摩擦・慣性力など力学アニメーションを追加
+          ・ケプラー／2体問題にエネルギー表示を追加
+          ・熱サイクルに熱・仕事・効率の表示を追加
+          ・記事検索とホームの直リンクを改善
+          ・その他の不具合修正と改善
         RELEASE_NOTES_EN: |
-          Update (7.0.0 / 2026-09-24).
-          - Display and behavior improvements, bug fixes
+          Major update (7.0.0).
+          - Added mechanics animations (fall, friction, inertial forces)
+          - Energy display for Kepler / two-body problems
+          - Heat / work / efficiency for heat cycles
+          - Improved article search and home deep links
+          - Bug fixes and improvements
 
       xcode: latest
       flutter: stable
