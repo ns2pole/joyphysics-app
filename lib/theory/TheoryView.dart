@@ -171,7 +171,7 @@ class TopicDetailPage extends StatelessWidget {
     final bodyFragment = _extractBodyFragment(rawHtml);
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: HomeBackgroundAppBar(
         title: Text(topic.title.replaceAll(RegExp(r'\$.*?\$'), "")),
       ),
       body: SafeArea(

@@ -198,14 +198,15 @@ Future<String> resolveAssetPath(String category, String iconName) async {
   final pngPath = 'assets/$category/$iconName.png';
   final gifPath = 'assets/$category/$iconName.gif';
 
-  try {
-    await rootBundle.load(pngPath); // PNG 存在チェック
-    _assetPathCache[key] = pngPath;
-    return pngPath;
-  } catch (_) {
-    _assetPathCache[key] = gifPath;
-    return gifPath;
+  for (final path in [pngPath, gifPath]) {
+    try {
+      await rootBundle.load(path);
+      _assetPathCache[key] = path;
+      return path;
+    } catch (_) {}
   }
+  _assetPathCache[key] = '';
+  return '';
 }
 
 // ---- _VideoCategoryList（サブカテゴリはプルダウンで収納。flat時は全展開）----
@@ -231,7 +232,7 @@ class _VideoCategoryList extends StatelessWidget {
               future: resolveAssetPath(v.category, v.iconName!),
               builder: (context, snapshot) {
                 Widget w = const SizedBox(width: 48, height: 27);
-                if (snapshot.hasData) {
+                if (snapshot.hasData && snapshot.data!.isNotEmpty) {
                   w = Image.asset(
                     snapshot.data!,
                     width: 48,
@@ -391,7 +392,7 @@ class _SubcategoryExpansion extends StatelessWidget {
     return Theme(
       data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
       child: ExpansionTile(
-        initiallyExpanded: false,
+        initiallyExpanded: true,
         tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
         childrenPadding: EdgeInsets.zero,
         // 見出し行は灰色のまま。展開時も見出し帯は bg、中身は白で上書き。
@@ -769,7 +770,7 @@ class _VideoDetailViewState extends State<VideoDetailView> {
     final title = _pageTitle;
     if (_isWideWeb(context)) {
       return Scaffold(
-        appBar: AppBar(title: Text(title)),
+        appBar: HomeBackgroundAppBar(title: Text(title)),
         body: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -786,19 +787,20 @@ class _VideoDetailViewState extends State<VideoDetailView> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(title)),
+      appBar: HomeBackgroundAppBar(title: Text(title)),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(6),
+        padding: const EdgeInsets.fromLTRB(6, 0, 6, 6),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 1. シミュレーション・実験ウィジェットを最上部に
+            // 先頭はヘッダ画像の直下に数式が来るので、上の帯は付けない
             if (widget.video.experimentWidgets != null &&
                 widget.video.experimentWidgets!.isNotEmpty)
-              ...widget.video.experimentWidgets!.map(
-                (w) => Padding(
-                  padding: const EdgeInsets.only(top: 16),
-                  child: w,
+              ...widget.video.experimentWidgets!.asMap().entries.map(
+                (e) => Padding(
+                  padding: EdgeInsets.only(top: e.key == 0 ? 0 : 16),
+                  child: e.value,
                 ),
               ),
             // 2. YouTube動画（これも視覚モジュールとして上部に配置）

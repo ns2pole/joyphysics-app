@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:joyphysics/LatexView.dart';
 import 'package:joyphysics/experiment/sensorArticlesData.dart';
 import 'package:joyphysics/model.dart';
+import 'package:joyphysics/shared_components.dart';
 import 'package:joyphysics/joy_physics_store_uris.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -129,7 +130,7 @@ class SensorArticleOnlyView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(video.title)),
+      appBar: HomeBackgroundAppBar(title: Text(video.title)),
       body: video.latex == null
           ? const Center(
               child: Text(

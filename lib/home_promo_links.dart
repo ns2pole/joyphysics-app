@@ -134,35 +134,102 @@ class _HomeExternalPromoLink extends StatelessWidget {
             ),
             borderRadius: BorderRadius.circular(24),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
+          child: Stack(
+            clipBehavior: Clip.none,
             children: [
-              Text(
-                line1,
-                style: TextStyle(
-                  fontSize: sectionFontSize,
-                  fontWeight: FontWeight.w600,
-                  color: titleColor.withValues(alpha: 0.9),
-                  height: 1.2,
-                ),
-                textAlign: TextAlign.center,
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    line1,
+                    style: TextStyle(
+                      fontSize: sectionFontSize,
+                      fontWeight: FontWeight.w600,
+                      color: titleColor.withValues(alpha: 0.9),
+                      height: 1.2,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  Text(
+                    line2,
+                    style: TextStyle(
+                      fontSize: line2FontSize,
+                      fontWeight: FontWeight.w600,
+                      color: titleColor.withValues(alpha: 0.9),
+                      height: 1.2,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
-              Text(
-                line2,
-                style: TextStyle(
-                  fontSize: line2FontSize,
-                  fontWeight: FontWeight.w600,
-                  color: titleColor.withValues(alpha: 0.9),
-                  height: 1.2,
+              Positioned(
+                top: isCompact ? -2.0 : -1.0,
+                right: isCompact ? -22.0 : -26.0,
+                child: _AdsClickPointerIcon(
+                  size: ((isCompact ? 13.0 : 14.0) + 12) * 1.5,
+                  color: titleColor.withValues(alpha: 0.80),
                 ),
-                textAlign: TextAlign.center,
               ),
             ],
           ),
         ),
       ),
     );
+  }
+}
+
+/// `Icons.ads_click` の矢印部分だけ（二重丸は除く）
+class _AdsClickPointerIcon extends StatelessWidget {
+  const _AdsClickPointerIcon({
+    required this.size,
+    required this.color,
+  });
+
+  final double size;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      size: Size(size, size),
+      painter: _AdsClickPointerPainter(color),
+    );
+  }
+}
+
+class _AdsClickPointerPainter extends CustomPainter {
+  _AdsClickPointerPainter(this.color);
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final scale = size.width / 24;
+    canvas.scale(scale);
+
+    final path = Path()
+      ..moveTo(18.23, 16.26)
+      ..lineTo(22, 15)
+      ..relativeLineTo(-10, -3)
+      ..relativeLineTo(3, 10)
+      ..relativeLineTo(1.26, -3.77)
+      ..relativeLineTo(4.27, 4.27)
+      ..relativeLineTo(1.98, -1.98)
+      ..relativeLineTo(-4.28, -4.26)
+      ..close();
+
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = color
+        ..style = PaintingStyle.fill,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _AdsClickPointerPainter oldDelegate) {
+    return oldDelegate.color != color;
   }
 }
 

@@ -1,8 +1,72 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:joyphysics/experiment/high_pitch_sound_warning.dart';
 import 'package:joyphysics/model.dart';
+
+/// 記事ヘッダ。home（ContentView）と同じ `init.png` を画面上端基準で切り出す。
+class HomeBackgroundAppBar extends StatelessWidget implements PreferredSizeWidget {
+  final Widget? title;
+  final List<Widget>? actions;
+  final PreferredSizeWidget? bottom;
+  final Widget? leading;
+  final bool automaticallyImplyLeading;
+
+  const HomeBackgroundAppBar({
+    super.key,
+    this.title,
+    this.actions,
+    this.bottom,
+    this.leading,
+    this.automaticallyImplyLeading = true,
+  });
+
+  @override
+  Size get preferredSize => Size.fromHeight(
+        kToolbarHeight + (bottom?.preferredSize.height ?? 0),
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    final screen = MediaQuery.sizeOf(context);
+    return AppBar(
+      title: title,
+      actions: actions,
+      bottom: bottom,
+      leading: leading,
+      automaticallyImplyLeading: automaticallyImplyLeading,
+      backgroundColor: Colors.transparent,
+      foregroundColor: Colors.black87,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      surfaceTintColor: Colors.transparent,
+      shadowColor: Colors.transparent,
+      systemOverlayStyle: SystemUiOverlayStyle.dark,
+      flexibleSpace: ClipRect(
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            OverflowBox(
+              alignment: Alignment.topCenter,
+              minWidth: screen.width,
+              maxWidth: screen.width,
+              minHeight: screen.height,
+              maxHeight: screen.height,
+              child: Image.asset(
+                'assets/init/init.png',
+                fit: BoxFit.cover,
+                width: screen.width,
+                height: screen.height,
+              ),
+            ),
+            Container(color: Colors.white.withValues(alpha: 0.7)),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 /// 共通の全画面画像表示ページ（公式集と同じ +/- ズーム・画像端までのパン）
 class PhysicsFullscreenImagePage extends StatefulWidget {
@@ -201,6 +265,10 @@ class PhysicsYouTubePlayer extends StatefulWidget {
 }
 
 class _PhysicsYouTubePlayerState extends State<PhysicsYouTubePlayer> {
+  /// 埋め込みページのオリジン。youtube.com にすると「YouTube が YouTube を
+  /// 埋め込んでいる」扱いになり、Android WebView で Error 152-4 になる。
+  static const _embedOrigin = 'https://joyphysics.app';
+
   WebViewController? _webView;
 
   @override
@@ -242,7 +310,7 @@ class _PhysicsYouTubePlayerState extends State<PhysicsYouTubePlayer> {
 </head>
 <body>
   <iframe
-    src="https://www.youtube.com/embed/$videoId?playsinline=1&rel=0"
+    src="https://www.youtube.com/embed/$videoId?playsinline=1&rel=0&origin=${Uri.encodeComponent(_embedOrigin)}"
     referrerpolicy="strict-origin-when-cross-origin"
     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
     allowfullscreen>
@@ -254,7 +322,7 @@ class _PhysicsYouTubePlayerState extends State<PhysicsYouTubePlayer> {
     _webView = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(const Color(0xFF000000))
-      ..loadHtmlString(html, baseUrl: 'https://www.youtube.com');
+      ..loadHtmlString(html, baseUrl: _embedOrigin);
   }
 
   @override
