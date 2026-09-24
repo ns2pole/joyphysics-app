@@ -30,8 +30,83 @@ final List<FormulaEntry> formulaListData = [
     categoryName: "自由落下",
   ),
   FormulaEntry(
+    latex: "y = v_{0} t - \\frac{1}{2} g t^{2}",
+    relatedVideo: verticalThrow1D,
+    categoryName: "鉛直投げ上げ",
+  ),
+  FormulaEntry(
+    latex: "v = v_{0} - g t",
+    relatedVideo: verticalThrow1D,
+    categoryName: "鉛直投げ上げ",
+  ),
+  FormulaEntry(
+    latex: "H = \\frac{v_{0}^{2}}{2g}",
+    relatedVideo: verticalThrow1D,
+    categoryName: "鉛直投げ上げ",
+  ),
+  FormulaEntry(
+    latex: "y = h + (v_{0}\\sin\\theta)t - \\frac{1}{2}gt^{2}",
+    relatedVideo: projectileMotion2D,
+    categoryName: "斜方投射",
+  ),
+  FormulaEntry(
+    latex: "T = \\frac{v_{0}\\sin\\theta + \\sqrt{(v_{0}\\sin\\theta)^{2}+2gh}}{g}",
+    relatedVideo: projectileMotion2D,
+    categoryName: "斜方投射",
+  ),
+  FormulaEntry(
+    latex: "H = h + \\frac{(v_{0}\\sin\\theta)^{2}}{2g}\\quad(\\theta>0)",
+    relatedVideo: projectileMotion2D,
+    categoryName: "斜方投射",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle v'=-ev",
+    relatedVideo: bounce1D,
+    categoryName: "衝突",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle H'=e^{2}H",
+    relatedVideo: bounce1D,
+    categoryName: "衝突",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle v_{y}'=-ev_{y}",
+    relatedVideo: bounce2D,
+    categoryName: "衝突",
+  ),
+  FormulaEntry(
+    latex: "T = 2\\pi \\sqrt{\\frac{h}{g}}",
+    relatedVideo: floatingOscillation1D,
+    categoryName: "バネ・単振動",
+  ),
+  FormulaEntry(
     latex: "F(x) = -k x",
-    relatedVideo: verticalSpringOscillation,
+    relatedVideo: horizontalSpring1D,
+    categoryName: "バネ・単振動",
+  ),
+  FormulaEntry(
+    latex: "x = A \\cos\\omega t",
+    relatedVideo: horizontalSpring1D,
+    categoryName: "バネ・単振動",
+  ),
+  FormulaEntry(
+    latex: "\\omega = \\sqrt{\\frac{k}{m}}",
+    relatedVideo: horizontalSpring1D,
+    categoryName: "バネ・単振動",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle m\\ddot{x}=-kx-\\mu' mg\\,\\mathrm{sgn}(v)",
+    relatedVideo: roughHorizontalSpring1D,
+    categoryName: "バネ・単振動",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle |x|\\le \\frac{\\mu mg}{k}",
+    relatedVideo: roughHorizontalSpring1D,
+    categoryName: "バネ・単振動",
+  ),
+  FormulaEntry(
+    latex: "\\delta = \\frac{mg}{k}",
+    relatedVideo: verticalSpring1D,
     categoryName: "バネ・単振動",
   ),
   FormulaEntry(
@@ -65,6 +140,21 @@ final List<FormulaEntry> formulaListData = [
     categoryName: "2体問題",
   ),
   FormulaEntry(
+    latex: "a = \\frac{v^{2}}{R}",
+    relatedVideo: uniformCircularMotion2D,
+    categoryName: "円運動",
+  ),
+  FormulaEntry(
+    latex: "T = \\frac{2\\pi R}{v}",
+    relatedVideo: uniformCircularMotion2D,
+    categoryName: "円運動",
+  ),
+  FormulaEntry(
+    latex: "F = m\\frac{v^{2}}{R}",
+    relatedVideo: uniformCircularMotion2D,
+    categoryName: "円運動",
+  ),
+  FormulaEntry(
     latex: "F_{s} = \\mu_{s} N",
     relatedVideo: staticFriction,
     categoryName: "摩擦力",
@@ -75,6 +165,171 @@ final List<FormulaEntry> formulaListData = [
     categoryName: "摩擦力",
   ),
   FormulaEntry(
+    latex: "\\displaystyle v=v_{0}-\\mu g t",
+    relatedVideo: kineticFriction1D,
+    categoryName: "摩擦力",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle x=v_{0}t-\\frac{1}{2}\\mu g t^{2}",
+    relatedVideo: kineticFriction1D,
+    categoryName: "摩擦力",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle x=\\frac{v_{0}^{2}}{2\\mu g}",
+    relatedVideo: kineticFriction1D,
+    categoryName: "摩擦力",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle a=g(\\sin\\theta-\\mu\\cos\\theta)",
+    relatedVideo: kineticFrictionIncline1D,
+    categoryName: "摩擦力",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle s=v_{0}t+\\frac{1}{2}at^{2}",
+    relatedVideo: kineticFrictionIncline1D,
+    categoryName: "摩擦力",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle s=\\frac{v_{0}^{2}}{2g(\\mu\\cos\\theta-\\sin\\theta)}",
+    relatedVideo: kineticFrictionIncline1D,
+    categoryName: "摩擦力",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle a=-g-kv",
+    relatedVideo: linearDrag1D,
+    categoryName: "空気抵抗",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle v_t=\\frac{g}{k}",
+    relatedVideo: linearDrag1D,
+    categoryName: "空気抵抗",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle v=-v_t+(v_0+v_t)e^{-kt}",
+    relatedVideo: linearDrag1D,
+    categoryName: "空気抵抗",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle a=\\frac{(m_1-m_2)g}{m_1+m_2}",
+    relatedVideo: atwoodMachine1D,
+    categoryName: "滑車",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle T=\\frac{2m_1 m_2 g}{m_1+m_2}",
+    relatedVideo: atwoodMachine1D,
+    categoryName: "滑車",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle s=\\frac{1}{2}at^{2}",
+    relatedVideo: atwoodMachine1D,
+    categoryName: "滑車",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle \\alpha=\\frac{(2M-m)g}{m+4M}",
+    relatedVideo: movablePulley1D,
+    categoryName: "滑車",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle \\beta=2\\alpha",
+    relatedVideo: movablePulley1D,
+    categoryName: "滑車",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle T=\\frac{3mMg}{m+4M}",
+    relatedVideo: movablePulley1D,
+    categoryName: "滑車",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle A=\\frac{mg\\sin\\theta\\cos\\theta}{M+m\\sin^{2}\\theta}",
+    relatedVideo: movableWedge1D,
+    categoryName: "慣性力",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle L=\\frac{ml\\cos\\theta}{M+m}",
+    relatedVideo: movableWedge1D,
+    categoryName: "慣性力",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle T=m(g+a)",
+    relatedVideo: elevatorInertial1D,
+    categoryName: "慣性力",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle T=m(g-a)",
+    relatedVideo: elevatorInertial1D,
+    categoryName: "慣性力",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle \\tan a=\\frac{A}{g}",
+    relatedVideo: trainPendulumInertial2D,
+    categoryName: "慣性力",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle T=m\\sqrt{g^{2}+A^{2}}",
+    relatedVideo: trainPendulumInertial2D,
+    categoryName: "慣性力",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle T_{\\mathrm{周期}}=2\\pi\\sqrt{\\frac{l}{\\sqrt{g^{2}+A^{2}}}}",
+    relatedVideo: trainPendulumInertial2D,
+    categoryName: "慣性力",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle T=m\\frac{v^{2}}{R}",
+    relatedVideo: centrifugalForce2D,
+    categoryName: "慣性力",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle m\\omega^{2}R=m\\frac{v^{2}}{R}",
+    relatedVideo: centrifugalForce2D,
+    categoryName: "慣性力",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle F_{\\mathrm{cen}}=m\\Omega^{2}R",
+    relatedVideo: coriolisCentripetal2D,
+    categoryName: "慣性力",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle F_{\\mathrm{Cor}}=-2m\\Omega^{2}R",
+    relatedVideo: coriolisCentripetal2D,
+    categoryName: "慣性力",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle F_{\\mathrm{cen}}+F_{\\mathrm{Cor}}=-m\\Omega^{2}R",
+    relatedVideo: coriolisCentripetal2D,
+    categoryName: "慣性力",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle \\tilde{x}=(y_{0}+vt)\\sin\\omega t",
+    relatedVideo: coriolisSpiral2D,
+    categoryName: "慣性力",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle \\tilde{y}=(y_{0}+vt)\\cos\\omega t",
+    relatedVideo: coriolisSpiral2D,
+    categoryName: "慣性力",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle r=\\lvert y_{0}+vt\\rvert",
+    relatedVideo: coriolisSpiral2D,
+    categoryName: "慣性力",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle \\omega=\\alpha t",
+    relatedVideo: eulerForce2D,
+    categoryName: "慣性力",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle \\theta=\\frac{1}{2}\\alpha t^{2}",
+    relatedVideo: eulerForce2D,
+    categoryName: "慣性力",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle F_{\\mathrm{E}}=m\\alpha R",
+    relatedVideo: eulerForce2D,
+    categoryName: "慣性力",
+  ),
+  FormulaEntry(
     latex: "T = 2\\pi \\sqrt{\\frac{l}{g}}",
     relatedVideo: pendulumPeriodMeasurement,
     categoryName: "バネ・単振動",
@@ -82,17 +337,32 @@ final List<FormulaEntry> formulaListData = [
   FormulaEntry(
     latex: "m_{1} v_{1} + m_{2} v_{2} = m_{1} v_{1}' + m_{2} v_{2}'",
     relatedVideo: elasticCollision1D,
-    categoryName: "弾性衝突",
+    categoryName: "衝突",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle v_{m}'=\\frac{m-eM}{m+M}v",
+    relatedVideo: collision1D,
+    categoryName: "衝突",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle v_{M}'=\\frac{(1+e)m}{m+M}v",
+    relatedVideo: collision1D,
+    categoryName: "衝突",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle e=\\frac{v_{M}'-v_{m}'}{v}",
+    relatedVideo: collision1D,
+    categoryName: "衝突",
   ),
   FormulaEntry(
     latex: "m_{1} \\vec{v}_{1} + m_{2} \\vec{v}_{2} = m_{1} \\vec{v}_{1}' + m_{2} \\vec{v}_{2}'",
     relatedVideo: elasticCollision2D,
-    categoryName: "弾性衝突",
+    categoryName: "衝突",
   ),
   FormulaEntry(
     latex: "\\tfrac12 m_{1} v_{1}^{2} + \\tfrac12 m_{2} v_{2}^{2} = \\tfrac12 m_{1} v_{1}'^{2} + \\tfrac12 m_{2} v_{2}'^{2}",
     relatedVideo: elasticCollision2D,
-    categoryName: "弾性衝突",
+    categoryName: "衝突",
   ),
   FormulaEntry(
     latex: "r = \\frac{a(1-e^{2})}{1+e\\cos\\theta}",
@@ -242,6 +512,16 @@ final List<FormulaEntry> formulaListData = [
   FormulaEntry(
     latex: "PV = \\text{一定}",
     relatedVideo: boyleLaw,
+    categoryName: "気体の法則・熱力学",
+  ),
+  FormulaEntry(
+    latex: "W = Q - Q'",
+    relatedVideo: heatCycleProcess,
+    categoryName: "気体の法則・熱力学",
+  ),
+  FormulaEntry(
+    latex: "\\eta = \\frac{W}{Q} = 1 - \\frac{Q'}{Q}",
+    relatedVideo: heatCycleProcess,
     categoryName: "気体の法則・熱力学",
   ),
 ];

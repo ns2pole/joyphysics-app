@@ -15,22 +15,97 @@ final categoriesData = <Category>[
       //   ],
       // ),
       Subcategory(
-        name: '色々な力',
+        name: '摩擦',
         videos: [
-          fook,
           staticFriction,
           kineticFriction,
-          buoyancyAndActionReaction,
-          buoyancyComparison,
-          // barometer
+          kineticFriction1D,
+          kineticFrictionIncline1D,
         ],
       ),
       Subcategory(
-        name: '運動方程式',
+        name: '浮力',
+        videos: [
+          buoyancyAndActionReaction,
+          buoyancyComparison,
+        ],
+      ),
+      Subcategory(
+        name: '単振動',
+        videos: [
+          floatingOscillation1D,
+        ],
+      ),
+      Subcategory(
+        name: 'バネ',
+        videos: [
+          fook,
+          horizontalSpring1D,
+          roughHorizontalSpring1D,
+          verticalSpring1D,
+          verticalSpringOscillation,
+        ],
+      ),
+      Subcategory(
+        name: '落下運動',
         videos: [
           freeFall,
-          verticalSpringOscillation,
+          freeFall1D,
+          verticalThrow1D,
+          linearDrag1D,
+          projectileMotion2D,
+        ],
+      ),
+      Subcategory(
+        name: '滑車',
+        videos: [
+          atwoodMachine1D,
+          movablePulley1D,
+        ],
+      ),
+      Subcategory(
+        name: '慣性力',
+        videos: [
+          movableWedge1D,
+          elevatorInertial1D,
+          trainPendulumInertial2D,
+          centrifugalForce2D,
+          coriolisCentripetal2D,
+          coriolisSpiral2D,
+          eulerForce2D,
+        ],
+      ),
+      Subcategory(
+        name: '振り子',
+        videos: [
           pendulumPeriodMeasurement,
+        ],
+      ),
+      Subcategory(
+        name: '衝突',
+        videos: [
+          collision1D,
+          elasticCollision1D,
+          elasticCollision2D,
+          bounce1D,
+          bounce2D,
+        ],
+      ),
+      Subcategory(
+        name: '円運動',
+        videos: [
+          uniformCircularMotion2D,
+          verticalLoop2D,
+          centripetalForceDisappears
+        ],
+      ),
+      Subcategory(
+        name: 'ケプラーの法則',
+        videos: [
+          keplerLaws2D,
+          planets,
+          moonOrbit,
+          jupiter,
         ],
       ),
       Subcategory(
@@ -41,32 +116,10 @@ final categoriesData = <Category>[
         ],
       ),
       Subcategory(
-        name: '円運動',
-        videos: [
-          centripetalForceDisappears
-        ],
-      ),
-      Subcategory(
-        name: '弾性衝突',
-        videos: [
-          elasticCollision1D,
-          elasticCollision2D,
-        ],
-      ),
-      Subcategory(
         name: '剛体',
         videos: [
           oneSideLift,
           buildingBlocksStability,
-        ],
-      ),
-      Subcategory(
-        name: 'ケプラーの法則',
-        videos: [
-          keplerLaws2D,
-          planets,
-          moonOrbit,
-          jupiter,
         ],
       ),
     ],
@@ -282,7 +335,7 @@ final categoriesData = <Category>[
           isobaricProcess,
           isothermalProcess,
           adiabaticProcess,
-          heatCycleProcess
+          heatCycleProcess,
         ],
       ),
     ],

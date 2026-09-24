@@ -25,6 +25,27 @@ export './experiment/dynamics/BarometerExperimentWidget.dart';
 export './experiment/dynamics/centripetalForceDisappears.dart';
 export './experiment/dynamics/animations/twoBodySpring1D.dart';
 export './experiment/dynamics/animations/keplerLaws2D.dart';
+export './experiment/dynamics/animations/verticalMotion1D.dart';
+export './experiment/dynamics/animations/projectileMotion2D.dart';
+export './experiment/dynamics/animations/bounce.dart';
+export './experiment/dynamics/animations/uniformCircularMotion2D.dart';
+export './experiment/dynamics/animations/verticalLoop2D.dart';
+export './experiment/dynamics/animations/springOscillator1D.dart';
+export './experiment/dynamics/animations/roughHorizontalSpring1D.dart';
+export './experiment/dynamics/animations/kineticFriction1D.dart';
+export './experiment/dynamics/animations/collision1D.dart';
+export './experiment/dynamics/animations/kineticFrictionIncline1D.dart';
+export './experiment/dynamics/animations/linearDrag1D.dart';
+export './experiment/dynamics/animations/floatingOscillation1D.dart';
+export './experiment/dynamics/animations/movableWedge1D.dart';
+export './experiment/dynamics/animations/elevatorInertial1D.dart';
+export './experiment/dynamics/animations/trainPendulumInertial2D.dart';
+export './experiment/dynamics/animations/centrifugalForce2D.dart';
+export './experiment/dynamics/animations/coriolisCentripetal2D.dart';
+export './experiment/dynamics/animations/coriolisSpiral2D.dart';
+export './experiment/dynamics/animations/eulerForce2D.dart';
+export './experiment/dynamics/animations/atwoodMachine1D.dart';
+export './experiment/dynamics/animations/movablePulley1D.dart';
 export './experiment/dynamics/animations/twoBodyKepler2D.dart';
 
 
