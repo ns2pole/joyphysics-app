@@ -3,11 +3,13 @@ import 'package:joyphysics/model.dart';
 class SearchableArticle {
   final Video video;
   final String categoryName;
+  final String subcategoryName;
   final List<String> keywords;
 
   const SearchableArticle({
     required this.video,
     required this.categoryName,
+    this.subcategoryName = '',
     this.keywords = const [],
   });
 }
@@ -33,6 +35,7 @@ List<SearchableArticle> flattenSearchableArticles(List<Category> categories) {
         articles.add(SearchableArticle(
           video: video,
           categoryName: category.name,
+          subcategoryName: subcategory.name,
         ));
       }
     }
@@ -54,6 +57,7 @@ List<SearchableArticle> flattenAllSearchableArticles(
       articles.add(SearchableArticle(
         video: video,
         categoryName: sensorCategoryName,
+        subcategoryName: entry.key,
         keywords: [entry.key],
       ));
     }
@@ -64,6 +68,7 @@ List<SearchableArticle> flattenAllSearchableArticles(
 bool articleMatchesQuery(SearchableArticle article, String normalized) {
   if (article.video.title.toLowerCase().contains(normalized)) return true;
   if (article.categoryName.toLowerCase().contains(normalized)) return true;
+  if (article.subcategoryName.toLowerCase().contains(normalized)) return true;
   for (final keyword in article.keywords) {
     if (keyword.toLowerCase().contains(normalized)) return true;
   }

@@ -7,6 +7,17 @@ import 'package:joyphysics/shared_components.dart';
 
 const String kArticleSearchHeroTag = 'home-article-search';
 
+Widget _searchBarShuttle(
+  BuildContext flightContext,
+  Animation<double> animation,
+  HeroFlightDirection flightDirection,
+  BuildContext fromHeroContext,
+  BuildContext toHeroContext,
+) {
+  final fromHero = fromHeroContext.widget as Hero;
+  return Material(color: Colors.transparent, child: fromHero.child);
+}
+
 void openArticleSearch(BuildContext context) {
   Navigator.push(
     context,
@@ -40,7 +51,7 @@ class HomeArticleSearchBox extends StatelessWidget {
                   Icon(Icons.search, color: Colors.black54),
                   SizedBox(width: 8),
                   Text(
-                    '記事を検索',
+                    'キーワード検索',
                     style: TextStyle(fontSize: 16, color: Colors.black54),
                   ),
                 ],
@@ -57,7 +68,7 @@ class ArticleSearchFieldShell extends StatelessWidget {
   final Widget child;
 
   const ArticleSearchFieldShell({Key? key, required this.child})
-      : super(key: key);
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -129,11 +140,21 @@ class _ArticleSearchPageState extends State<ArticleSearchPage> {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-            child: Hero(
-              tag: kArticleSearchHeroTag,
-              child: Material(
-                color: Colors.transparent,
-                child: ArticleSearchFieldShell(
+            child: Stack(
+              alignment: Alignment.centerLeft,
+              children: [
+                Hero(
+                  tag: kArticleSearchHeroTag,
+                  flightShuttleBuilder: _searchBarShuttle,
+                  child: const Material(
+                    color: Colors.transparent,
+                    child: ArticleSearchFieldShell(
+                      child: SizedBox(width: double.infinity),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Row(
                     children: [
                       const Icon(Icons.search, color: Colors.black54),
@@ -146,7 +167,7 @@ class _ArticleSearchPageState extends State<ArticleSearchPage> {
                           textInputAction: TextInputAction.search,
                           style: const TextStyle(fontSize: 16),
                           decoration: const InputDecoration(
-                            hintText: 'タイトルで検索',
+                            hintText: 'キーワード検索',
                             hintStyle: TextStyle(
                               fontSize: 16,
                               color: Colors.black54,
@@ -168,7 +189,7 @@ class _ArticleSearchPageState extends State<ArticleSearchPage> {
                     ],
                   ),
                 ),
-              ),
+              ],
             ),
           ),
           Expanded(child: _buildResults(query)),
@@ -193,9 +214,7 @@ class _ArticleSearchPageState extends State<ArticleSearchPage> {
     return CustomScrollView(
       slivers: [
         for (final group in groups) ...[
-          SliverToBoxAdapter(
-            child: _CategoryBand(name: group.categoryName),
-          ),
+          SliverToBoxAdapter(child: _CategoryBand(name: group.categoryName)),
           SliverPadding(
             padding: const EdgeInsets.only(bottom: 8),
             sliver: SliverList(
@@ -243,10 +262,7 @@ class _SearchArticleTile extends StatelessWidget {
   final SearchableArticle article;
   final bool isLast;
 
-  const _SearchArticleTile({
-    required this.article,
-    required this.isLast,
-  });
+  const _SearchArticleTile({required this.article, required this.isLast});
 
   @override
   Widget build(BuildContext context) {
@@ -262,7 +278,7 @@ class _SearchArticleTile extends StatelessWidget {
                   future: resolveAssetPath(video.category, video.iconName),
                   builder: (context, snapshot) {
                     Widget image = const SizedBox(width: 48, height: 27);
-                    if (snapshot.hasData) {
+                    if (snapshot.hasData && snapshot.data!.isNotEmpty) {
                       image = Image.asset(
                         snapshot.data!,
                         width: 48,
