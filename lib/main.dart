@@ -12,7 +12,7 @@ import 'package:joyphysics/search/article_search_page.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
-import 'package:joyphysics/dataExporter.dart' show thinFilmInterference1D, rainbowDroplet2D, secondaryRainbowDroplet2D, twoBodySpring1D, keplerLaws2D, twoBodyKepler2D, coupledOscillatorTransverse1D, coupledOscillatorLongitudinal1D;
+import 'package:joyphysics/dataExporter.dart' show thinFilmInterference1D, rainbowDroplet2D, secondaryRainbowDroplet2D, twoBodySpring1D, keplerLaws2D, twoBodyKepler2D, freeFall1D, verticalThrow1D, movableWedge1D, elevatorInertial1D, trainPendulumInertial2D, centrifugalForce2D, coriolisCentripetal2D, eulerForce2D, coupledOscillatorTransverse1D, coupledOscillatorLongitudinal1D;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -80,6 +80,30 @@ class JoyPhysicsApp extends StatelessWidget {
             case '/dynamics/kepler-laws-2d':
               page = VideoDetailView(video: keplerLaws2D);
               break;
+            case '/dynamics/free-fall-1d':
+              page = VideoDetailView(video: freeFall1D);
+              break;
+            case '/dynamics/vertical-throw-1d':
+              page = VideoDetailView(video: verticalThrow1D);
+              break;
+            case '/dynamics/movable-wedge':
+              page = VideoDetailView(video: movableWedge1D);
+              break;
+            case '/dynamics/elevator-inertial':
+              page = VideoDetailView(video: elevatorInertial1D);
+              break;
+            case '/dynamics/train-pendulum':
+              page = VideoDetailView(video: trainPendulumInertial2D);
+              break;
+            case '/dynamics/centrifugal-force':
+              page = VideoDetailView(video: centrifugalForce2D);
+              break;
+            case '/dynamics/coriolis-centripetal':
+              page = VideoDetailView(video: coriolisCentripetal2D);
+              break;
+            case '/dynamics/euler-force':
+              page = VideoDetailView(video: eulerForce2D);
+              break;
             case '/dynamics/two-body-kepler-2d':
               page = VideoDetailView(video: twoBodyKepler2D);
               break;
@@ -129,6 +153,14 @@ class _AppVersionLabel extends StatefulWidget {
 }
 
 class _AppVersionLabelState extends State<_AppVersionLabel> {
+  static const String _updateDate = '2026-09-24';
+  static const TextStyle _metaStyle = TextStyle(
+    fontFamily: 'KeiFont',
+    fontSize: 13,
+    color: Colors.black45,
+    height: 1.0,
+  );
+
   late final Future<PackageInfo> _packageInfo = PackageInfo.fromPlatform();
 
   @override
@@ -140,14 +172,12 @@ class _AppVersionLabelState extends State<_AppVersionLabel> {
         if (version == null || version.isEmpty) {
           return const SizedBox.shrink();
         }
-        return Text(
-          'ver $version',
-          style: const TextStyle(
-            fontFamily: 'KeiFont',
-            fontSize: 13,
-            color: Colors.black45,
-            height: 1.0,
-          ),
+        return Column(
+          children: [
+            Text('ver $version', style: _metaStyle),
+            const SizedBox(height: 2),
+            const Text('update $_updateDate', style: _metaStyle),
+          ],
         );
       },
     );
