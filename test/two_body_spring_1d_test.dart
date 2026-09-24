@@ -45,11 +45,13 @@ void main() {
     expect(snap.r, closeTo(expected, 1e-12));
   });
 
-  test('初期配置は原点対称の自然長', () {
+  test('初期配置は原点対称の自然長で右のみ初速', () {
     final p = TwoBodySpring1DSimulation().initialParameters;
     expect(p['ell'], 4.0);
     expect(p['x1'], -2.0);
     expect(p['x2'], 2.0);
+    expect(p['v1'], 0.0);
+    expect(p['v2'], kTwoBodySpringOneSideSpeed);
     expect(p['m1'], p['m2']);
     final live = TwoBodySpring1DIcs.fromParams(p);
     expect(live.r0, closeTo(live.ell, 1e-12));
@@ -165,26 +167,63 @@ void main() {
     expect(twoBodySpringIcsAvoidCrossing(ics), isTrue);
   });
 
-  test('片方のみ初期速度ありは自然長配置で v2=0', () {
+  test('右のみ初速ありは自然長配置で v1=0', () {
     final next = applyTwoBodySpring1DPreset(
       defaults(),
-      TwoBodySpring1DPreset.oneVelocity,
+      TwoBodySpring1DPreset.rightVelocity,
     );
     final ics = TwoBodySpring1DIcs.fromParams(next);
     expect(ics.r0, closeTo(ics.ell, 1e-12));
     expect(ics.x1, closeTo(-ics.ell / 2, 1e-12));
     expect(ics.x2, closeTo(ics.ell / 2, 1e-12));
-    expect(ics.v1.abs(), greaterThan(0));
+    expect(ics.v1, 0.0);
+    expect(ics.v2, kTwoBodySpringOneSideSpeed);
+    expect(twoBodySpringIcsAvoidCrossing(ics), isTrue);
+  });
+
+  test('左のみ初速ありは自然長配置で v2=0', () {
+    final next = applyTwoBodySpring1DPreset(
+      defaults(),
+      TwoBodySpring1DPreset.leftVelocity,
+    );
+    final ics = TwoBodySpring1DIcs.fromParams(next);
+    expect(ics.r0, closeTo(ics.ell, 1e-12));
+    expect(ics.x1, closeTo(-ics.ell / 2, 1e-12));
+    expect(ics.x2, closeTo(ics.ell / 2, 1e-12));
+    expect(ics.v1, kTwoBodySpringOneSideSpeed);
     expect(ics.v2, 0.0);
     expect(twoBodySpringIcsAvoidCrossing(ics), isTrue);
   });
 
-  test('力学の2体問題カテゴリにばね実験がある', () {
+  test('運動エネルギーは各質点の和', () {
+    final snap = evolveTwoBodySpring1D(ics, 0.7);
+    final ledger = twoBodySpringEnergy(ics, snap);
+    expect(ledger.kineticPortions, hasLength(2));
+    expect(
+      ledger.kineticPortions[0].value,
+      closeTo(0.5 * ics.m1 * snap.v1 * snap.v1, 1e-12),
+    );
+    expect(
+      ledger.kineticPortions[1].value,
+      closeTo(0.5 * ics.m2 * snap.v2 * snap.v2, 1e-12),
+    );
+    expect(
+      ledger.kineticPortions[0].value + ledger.kineticPortions[1].value,
+      closeTo(ledger.kinetic, 1e-12),
+    );
+    expect(ledger.kineticPortions[0].value, isNot(closeTo(ledger.kineticPortions[1].value, 1e-6)));
+  });
+
+  test('力学の2体問題カテゴリにばねの2体問題がある', () {
     final dynamics = categoriesData.firstWhere((c) => c.name == '力学');
     final twoBody = dynamics.subcategories.firstWhere((s) => s.name == '2体問題');
     expect(twoBody.videos, contains(twoBodySpring1D));
     expect(twoBodySpring1D.iconName, 'dynamics');
-    final motion = dynamics.subcategories.firstWhere((s) => s.name == '運動方程式');
-    expect(motion.videos, isNot(contains(twoBodySpring1D)));
+    final springs = dynamics.subcategories.firstWhere((s) => s.name == 'バネ');
+    expect(springs.videos, isNot(contains(twoBodySpring1D)));
+    final falling = dynamics.subcategories.firstWhere((s) => s.name == '落下運動');
+    expect(falling.videos, isNot(contains(twoBodySpring1D)));
+    final pendulum = dynamics.subcategories.firstWhere((s) => s.name == '振り子');
+    expect(pendulum.videos, isNot(contains(twoBodySpring1D)));
   });
 }

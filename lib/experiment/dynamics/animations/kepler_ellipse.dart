@@ -1,5 +1,7 @@
 import 'dart:math' as math;
 
+import 'package:joyphysics/experiment/dynamics/animations/energy_gauge.dart';
+
 const double kKeplerGM = 1.0;
 const double kKeplerVelocityArrowScale = 0.5;
 
@@ -91,11 +93,36 @@ class KeplerOrbitState {
   double get emptyFocusX => -2 * a * e;
 }
 
+/// 近日点を位置エネルギーの 0 にする。$K+U'$ は軌道上で一定。
+EnergyLedger keplerMechanicalLedger(KeplerOrbitState state, {double mass = 1}) {
+  final rMin = math.max(keplerPeriapsisRadius(state.a, state.e), 1e-9);
+  final r = math.max(state.r, 1e-9);
+  final potential = mass * state.gm * (1 / rMin - 1 / r);
+  final kinetic = 0.5 * mass * state.speed * state.speed;
+  final periSpeed = keplerPeriapsisSpeed(state.a, state.e, gm: state.gm);
+  final scale = 0.5 * mass * periSpeed * periSpeed;
+  return EnergyLedger(
+    kinetic: kinetic,
+    potential: math.max(0, potential),
+    dissipated: 0,
+    scale: scale,
+    potentialLabel: kLabelGravitation,
+  );
+}
+
 ({double x, double y}) keplerVelocityArrowOffset(KeplerOrbitState s) {
   return (
     x: s.vx * kKeplerVelocityArrowScale,
     y: s.vy * kKeplerVelocityArrowScale,
   );
+}
+
+/// 単位質量あたりの重力加速度。向きは焦点（原点）へ、大きさは $GM/r^{2}$。
+({double x, double y}) keplerAcceleration(KeplerOrbitState s) {
+  final r = s.r;
+  if (r < 1e-9) return (x: 0.0, y: 0.0);
+  final invR3 = s.gm / (r * r * r);
+  return (x: -s.x * invR3, y: -s.y * invR3);
 }
 
 KeplerOrbitState evolveKeplerEllipse({

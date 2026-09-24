@@ -20,15 +20,15 @@ void main() {
     await tester.pump();
   }
 
-  testWidgets('再生と3法則ボタンだけが出る', (tester) async {
+  testWidgets('再生と第2・第3法則ボタンだけが出る', (tester) async {
     await pumpSimulation(tester);
-    expect(find.text('Start'), findsOneWidget);
-    expect(find.text('リセット'), findsOneWidget);
-    expect(find.text('第1法則'), findsOneWidget);
+    expect(find.byIcon(Icons.play_arrow), findsOneWidget);
+    expect(find.byIcon(Icons.restore), findsOneWidget);
+    expect(find.text('第1法則'), findsNothing);
     expect(find.text('第2法則'), findsOneWidget);
     expect(find.text('第3法則'), findsOneWidget);
     expect(
-      find.text('1秒ごとに面積を塗っています。'),
+      find.text('30日ごとに面積を塗っています。'),
       findsNothing,
     );
     expect(
@@ -44,21 +44,30 @@ void main() {
     expect(find.text('全パラメータ初期化'), findsNothing);
   });
 
-  testWidgets('第3法則のあと第2法則で扁平に戻る', (tester) async {
+  testWidgets('第2・第3法則はスライダーを変えない', (tester) async {
     await pumpSimulation(tester);
+    final aText = kKeplerDefaultA.toStringAsFixed(2);
+    final eText = kKeplerDefaultE.toStringAsFixed(2);
+    expect(find.text(aText), findsWidgets);
+    expect(find.text(eText), findsWidgets);
+
     await tester.ensureVisible(find.text('第3法則'));
     await tester.tap(find.text('第3法則'));
     await tester.pump();
-    expect(find.text('0.40'), findsWidgets);
+    expect(find.text(aText), findsWidgets);
+    expect(find.text(eText), findsWidgets);
+    expect(find.text('0.40'), findsNothing);
     expect(
       find.text('外側は a を2倍。周期は 2√2 倍なので、内側が3周いかないうちに外側が1周します。'),
       findsOneWidget,
     );
+
     await tester.tap(find.text('第2法則'));
     await tester.pump();
-    expect(find.text(kKeplerDefaultE.toStringAsFixed(2)), findsWidgets);
+    expect(find.text(aText), findsWidgets);
+    expect(find.text(eText), findsWidgets);
     expect(
-      find.text('1秒ごとに面積を塗っています。'),
+      find.text('30日ごとに面積を塗っています。'),
       findsOneWidget,
     );
   });

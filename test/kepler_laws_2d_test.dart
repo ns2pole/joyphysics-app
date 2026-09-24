@@ -75,6 +75,22 @@ void main() {
     expect(s.r, closeTo(expected, 1e-9));
   });
 
+  test('重力は焦点向きで近点の方が大きい', () {
+    final peri = evolveKeplerEllipse(a: a, e: e, phase: 0);
+    final apo = evolveKeplerEllipse(a: a, e: e, phase: 0.5);
+    final fp = keplerAcceleration(peri);
+    final fa = keplerAcceleration(apo);
+    expect(fp.x, lessThan(0));
+    expect(fp.y.abs(), lessThan(1e-9));
+    expect(fa.x, greaterThan(0));
+    expect(fa.y.abs(), lessThan(1e-8));
+    final lp = math.sqrt(fp.x * fp.x + fp.y * fp.y);
+    final la = math.sqrt(fa.x * fa.x + fa.y * fa.y);
+    expect(lp, closeTo(1 / (peri.r * peri.r), 1e-9));
+    expect(la, closeTo(1 / (apo.r * apo.r), 1e-9));
+    expect(lp, greaterThan(la));
+  });
+
   test('近日点の速度ベクトルは接線で遠日点より長い', () {
     final peri = evolveKeplerEllipse(a: a, e: e, phase: 0);
     final apo = evolveKeplerEllipse(a: a, e: e, phase: 0.5);
@@ -89,14 +105,28 @@ void main() {
     expect(lp, greaterThan(la));
   });
 
-  test('第2法則プリセットは扁平', () {
-    final next = applyKeplerLawsPreset({'a': 1.0, 'e': 0.0}, KeplerLawsPreset.second);
-    expect(next['e']!, greaterThan(0.5));
-    expect(next['a'], 1.0);
+  test('a=1 は地球の1年で、周期は日・aの3/2乗', () {
+    expect(keplerLawsPeriodDays(1), closeTo(kKeplerEarthYearDays, 1e-12));
+    expect(
+      keplerLawsPeriodDays(2),
+      closeTo(kKeplerEarthYearDays * math.pow(2, 1.5), 1e-9),
+    );
+    expect(
+      keplerLawsPeriodDays(2) / keplerLawsPeriodDays(1),
+      closeTo(kKeplerPeriodRatio, 1e-12),
+    );
+    expect(formatKeplerDays(365.25), '365.25 日');
+    expect(formatKeplerDays(0.02), '0.020 日');
+    final ratio1 = keplerLawsRatioMks(1);
+    final ratio2 = keplerLawsRatioMks(2);
+    expect(ratio2, closeTo(ratio1, 1e-24));
+    expect(formatMksFixed(ratio1), '0.00000000000000000030');
+    expect(formatMksFixed(ratio1).contains('e'), isFalse);
+    expect(formatMksFixed(4.213), '4.21');
   });
 
-  test('1秒スライスは等間隔で新しいものが後', () {
-    final s = keplerEqualTimeSlices(2.4, keep: 16);
+  test('等時間スライスは等間隔で新しいものが後', () {
+    final s = keplerEqualTimeSlices(2.4, dt: 1, keep: 16);
     expect(s.length, 3);
     expect(s[0].t0, 0);
     expect(s[0].t1, 1);
@@ -108,7 +138,7 @@ void main() {
   });
 
   test('keep は古いスライスを落として上塗り順を保つ', () {
-    final s = keplerEqualTimeSlices(5.2, keep: 3);
+    final s = keplerEqualTimeSlices(5.2, dt: 1, keep: 3);
     expect(s.first.t0, 3.0);
     expect(s.last.t1, closeTo(5.2, 1e-12));
     expect(s.length, 3);

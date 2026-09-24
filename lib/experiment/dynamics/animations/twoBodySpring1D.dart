@@ -1,6 +1,8 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
+import 'package:joyphysics/experiment/dynamics/animations/energy_gauge.dart';
+import 'package:joyphysics/experiment/playback_controls.dart';
 import 'package:joyphysics/model.dart';
 
 final twoBodySpring1D = Video(
@@ -27,9 +29,6 @@ final twoBodySpring1D = Video(
   <p>$$x_1(t)=R_G(t)-\dfrac{m_2}{m_1+m_2}R(t)$$</p>
   <p>$$x_2(t)=R_G(t)+\dfrac{m_1}{m_1+m_2}R(t)$$</p>
   <p>質点が交差しない条件は、振幅 $A=\sqrt{(R(0)-\ell)^2+\bigl(\dfrac{\dot R(0)}{\omega}\bigr)^2}$ に対して $A<\ell$（すなわち $R_{\min}=\ell-A>0$）である。</p>
-  <div class="common-box">使い方</div>
-  <p>初期配置は原点対称の自然長 $x_1=-\dfrac{\ell}{2},\,x_2=\dfrac{\ell}{2}$ です。$\ell$ を変えるとこの配置に戻します。</p>
-  <p>「遠ざけて配置」「近づけて配置」「片方のみ初期速度あり」で典型的な初期条件に切り替えられます。停止中に初期条件を動かし Start で運動を開始します。交差する初期条件は厳密解から除外しています。リセットで $t=0$ の配置に戻ります。全パラメータ初期化ですべての初期条件を最初の値に戻します。</p>
   """,
   experimentWidgets: [
     PhysicsSimulationView(
@@ -94,12 +93,12 @@ double twoBodySpringAllowedAmplitude(double ell) =>
 
 bool twoBodySpringIcsAvoidCrossing(TwoBodySpring1DIcs ics) => ics.rMin > 0;
 
-enum TwoBodySpring1DPreset { far, close, oneVelocity }
+enum TwoBodySpring1DPreset { far, close, rightVelocity, leftVelocity }
 
 /// 自然長に対する遠方配置・近接配置の間隔比。交差しないよう $0<R<2\ell$ に収める。
 const double kTwoBodySpringFarSeparationFactor = 1.5;
 const double kTwoBodySpringCloseSeparationFactor = 0.5;
-const double kTwoBodySpringOneVelocityV1 = 2.0;
+const double kTwoBodySpringOneSideSpeed = 2.0;
 
 Map<String, double> applyTwoBodySpring1DPreset(
   Map<String, double> current,
@@ -123,10 +122,16 @@ Map<String, double> applyTwoBodySpring1DPreset(
       p['v1'] = 0.0;
       p['v2'] = 0.0;
       break;
-    case TwoBodySpring1DPreset.oneVelocity:
+    case TwoBodySpring1DPreset.rightVelocity:
       p['x1'] = (-ell / 2).clamp(-6.0, 6.0).toDouble();
       p['x2'] = (ell / 2).clamp(-6.0, 6.0).toDouble();
-      p['v1'] = kTwoBodySpringOneVelocityV1;
+      p['v1'] = 0.0;
+      p['v2'] = kTwoBodySpringOneSideSpeed;
+      break;
+    case TwoBodySpring1DPreset.leftVelocity:
+      p['x1'] = (-ell / 2).clamp(-6.0, 6.0).toDouble();
+      p['x2'] = (ell / 2).clamp(-6.0, 6.0).toDouble();
+      p['v1'] = kTwoBodySpringOneSideSpeed;
       p['v2'] = 0.0;
       break;
   }
@@ -237,6 +242,43 @@ class TwoBodySpring1DSnapshot {
   final double rDot;
 }
 
+const Color kTwoBodySpringMass1 = Color(0xFF1E88E5);
+const Color kTwoBodySpringMass2 = Color(0xFFFB8C00);
+
+EnergyLedger twoBodySpringEnergy(
+  TwoBodySpring1DIcs ics,
+  TwoBodySpring1DSnapshot snapshot,
+) {
+  final k1 = 0.5 * ics.m1 * snapshot.v1 * snapshot.v1;
+  final k2 = 0.5 * ics.m2 * snapshot.v2 * snapshot.v2;
+  final kinetic = k1 + k2;
+  final stretch = snapshot.r - ics.ell;
+  final potential = 0.5 * ics.k * stretch * stretch;
+  final initialStretch = ics.r0 - ics.ell;
+  final scale = 0.5 * ics.m1 * ics.v1 * ics.v1 +
+      0.5 * ics.m2 * ics.v2 * ics.v2 +
+      0.5 * ics.k * initialStretch * initialStretch;
+  return EnergyLedger(
+    kinetic: kinetic,
+    potential: potential,
+    dissipated: 0,
+    scale: scale,
+    potentialLabel: kLabelElastic,
+    kineticPortions: [
+      EnergyPortion(
+        value: k1,
+        label: kLabelKinetic1,
+        color: kTwoBodySpringMass1,
+      ),
+      EnergyPortion(
+        value: k2,
+        label: kLabelKinetic2,
+        color: kTwoBodySpringMass2,
+      ),
+    ],
+  );
+}
+
 TwoBodySpring1DSnapshot evolveTwoBodySpring1D(
   TwoBodySpring1DIcs ics,
   double t,
@@ -273,14 +315,19 @@ class TwoBodySpring1DSimulation extends PhysicsSimulation {
           showTimeOverlay: false,
         );
 
-  final ValueNotifier<bool> running = ValueNotifier(false);
   final ValueNotifier<double> simTime = ValueNotifier(0.0);
+
+  late final PlaybackLoop _loop = PlaybackLoop(onTick: (dt) {
+    simTime.value += dt * _playback;
+  });
+
+  static const double _playback = 2.0;
+
+  ValueNotifier<bool> get running => _loop.running;
 
   TwoBodySpring1DIcs? _frozen;
   Map<String, double> _latestParams = {};
   void Function(String key, double value)? _updateParam;
-  bool _tickScheduled = false;
-  DateTime? _lastTickAt;
   int _dragIndex = -1;
 
   static const double worldXMin = -8.0;
@@ -291,7 +338,7 @@ class TwoBodySpring1DSimulation extends PhysicsSimulation {
         'x1': -2.0,
         'x2': 2.0,
         'v1': 0.0,
-        'v2': 0.0,
+        'v2': kTwoBodySpringOneSideSpeed,
         'm1': 1.0,
         'm2': 1.0,
         'k': 4.0,
@@ -305,8 +352,7 @@ class TwoBodySpring1DSimulation extends PhysicsSimulation {
     return TwoBodySpring1DIcs.fromParams(_latestParams);
   }
 
-  TwoBodySpring1DIcs get _activeIcs =>
-      (running.value && _frozen != null) ? _frozen! : _liveIcs;
+  TwoBodySpring1DIcs get _activeIcs => _frozen ?? _liveIcs;
 
   void _rememberParams(Map<String, double> params) {
     _latestParams = Map<String, double>.from(params);
@@ -314,15 +360,17 @@ class TwoBodySpring1DSimulation extends PhysicsSimulation {
 
   void start() {
     if (running.value) return;
-    final params = _latestParams.isEmpty ? initialParameters : _latestParams;
-    _frozen = TwoBodySpring1DIcs.fromParams(
-      _clampRelativeVelocityToNoCrossing(Map<String, double>.from(params)),
-    );
-    simTime.value = 0.0;
-    _lastTickAt = null;
-    running.value = true;
-    _scheduleTick();
+    if (_frozen == null) {
+      final params = _latestParams.isEmpty ? initialParameters : _latestParams;
+      _frozen = TwoBodySpring1DIcs.fromParams(
+        _clampRelativeVelocityToNoCrossing(Map<String, double>.from(params)),
+      );
+      simTime.value = 0.0;
+    }
+    _loop.start();
   }
+
+  void pause() => _loop.pause();
 
   void _applyParam(String key, double value) {
     if (_updateParam == null) return;
@@ -353,33 +401,14 @@ class TwoBodySpring1DSimulation extends PhysicsSimulation {
   }
 
   void resetMotion() {
-    running.value = false;
+    _loop.reset();
     simTime.value = 0.0;
     _frozen = null;
-    _lastTickAt = null;
   }
 
   void resetAllParameters() {
     resetMotion();
     _pushParams(initialParameters);
-  }
-
-  void _scheduleTick() {
-    if (!running.value || _tickScheduled) return;
-    _tickScheduled = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _tickScheduled = false;
-      if (!running.value) return;
-      final now = DateTime.now();
-      final dt = _lastTickAt == null
-          ? 1 / 60
-          : (now.difference(_lastTickAt!).inMicroseconds / 1e6)
-              .clamp(0.0, 0.05)
-              .toDouble();
-      _lastTickAt = now;
-      simTime.value += dt;
-      if (running.value) _scheduleTick();
-    });
   }
 
   @override
@@ -411,21 +440,10 @@ class TwoBodySpring1DSimulation extends PhysicsSimulation {
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                FilledButton.icon(
-                  onPressed: isRunning ? null : start,
-                  icon: const Icon(Icons.play_arrow),
-                  label: const Text('Start'),
-                ),
-                const SizedBox(width: 12),
-                OutlinedButton.icon(
-                  onPressed: resetMotion,
-                  icon: const Icon(Icons.restore),
-                  label: const Text('リセット'),
-                ),
-              ],
+            PlayPauseResetButtons(
+              playing: isRunning,
+              onPlayPause: isRunning ? pause : start,
+              onReset: resetMotion,
             ),
             const SizedBox(height: 8),
             Wrap(
@@ -448,8 +466,14 @@ class TwoBodySpring1DSimulation extends PhysicsSimulation {
                 OutlinedButton(
                   onPressed: isRunning
                       ? null
-                      : () => applyPreset(TwoBodySpring1DPreset.oneVelocity),
-                  child: const Text('片方のみ初期速度あり'),
+                      : () => applyPreset(TwoBodySpring1DPreset.rightVelocity),
+                  child: const Text('右のみ初速あり'),
+                ),
+                OutlinedButton(
+                  onPressed: isRunning
+                      ? null
+                      : () => applyPreset(TwoBodySpring1DPreset.leftVelocity),
+                  child: const Text('左のみ初速あり'),
                 ),
               ],
             ),
@@ -476,9 +500,9 @@ class TwoBodySpring1DSimulation extends PhysicsSimulation {
     return [
       ValueListenableBuilder<bool>(
         valueListenable: running,
-        builder: (context, isRunning, _) {
+        builder: (context, _, __) {
           void Function(String, double)? onChange =
-              isRunning ? null : _applyParam;
+              _frozen != null ? null : _applyParam;
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -555,11 +579,11 @@ class TwoBodySpring1DSimulation extends PhysicsSimulation {
                 onChanged: onChange == null ? null : (v) => onChange('ell', v),
                 semanticLabel: 'ell',
               ),
-              if (isRunning)
+              if (_frozen != null)
                 const Padding(
                   padding: EdgeInsets.only(top: 6),
                   child: Text(
-                    '運動中は初期条件をロックしています。リセット後に変更できます。',
+                    '再生中と一時停止中は初期条件をロックしています。リセット後に変更できます。',
                     style: TextStyle(fontSize: 11, color: Color(0xFF546E7A)),
                   ),
                 ),
@@ -585,15 +609,15 @@ class TwoBodySpring1DSimulation extends PhysicsSimulation {
       animation: Listenable.merge([running, simTime]),
       builder: (context, _) {
         final ics = _activeIcs;
-        final t = running.value ? simTime.value : 0.0;
+        final t = simTime.value;
         final snap = evolveTwoBodySpring1D(ics, t);
         return LayoutBuilder(
           builder: (context, constraints) {
             return GestureDetector(
-              onPanStart: running.value
+              onPanStart: _frozen != null
                   ? null
                   : (details) => _onPanStart(details, constraints.biggest, snap),
-              onPanUpdate: running.value
+              onPanUpdate: _frozen != null
                   ? null
                   : (details) => _onPanUpdate(details, constraints.biggest),
               onPanEnd: (_) => _dragIndex = -1,
@@ -618,8 +642,8 @@ class TwoBodySpring1DSimulation extends PhysicsSimulation {
     Size size,
     TwoBodySpring1DSnapshot snap,
   ) {
-    final p1 = _toScreen(snap.x1, size);
-    final p2 = _toScreen(snap.x2, size);
+    final p1 = _toScreen(snap.x1, size, snap);
+    final p2 = _toScreen(snap.x2, size, snap);
     final local = details.localPosition;
     final r1 = _massRadius(snap, 1, size);
     final r2 = _massRadius(snap, 2, size);
@@ -648,8 +672,8 @@ class TwoBodySpring1DSimulation extends PhysicsSimulation {
     return (0.28 * math.sqrt(m) * pxPerUnit).clamp(12.0, 34.0);
   }
 
-  Offset _toScreen(double x, Size size) {
-    final railY = size.height * 0.58;
+  Offset _toScreen(double x, Size size, TwoBodySpring1DSnapshot snap) {
+    final railY = twoBodySpringRailY(size, snap, _activeIcs, simTime.value, running.value);
     final sx = (x - worldXMin) / (worldXMax - worldXMin) * size.width;
     return Offset(sx, railY);
   }
@@ -710,6 +734,27 @@ class _IcSlider extends StatelessWidget {
   }
 }
 
+double twoBodySpringRailY(
+  Size size,
+  TwoBodySpring1DSnapshot snapshot,
+  TwoBodySpring1DIcs ics,
+  double time,
+  bool running,
+) {
+  final readout = 't = ${time.toStringAsFixed(2)}\n'
+      'x1 = ${snapshot.x1.toStringAsFixed(2)}   v1 = ${snapshot.v1.toStringAsFixed(2)}\n'
+      'x2 = ${snapshot.x2.toStringAsFixed(2)}   v2 = ${snapshot.v2.toStringAsFixed(2)}\n'
+      'R = ${snapshot.r.toStringAsFixed(2)}   RG = ${snapshot.rg.toStringAsFixed(2)}\n'
+      '${running ? '運動中' : '初期条件を設定して Start'}';
+  final clear = dynamicsReadoutCard(
+    readout,
+    twoBodySpringEnergy(ics, snapshot),
+    textColumnWidth: 280,
+    bounds: size,
+  ).bottom;
+  return math.max(size.height * 0.58, clear + 52);
+}
+
 class _TwoBodySpring1DPainter extends CustomPainter {
   _TwoBodySpring1DPainter({
     required this.snapshot,
@@ -723,13 +768,13 @@ class _TwoBodySpring1DPainter extends CustomPainter {
   final double time;
   final bool running;
 
-  static const _mass1 = Color(0xFF1E88E5);
-  static const _mass2 = Color(0xFFFB8C00);
+  static const _mass1 = kTwoBodySpringMass1;
+  static const _mass2 = kTwoBodySpringMass2;
   static const _cm = Color(0xFFE53935);
 
   @override
   void paint(Canvas canvas, Size size) {
-    final railY = size.height * 0.58;
+    final railY = twoBodySpringRailY(size, snapshot, ics, time, running);
     Offset toScreen(double x) {
       final sx = (x - TwoBodySpring1DSimulation.worldXMin) /
           (TwoBodySpring1DSimulation.worldXMax -
@@ -922,45 +967,18 @@ class _TwoBodySpring1DPainter extends CustomPainter {
   }
 
   void _drawHud(Canvas canvas, Size size) {
-    const numStyle = TextStyle(
-      color: Color(0xFF37474F),
-      fontSize: 11,
-      fontFamily: 'Courier',
-      height: 1.35,
+    final readout = 't = ${time.toStringAsFixed(2)}\n'
+        'x1 = ${snapshot.x1.toStringAsFixed(2)}   v1 = ${snapshot.v1.toStringAsFixed(2)}\n'
+        'x2 = ${snapshot.x2.toStringAsFixed(2)}   v2 = ${snapshot.v2.toStringAsFixed(2)}\n'
+        'R = ${snapshot.r.toStringAsFixed(2)}   RG = ${snapshot.rg.toStringAsFixed(2)}\n'
+        '${running ? '運動中' : '初期条件を設定して Start'}';
+    paintDynamicsReadout(
+      canvas,
+      readout,
+      twoBodySpringEnergy(ics, snapshot),
+      textColumnWidth: 280,
+      bounds: size,
     );
-    const statusStyle = TextStyle(
-      color: Color(0xFF37474F),
-      fontSize: 11,
-      height: 1.35,
-    );
-    final tp = TextPainter(
-      text: TextSpan(
-        children: [
-          TextSpan(
-            text:
-                't = ${time.toStringAsFixed(2)}\n'
-                'x1 = ${snapshot.x1.toStringAsFixed(2)}   v1 = ${snapshot.v1.toStringAsFixed(2)}\n'
-                'x2 = ${snapshot.x2.toStringAsFixed(2)}   v2 = ${snapshot.v2.toStringAsFixed(2)}\n'
-                'R = ${snapshot.r.toStringAsFixed(2)}   RG = ${snapshot.rg.toStringAsFixed(2)}\n',
-            style: numStyle,
-          ),
-          TextSpan(
-            text: running ? '運動中' : '初期条件を設定して Start',
-            style: statusStyle,
-          ),
-        ],
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    final rect = RRect.fromRectAndRadius(
-      Rect.fromLTWH(8, 8, tp.width + 16, tp.height + 10),
-      const Radius.circular(8),
-    );
-    canvas.drawRRect(
-      rect,
-      Paint()..color = Colors.white.withValues(alpha: 0.88),
-    );
-    tp.paint(canvas, const Offset(16, 13));
   }
 
   @override

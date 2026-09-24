@@ -1,6 +1,8 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
+import 'package:joyphysics/experiment/dynamics/animations/energy_gauge.dart';
+import 'package:joyphysics/experiment/playback_controls.dart';
 import 'package:joyphysics/experiment/dynamics/animations/kepler_ellipse.dart';
 import 'package:joyphysics/model.dart';
 
@@ -20,9 +22,7 @@ final twoBodyKepler2D = Video(
   <p>$$\displaystyle \mathbf{r}_1=-\frac{a_1}{a}\mathbf{r},\quad \mathbf{r}_2=\frac{a_2}{a}\mathbf{r}$$</p>
   <p>近点で速度は半径に垂直なら、$(a_i,e)$ と $(r_i,v_i)$ は一対一である。第3法則は相対半長軸について</p>
   <p>$$\displaystyle \frac{T^{2}}{a^{3}}=\frac{4\pi^{2}}{G(m_1+m_2)}$$</p>
-  <div class="common-box">使い方</div>
-  <p>単位は $G=1$, $M=m_1+m_2=1$ です。赤い十字が重心（両楕円の焦点）です。スライダーの $a_1,a_2$ は各星の半長軸、$e$ は共通の離心率です。$t=0$ は近点です。</p>
-  <p>「等質量」「冥王星-カロン」「地球-月」「太陽-地球」「楕円交差」は Wikipedia の重心アニメ (a)–(e) に対応します。カロンは冥王星の衛星で、質量比が近く重心が主星ディスクの外に出る連星の例です。地球-月・太陽-地球では重心が主星の中にあります。Start で動き、リセットで近点に戻ります。</p>
+  <p>質量比が近いと重心は主星の外に出ます。地球と月、太陽と地球では重心は主星の中にあります。</p>
   """,
   experimentWidgets: [
     PhysicsSimulationView(
@@ -31,6 +31,9 @@ final twoBodyKepler2D = Video(
     ),
   ],
 );
+
+const Color kTwoBodyKeplerStar1 = Color(0xFFFFB300);
+const Color kTwoBodyKeplerStar2 = Color(0xFF1E88E5);
 
 const double kTwoBodyKeplerG = 1.0;
 const double kTwoBodyKeplerM = 1.0;
@@ -41,8 +44,72 @@ const double kTwoBodyKeplerMaxE = 0.85;
 const double kTwoBodyKeplerDefaultA1 = 0.5;
 const double kTwoBodyKeplerDefaultA2 = 0.5;
 const double kTwoBodyKeplerDefaultE = 0.0;
+const double kTwoBodyKeplerViewScale = 1.8;
+const double kTwoBodyKeplerPlayback = 1.8;
 const double kTwoBodyKeplerDiskScale = 0.10;
 const double kTwoBodyKeplerDiskMin = 0.022;
+const double kDaysPerJulianYear = 365.25;
+const double kEarthSiderealMonthDays = 27.321661;
+const double kPlutoCharonPeriodDays = 6.387230;
+const double kSunPerEarthMass = 332946.0487;
+
+double twoEarthsAtOneAuPeriodYears() => math.sqrt(kSunPerEarthMass / 2);
+
+double twoBodyKeplerReferencePeriodYears(TwoBodyKeplerPreset preset) {
+  switch (preset) {
+    case TwoBodyKeplerPreset.equalCircle:
+    case TwoBodyKeplerPreset.equalEllipse:
+      return twoEarthsAtOneAuPeriodYears();
+    case TwoBodyKeplerPreset.sunEarth:
+      return 1.0;
+    case TwoBodyKeplerPreset.earthMoon:
+      return kEarthSiderealMonthDays / kDaysPerJulianYear;
+    case TwoBodyKeplerPreset.charon:
+      return kPlutoCharonPeriodDays / kDaysPerJulianYear;
+  }
+}
+
+double twoBodyKeplerPeriodYears({
+  required double a,
+  required TwoBodyKeplerPreset preset,
+}) {
+  final aRef = applyTwoBodyKeplerPreset(preset);
+  final a0 = aRef['a1']! + aRef['a2']!;
+  return twoBodyKeplerReferencePeriodYears(preset) *
+      math.pow(a / a0, 1.5).toDouble();
+}
+
+bool twoBodyKeplerTimeInDays(TwoBodyKeplerPreset preset) =>
+    preset == TwoBodyKeplerPreset.earthMoon ||
+    preset == TwoBodyKeplerPreset.charon;
+
+String formatBinaryStarTime(double years, TwoBodyKeplerPreset preset) {
+  if (!twoBodyKeplerTimeInDays(preset)) return formatBinaryStarYears(years);
+  final days = years * kDaysPerJulianYear;
+  final abs = days.abs();
+  final digits = abs >= 100
+      ? 1
+      : abs >= 10
+          ? 2
+          : abs >= 1
+              ? 3
+              : 4;
+  return '${days.toStringAsFixed(digits)} 日';
+}
+
+String formatBinaryStarYears(double years) {
+  final abs = years.abs();
+  final digits = abs >= 100
+      ? 0
+      : abs >= 10
+          ? 1
+          : abs >= 1
+              ? 2
+              : abs >= 0.1
+                  ? 3
+                  : 4;
+  return '${years.toStringAsFixed(digits)} 年';
+}
 
 double twoBodyKeplerMass1(double a1, double a2) => a2 / (a1 + a2);
 
@@ -114,6 +181,33 @@ class TwoBodyKeplerState {
   double get cmy => params.m1 * y1 + params.m2 * y2;
 }
 
+EnergyLedger twoBodyKeplerEnergy(TwoBodyKeplerState state) {
+  final total = state.params.m1 + state.params.m2;
+  final mu = state.params.m1 * state.params.m2 / total;
+  final combined = keplerMechanicalLedger(state.relative, mass: mu);
+  final k1 = 0.5 * state.params.m1 * state.speed1 * state.speed1;
+  final k2 = 0.5 * state.params.m2 * state.speed2 * state.speed2;
+  return EnergyLedger(
+    kinetic: k1 + k2,
+    potential: combined.potential,
+    dissipated: 0,
+    scale: combined.scale,
+    potentialLabel: kLabelGravitation,
+    kineticPortions: [
+      EnergyPortion(
+        value: k1,
+        label: kLabelKinetic1,
+        color: kTwoBodyKeplerStar1,
+      ),
+      EnergyPortion(
+        value: k2,
+        label: kLabelKinetic2,
+        color: kTwoBodyKeplerStar2,
+      ),
+    ],
+  );
+}
+
 TwoBodyKeplerState evolveTwoBodyKepler({
   required double a1,
   required double a2,
@@ -165,19 +259,23 @@ class TwoBodyKepler2DSimulation extends PhysicsSimulation {
           formula: const FormulaDisplay(
             r'\displaystyle a=a_1+a_2,\quad \frac{m_1}{m_2}=\frac{a_2}{a_1}',
           ),
-          aspectRatio: 16 / 9,
+          aspectRatio: (16 / 9) / kTwoBodyKeplerViewScale,
           enableTime: false,
           showTimeOverlay: false,
         );
 
-  final ValueNotifier<bool> running = ValueNotifier(false);
   final ValueNotifier<double> phase = ValueNotifier(0.0);
+
+  late final PlaybackLoop _loop = PlaybackLoop(onTick: (dt) {
+    phase.value +=
+        kTwoBodyKeplerPlayback * dt / keplerPeriod(_params.a, gm: kTwoBodyKeplerGM);
+  });
+
+  ValueNotifier<bool> get running => _loop.running;
 
   Map<String, double> _latestParams = {};
   TwoBodyKeplerPreset _selected = TwoBodyKeplerPreset.equalCircle;
   void Function(String key, double value)? _updateParam;
-  bool _tickScheduled = false;
-  DateTime? _lastTickAt;
 
   @override
   Map<String, double> get initialParameters => {
@@ -199,15 +297,14 @@ class TwoBodyKepler2DSimulation extends PhysicsSimulation {
 
   void start() {
     if (running.value) return;
-    _lastTickAt = null;
-    running.value = true;
-    _scheduleTick();
+    _loop.start();
   }
 
+  void pause() => _loop.pause();
+
   void resetMotion() {
-    running.value = false;
+    _loop.reset();
     phase.value = 0.0;
-    _lastTickAt = null;
   }
 
   void _pushParams(Map<String, double> next) {
@@ -228,31 +325,13 @@ class TwoBodyKepler2DSimulation extends PhysicsSimulation {
     _pushParams(applyTwoBodyKeplerPreset(preset));
   }
 
-  void _scheduleTick() {
-    if (!running.value || _tickScheduled) return;
-    _tickScheduled = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _tickScheduled = false;
-      if (!running.value) return;
-      final now = DateTime.now();
-      final dt = _lastTickAt == null
-          ? 1 / 60
-          : (now.difference(_lastTickAt!).inMicroseconds / 1e6)
-              .clamp(0.0, 0.05)
-              .toDouble();
-      _lastTickAt = now;
-      final tPeriod = keplerPeriod(_params.a, gm: kTwoBodyKeplerGM);
-      phase.value += dt / tPeriod;
-      if (running.value) _scheduleTick();
-    });
-  }
-
   @override
   Widget? buildFormulaOverlay(Map<String, double> parameters) {
     _rememberParams(parameters);
     final p = _params;
     final t = keplerPeriod(p.a, gm: kTwoBodyKeplerGM);
     final ratio = t * t / (p.a * p.a * p.a);
+    final years = twoBodyKeplerPeriodYears(a: p.a, preset: _selected);
     return Column(
       children: [
         const FormulaDisplay(
@@ -260,6 +339,7 @@ class TwoBodyKepler2DSimulation extends PhysicsSimulation {
         ),
         const SizedBox(height: 4),
         Text(
+          'T = ${formatBinaryStarTime(years, _selected)}    '
           'm₁:m₂ = ${p.m1.toStringAsFixed(3)} : ${p.m2.toStringAsFixed(3)}    '
           'T²/a³ = ${ratio.toStringAsFixed(2)}',
           style: const TextStyle(fontSize: 13, fontFamily: 'Courier'),
@@ -280,21 +360,10 @@ class TwoBodyKepler2DSimulation extends PhysicsSimulation {
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                FilledButton.icon(
-                  onPressed: isRunning ? null : start,
-                  icon: const Icon(Icons.play_arrow),
-                  label: const Text('Start'),
-                ),
-                const SizedBox(width: 12),
-                OutlinedButton.icon(
-                  onPressed: resetMotion,
-                  icon: const Icon(Icons.restore),
-                  label: const Text('リセット'),
-                ),
-              ],
+            PlayPauseResetButtons(
+              playing: isRunning,
+              onPlayPause: isRunning ? pause : start,
+              onReset: resetMotion,
             ),
             const SizedBox(height: 8),
             Wrap(
@@ -426,9 +495,16 @@ class TwoBodyKepler2DSimulation extends PhysicsSimulation {
           e: p.e,
           phase: phase.value,
         );
+        final periodYears =
+            twoBodyKeplerPeriodYears(a: p.a, preset: _selected);
         return CustomPaint(
           size: Size.infinite,
-          painter: _TwoBodyKeplerPainter(state: s),
+          painter: _TwoBodyKeplerPainter(
+            state: s,
+            preset: _selected,
+            timeYears: phase.value * periodYears,
+            periodYears: periodYears,
+          ),
         );
       },
     );
@@ -487,16 +563,24 @@ class _BinarySlider extends StatelessWidget {
 }
 
 class _TwoBodyKeplerPainter extends CustomPainter {
-  _TwoBodyKeplerPainter({required this.state});
+  _TwoBodyKeplerPainter({
+    required this.state,
+    required this.preset,
+    required this.timeYears,
+    required this.periodYears,
+  });
 
   final TwoBodyKeplerState state;
+  final TwoBodyKeplerPreset preset;
+  final double timeYears;
+  final double periodYears;
 
-  static const _bg = Color(0xFF000000);
-  static const _orbit = Color(0xFFE53935);
+  static const _bg = Color(0xFFF7FAFC);
+  static const _orbit = Color(0xFF90A4AE);
+  static const _link = Color(0xFFB0BEC5);
   static const _cm = Color(0xFFE53935);
-  static const _star = Color(0xFFF5F5F5);
-  static const _v = Color(0xFFFFD54F);
-  static const _ink = Color(0xFFECEFF1);
+  static const _star1 = kTwoBodyKeplerStar1;
+  static const _star2 = kTwoBodyKeplerStar2;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -513,13 +597,31 @@ class _TwoBodyKeplerPainter extends CustomPainter {
       c1,
       c2,
       Paint()
-        ..color = const Color(0x55FFFFFF)
-        ..strokeWidth = 1,
+        ..color = _link
+        ..strokeWidth = 1.2,
     );
 
     _drawBarycenter(canvas, toScreen(0, 0));
-    _drawStar(canvas, toScreen, state.x1, state.y1, state.vx1, state.vy1, p.disk1);
-    _drawStar(canvas, toScreen, state.x2, state.y2, state.vx2, state.vy2, p.disk2);
+    _drawStar(
+      canvas,
+      toScreen,
+      state.x1,
+      state.y1,
+      state.vx1,
+      state.vy1,
+      p.disk1,
+      _star1,
+    );
+    _drawStar(
+      canvas,
+      toScreen,
+      state.x2,
+      state.y2,
+      state.vx2,
+      state.vy2,
+      p.disk2,
+      _star2,
+    );
     _drawHud(canvas, size);
   }
 
@@ -531,9 +633,18 @@ class _TwoBodyKeplerPainter extends CustomPainter {
         ) +
         0.35;
     final world = 2 * reach;
-    final s = math.min(size.width / world, size.height / world);
+    final text =
+        't = ${formatBinaryStarTime(timeYears, preset)}    T = ${formatBinaryStarTime(periodYears, preset)}';
+    final clear = dynamicsReadoutCard(
+      text,
+      twoBodyKeplerEnergy(state),
+      textColumnWidth: 280,
+      bounds: size,
+    ).bottom + 8;
+    final plotH = math.max(48.0, size.height - clear);
+    final s = math.min(size.width / world, plotH / world);
     final ox = size.width / 2;
-    final oy = size.height / 2;
+    final oy = clear + plotH / 2;
     return (x, y) => Offset(ox + x * s, oy - y * s);
   }
 
@@ -565,16 +676,22 @@ class _TwoBodyKeplerPainter extends CustomPainter {
       Paint()
         ..color = _orbit
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 0.6,
+        ..strokeWidth = 2.0,
     );
   }
 
   void _drawBarycenter(Canvas canvas, Offset c) {
-    const arm = 8.0 * 2 / 3;
+    const arm = 7.0;
+    final halo = Paint()
+      ..color = Colors.white
+      ..strokeWidth = 4.2
+      ..strokeCap = StrokeCap.round;
     final paint = Paint()
       ..color = _cm
-      ..strokeWidth = 2.2 * 2 / 3
+      ..strokeWidth = 2.2
       ..strokeCap = StrokeCap.round;
+    canvas.drawLine(c.translate(-arm, 0), c.translate(arm, 0), halo);
+    canvas.drawLine(c.translate(0, -arm), c.translate(0, arm), halo);
     canvas.drawLine(c.translate(-arm, 0), c.translate(arm, 0), paint);
     canvas.drawLine(c.translate(0, -arm), c.translate(0, arm), paint);
   }
@@ -587,12 +704,22 @@ class _TwoBodyKeplerPainter extends CustomPainter {
     double vx,
     double vy,
     double disk,
+    Color color,
   ) {
     final c = toScreen(x, y);
     final edge = toScreen(x + disk, y);
     final rPx = (edge - c).distance;
-    canvas.drawCircle(c, rPx, Paint()..color = _star);
-    _drawVelocity(canvas, toScreen, x, y, vx, vy, rPx);
+    canvas.drawCircle(c.translate(0, 2), rPx, Paint()..color = Colors.black12);
+    canvas.drawCircle(c, rPx, Paint()..color = color);
+    canvas.drawCircle(
+      c,
+      rPx,
+      Paint()
+        ..color = Colors.white.withValues(alpha: 0.35)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2,
+    );
+    _drawVelocity(canvas, toScreen, x, y, vx, vy, rPx, color);
   }
 
   void _drawVelocity(
@@ -603,6 +730,7 @@ class _TwoBodyKeplerPainter extends CustomPainter {
     double vx,
     double vy,
     double planetR,
+    Color color,
   ) {
     final speed = math.sqrt(vx * vx + vy * vy);
     if (speed < 1e-6) return;
@@ -615,8 +743,8 @@ class _TwoBodyKeplerPainter extends CustomPainter {
     final len = delta.distance;
     if (len < 1) return;
     final dir = delta / len;
-    const headLen = 11.0;
-    const headHalf = 5.5;
+    const headLen = 13.0;
+    const headHalf = 6.5;
     final start = p + dir * planetR;
     var end = tip;
     if ((end - start).distance < headLen + 6) {
@@ -628,8 +756,16 @@ class _TwoBodyKeplerPainter extends CustomPainter {
       start,
       shaftEnd,
       Paint()
-        ..color = _v
-        ..strokeWidth = 2.4
+        ..color = Colors.white
+        ..strokeWidth = 4.6
+        ..strokeCap = StrokeCap.round,
+    );
+    canvas.drawLine(
+      start,
+      shaftEnd,
+      Paint()
+        ..color = color
+        ..strokeWidth = 2.8
         ..strokeCap = StrokeCap.round,
     );
     final head = Path()
@@ -643,8 +779,16 @@ class _TwoBodyKeplerPainter extends CustomPainter {
         (end - dir * headLen - n * headHalf).dy,
       )
       ..close();
-    canvas.drawPath(head, Paint()..color = _v);
-    _label(canvas, end + dir * 10 + n * 8, 'v', _v);
+    canvas.drawPath(
+      head,
+      Paint()
+        ..color = Colors.white
+        ..style = PaintingStyle.stroke
+        ..strokeJoin = StrokeJoin.round
+        ..strokeWidth = 3.2,
+    );
+    canvas.drawPath(head, Paint()..color = color);
+    _label(canvas, end + dir * 11 + n * 8, 'v', color);
   }
 
   void _label(Canvas canvas, Offset o, String text, Color color) {
@@ -663,28 +807,15 @@ class _TwoBodyKeplerPainter extends CustomPainter {
   }
 
   void _drawHud(Canvas canvas, Size size) {
-    final t = state.relative.time;
     final text =
-        't = ${t.toStringAsFixed(2)}    T = ${state.relative.period.toStringAsFixed(2)}';
-    final tp = TextPainter(
-      text: TextSpan(
-        text: text,
-        style: const TextStyle(
-          color: _ink,
-          fontSize: 11,
-          fontFamily: 'Courier',
-          height: 1.35,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    final rect = RRect.fromRectAndRadius(
-      Rect.fromLTWH(8, 8, tp.width + 16, tp.height + 10),
-      const Radius.circular(8),
+        't = ${formatBinaryStarTime(timeYears, preset)}    T = ${formatBinaryStarTime(periodYears, preset)}';
+    paintDynamicsReadout(
+      canvas,
+      text,
+      twoBodyKeplerEnergy(state),
+      textColumnWidth: 280,
+      bounds: size,
     );
-    canvas.drawRRect(
-        rect, Paint()..color = const Color(0xCC263238));
-    tp.paint(canvas, const Offset(16, 13));
   }
 
   @override

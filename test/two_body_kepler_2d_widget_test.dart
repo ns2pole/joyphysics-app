@@ -22,8 +22,8 @@ void main() {
 
   testWidgets('再生とWikiの5プリセットが出る', (tester) async {
     await pumpSimulation(tester);
-    expect(find.text('Start'), findsOneWidget);
-    expect(find.text('リセット'), findsOneWidget);
+    expect(find.byIcon(Icons.play_arrow), findsOneWidget);
+    expect(find.byIcon(Icons.restore), findsOneWidget);
     expect(find.text('等質量'), findsOneWidget);
     expect(find.text('冥王星-カロン'), findsOneWidget);
     expect(find.text('地球-月'), findsOneWidget);

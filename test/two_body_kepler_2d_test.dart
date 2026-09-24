@@ -92,6 +92,80 @@ void main() {
     expect(p['e']!, greaterThan(0.5));
   });
 
+  test('表示周期は年で、アニメ用の周期とは別', () {
+    expect(
+      twoBodyKeplerPeriodYears(a: 1, preset: TwoBodyKeplerPreset.sunEarth),
+      closeTo(1, 1e-12),
+    );
+    expect(
+      twoBodyKeplerPeriodYears(a: 1, preset: TwoBodyKeplerPreset.earthMoon),
+      closeTo(kEarthSiderealMonthDays / kDaysPerJulianYear, 1e-12),
+    );
+    expect(
+      twoBodyKeplerPeriodYears(a: 1, preset: TwoBodyKeplerPreset.charon),
+      closeTo(kPlutoCharonPeriodDays / kDaysPerJulianYear, 1e-12),
+    );
+    final earthBinary = twoEarthsAtOneAuPeriodYears();
+    expect(earthBinary, closeTo(math.sqrt(kSunPerEarthMass / 2), 1e-12));
+    expect(
+      twoBodyKeplerPeriodYears(a: 1, preset: TwoBodyKeplerPreset.equalCircle),
+      closeTo(earthBinary, 1e-12),
+    );
+    expect(
+      twoBodyKeplerPeriodYears(a: 1, preset: TwoBodyKeplerPreset.equalEllipse),
+      closeTo(earthBinary, 1e-12),
+    );
+    expect(formatBinaryStarTime(earthBinary, TwoBodyKeplerPreset.equalCircle),
+        '408 年');
+    const a = 0.5;
+    expect(
+      twoBodyKeplerPeriodYears(a: a, preset: TwoBodyKeplerPreset.sunEarth),
+      closeTo(math.pow(a, 1.5), 1e-12),
+    );
+    expect(
+      keplerPeriod(1, gm: kTwoBodyKeplerGM),
+      closeTo(2 * math.pi, 1e-12),
+    );
+    expect(formatBinaryStarYears(1), '1.00 年');
+    expect(
+      formatBinaryStarTime(1, TwoBodyKeplerPreset.sunEarth),
+      '1.00 年',
+    );
+    expect(
+      formatBinaryStarTime(
+        kEarthSiderealMonthDays / kDaysPerJulianYear,
+        TwoBodyKeplerPreset.earthMoon,
+      ),
+      '27.32 日',
+    );
+    expect(
+      formatBinaryStarTime(
+        kPlutoCharonPeriodDays / kDaysPerJulianYear,
+        TwoBodyKeplerPreset.charon,
+      ),
+      '6.387 日',
+    );
+  });
+
+  test('運動エネルギーは各星の和で、軽い星の方が大きい', () {
+    final state = evolveTwoBodyKepler(a1: 1 / 301, a2: 300 / 301, e: 0, phase: 0);
+    final ledger = twoBodyKeplerEnergy(state);
+    expect(ledger.kineticPortions, hasLength(2));
+    expect(
+      ledger.kineticPortions[0].value + ledger.kineticPortions[1].value,
+      closeTo(ledger.kinetic, 1e-9),
+    );
+    expect(
+      ledger.kineticPortions[0].value,
+      closeTo(0.5 * state.params.m1 * state.speed1 * state.speed1, 1e-12),
+    );
+    expect(
+      ledger.kineticPortions[1].value,
+      greaterThan(ledger.kineticPortions[0].value),
+    );
+    expect(ledger.kinetic + ledger.potential, closeTo(ledger.scale, 1e-8));
+  });
+
   test('力学の2体問題カテゴリに連星がある', () {
     final dynamics = categoriesData.firstWhere((c) => c.name == '力学');
     final twoBody = dynamics.subcategories.firstWhere((s) => s.name == '2体問題');

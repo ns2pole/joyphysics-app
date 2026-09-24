@@ -20,11 +20,12 @@ void main() {
     await tester.pump();
   }
 
-  testWidgets('初期条件プリセットの3ボタンが出る', (tester) async {
+  testWidgets('初期条件プリセットの4ボタンが出る', (tester) async {
     await pumpSimulation(tester);
     expect(find.text('遠ざけて配置'), findsOneWidget);
     expect(find.text('近づけて配置'), findsOneWidget);
-    expect(find.text('片方のみ初期速度あり'), findsOneWidget);
+    expect(find.text('右のみ初速あり'), findsOneWidget);
+    expect(find.text('左のみ初速あり'), findsOneWidget);
   });
 
   testWidgets('遠ざけて配置を押すと間隔が自然長より広がる', (tester) async {
