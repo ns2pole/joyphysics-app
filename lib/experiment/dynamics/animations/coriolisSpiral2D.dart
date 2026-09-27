@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import 'package:joyphysics/experiment/playback_controls.dart';
@@ -19,6 +20,33 @@ const double kSpiralMinM = 0.50;
 const double kSpiralMaxM = 4.00;
 const double kSpiralDefaultM = 1.00;
 const double kSpiralSideBySideWidth = 640.0;
+/// 静止モードで原点に潰さないための初期距離。
+const double kSpiralDefaultRestY0 = 2.00;
+const String kSpiralRestId = 'rest';
+
+const String kSpiralMotionLatex = r"""
+  <div class="common-box">ポイント</div>
+  <p>慣性系から見て、物体は $y$ 軸上の $y=y_0$ から速度 $v$ で等速直線運動します。$v>0$ は原点から遠ざかる向き、$v<0$ は原点へ向かう向きです。向かうときは原点を通り過ぎて反対側へ出ます。働く力はありません。これを、角速度 $\omega$ で回転する座標系から見ます。広い画面では左右、狭い画面では上下です。上または左が地上、下または右がその人の座標系です。</p>
+  <p>真の力は $\vec{0}$ なので、回転系の運動方程式は</p>
+  <p>$$\begin{cases}\tilde{x}''(t)=2\omega\tilde{y}'(t)+\omega^{2}\tilde{x}(t)\\ \tilde{y}''(t)=-2\omega\tilde{x}'(t)+\omega^{2}\tilde{y}(t)\end{cases}$$</p>
+  <p>$t=0$ で二つの座標系の軸が重なるときの解は</p>
+  <p>$$\tilde{x}(t)=(y_0+vt)\sin\omega t,\quad \tilde{y}(t)=(y_0+vt)\cos\omega t$$</p>
+  <p>原点からの距離は $r=\lvert y_0+vt\rvert$ です。$y_0=0$ で $v>0$ のあいだは、回転系の $y$ 軸から測った角 $\theta=\omega t$ を使うと</p>
+  <p>$$r=\frac{v}{\omega}\theta$$</p>
+  <p>原点を過ぎると螺旋は一度すぼまってから、反対側で再び広がります。コリオリ力に入る速度は、この回転している座標系から見た速度で、向きは進行方向の右です。</p>
+""";
+
+/// 静止は等速直線運動の $v=0$ の特別な場合。距離は $R=\lvert y_0\rvert$。
+const String kSpiralRestLatex = r"""
+  <div class="common-box">ポイント</div>
+  <p>水平な床の上で、物体は止まっています。働く力はありません。中心にいる人が角速度 $\omega$ で回ってこの物体を見ます。広い画面では左右、狭い画面では上下です。上または左が地上、下または右がその人の座標系です。これは等速直線運動で $v=0$ にした特別な場合で、中心からの距離は $R=\lvert y_0\rvert$ です。</p>
+  <p>人から見ると、物体は半径 $R$ の円周上を速さ $\omega R$ で動きます。この見かけの円運動に必要な向心力は内向きの</p>
+  <p>$$m\frac{(\omega R)^{2}}{R}=m\omega^{2}R$$</p>
+  <p>人の座標系では、外向きの遠心力 $\displaystyle m\omega^{2}R$ と、内向きのコリオリ力 $\displaystyle 2m\omega^{2}R$ が働きます。外向きを正とすると</p>
+  <p>$$F_{\mathrm{cen}}=m\omega^{2}R,\quad F_{\mathrm{Cor}}=-2m\omega^{2}R$$</p>
+  <p>合力は内向きの $\displaystyle m\omega^{2}R$ で、見かけの向心力と一致します。コリオリ力に入る速度は、この回転している座標系から見た速度です。床の模様は地上に固定されているので、物体といっしょに逆向きへ回って見えます。</p>
+""";
+
 
 class SpiralParams {
   const SpiralParams({
@@ -119,14 +147,19 @@ SpiralRotatingSample spiralRotatingAt(SpiralParams params, double t) {
   );
 }
 
-String spiralCaption() {
+String spiralCaption({bool rest = false}) {
+  if (rest) {
+    return '地上では物体は止まっていて、力は働いていない。\n'
+        '中心の人が回って見ると、物体は円を描く。\n'
+        '内向きのコリオリ力と外向きの遠心力の合力が、見かけの向心力。';
+  }
   return '地上では y 軸上を等速直線運動する。力は働いていない。\n'
       '+v は原点から遠ざかり、-v は原点へ向かって通り過ぎる。\n'
       '回って見ると螺旋を描き、コリオリ力は進行方向の右向き。';
 }
 
 final coriolisSpiral2D = Video(
-  isNew: true,
+  isNew: false,
   isSimulation: true,
   category: 'dynamics',
   iconName: 'dynamics',
@@ -134,17 +167,7 @@ final coriolisSpiral2D = Video(
   videoURL: '',
   equipment: [],
   costRating: '★',
-  latex: r"""
-  <div class="common-box">ポイント</div>
-  <p>慣性系から見て、物体は $y$ 軸上の $y=y_0$ から速度 $v$ で等速直線運動します。$v>0$ は原点から遠ざかる向き、$v<0$ は原点へ向かう向きです。向かうときは原点を通り過ぎて反対側へ出ます。働く力はありません。これを、角速度 $\omega$ で回転する座標系から見ます。広い画面では左右、狭い画面では上下です。上または左が地上、下または右がその人の座標系です。</p>
-  <p>真の力は $\vec{0}$ なので、回転系の運動方程式は</p>
-  <p>$$\begin{cases}\tilde{x}''(t)=2\omega\tilde{y}'(t)+\omega^{2}\tilde{x}(t)\\ \tilde{y}''(t)=-2\omega\tilde{x}'(t)+\omega^{2}\tilde{y}(t)\end{cases}$$</p>
-  <p>$t=0$ で二つの座標系の軸が重なるときの解は</p>
-  <p>$$\tilde{x}(t)=(y_0+vt)\sin\omega t,\quad \tilde{y}(t)=(y_0+vt)\cos\omega t$$</p>
-  <p>原点からの距離は $r=\lvert y_0+vt\rvert$ です。$y_0=0$ で $v>0$ のあいだは、回転系の $y$ 軸から測った角 $\theta=\omega t$ を使うと</p>
-  <p>$$r=\frac{v}{\omega}\theta$$</p>
-  <p>原点を過ぎると螺旋は一度すぼまってから、反対側で再び広がります。コリオリ力に入る速度は、この回転している座標系から見た速度で、向きは進行方向の右です。</p>
-""",
+  latex: kSpiralMotionLatex,
   experimentWidgets: [
     PhysicsSimulationView(
       simulation: CoriolisSpiral2DSimulation(),
@@ -166,6 +189,8 @@ class CoriolisSpiral2DSimulation extends PhysicsSimulation {
         );
 
   final ValueNotifier<double> simTime = ValueNotifier(0.0);
+  final ValueNotifier<String> _explanationHtml =
+      ValueNotifier<String>(kSpiralMotionLatex);
 
   static const double _playback = 1;
 
@@ -177,10 +202,21 @@ class CoriolisSpiral2DSimulation extends PhysicsSimulation {
   });
 
   @override
-  String? get situation => '慣性系で見ると、y 軸上を等速直線運動する物体';
+  String? get situation => _rest
+      ? '慣性系で見ると、止まっている物体'
+      : '慣性系で見ると、y 軸上を等速直線運動する物体';
+
+  @override
+  ValueListenable<String>? get explanationHtmlListenable => _explanationHtml;
 
   ValueNotifier<bool> get running => _loop.running;
   Map<String, double> _latestParams = {};
+  Set<String> _activeIds = {};
+  void Function(String key, double value)? _updateParam;
+  void Function(Set<String> ids)? _updateActiveIds;
+  double _vBeforeRest = kSpiralDefaultV;
+
+  bool get _rest => _activeIds.contains(kSpiralRestId);
 
   @override
   double aspectRatioForWidth(double width) {
@@ -203,6 +239,45 @@ class CoriolisSpiral2DSimulation extends PhysicsSimulation {
     return SpiralParams.fromMap(_latestParams);
   }
 
+  void _syncExplanation() {
+    final next = _rest ? kSpiralRestLatex : kSpiralMotionLatex;
+    if (_explanationHtml.value != next) {
+      _explanationHtml.value = next;
+    }
+  }
+
+  void _setRestMode(bool on) {
+    final next = Set<String>.from(_activeIds);
+    if (on) {
+      next.add(kSpiralRestId);
+      _vBeforeRest = _params.v.abs() < 1e-9 ? kSpiralDefaultV : _params.v;
+      _updateParam?.call('v', 0);
+      if (_params.y0.abs() < 1e-9) {
+        _updateParam?.call('y0', kSpiralDefaultRestY0);
+      }
+    } else {
+      next.remove(kSpiralRestId);
+      _updateParam?.call('v', _vBeforeRest);
+    }
+    _activeIds = next;
+    _updateActiveIds?.call(next);
+    _syncExplanation();
+  }
+
+  Widget _restChip() {
+    return Align(
+      alignment: Alignment.center,
+      child: FilterChip(
+        label: const Text('静止 (v = 0)', style: TextStyle(fontSize: 13)),
+        selected: _rest,
+        onSelected: _setRestMode,
+        selectedColor: const Color(0xFF6A1B9A).withOpacity(0.25),
+        checkmarkColor: const Color(0xFF6A1B9A),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      ),
+    );
+  }
+
   void start() {
     if (running.value) return;
     if (simTime.value >= _params.turn - 1e-3) simTime.value = 0.0;
@@ -217,11 +292,27 @@ class CoriolisSpiral2DSimulation extends PhysicsSimulation {
   }
 
   @override
+  Widget? buildFormulaOverlay(Map<String, double> parameters) {
+    _latestParams = Map<String, double>.from(parameters);
+    if (_rest) {
+      return const FormulaDisplay(
+        r'\displaystyle F_{\mathrm{cen}}+F_{\mathrm{Cor}}=-m\omega^{2}R',
+      );
+    }
+    return const FormulaDisplay(
+      r'\displaystyle \tilde{x}=(y_{0}+vt)\sin\omega t',
+    );
+  }
+
+  @override
   Widget? buildExtraControls(
     BuildContext context,
     Set<String> activeIds,
     void Function(Set<String> ids) updateActiveIds,
   ) {
+    _activeIds = Set<String>.from(activeIds);
+    _updateActiveIds = updateActiveIds;
+    _syncExplanation();
     return ValueListenableBuilder<bool>(
       valueListenable: running,
       builder: (context, isRunning, _) {
@@ -229,7 +320,7 @@ class CoriolisSpiral2DSimulation extends PhysicsSimulation {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              spiralCaption(),
+              spiralCaption(rest: _rest),
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 12, height: 1.4, color: Color(0xFF546E7A)),
             ),
@@ -252,28 +343,42 @@ class CoriolisSpiral2DSimulation extends PhysicsSimulation {
     void Function(String key, double value) updateParam,
   ) {
     _latestParams = Map<String, double>.from(parameters);
+    _updateParam = updateParam;
     final p = _params;
     final frame = spiralRotatingAt(p, simTime.value);
+    final rest = _rest;
     return [
-      const Text(
-        '地上では y 軸上の等速直線運動。+v は原点から遠ざかる',
-        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+      _restChip(),
+      const SizedBox(height: 6),
+      Text(
+        rest
+            ? '物体は地上で静止。中心の人が角速度 ω で回る（R = |y0|）'
+            : '地上では y 軸上の等速直線運動。+v は原点から遠ざかる',
+        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
       ),
       _SpiralSlider(
         label: 'v',
         value: p.v,
         min: kSpiralMinV,
         max: kSpiralMaxV,
-        onChanged: (v) => updateParam('v', v),
+        onChanged: rest
+            ? null
+            : (v) {
+                if (v.abs() < 1e-9) {
+                  _setRestMode(true);
+                } else {
+                  updateParam('v', v);
+                }
+              },
         semanticLabel: '速度 v。正は原点から遠ざかる',
       ),
       _SpiralSlider(
-        label: 'y0',
+        label: rest ? 'R' : 'y0',
         value: p.y0,
         min: kSpiralMinY0,
         max: kSpiralMaxY0,
         onChanged: (v) => updateParam('y0', v),
-        semanticLabel: '初期位置 y0',
+        semanticLabel: rest ? '中心からの距離 R（y0）' : '初期位置 y0',
       ),
       _SpiralSlider(
         label: 'ω',
@@ -294,10 +399,15 @@ class CoriolisSpiral2DSimulation extends PhysicsSimulation {
       Padding(
         padding: const EdgeInsets.only(top: 4),
         child: Text(
-          'r = ${frame.radius.toStringAsFixed(2)} m    '
-          'θ = ${(p.omega * simTime.value).toStringAsFixed(2)} rad\n'
-          'コリオリ ${frame.coriolis.toStringAsFixed(2)} N    '
-          '遠心力 ${frame.centrifugal.toStringAsFixed(2)} N',
+          rest
+              ? 'R = ${frame.radius.toStringAsFixed(2)} m    '
+                  '速さ ${frame.speed.toStringAsFixed(2)} m/s（人から見た値）\n'
+                  'コリオリ ${frame.coriolis.toStringAsFixed(2)} N    '
+                  '遠心力 ${frame.centrifugal.toStringAsFixed(2)} N'
+              : 'r = ${frame.radius.toStringAsFixed(2)} m    '
+                  'θ = ${(p.omega * simTime.value).toStringAsFixed(2)} rad\n'
+                  'コリオリ ${frame.coriolis.toStringAsFixed(2)} N    '
+                  '遠心力 ${frame.centrifugal.toStringAsFixed(2)} N',
           style: const TextStyle(fontSize: 12, fontFamily: 'Courier', color: Color(0xFF37474F)),
         ),
       ),
@@ -315,6 +425,8 @@ class CoriolisSpiral2DSimulation extends PhysicsSimulation {
     Set<String> activeIds,
   ) {
     _latestParams = Map<String, double>.from(parameters);
+    _activeIds = Set<String>.from(activeIds);
+    _syncExplanation();
     return AnimatedBuilder(
       animation: Listenable.merge([running, simTime]),
       builder: (context, _) {
@@ -347,7 +459,7 @@ class _SpiralSlider extends StatelessWidget {
   final double value;
   final double min;
   final double max;
-  final ValueChanged<double> onChanged;
+  final ValueChanged<double>? onChanged;
   final String semanticLabel;
 
   @override
@@ -463,7 +575,18 @@ class _SpiralPainter extends CustomPainter {
     if (ground) {
       _vectorArrow(canvas, of, ball, lab.vx, lab.vy, 18, _velocity, 'v');
     } else {
-      _forceArrow(canvas, of, ball, rotating.coriolisX, rotating.coriolisY, _coriolis, 'コリオリ', dashed: true);
+      final sep = _overlaps(rotating) ? 8.0 : 0.0;
+      _forceArrow(
+        canvas,
+        of,
+        ball,
+        rotating.coriolisX,
+        rotating.coriolisY,
+        _coriolis,
+        'コリオリ',
+        dashed: true,
+        shift: -sep,
+      );
       _forceArrow(
         canvas,
         of,
@@ -473,7 +596,7 @@ class _SpiralPainter extends CustomPainter {
         _centrifugal,
         '遠心力',
         dashed: true,
-        shift: _overlaps(rotating) ? 11 : 0,
+        shift: sep,
       );
       _vectorArrow(canvas, of, ball, rotating.vxTilde, rotating.vyTilde, 14, _velocity, '速度');
     }

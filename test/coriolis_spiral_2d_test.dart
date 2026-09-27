@@ -49,10 +49,28 @@ void main() {
     expect(frame.radius, closeTo(2, 1e-12));
   });
 
-  test('力学の慣性力に等速直線運動の記事がある', () {
+  test('力学の慣性力に等速直線運動の記事があり、静止物体の単独記事はない', () {
     final dynamics = categoriesData.firstWhere((c) => c.name == '力学');
     final sections = dynamics.subcategories.where((s) => s.name == '慣性力');
-    expect(sections.single.videos, contains(coriolisSpiral2D));
+    final videos = sections.single.videos;
+    expect(videos, contains(coriolisSpiral2D));
     expect(coriolisSpiral2D.title, '遠心力とコリオリ力(等速直線運動)');
+    expect(videos.any((v) => v.title.contains('静止物体')), isFalse);
+  });
+
+  test('v = 0 なら半径 |y0| の円運動で、遠心力とコリオリはつり合う向心力になる', () {
+    const rest = SpiralParams(y0: 2, v: 0, omega: 1.5, mass: 1);
+    final frame = spiralRotatingAt(rest, 0.4);
+    expect(frame.radius, closeTo(2, 1e-12));
+    expect(frame.centrifugal, closeTo(rest.mass * rest.omega * rest.omega * 2, 1e-9));
+    expect(frame.coriolis, closeTo(2 * rest.mass * rest.omega * rest.omega * 2, 1e-9));
+  });
+
+  test('静止モード用の解説は v=0 の特別な場合として書かれている', () {
+    expect(kSpiralRestLatex.contains(r'v=0'), isTrue);
+    expect(kSpiralRestLatex.contains(r'm\omega^{2}R'), isTrue);
+    expect(kSpiralMotionLatex.contains('等速直線運動'), isTrue);
+    final sim = CoriolisSpiral2DSimulation();
+    expect(sim.explanationHtmlListenable!.value, kSpiralMotionLatex);
   });
 }
