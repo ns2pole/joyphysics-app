@@ -7,6 +7,8 @@ import './thermo_process_auto.dart';
 /// 定圧変化（等圧変化）のシミュレーション
 final isobaricProcess = createWaveVideo(
   title: "定圧変化",
+  category: 'thermoDynamics',
+  iconName: 'boyleLaw',
   latex: r"""
   <div class="common-box">定圧変化（等圧変化）</div>
   <p>気体の圧力を一定に保ったまま状態を変化させることを定圧変化といいます。</p>

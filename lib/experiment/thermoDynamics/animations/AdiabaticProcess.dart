@@ -8,6 +8,8 @@ import './thermo_process_auto.dart';
 /// 断熱変化（断熱過程）のシミュレーション
 final adiabaticProcess = createWaveVideo(
   title: "断熱変化",
+  category: 'thermoDynamics',
+  iconName: 'boyleLaw',
   latex: r"""
   <div class="common-box">断熱変化（断熱過程）</div>
   <p>外部と熱のやり取りがない状態（断熱状態）で気体の状態を変化させることを断熱変化といいます。</p>

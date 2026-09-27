@@ -7,6 +7,8 @@ import './heat_cycle_energy.dart';
 
 final heatCycleProcess = createWaveVideo(
   title: "熱機関と熱サイクル",
+  category: 'thermoDynamics',
+  iconName: 'boyleLaw',
   latex: r"""
   <div class="common-box">熱機関と熱サイクル</div>
   <p>理想気体の状態方程式 \(\frac{PV}{T}=\text{一定}\) のもとで、ピストンに \(+300\,\mathrm{hPa}\) 相当の荷物を載せ、加熱して持ち上げるサイクルを観察します。</p>

@@ -8,6 +8,8 @@ import './thermo_process_auto.dart';
 /// 等温変化（等温過程）のシミュレーション
 final isothermalProcess = createWaveVideo(
   title: "等温変化",
+  category: 'thermoDynamics',
+  iconName: 'boyleLaw',
   latex: r"""
   <div class="common-box">等温変化（等温過程）</div>
   <p>気体の温度 $T$ を一定に保ったまま状態を変化させることを等温変化といいます。</p>

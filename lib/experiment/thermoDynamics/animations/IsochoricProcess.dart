@@ -7,6 +7,8 @@ import './thermo_process_auto.dart';
 /// 定積変化（等積変化）のシミュレーション
 final isochoricProcess = createWaveVideo(
   title: "定積変化",
+  category: 'thermoDynamics',
+  iconName: 'boyleLaw',
   latex: r"""
   <div class="common-box">定積変化（等積変化）</div>
   <p>気体の体積 $V$ を一定に保ったまま状態を変化させることを定積変化といいます。</p>
