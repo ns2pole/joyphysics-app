@@ -12,7 +12,7 @@ import 'package:joyphysics/search/article_search_page.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
-import 'package:joyphysics/dataExporter.dart' show thinFilmInterference1D, rainbowDroplet2D, secondaryRainbowDroplet2D, twoBodySpring1D, keplerLaws2D, twoBodyKepler2D, freeFall1D, verticalThrow1D, movableWedge1D, elevatorInertial1D, trainPendulumInertial2D, centrifugalForce2D, coriolisCentripetal2D, eulerForce2D, coupledOscillatorTransverse1D, coupledOscillatorLongitudinal1D;
+import 'package:joyphysics/dataExporter.dart' show thinFilmInterference1D, rainbowDroplet2D, secondaryRainbowDroplet2D, twoBodySpring1D, keplerLaws2D, twoBodyKepler2D, freeFall1D, verticalThrow1D, movableWedge1D, elevatorInertial1D, trainPendulumInertial2D, centrifugalForce2D, coriolisSpiral2D, eulerForce2D, coupledOscillatorTransverse1D, coupledOscillatorLongitudinal1D;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -99,7 +99,8 @@ class JoyPhysicsApp extends StatelessWidget {
               page = VideoDetailView(video: centrifugalForce2D);
               break;
             case '/dynamics/coriolis-centripetal':
-              page = VideoDetailView(video: coriolisCentripetal2D);
+            case '/dynamics/coriolis-spiral':
+              page = VideoDetailView(video: coriolisSpiral2D);
               break;
             case '/dynamics/euler-force':
               page = VideoDetailView(video: eulerForce2D);

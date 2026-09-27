@@ -77,42 +77,57 @@ final List<FormulaEntry> formulaListData = [
   FormulaEntry(
     latex: "T = 2\\pi \\sqrt{\\frac{h}{g}}",
     relatedVideo: floatingOscillation1D,
-    categoryName: "バネ・単振動",
+    categoryName: "単振動",
   ),
   FormulaEntry(
     latex: "F(x) = -k x",
     relatedVideo: horizontalSpring1D,
-    categoryName: "バネ・単振動",
+    categoryName: "単振動",
   ),
   FormulaEntry(
     latex: "x = A \\cos\\omega t",
     relatedVideo: horizontalSpring1D,
-    categoryName: "バネ・単振動",
+    categoryName: "単振動",
   ),
   FormulaEntry(
     latex: "\\omega = \\sqrt{\\frac{k}{m}}",
     relatedVideo: horizontalSpring1D,
-    categoryName: "バネ・単振動",
+    categoryName: "単振動",
   ),
   FormulaEntry(
     latex: "\\displaystyle m\\ddot{x}=-kx-\\mu' mg\\,\\mathrm{sgn}(v)",
     relatedVideo: roughHorizontalSpring1D,
-    categoryName: "バネ・単振動",
+    categoryName: "単振動",
   ),
   FormulaEntry(
     latex: "\\displaystyle |x|\\le \\frac{\\mu mg}{k}",
     relatedVideo: roughHorizontalSpring1D,
-    categoryName: "バネ・単振動",
+    categoryName: "単振動",
   ),
   FormulaEntry(
     latex: "\\delta = \\frac{mg}{k}",
     relatedVideo: verticalSpring1D,
-    categoryName: "バネ・単振動",
+    categoryName: "単振動",
   ),
   FormulaEntry(
     latex: "T = 2\\pi \\sqrt{\\frac{m}{k}}",
     relatedVideo: verticalSpringOscillation,
-    categoryName: "バネ・単振動",
+    categoryName: "単振動",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle \\delta=\\frac{(M+m)g}{k}",
+    relatedVideo: platformSpring1D,
+    categoryName: "単振動",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle T=2\\pi\\sqrt{\\frac{M+m}{k}}",
+    relatedVideo: platformSpring1D,
+    categoryName: "単振動",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle N=\\frac{mky}{M+m}",
+    relatedVideo: platformSpring1D,
+    categoryName: "単振動",
   ),
   FormulaEntry(
     latex: "\\mu \\ddot{R} = -k(R-\\ell)",
@@ -286,17 +301,17 @@ final List<FormulaEntry> formulaListData = [
   ),
   FormulaEntry(
     latex: "\\displaystyle F_{\\mathrm{cen}}=m\\Omega^{2}R",
-    relatedVideo: coriolisCentripetal2D,
+    relatedVideo: coriolisSpiral2D,
     categoryName: "慣性力",
   ),
   FormulaEntry(
     latex: "\\displaystyle F_{\\mathrm{Cor}}=-2m\\Omega^{2}R",
-    relatedVideo: coriolisCentripetal2D,
+    relatedVideo: coriolisSpiral2D,
     categoryName: "慣性力",
   ),
   FormulaEntry(
     latex: "\\displaystyle F_{\\mathrm{cen}}+F_{\\mathrm{Cor}}=-m\\Omega^{2}R",
-    relatedVideo: coriolisCentripetal2D,
+    relatedVideo: coriolisSpiral2D,
     categoryName: "慣性力",
   ),
   FormulaEntry(
@@ -332,7 +347,7 @@ final List<FormulaEntry> formulaListData = [
   FormulaEntry(
     latex: "T = 2\\pi \\sqrt{\\frac{l}{g}}",
     relatedVideo: pendulumPeriodMeasurement,
-    categoryName: "バネ・単振動",
+    categoryName: "単振動",
   ),
   FormulaEntry(
     latex: "m_{1} v_{1} + m_{2} v_{2} = m_{1} v_{1}' + m_{2} v_{2}'",

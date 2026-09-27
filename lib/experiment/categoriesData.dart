@@ -31,19 +31,20 @@ final categoriesData = <Category>[
         ],
       ),
       Subcategory(
-        name: '単振動',
+        name: 'フックの法則',
         videos: [
-          floatingOscillation1D,
+          fook,
         ],
       ),
       Subcategory(
-        name: 'バネ',
+        name: '単振動',
         videos: [
-          fook,
           horizontalSpring1D,
           roughHorizontalSpring1D,
           verticalSpring1D,
           verticalSpringOscillation,
+          floatingOscillation1D,
+          platformSpring1D,
         ],
       ),
       Subcategory(
@@ -70,7 +71,6 @@ final categoriesData = <Category>[
           elevatorInertial1D,
           trainPendulumInertial2D,
           centrifugalForce2D,
-          coriolisCentripetal2D,
           coriolisSpiral2D,
           eulerForce2D,
         ],
@@ -118,6 +118,8 @@ final categoriesData = <Category>[
       Subcategory(
         name: '剛体',
         videos: [
+          leaningRodStatics2D,
+          pushedBlock2D,
           oneSideLift,
           buildingBlocksStability,
         ],
