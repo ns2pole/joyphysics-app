@@ -2,7 +2,7 @@ import '../../model.dart';
 
 final surfaceGravityEnergyConservation = TheoryTopic(
   title: '地上の重力下のエネルギー保存',
-  isNew: true,
+  isNew: false,
   imageAsset: 'assets/mindMap/forTopics/surfaceGravityEnergyConservation.png',
   latexContent: r"""
 <div class="theory-common-box">命題（地上の重力下のエネルギー保存）：

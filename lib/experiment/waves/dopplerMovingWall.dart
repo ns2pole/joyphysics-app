@@ -4,7 +4,7 @@ import '../../model.dart';
 
 final dopplerMovingWall = Video(
   isExperiment: true,
-  isNew: true,
+  isNew: false,
   warnsHighPitchSound: true,
   category: 'waves',
   iconName: "doppler1",

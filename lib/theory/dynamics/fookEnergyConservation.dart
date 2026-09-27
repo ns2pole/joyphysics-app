@@ -3,7 +3,7 @@ import '../../model.dart';
 final fookEnergyConservation = TheoryTopic(
   title: '単振動のエネルギー保存',
   imageAsset: 'assets/mindMap/forTopics/fookEnergyConservation.png', // 実際の画像パス
-  isNew: true,
+  isNew: false,
 
   latexContent: r"""
 <div class="theory-common-box">命題（単振動エネルギー保存）：

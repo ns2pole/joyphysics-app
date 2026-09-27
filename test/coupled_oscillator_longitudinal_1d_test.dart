@@ -251,7 +251,7 @@ void main() {
     final troughY = mid + scaled * amp;
     const labelY = 240.0 - 22.0;
     expect(kTransverseDisplacementGraphFlex, 2 * 4);
-    expect(kTransverseDisplacementGraphExaggerate, 4.0);
+    expect(kTransverseDisplacementGraphExaggerate, 2.0);
     // 強調後は谷がラベル帯に食い込むことがあるが、キャンバス内に収める
     expect(troughY, lessThan(size.height - 2));
     expect(labelY, lessThan(size.height));

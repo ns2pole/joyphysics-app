@@ -910,8 +910,8 @@ const double kTransverseDisplacementGraphBottom = 58;
 const double kTransverseDisplacementGraphAmpFrac = 0.42;
 const double kTransverseDisplacementGraphMidFrac = 0.32;
 /// 横波表示の縦方向強調（変位 u に掛ける係数）。
-const double kTransverseDisplacementGraphExaggerate = 4.0;
-const double kTransverseDisplacementGraphExaggerateClamp = 2.4;
+const double kTransverseDisplacementGraphExaggerate = 2.0;
+const double kTransverseDisplacementGraphExaggerateClamp = 1.2;
 
 double transverseDisplacementGraphAmpPx(Size size) {
   return (size.height -
@@ -1039,8 +1039,8 @@ class _TransverseDisplacementGraphPainter extends CustomPainter {
     final label = TextPainter(
       text: TextSpan(
         text: showDensityLabels
-            ? '同じ変位の横波表示（×4・区間中央の疎／密）'
-            : '同じ変位の横波表示（×4）',
+            ? '同じ変位の横波表示（×2・区間中央の疎／密）'
+            : '同じ変位の横波表示（×2）',
         style: const TextStyle(
           color: Color(0xFF102027),
           fontSize: 12,

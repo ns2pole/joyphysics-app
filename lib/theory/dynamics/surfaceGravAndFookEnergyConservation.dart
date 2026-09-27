@@ -2,7 +2,7 @@ import '../../model.dart';
 
 final surfaceGravAndFookEnergyConservation = TheoryTopic(
   title: '地上の重力と弾性力の下でのエネルギー保存',
-  isNew: true,
+  isNew: false,
   imageAsset: 'assets/mindMap/forTopics/surfaceGravAndFookEnergyConservation.png',
   latexContent: r"""
 <div class="theory-common-box">命題（バネと重力が同時に働く系のエネルギー保存）：
