@@ -201,7 +201,7 @@ String trainPendulumCaption(TrainPendulumKind kind) {
 }
 
 final trainPendulumInertial2D = Video(
-  isNew: true,
+  isNew: false,
   isSimulation: true,
   category: 'dynamics',
   iconName: 'dynamics',

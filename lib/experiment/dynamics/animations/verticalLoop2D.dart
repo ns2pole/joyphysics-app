@@ -5,7 +5,7 @@ import 'package:joyphysics/experiment/dynamics/animations/energy_gauge.dart';
 import 'package:joyphysics/experiment/playback_controls.dart';
 import 'package:joyphysics/model.dart';
 
-/// 鉛直ループ。$g=9.8\,\mathrm{m/s^2}$、半径 $R=1\,\mathrm{m}$。再生だけ遅くする。
+/// ジェットコースター。$g=9.8\,\mathrm{m/s^2}$、半径 $R=1\,\mathrm{m}$。レールは固定で、スライダーは出発高さだけ。
 const double kLoopG = 9.8;
 const double kLoopR = 1.0;
 const double kLoopMinH = 0.40;
@@ -97,6 +97,9 @@ class LoopSim {
   late double heightRatio;
 
   double get h => heightRatio * kLoopR;
+
+  /// 描く斜面の高さ。出発高さでは変えない。
+  double get trackH => kLoopMaxH * kLoopR;
   double get run => 1.8 * kLoopR;
   double get xJoin => -0.75 * kLoopR;
   double get xTop => xJoin - run;
@@ -133,14 +136,13 @@ class LoopSim {
     heightRatio = nextH.clamp(kLoopMinH, kLoopMaxH).toDouble();
     phase = LoopPhase.ramp;
     t = 0;
-    xi = 0;
     xiDot = 0;
+    xi = _releaseXi();
     theta = 0;
     thetaDot = 0;
-    x = xTop;
-    y = h;
     vx = 0;
     vy = 0;
+    _syncRampKinematics();
     flightArmed = false;
     finished = false;
     roundTrips = 0;
@@ -231,23 +233,28 @@ class LoopSim {
     final last = trail.last;
     if ((last.dx - x).abs() + (last.dy - y).abs() < 0.01) return;
     trail.add(Offset(x, y));
-    if (trail.length > 700) trail.removeAt(0);
+  }
+
+  double _releaseXi() {
+    final ratio = (h / trackH).clamp(0.0, 1.0);
+    return 1 - math.sqrt(ratio);
   }
 
   void _syncRampKinematics() {
-    final yp = -2 * h * (1 - xi);
+    final yp = -2 * trackH * (1 - xi);
     x = xTop + run * xi;
-    y = h * (1 - xi) * (1 - xi);
+    y = trackH * (1 - xi) * (1 - xi);
     vx = run * xiDot;
     vy = yp * xiDot;
   }
 
   void _stepRamp(double stepDt) {
     final one = 1 - xi;
-    final yp = -2 * h * one;
+    final yp = -2 * trackH * one;
     final speed2 = run * run + yp * yp;
-    final xiDdot = (2 * kLoopG * h * one + 4 * h * h * one * xiDot * xiDot) /
-        speed2;
+    final xiDdot =
+        (2 * kLoopG * trackH * one + 4 * trackH * trackH * one * xiDot * xiDot) /
+            speed2;
     final prev = xiDot;
     xiDot += xiDdot * stepDt;
     xi += xiDot * stepDt;
@@ -455,11 +462,11 @@ String loopCaption(double heightRatio) {
 }
 
 final verticalLoop2D = Video(
-  isNew: true,
+  isNew: false,
   isSimulation: true,
   category: 'dynamics',
   iconName: 'dynamics',
-  title: '鉛直ループ',
+  title: 'ジェットコースター',
   videoURL: '',
   equipment: [],
   costRating: '★',
@@ -483,11 +490,11 @@ final verticalLoop2D = Video(
 class VerticalLoopSimulation extends PhysicsSimulation {
   VerticalLoopSimulation()
       : super(
-          title: '鉛直ループ',
+          title: 'ジェットコースター',
           formula: const FormulaDisplay(
             r'\displaystyle \frac{N}{m}=\frac{v^{2}}{R}+g\cos\theta',
           ),
-          aspectRatio: 2,
+          aspectRatio: 1,
           enableTime: false,
           showTimeOverlay: false,
         );
@@ -679,6 +686,9 @@ class _LoopPainter extends CustomPainter {
   final LoopSim sim;
   final LoopSample sample;
 
+  /// 質点軌道に対するボール半径。レールはこの外側に描き、ボールが床に乗る。
+  static const double _ballR = 0.08 * kLoopR;
+
   static const _bg = Color(0xFFF7FAFC);
   static const _ink = Color(0xFF37474F);
   static const _track = Color(0xFF546E7A);
@@ -692,13 +702,8 @@ class _LoopPainter extends CustomPainter {
         't = ${sample.t.toStringAsFixed(2)} s    '
         'v = ${sample.speed.toStringAsFixed(2)} m/s';
     final ledger = verticalLoopEnergy(sim.h, sample);
-    final cardBottom = dynamicsReadoutCard(
-      lines,
-      ledger,
-      textColumnWidth: 220,
-      bounds: size,
-    ).bottom;
-    final map = _mapper(size, cardBottom + 8);
+    // 数値カードの高さが変わってもレールは動かさない。
+    final map = _mapper(size, _fixedHudClearance(size));
     _drawGround(canvas, map);
     _drawRamp(canvas, map);
     _drawCircle(canvas, map);
@@ -713,45 +718,70 @@ class _LoopPainter extends CustomPainter {
     );
   }
 
+  /// 熱凡例付きの最大カード下端。アニメ中の文言変化では変えない。
+  static double _fixedHudClearance(Size size) {
+    const lines = '円の左側を滑る\n'
+        't = 00.00 s    v = 00.00 m/s';
+    const ledger = EnergyLedger(
+      kinetic: 1,
+      potential: 1,
+      dissipated: 1,
+      scale: 3,
+      legendHeat: true,
+      potentialLabel: kLabelGravity,
+    );
+    return dynamicsReadoutCard(
+          lines,
+          ledger,
+          textColumnWidth: 220,
+          bounds: size,
+        ).bottom +
+        8;
+  }
+
   _LoopMap _mapper(Size size, double hud) {
     const margin = 16.0;
     final left = sim.xTop - 0.2;
     final right = kLoopRightStopX * kLoopR + 0.3;
-    final bottom = -0.25;
-    final top = math.max(sim.h, 2 * kLoopR) + 0.35;
-    final scale = math.min(
+    // ボール半径ぶん床が下に出る分を見込む。
+    final bottom = -0.25 - _ballR;
+    final top = math.max(sim.trackH, 2 * kLoopR) + 0.35;
+    final fit = math.min(
       (size.width - 2 * margin) / (right - left),
       (size.height - hud - margin) / (top - bottom),
     );
+    final scale = fit * 1.4;
+    final midY = hud + (size.height - hud) / 2;
     return _LoopMap(
       scale: scale,
       of: (x, y) => Offset(
-        margin + (x - left) * scale,
-        hud + (top - y) * scale,
+        size.width / 2 + x * scale,
+        midY + (kLoopR - y) * scale,
       ),
     );
   }
 
   void _drawGround(Canvas canvas, _LoopMap map) {
+    // 質点は y=0。床面はボール半径ぶん下に置き、ボールが乗る。
+    final y = -_ballR;
     final paint = Paint()
       ..color = _track
-      ..strokeWidth = 2;
-    canvas.drawLine(map.of(sim.xJoin, 0), map.of(0, 0), paint);
+      ..strokeWidth = 3.2
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(map.of(sim.xJoin, y), map.of(0, y), paint);
     canvas.drawLine(
-      map.of(0, 0),
-      map.of(kLoopRightStopX * kLoopR, 0),
+      map.of(0, y),
+      map.of(kLoopRightStopX * kLoopR, y),
       paint,
     );
   }
 
   void _drawRamp(Canvas canvas, _LoopMap map) {
     final path = Path();
-    const n = 24;
+    const n = 48;
     for (var i = 0; i <= n; i++) {
       final xi = i / n;
-      final x = sim.xTop + sim.run * xi;
-      final y = sim.h * (1 - xi) * (1 - xi);
-      final p = map.of(x, y);
+      final p = map.of(_rampSurfaceX(xi), _rampSurfaceY(xi));
       if (i == 0) {
         path.moveTo(p.dx, p.dy);
       } else {
@@ -763,22 +793,43 @@ class _LoopPainter extends CustomPainter {
       Paint()
         ..color = _track
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 2,
+        ..strokeWidth = 3.2
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
     );
+  }
+
+  /// 斜面の接線に対し、床側（下側）へボール半径ぶんずらした点。
+  double _rampSurfaceX(double xi) {
+    final one = 1 - xi;
+    final yp = -2 * sim.trackH * one;
+    final speed = math.sqrt(sim.run * sim.run + yp * yp);
+    final nx = -yp / speed;
+    final x = sim.xTop + sim.run * xi;
+    return x - _ballR * nx;
+  }
+
+  double _rampSurfaceY(double xi) {
+    final one = 1 - xi;
+    final yp = -2 * sim.trackH * one;
+    final speed = math.sqrt(sim.run * sim.run + yp * yp);
+    final ny = sim.run / speed;
+    final y = sim.trackH * one * one;
+    return y - _ballR * ny;
   }
 
   void _drawCircle(Canvas canvas, _LoopMap map) {
     final c = map.of(0, kLoopR);
+    // 内側を滑るので、レールは質点軌道より外側。
     canvas.drawCircle(
       c,
-      kLoopR * map.scale,
+      (kLoopR + _ballR) * map.scale,
       Paint()
         ..color = _track
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 2,
+        ..strokeWidth = 3.2,
     );
-    final o = map.of(0, kLoopR);
-    canvas.drawCircle(o, 2.2, Paint()..color = _ink);
+    canvas.drawCircle(c, 2.2, Paint()..color = _ink);
   }
 
   void _drawTrail(Canvas canvas, _LoopMap map) {
@@ -800,9 +851,10 @@ class _LoopPainter extends CustomPainter {
   }
 
   void _drawBall(Canvas canvas, _LoopMap map) {
+    final rPx = math.max(4.0, _ballR * map.scale);
     canvas.drawCircle(
       map.of(sample.x, sample.y),
-      math.max(4.0, 0.07 * kLoopR * map.scale),
+      rPx,
       Paint()..color = _ball,
     );
   }

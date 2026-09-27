@@ -115,7 +115,7 @@ String centrifugalCaption() {
 }
 
 final centrifugalForce2D = Video(
-  isNew: true,
+  isNew: false,
   isSimulation: true,
   category: 'dynamics',
   iconName: 'dynamics',
@@ -423,7 +423,7 @@ class _CentrifugalPainter extends CustomPainter {
       panel.right - 8,
       panel.bottom - 28,
     );
-    final reach = params.r * 1.72;
+    final reach = kCentrifugalMaxR * 1.72;
     final scale = math.min(plot.width, plot.height) / (2 * reach);
     Offset of(double x, double y) => Offset(
           plot.center.dx + x * scale,

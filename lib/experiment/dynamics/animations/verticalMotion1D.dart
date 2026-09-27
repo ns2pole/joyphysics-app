@@ -14,6 +14,9 @@ const double kVerticalMinV0 = 4.0;
 const double kVerticalMaxV0 = 12.0;
 const double kVerticalDefaultV0 = 8.0;
 const double kVerticalStrobeDt = 0.10;
+/// 表示高さ（m）。最高点に合わせてズームしない。
+const double kVerticalViewMax =
+    kVerticalMaxV0 * kVerticalMaxV0 / (2 * kVerticalG) + 0.35;
 
 enum VerticalMotionKind { freeFall, throwUp, throwDown }
 
@@ -584,9 +587,8 @@ class _VerticalMotionPainter extends CustomPainter {
   }
 
   _YMap _mapper(Size size, double marginTop) {
-    final top = verticalApexHeight(kind, params);
     const yMin = -0.15;
-    final yMax = math.max(top, 0.8) + 0.35;
+    const yMax = kVerticalViewMax;
     const marginBottom = 22.0;
     final s = (size.height - marginTop - marginBottom) / (yMax - yMin);
     final x = size.width * 0.46;

@@ -394,7 +394,7 @@ class _CircularPainter extends CustomPainter {
   }
 
   _Map _mapper(Size size, double cardBottom) {
-    final reach = params.r * 1.35;
+    final reach = kCircularMaxR * 1.35;
     const margin = 28.0;
     final hudClear = math.max(72.0, cardBottom + 8);
     final plotH = math.max(48.0, size.height - hudClear);
@@ -405,8 +405,8 @@ class _CircularPainter extends CustomPainter {
         size.width / 2 + x * scale,
         hudClear + plotH / 2 - y * scale,
       ),
-      pxPerSpeed: math.min(18.0, 70 / math.max(params.v, 0.5)),
-      pxPerForce: math.min(14.0, 90 / math.max(params.tension, 0.5)),
+      pxPerSpeed: 70 / kCircularMaxV,
+      pxPerForce: 90 / (kCircularMass * kCircularMaxV * kCircularMaxV / kCircularMinR),
     );
   }
 

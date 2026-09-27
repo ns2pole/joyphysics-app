@@ -14,6 +14,9 @@ const double kFrictionMinMu = 0.0;
 const double kFrictionMaxMu = 0.60;
 const double kFrictionDefaultMu = 0.20;
 const double kFrictionStrobeDt = 0.10;
+/// 表示幅（m）。停止距離に合わせてズームしない。μ が小さいと画面外へ出る。
+const double kFrictionViewMax =
+    kFrictionMaxV0 * kFrictionMaxV0 / (2 * 0.05 * kFrictionG);
 
 class KineticFrictionParams {
   const KineticFrictionParams({required this.v0, required this.mu});
@@ -130,7 +133,7 @@ const String kKineticFrictionCaption =
     'μ = 0 なら等速直線運動で、止まらない。';
 
 final kineticFriction1D = Video(
-  isNew: true,
+  isNew: false,
   isSimulation: true,
   category: 'dynamics',
   iconName: 'dynamics',
@@ -429,10 +432,9 @@ class _KineticFrictionPainter extends CustomPainter {
       textColumnWidth: 220,
       bounds: size,
     ).bottom;
-    final railY = math.max(size.height * 0.62, ceiling + 112);
+    final railY = math.max(size.height * 0.62, ceiling + 84);
     final map = _mapper(size);
     _drawGround(canvas, size, railY, map);
-    _drawStopMark(canvas, railY, map);
     _drawTrail(canvas, railY, map);
     _drawBlock(canvas, railY, map);
     _drawHud(canvas, lines);
@@ -441,22 +443,8 @@ class _KineticFrictionPainter extends CustomPainter {
   _XMap _mapper(Size size) {
     const left = 28.0;
     final right = size.width - 20;
-    final stop = kineticFrictionStopDistance(params);
-    late final double xMin;
-    late final double xMax;
-    if (stop != null) {
-      xMin = -0.06 * math.max(stop, 0.4);
-      xMax = math.max(stop, 0.4) * 1.22;
-    } else {
-      const window = 5.0;
-      if (sample.x < window * 0.7) {
-        xMin = -0.25;
-        xMax = window;
-      } else {
-        xMax = sample.x + window * 0.3;
-        xMin = xMax - window;
-      }
-    }
+    const xMin = -0.25;
+    const xMax = kFrictionViewMax;
     final span = xMax - xMin;
     return _XMap(
       xOf: (x) => left + (x - xMin) / span * (right - left),
@@ -475,14 +463,14 @@ class _KineticFrictionPainter extends CustomPainter {
     );
     final span = map.xMax - map.xMin;
     final step = span > 8
-        ? 2.0
+        ? 4.0
         : span > 3
-            ? 1.0
+            ? 2.0
             : span > 1
-                ? 0.5
+                ? 1.0
                 : span > 0.4
-                    ? 0.2
-                    : 0.05;
+                    ? 0.4
+                    : 0.1;
     final first = (map.xMin / step).ceil() * step;
     for (var x = first; x <= map.xMax + 1e-9; x += step) {
       final px = map.xOf(x);
@@ -497,21 +485,6 @@ class _KineticFrictionPainter extends CustomPainter {
         _label(canvas, Offset(px, railY + 12), x.toStringAsFixed(step < 0.2 ? 2 : 1), _ink);
       }
     }
-  }
-
-  void _drawStopMark(Canvas canvas, double railY, _XMap map) {
-    final stop = kineticFrictionStopDistance(params);
-    if (stop == null) return;
-    final px = map.xOf(stop);
-    final paint = Paint()
-      ..color = _force
-      ..strokeWidth = 1.4;
-    var y = railY - 92.0;
-    while (y < railY) {
-      canvas.drawLine(Offset(px, y), Offset(px, math.min(y + 6, railY)), paint);
-      y += 10;
-    }
-    _label(canvas, Offset(px, railY - 106), '停止', _force);
   }
 
   void _drawTrail(Canvas canvas, double railY, _XMap map) {

@@ -15,12 +15,12 @@ void main() {
     v0: 0,
   );
 
-  test('バネの単元に粗い床の水平バネがある', () {
-    final springs = categoriesData
+  test('単振動の単元に粗い床の水平バネがある', () {
+    final shm = categoriesData
         .firstWhere((c) => c.name == '力学')
         .subcategories
-        .firstWhere((s) => s.name == 'バネ');
-    expect(springs.videos.map((v) => v.title), contains('水平バネ（粗い床）'));
+        .firstWhere((s) => s.name == '単振動');
+    expect(shm.videos.map((v) => v.title), contains('水平バネ(粗い床)'));
     expect(roughHorizontalSpring1D.isSimulation, isTrue);
   });
 

@@ -123,6 +123,18 @@ void main() {
     expect(s.t, greaterThan(10));
   });
 
+  test('レールの形は出発高さで変わらない', () {
+    final low = LoopSim(heightRatio: kLoopMinH);
+    final high = LoopSim(heightRatio: kLoopMaxH);
+    expect(low.trackH, high.trackH);
+    expect(low.xTop, high.xTop);
+    expect(low.run, high.run);
+    expect(low.y, closeTo(kLoopMinH * kLoopR, 1e-9));
+    expect(high.y, closeTo(kLoopMaxH * kLoopR, 1e-9));
+    expect(high.x, closeTo(high.xTop, 1e-9));
+    expect(low.x, greaterThan(low.xTop));
+  });
+
   test('円運動の実験に登録されている', () {
     final dynamics = categoriesData.firstWhere((c) => c.name == '力学');
     final circular = dynamics.subcategories.firstWhere((s) => s.name == '円運動');

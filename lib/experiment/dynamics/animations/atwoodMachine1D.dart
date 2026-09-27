@@ -161,7 +161,7 @@ const String kAtwoodCaption =
     '床に着いたところで止める。着地のあとの糸のたるみは扱わない。';
 
 final atwoodMachine1D = Video(
-  isNew: true,
+  isNew: false,
   isSimulation: true,
   category: 'dynamics',
   iconName: 'dynamics',

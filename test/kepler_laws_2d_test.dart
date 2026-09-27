@@ -75,6 +75,41 @@ void main() {
     expect(s.r, closeTo(expected, 1e-9));
   });
 
+  test('重力矢印は 1/r² で、近日点が最長', () {
+    const e = kKeplerDefaultE;
+    final rMin = keplerPeriapsisRadius(a, e);
+    final rLatus = a * (1 - e * e);
+    final rApo = keplerApoapsisRadius(a, e);
+    final peri = keplerForceArrowPixels(rMin, rMin);
+    final latus = keplerForceArrowPixels(rLatus, rMin);
+    final apo = keplerForceArrowPixels(rApo, rMin);
+    expect(peri, greaterThan(latus));
+    expect(latus, greaterThan(apo));
+    expect(peri / latus, closeTo((rLatus / rMin) * (rLatus / rMin), 0.05));
+  });
+
+  test('双曲線の近日点は a(e-1) で外向きに抜けない', () {
+    const eh = 1.5;
+    final s = evolveKeplerConic(a: a, e: eh, phase: 0);
+    expect(s.r, closeTo(a * (eh - 1), 1e-9));
+    expect(s.x, closeTo(a * (eh - 1), 1e-9));
+    expect(s.y.abs(), lessThan(1e-9));
+    expect(s.vx.abs(), lessThan(1e-8));
+    expect(s.vy, closeTo(keplerPeriapsisSpeed(a, eh), 1e-8));
+    final polar = a * (eh * eh - 1) / (1 + eh * math.cos(s.theta));
+    expect(s.r, closeTo(polar, 1e-9));
+  });
+
+  test('放物線の近日点速度は脱出速度', () {
+    final s = evolveKeplerConic(a: a, e: 1, phase: 0);
+    expect(s.r, closeTo(a, 1e-9));
+    expect(s.vx.abs(), lessThan(1e-8));
+    expect(s.vy, closeTo(math.sqrt(2), 1e-8));
+    expect(keplerOrbitKindLabel(1), '放物線');
+    expect(keplerOrbitKindLabel(1.4), '双曲線');
+    expect(keplerIsEllipse(0.65), isTrue);
+  });
+
   test('重力は焦点向きで近点の方が大きい', () {
     final peri = evolveKeplerEllipse(a: a, e: e, phase: 0);
     final apo = evolveKeplerEllipse(a: a, e: e, phase: 0.5);
@@ -135,6 +170,28 @@ void main() {
     expect(s[2].t0, 2);
     expect(s[2].t1, closeTo(2.4, 1e-12));
     expect(s[2].colorIndex, 2);
+  });
+
+  test('接近中の負の時刻でも近日点側へ等時間スライスになる', () {
+    final s = keplerEqualTimeSlices(-2.4, dt: 1, keep: 3);
+    expect(s.length, 3);
+    expect(s[0].t0, -5);
+    expect(s[0].t1, -4);
+    expect(s[1].t0, -4);
+    expect(s[1].t1, -3);
+    expect(s[2].t0, -3);
+    expect(s[2].t1, closeTo(-2.4, 1e-12));
+    expect(s[2].colorIndex, -3);
+  });
+
+  test('双曲線でも面積速度は一定', () {
+    const eh = 1.5;
+    final s1 = keplerSweptAreaFromPeriapsis(a, eh, 0.1);
+    final s2 = keplerSweptAreaFromPeriapsis(a, eh, 0.2);
+    final s3 = keplerSweptAreaFromPeriapsis(a, eh, 0.3);
+    expect(s2 - s1, closeTo(s3 - s2, 1e-12));
+    final h = keplerSpecificAngularMomentum(a, eh);
+    expect(s1, closeTo(0.5 * h * 0.1 * keplerPeriod(a), 1e-12));
   });
 
   test('keep は古いスライスを落として上塗り順を保つ', () {

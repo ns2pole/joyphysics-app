@@ -26,6 +26,12 @@ const double kBounceDefaultV0 = 12.0;
 const int kBounceMaxBounces = 100;
 const double kBounceRestSpeed = 0.15;
 const double kBounceStrobeDt = 0.10;
+const double kBounceViewY1D =
+    kBounceMaxH + kBounceMaxV * kBounceMaxV / (2 * kBounceG) + 0.4;
+const double kBounceViewX2D =
+    kBounceMaxV0 * kBounceMaxV0 / kBounceG + kBounceMaxH + 0.7;
+const double kBounceViewY2D =
+    kBounceMaxH + kBounceMaxV0 * kBounceMaxV0 / (2 * kBounceG) + 0.45;
 
 enum Bounce1DKind { freeFall, throwUp, throwDown }
 
@@ -476,7 +482,7 @@ class Bounce1DSimulation extends PhysicsSimulation {
           painter: _Bounce1DPainter(
             sample: sample,
             strobes: bounceStrobe(legs, sample.t),
-            ceiling: math.max(_h + _v * _v / (2 * kBounceG), _h) + 0.4,
+            ceiling: kBounceViewY1D,
             initialEnergy: initial,
           ),
         );
@@ -815,19 +821,9 @@ class _Bounce2DPainter extends CustomPainter {
       vy: sample.vy,
       initial: initialEnergy,
     );
-    var xMax = 1.0;
-    var yMax = 0.8;
-    for (final leg in legs) {
-      xMax = math.max(xMax, leg.x0 + leg.vx * leg.dt);
-      final apexT = leg.vy0 > 0 ? leg.vy0 / kBounceG : 0.0;
-      if (apexT <= leg.dt) {
-        final apex = leg.y0 + leg.vy0 * apexT - 0.5 * kBounceG * apexT * apexT;
-        yMax = math.max(yMax, apex);
-      }
-    }
-    xMax = math.max(xMax, sample.x) + 0.7;
-    yMax = math.max(yMax, platformH) + 0.45;
-    final xBack = -math.max(2.2, xMax * 0.1);
+    var xMax = kBounceViewX2D;
+    var yMax = kBounceViewY2D;
+    final xBack = -2.2;
     const yMin = -0.25;
     const margin = 16.0;
     final cardBottom = dynamicsReadoutCard(
@@ -837,7 +833,6 @@ class _Bounce2DPainter extends CustomPainter {
       bounds: size,
     ).bottom;
     final top = math.max(margin + 100.0, cardBottom + 12);
-    // 横は跳ね返りの全長、縦は斜方投射と同じく高さで合わせる。矢印は画面上の長さのまま。
     final scaleX = (size.width - margin * 2) / (xMax - xBack);
     final scaleY = (size.height - top - margin) / (yMax - yMin);
     final ox = margin - xBack * scaleX;

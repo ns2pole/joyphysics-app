@@ -251,11 +251,11 @@ const String kRoughHorizontalSpringCaption =
     '床の色が付いた範囲が、止まれる位置。静止摩擦係数は動摩擦以上。';
 
 final roughHorizontalSpring1D = Video(
-  isNew: true,
+  isNew: false,
   isSimulation: true,
   category: 'dynamics',
   iconName: 'dynamics',
-  title: '水平バネ（粗い床）',
+  title: '水平バネ(粗い床)',
   videoURL: '',
   equipment: [],
   costRating: '★',
@@ -279,7 +279,7 @@ final roughHorizontalSpring1D = Video(
 class RoughHorizontalSpring1DSimulation extends PhysicsSimulation {
   RoughHorizontalSpring1DSimulation()
       : super(
-          title: '水平バネ（粗い床）',
+          title: '水平バネ(粗い床)',
           formula: const FormulaDisplay(
             r"\displaystyle m\ddot x=-kx-\mu' mg\,\mathrm{sgn}(v)",
           ),

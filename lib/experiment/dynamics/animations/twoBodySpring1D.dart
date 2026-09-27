@@ -6,7 +6,7 @@ import 'package:joyphysics/experiment/playback_controls.dart';
 import 'package:joyphysics/model.dart';
 
 final twoBodySpring1D = Video(
-  isNew: true,
+  isNew: false,
   isSimulation: true,
   category: 'dynamics',
   iconName: 'dynamics',
@@ -28,7 +28,7 @@ final twoBodySpring1D = Video(
   <p>各質点の位置は、重心 $R_G(t)=R_G(0)+V_G t$ から</p>
   <p>$$x_1(t)=R_G(t)-\dfrac{m_2}{m_1+m_2}R(t)$$</p>
   <p>$$x_2(t)=R_G(t)+\dfrac{m_1}{m_1+m_2}R(t)$$</p>
-  <p>質点が交差しない条件は、振幅 $A=\sqrt{(R(0)-\ell)^2+\bigl(\dfrac{\dot R(0)}{\omega}\bigr)^2}$ に対して $A<\ell$（すなわち $R_{\min}=\ell-A>0$）である。</p>
+  <p>質点が交差しない条件は、振幅 $A=\sqrt{(R(0)-\ell)^2+\Biggl(\dfrac{\dot R(0)}{\omega}\Biggr)^2}$ に対して $A<\ell$（すなわち $R_{\min}=\ell-A>0$）である。</p>
   """,
   experimentWidgets: [
     PhysicsSimulationView(

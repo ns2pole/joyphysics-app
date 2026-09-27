@@ -30,6 +30,12 @@ void main() {
     expect(s.x * s.vx + s.y * s.vy, closeTo(0, 1e-9));
   });
 
+  test('再生は 3 回転で終わる', () {
+    final end = eulerAt(params, params.duration);
+    expect(end.theta, closeTo(6 * math.pi, 1e-9));
+    expect(end.realRadial.abs(), greaterThan(eulerAt(params, params.duration / 2).realRadial.abs()));
+  });
+
   test('台上では向心力と遠心力、接線力とオイラー力がつり合う', () {
     final s = eulerAt(params, 1.2);
     expect(s.realRadial + s.centrifugal, closeTo(0, 1e-12));

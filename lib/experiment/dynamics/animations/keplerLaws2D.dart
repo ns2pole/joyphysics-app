@@ -9,7 +9,7 @@ import 'package:joyphysics/model.dart';
 export 'package:joyphysics/experiment/dynamics/animations/kepler_ellipse.dart';
 
 final keplerLaws2D = Video(
-  isNew: true,
+  isNew: false,
   isSimulation: true,
   category: 'dynamics',
   iconName: 'dynamics',
@@ -23,14 +23,16 @@ final keplerLaws2D = Video(
   <p>$$r_{\min}=a(1-e),\quad v_{\mathrm{peri}}=\sqrt{\frac{GM(1+e)}{a(1-e)}}$$</p>
   <p>軌道の形（第1法則）</p>
   <p>$$r=\frac{a(1-e^{2})}{1+e\cos\theta}$$</p>
+  <p>$e&lt;1$ の楕円がケプラーの第1法則です。$e=1$ は放物線、$e&gt;1$ は双曲線で、閉じた軌道にはなりません。</p>
   <p>時間は離心近点離角 $u$ への変数変換 $\displaystyle r=a(1-e\cos u)$ で閉じ、ケプラー方程式になる。</p>
   <p>$$nt=u-e\sin u,\quad n=\sqrt{\frac{GM}{a^{3}}}$$</p>
   <p>位置は $\displaystyle x=a(\cos u-e),\; y=a\sqrt{1-e^{2}}\sin u$。</p>
   <p>$$T=2\pi\sqrt{\frac{a^{3}}{GM}}$$</p>
   <p>より第3法則</p>
   <p>$$\frac{T^{2}}{a^{3}}=\frac{4\pi^{2}}{GM}$$</p>
-  <p>面積速度は $\displaystyle \frac{h}{2}$ で一定（第2法則）。</p>
+  <p>面積速度は $\displaystyle \frac{h}{2}$ で一定（第2法則）。中心力なら楕円だけでなく放物線・双曲線でも成り立ちます。</p>
   <p>$a=1$ は1天文単位で、$\displaystyle T=365.25$ 日です。$a$ を変えると $\displaystyle T\propto a^{3/2}$ で、半長軸を2倍にすると周期は $\displaystyle 2\sqrt{2}$ 倍です。</p>
+  <p>エネルギーゲージは真の力学的エネルギー $\displaystyle E=K-\frac{GMm}{r}$（楕円なら負）ではなく、近日点を位置エネルギーの基準にした相対量を描く。緑帯は $\displaystyle U'=GMm\left(\frac{1}{r_{\min}}-\frac{1}{r}\right)$ で、近日点から現在位置まで質量を運ぶのに外力がする仕事に等しい。枠の長さは近日点の運動エネルギーで、軌道上では $K+U'$ が一定である。</p>
   """,
   experimentWidgets: [
     PhysicsSimulationView(
@@ -42,7 +44,12 @@ final keplerLaws2D = Video(
 
 const double kKeplerMinA = 0.5;
 const double kKeplerMaxA = 2.0;
-const double kKeplerMaxE = 0.85;
+const double kKeplerMaxE = 2.5;
+
+const String kKeplerFirstLawNote =
+    '第1法則は e < 1 の楕円です。e = 1 は放物線、e > 1 は双曲線で、閉じた軌道にはなりません。';
+const String kKeplerSecondLawNote =
+    '30日ごとに面積を塗っています。中心力なら放物線・双曲線でも同じです。';
 const double kKeplerDefaultA = 1.0;
 const double kKeplerDefaultE = 0.65;
 const double kKeplerSemiMajorRatio = 2.0;
@@ -50,7 +57,7 @@ final double kKeplerPeriodRatio = 2 * math.sqrt(2);
 
 double keplerCompareSemiMajor(double a) => a * kKeplerSemiMajorRatio;
 
-enum KeplerLawsPreset { second, third }
+enum KeplerLawsPreset { first, second, third }
 
 class KeplerLawsParams {
   const KeplerLawsParams({
@@ -100,6 +107,19 @@ String formatKeplerDays(double days) {
 
 const double kKeplerAreaSliceDt = 30.0;
 
+/// 重力矢印の画面上の長さ。基準は主軌道の近日点で、$\displaystyle GM/r^{2}$ に比例する。
+/// 太陽までの隙間では切らない。
+double keplerForceArrowPixels(
+  double r,
+  double rMin, {
+  double periPx = 112,
+  double minPx = 18,
+}) {
+  final rr = math.max(r, 1e-9);
+  final rm = math.max(rMin, 1e-9);
+  return (periPx * (rm * rm) / (rr * rr)).clamp(minPx, periPx);
+}
+
 class KeplerAreaSlice {
   const KeplerAreaSlice({
     required this.t0,
@@ -112,15 +132,18 @@ class KeplerAreaSlice {
   final int colorIndex;
 }
 
-/// 時刻 $t$ までを $\Delta t$ ごとの扇形に分ける。新しいスライスが後ろ（上塗り順）。
+/// 近日点 $t=0$ から時刻 $t$ までを $\Delta t$ ごとの扇形に分ける。
+/// $t<0$（接近）も可。新しいスライスが後ろ（上塗り順）。
 List<KeplerAreaSlice> keplerEqualTimeSlices(
   double t, {
   double dt = kKeplerAreaSliceDt,
   required int keep,
 }) {
-  if (t <= 1e-12 || dt <= 0 || keep <= 0) return const [];
+  if (t.abs() <= 1e-12 || dt <= 0 || keep <= 0) return const [];
   final lastStart = (t / dt).floor();
-  final firstStart = math.max(0, lastStart - keep + 1);
+  final firstStart = t >= 0
+      ? math.max(0, lastStart - keep + 1)
+      : lastStart - keep + 1;
   final slices = <KeplerAreaSlice>[];
   for (int i = firstStart; i <= lastStart; i++) {
     final t0 = i * dt;
@@ -146,7 +169,12 @@ class KeplerLaws2DSimulation extends PhysicsSimulation {
   final ValueNotifier<double> phase = ValueNotifier(0.0);
 
   late final PlaybackLoop _loop = PlaybackLoop(onTick: (dt) {
-    phase.value += dt / keplerPeriod(_params.a);
+    final p = _params;
+    phase.value += dt / keplerPeriod(p.a);
+    if (!keplerIsEllipse(p.e)) {
+      final lim = keplerFlybyPhaseLimit(p.a, p.e);
+      if (phase.value > lim) phase.value = -lim;
+    }
   });
 
   ValueNotifier<bool> get running => _loop.running;
@@ -155,9 +183,13 @@ class KeplerLaws2DSimulation extends PhysicsSimulation {
   Set<String> _activeIds = {};
   KeplerLawsPreset? _selectedLaw;
   void Function(Set<String> ids)? _updateActiveIds;
+  void Function(String key, double value)? _updateParam;
 
   static const String idEqualArea = 'equalArea';
   static const String idCompareOrbit = 'compareOrbit';
+
+  @override
+  bool get showZoomButtons => true;
 
   @override
   Set<String> get initialActiveIds => {};
@@ -188,7 +220,9 @@ class KeplerLaws2DSimulation extends PhysicsSimulation {
 
   void resetMotion() {
     _loop.reset();
-    phase.value = 0.0;
+    final p = _params;
+    phase.value =
+        keplerIsEllipse(p.e) ? 0.0 : -keplerFlybyPhaseLimit(p.a, p.e);
   }
 
   void applyPreset(KeplerLawsPreset preset) {
@@ -201,6 +235,10 @@ class KeplerLaws2DSimulation extends PhysicsSimulation {
     _selectedLaw = preset;
     final next = <String>{};
     switch (preset) {
+      case KeplerLawsPreset.first:
+        _updateParam?.call('e', 0.5);
+        phase.value = 0.0;
+        break;
       case KeplerLawsPreset.second:
         next.add(idEqualArea);
         break;
@@ -215,6 +253,20 @@ class KeplerLaws2DSimulation extends PhysicsSimulation {
   Widget? buildFormulaOverlay(Map<String, double> parameters) {
     _rememberParams(parameters);
     final p = _params;
+    if (!keplerIsEllipse(p.e)) {
+      return Column(
+        children: [
+          const FormulaDisplay(
+            r'\displaystyle r=\frac{a|1-e^{2}|}{1+e\cos\theta}',
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '${keplerOrbitKindLabel(p.e)}。周期はありません。',
+            style: const TextStyle(fontSize: 13, fontFamily: 'Courier'),
+          ),
+        ],
+      );
+    }
     final days = keplerLawsPeriodDays(p.a);
     final ratio = keplerLawsRatioMks(p.a);
     return Column(
@@ -246,9 +298,17 @@ class KeplerLaws2DSimulation extends PhysicsSimulation {
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            if (_selectedLaw == KeplerLawsPreset.first) ...[
+              const Text(
+                kKeplerFirstLawNote,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 12, height: 1.4, color: Color(0xFF546E7A)),
+              ),
+              const SizedBox(height: 8),
+            ],
             if (_selectedLaw == KeplerLawsPreset.second) ...[
               const Text(
-                '30日ごとに面積を塗っています。',
+                kKeplerSecondLawNote,
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 12, height: 1.4, color: Color(0xFF546E7A)),
               ),
@@ -273,6 +333,7 @@ class KeplerLaws2DSimulation extends PhysicsSimulation {
               spacing: 8,
               runSpacing: 8,
               children: [
+                _lawButton('第1法則', KeplerLawsPreset.first),
                 _lawButton('第2法則', KeplerLawsPreset.second),
                 _lawButton('第3法則', KeplerLawsPreset.third),
               ],
@@ -300,6 +361,7 @@ class KeplerLaws2DSimulation extends PhysicsSimulation {
     void Function(String key, double value) updateParam,
   ) {
     _rememberParams(parameters);
+    _updateParam = updateParam;
     final p = KeplerLawsParams.fromMap(parameters);
     final rMin = keplerPeriapsisRadius(p.a, p.e);
     final vPeri = keplerPeriapsisSpeed(p.a, p.e);
@@ -353,7 +415,11 @@ class KeplerLaws2DSimulation extends PhysicsSimulation {
                 ),
                 Text('r_min = ${rMin.toStringAsFixed(2)}'),
                 Text('v_peri = ${vPeri.toStringAsFixed(2)}'),
-                Text('T = ${formatKeplerDays(days)}'),
+                Text(
+                  keplerIsEllipse(p.e)
+                      ? 'T = ${formatKeplerDays(days)}'
+                      : '${keplerOrbitKindLabel(p.e)}（周期なし）',
+                ),
               ],
             ),
           ),
@@ -378,11 +444,11 @@ class KeplerLaws2DSimulation extends PhysicsSimulation {
       animation: Listenable.merge([running, phase]),
       builder: (context, _) {
         final p = KeplerLawsParams.fromMap(parameters);
-        final main = evolveKeplerEllipse(a: p.a, e: p.e, phase: phase.value);
+        final main = evolveKeplerConic(a: p.a, e: p.e, phase: phase.value);
         KeplerOrbitState? compare;
-        if (activeIds.contains(idCompareOrbit)) {
+        if (activeIds.contains(idCompareOrbit) && keplerIsEllipse(p.e)) {
           final a2 = keplerCompareSemiMajor(p.a);
-          compare = evolveKeplerEllipse(
+          compare = evolveKeplerConic(
             a: a2,
             e: p.e,
             phase: phase.value / kKeplerPeriodRatio,
@@ -395,6 +461,7 @@ class KeplerLaws2DSimulation extends PhysicsSimulation {
             compare: compare,
             running: running.value,
             showEqualArea: activeIds.contains(idEqualArea),
+            zoom: scale,
           ),
         );
       },
@@ -459,12 +526,14 @@ class _KeplerLaws2DPainter extends CustomPainter {
     required this.compare,
     required this.running,
     required this.showEqualArea,
+    required this.zoom,
   });
 
   final KeplerOrbitState main;
   final KeplerOrbitState? compare;
   final bool running;
   final bool showEqualArea;
+  final double zoom;
 
   static const _bg = Color(0xFFF7FAFC);
   static const _sun = Color(0xFFFFB300);
@@ -498,10 +567,11 @@ class _KeplerLaws2DPainter extends CustomPainter {
     }
 
     _drawFocus(canvas, toScreen(0, 0), _sun, filled: true, label: '太陽');
-    if (main.e > 0.04) {
+    final empty = main.emptyFocusX;
+    if (empty != null) {
       _drawFocus(
         canvas,
-        toScreen(main.emptyFocusX, 0),
+        toScreen(empty, 0),
         const Color(0xFF546E7A),
         filled: false,
         label: '空の焦点',
@@ -520,6 +590,21 @@ class _KeplerLaws2DPainter extends CustomPainter {
     var xMin = main.apoapsisX;
     var xMax = main.periapsisX;
     var yMax = main.b;
+    if (!keplerIsEllipse(main.e)) {
+      xMin = 0;
+      xMax = main.periapsisX;
+      yMax = 0;
+      for (final p in keplerConicPoints(main.a, main.e, samples: 48)) {
+        xMin = math.min(xMin, p.x);
+        xMax = math.max(xMax, p.x);
+        yMax = math.max(yMax, p.y.abs());
+      }
+      final empty = main.emptyFocusX;
+      if (empty != null) {
+        xMin = math.min(xMin, empty);
+        xMax = math.max(xMax, empty);
+      }
+    }
     if (compare != null) {
       xMin = math.min(xMin, compare!.apoapsisX);
       xMax = math.max(xMax, compare!.periapsisX);
@@ -538,7 +623,8 @@ class _KeplerLaws2DPainter extends CustomPainter {
       textColumnWidth: 360,
       bounds: size,
     ).bottom + 8;
-    final s = math.min(size.width / worldW, (size.height - hudClear) / worldH);
+    final s =
+        math.min(size.width / worldW, (size.height - hudClear) / worldH) * zoom;
     final ox = (size.width - (xMin + xMax) * s) / 2;
     final oy = hudClear + (size.height - hudClear - (-yMin - yMax) * s) / 2;
     return (x, y) => Offset(ox + x * s, oy - y * s);
@@ -552,13 +638,9 @@ class _KeplerLaws2DPainter extends CustomPainter {
     double stroke,
   ) {
     final path = Path();
-    const samples = 180;
-    for (int i = 0; i <= samples; i++) {
-      final u = 2 * math.pi * i / samples;
-      final p = toScreen(
-        orbit.a * (math.cos(u) - orbit.e),
-        orbit.b * math.sin(u),
-      );
+    final pts = keplerConicPoints(orbit.a, orbit.e);
+    for (int i = 0; i < pts.length; i++) {
+      final p = toScreen(pts[i].x, pts[i].y);
       if (i == 0) {
         path.moveTo(p.dx, p.dy);
       } else {
@@ -581,10 +663,15 @@ class _KeplerLaws2DPainter extends CustomPainter {
     final periodDays = keplerLawsPeriodDays(main.a);
     if (periodDays <= 1e-9) return;
     final timeDays = main.phase * periodDays;
-    final keep = math.max(8, (2 * periodDays / kKeplerAreaSliceDt).ceil() + 1);
+    final spanDays = keplerIsEllipse(main.e)
+        ? 2 * periodDays
+        : 2 * keplerFlybyPhaseLimit(main.a, main.e).abs() * periodDays;
+    final keep = math.max(8, (spanDays / kKeplerAreaSliceDt).ceil() + 1);
     final slices = keplerEqualTimeSlices(timeDays, keep: keep);
+    final nColors = _sliceColors.length;
     for (final slice in slices) {
-      final color = _sliceColors[slice.colorIndex % _sliceColors.length];
+      final color =
+          _sliceColors[((slice.colorIndex % nColors) + nColors) % nColors];
       _fillSector(
         canvas,
         toScreen,
@@ -607,7 +694,7 @@ class _KeplerLaws2DPainter extends CustomPainter {
     const n = 32;
     for (int i = 0; i <= n; i++) {
       final ph = phase0 + (phase1 - phase0) * i / n;
-      final s = evolveKeplerEllipse(a: main.a, e: main.e, phase: ph);
+      final s = evolveKeplerConic(a: main.a, e: main.e, phase: ph);
       final p = toScreen(s.x, s.y);
       path.lineTo(p.dx, p.dy);
     }
@@ -650,9 +737,11 @@ class _KeplerLaws2DPainter extends CustomPainter {
     Offset Function(double, double) toScreen,
   ) {
     final peri = toScreen(main.periapsisX, 0);
-    final apo = toScreen(main.apoapsisX, 0);
     _label(canvas, peri.translate(0, 22), '近日点', const Color(0xFF1565C0));
-    _label(canvas, apo.translate(0, 22), '遠日点', const Color(0xFFEF6C00));
+    if (keplerIsEllipse(main.e)) {
+      final apo = toScreen(main.apoapsisX, 0);
+      _label(canvas, apo.translate(0, 22), '遠日点', const Color(0xFFEF6C00));
+    }
   }
 
   void _drawPlanet(
@@ -673,7 +762,12 @@ class _KeplerLaws2DPainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2,
     );
-    _drawForceArrow(canvas, toScreen, orbit);
+    _drawForceArrow(
+      canvas,
+      toScreen,
+      orbit,
+      rMin: keplerPeriapsisRadius(main.a, main.e),
+    );
     _drawVelocityArrow(canvas, toScreen, orbit, color);
     final sun = toScreen(0, 0);
     final inward = sun - p;
@@ -686,8 +780,9 @@ class _KeplerLaws2DPainter extends CustomPainter {
   void _drawForceArrow(
     Canvas canvas,
     Offset Function(double, double) toScreen,
-    KeplerOrbitState orbit,
-  ) {
+    KeplerOrbitState orbit, {
+    required double rMin,
+  }) {
     final acc = keplerAcceleration(orbit);
     final mag = math.sqrt(acc.x * acc.x + acc.y * acc.y);
     if (mag < 1e-8) return;
@@ -699,11 +794,7 @@ class _KeplerLaws2DPainter extends CustomPainter {
     final dir = toward / dist;
     const planetR = 12.0;
     const headLen = 12.0;
-    const minPx = 28.0;
-    const maxPx = 84.0;
-    final len = (mag * 52.0).clamp(minPx, maxPx);
-    final room = dist - planetR - 16;
-    final drawLen = math.min(len, math.max(headLen + 8, room));
+    final drawLen = keplerForceArrowPixels(orbit.r, rMin);
     final start = p + dir * planetR;
     final end = start + dir * drawLen;
     final shaftEnd = end - dir * (headLen * 0.82);
@@ -821,8 +912,11 @@ class _KeplerLaws2DPainter extends CustomPainter {
     final periodDays = keplerLawsPeriodDays(main.a);
     final tDays = main.phase * periodDays;
     final area = keplerSweptAreaFromPeriapsis(main.a, main.e, main.phase);
+    final bound = keplerIsEllipse(main.e);
     final rows = <String>[
-      't = ${formatKeplerDays(tDays)}    T = ${formatKeplerDays(periodDays)}',
+      bound
+          ? 't = ${formatKeplerDays(tDays)}    T = ${formatKeplerDays(periodDays)}'
+          : 't = ${formatKeplerDays(tDays)}    ${keplerOrbitKindLabel(main.e)}',
       'r = ${main.r.toStringAsFixed(2)}    v = ${main.speed.toStringAsFixed(2)}',
       '掃いた面積 = ${area.toStringAsFixed(2)}    (∝ t)',
     ];
@@ -854,6 +948,7 @@ class _KeplerLaws2DPainter extends CustomPainter {
         oldDelegate.main.e != main.e ||
         oldDelegate.running != running ||
         oldDelegate.showEqualArea != showEqualArea ||
+        oldDelegate.zoom != zoom ||
         oldDelegate.compare?.x != compare?.x ||
         oldDelegate.compare?.a != compare?.a;
   }

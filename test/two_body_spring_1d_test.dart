@@ -219,8 +219,10 @@ void main() {
     final twoBody = dynamics.subcategories.firstWhere((s) => s.name == '2体問題');
     expect(twoBody.videos, contains(twoBodySpring1D));
     expect(twoBodySpring1D.iconName, 'dynamics');
-    final springs = dynamics.subcategories.firstWhere((s) => s.name == 'バネ');
-    expect(springs.videos, isNot(contains(twoBodySpring1D)));
+    final shm = dynamics.subcategories.firstWhere((s) => s.name == '単振動');
+    expect(shm.videos, isNot(contains(twoBodySpring1D)));
+    final hooke = dynamics.subcategories.firstWhere((s) => s.name == 'フックの法則');
+    expect(hooke.videos, isNot(contains(twoBodySpring1D)));
     final falling = dynamics.subcategories.firstWhere((s) => s.name == '落下運動');
     expect(falling.videos, isNot(contains(twoBodySpring1D)));
     final pendulum = dynamics.subcategories.firstWhere((s) => s.name == '振り子');

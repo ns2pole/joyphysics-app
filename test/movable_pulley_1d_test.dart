@@ -79,29 +79,40 @@ void main() {
     }
   });
 
-  test('上がるとき、落ちるおもりが少し高く、定滑車に触れない', () {
+  test('最初は青が赤より下で、地面までの空きは 1:2', () {
+    for (final params in const [
+      MovablePulleyParams(m: 2, M: 2),
+      MovablePulleyParams(m: 4, M: 1),
+    ]) {
+      final start = _scene(params, 0);
+      final blueGap = start.groundY - (start.bobY0 + start.bobR);
+      final redGap = start.groundY - (start.loadY0 + start.loadR);
+      expect(start.bobY0, greaterThan(start.loadY0 + 20));
+      expect(redGap, closeTo(2 * blueGap, 0.5));
+    }
+  });
+
+  test('上がるとき、赤が地面で止まり、動滑車は定滑車に触れない', () {
     const params = MovablePulleyParams(m: 2, M: 2);
     final start = _scene(params, 0);
     final end = _scene(params, kMovablePulleyTravel);
     expect(start.risingLayout, isTrue);
-    expect(start.loadY0, lessThan(start.bobY0 - 20));
     expect(end.axleTop, greaterThan(end.fixedBottom + 20));
     expect(end.loadTop, greaterThan(end.fixedBottom + 16));
     expect((end.loadY - end.loadY0).abs(), closeTo(2 * (end.axleY - end.axleY0).abs(), 0.5));
+    expect(end.loadY + end.loadR, closeTo(end.groundY, 0.5));
     expect(end.bobY + end.bobR, lessThan(end.groundY - 8));
-    expect(end.loadY + end.loadR, lessThan(end.groundY - 8));
   });
 
-  test('下がるとき、動滑車側が少し高く、上がるおもりが定滑車に触れない', () {
+  test('下がるとき、青が地面で止まり、上がるおもりが定滑車に触れない', () {
     const params = MovablePulleyParams(m: 4, M: 1);
     final start = _scene(params, 0);
     final end = _scene(params, -kMovablePulleyTravel);
     expect(start.risingLayout, isFalse);
-    expect(start.bobY0, lessThan(start.loadY0 - 20));
     expect(start.axleTop, greaterThan(start.fixedBottom + 20));
     expect(end.loadTop, greaterThan(end.fixedBottom + 16));
     expect(end.axleTop, greaterThan(end.fixedBottom + 20));
-    expect(end.bobY + end.bobR, lessThan(end.groundY - 8));
+    expect(end.bobY + end.bobR, closeTo(end.groundY, 0.5));
     expect(end.loadY + end.loadR, lessThan(end.groundY - 8));
   });
 

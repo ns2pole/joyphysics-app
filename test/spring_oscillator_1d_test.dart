@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:joyphysics/experiment/categoriesData.dart';
 import 'package:joyphysics/experiment/dynamics/animations/springOscillator1D.dart';
+import 'package:joyphysics/experiment/dynamics/fook.dart';
 
 void main() {
   const horizontal = HorizontalSpringParams(
@@ -292,11 +293,13 @@ void main() {
     expect(vertical.period, closeTo(horizontal.period, 1e-12));
   });
 
-  test('力学のバネに水平バネと鉛直バネがある', () {
+  test('力学の単振動に水平バネと鉛直バネがある', () {
     final dynamics = categoriesData.firstWhere((c) => c.name == '力学');
-    final springs = dynamics.subcategories.firstWhere((s) => s.name == 'バネ');
-    expect(springs.videos, contains(horizontalSpring1D));
-    expect(springs.videos, contains(verticalSpring1D));
+    final shm = dynamics.subcategories.firstWhere((s) => s.name == '単振動');
+    expect(shm.videos, contains(horizontalSpring1D));
+    expect(shm.videos, contains(verticalSpring1D));
+    final hooke = dynamics.subcategories.firstWhere((s) => s.name == 'フックの法則');
+    expect(hooke.videos, [fook]);
     final falling = dynamics.subcategories.firstWhere((s) => s.name == '落下運動');
     expect(falling.videos, isNot(contains(horizontalSpring1D)));
     expect(falling.videos, isNot(contains(verticalSpring1D)));

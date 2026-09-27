@@ -152,7 +152,7 @@ MovableWedgeSample movableWedgeAt(MovableWedgeParams params, double t) {
 }
 
 final movableWedge1D = Video(
-  isNew: true,
+  isNew: false,
   isSimulation: true,
   category: 'dynamics',
   iconName: 'dynamics',
@@ -502,11 +502,19 @@ class _WedgePainter extends CustomPainter {
   void _drawScene(Canvas canvas, Rect plot, {required bool ground}) {
     final length = params.length;
     final th = params.theta;
-    final distance = wedgeCartDistance(params);
+    // 表示範囲はパラメータ最大時で固定（現在の移動距離に合わせたズームはしない）。
+    final maxCos = math.cos(kWedgeMinTheta * math.pi / 180.0);
+    final maxSin = math.sin(kWedgeMaxTheta * math.pi / 180.0);
+    final maxDistance = kWedgeMaxBlock *
+        kWedgeMaxLength *
+        maxCos /
+        (kWedgeMinM + kWedgeMaxBlock);
     final x0 = ground ? -0.15 : -0.35;
-    final x1 = ground ? distance + length * math.cos(th) + 0.35 : length * math.cos(th) + 0.55;
-    final y0 = -0.08;
-    final y1 = length * math.sin(th) + 0.55;
+    final x1 = ground
+        ? maxDistance + kWedgeMaxLength * maxCos + 0.35
+        : kWedgeMaxLength * maxCos + 0.55;
+    const y0 = -0.08;
+    final y1 = kWedgeMaxLength * maxSin + 0.55;
     final spanX = x1 - x0;
     final spanY = y1 - y0;
     final scale = math.min(plot.width / spanX, plot.height / spanY);
@@ -531,7 +539,9 @@ class _WedgePainter extends CustomPainter {
 
     if (ground) {
       _drawGhostWedge(canvas, world, 0, before: true);
-      _drawGhostWedge(canvas, world, wedgeCartDistance(params), before: false);
+      if (sample.landed) {
+        _drawGhostWedge(canvas, world, wedgeCartDistance(params), before: false);
+      }
     }
 
     final wedge = Path()

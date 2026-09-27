@@ -7,7 +7,7 @@ import 'package:joyphysics/experiment/dynamics/animations/kepler_ellipse.dart';
 import 'package:joyphysics/model.dart';
 
 final twoBodyKepler2D = Video(
-  isNew: true,
+  isNew: false,
   isSimulation: true,
   category: 'dynamics',
   iconName: 'dynamics',
@@ -23,6 +23,7 @@ final twoBodyKepler2D = Video(
   <p>近点で速度は半径に垂直なら、$(a_i,e)$ と $(r_i,v_i)$ は一対一である。第3法則は相対半長軸について</p>
   <p>$$\displaystyle \frac{T^{2}}{a^{3}}=\frac{4\pi^{2}}{G(m_1+m_2)}$$</p>
   <p>質量比が近いと重心は主星の外に出ます。地球と月、太陽と地球では重心は主星の中にあります。</p>
+  <p>エネルギーゲージは相対運動の換算質量について、近日点を位置エネルギーの基準にする（真の $E&lt;0$ は出さない）。緑帯は近日点から現在の距離まで運ぶ仕事 $\displaystyle U'=G\mu M\left(\frac{1}{r_{\min}}-\frac{1}{r}\right)$ に相当する。</p>
   """,
   experimentWidgets: [
     PhysicsSimulationView(
@@ -181,6 +182,7 @@ class TwoBodyKeplerState {
   double get cmy => params.m1 * y1 + params.m2 * y2;
 }
 
+/// 相対運動の換算質量で [keplerMechanicalLedger] と同じ基準（近日点で $U'=0$）。
 EnergyLedger twoBodyKeplerEnergy(TwoBodyKeplerState state) {
   final total = state.params.m1 + state.params.m2;
   final mu = state.params.m1 * state.params.m2 / total;

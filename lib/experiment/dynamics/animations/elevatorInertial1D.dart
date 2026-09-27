@@ -87,7 +87,7 @@ String elevatorCaption(ElevatorMotionKind kind) {
 }
 
 final elevatorInertial1D = Video(
-  isNew: true,
+  isNew: false,
   isSimulation: true,
   category: 'dynamics',
   iconName: 'dynamics',
@@ -447,12 +447,13 @@ class _ElevatorPainter extends CustomPainter {
   }
 
   void _scene(Canvas canvas, Rect plot, {required bool ground}) {
-    final travel = 0.5 * params.accel * kElevatorDuration * kElevatorDuration;
-    final yLo = ground ? -travel - 0.25 : -0.35;
-    final yHi = ground ? travel + _cabinH + 0.45 : _cabinH + 0.55;
+    final maxTravel =
+        0.5 * kElevatorMaxA * kElevatorDuration * kElevatorDuration;
+    final yLo = ground ? -0.25 : -0.35;
+    final yHi = ground ? maxTravel + _cabinH + 0.45 : _cabinH + 0.55;
     final scale = math.min(plot.width / 2.4, plot.height / (yHi - yLo));
     final floor0 = ground
-        ? (kind == ElevatorMotionKind.up ? 0.0 : travel)
+        ? (kind == ElevatorMotionKind.up ? 0.0 : maxTravel)
         : 0.0;
     final floor = floor0 + (ground ? sample.y : 0.0);
     final left = plot.center.dx - 0.55 * scale;

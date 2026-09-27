@@ -21,6 +21,8 @@ const double kInclineFrictionMinTheta = 0.0;
 const double kInclineFrictionMaxTheta = 40.0;
 const double kInclineFrictionDefaultTheta = 15.0;
 const double kInclineFrictionStrobeDt = 0.10;
+/// 斜面に沿った表示幅（m）。停止距離に合わせてズームしない。
+const double kInclineFrictionViewMax = 12.0;
 
 class KineticFrictionInclineParams {
   const KineticFrictionInclineParams({
@@ -218,7 +220,7 @@ const String kKineticFrictionInclineCaption =
     '止まっているとき μs ≥ tanθ なら滑らない。';
 
 final kineticFrictionIncline1D = Video(
-  isNew: true,
+  isNew: false,
   isSimulation: true,
   category: 'dynamics',
   iconName: 'dynamics',
@@ -562,33 +564,15 @@ class _InclineFrictionPainter extends CustomPainter {
     final map = _mapper(size, ceiling, card.height * 0.5);
     _drawRail(canvas, map);
     _drawAngle(canvas, map);
-    _drawStopMark(canvas, map);
     _drawTrail(canvas, map);
     _drawBlock(canvas, map);
     _drawHud(canvas, lines);
   }
 
   _SMap _mapper(Size size, double ceiling, double extra) {
-    final stop = kineticFrictionInclineStopDistance(params);
-    late final double sMin;
-    late final double sMax;
-    if (stop != null && stop > 0.05) {
-      sMin = -math.max(1.8, 0.30 * stop);
-      sMax = stop + math.max(0.85, 0.12 * stop);
-    } else if (stop != null) {
-      sMin = -1.7;
-      sMax = 2.6;
-    } else {
-      const window = 5.0;
-      if (sample.s < window * 0.65) {
-        sMin = -1.8;
-        sMax = window;
-      } else {
-        sMax = sample.s + window * 0.28;
-        sMin = sMax - window;
-      }
-    }
-    final span = math.max(sMax - sMin, 0.2);
+    const sMin = -1.8;
+    const sMax = kInclineFrictionViewMax;
+    final span = sMax - sMin;
     final th = params.theta;
     final down = Offset(math.cos(th), math.sin(th));
     final normal = Offset(math.sin(th), -math.cos(th));
@@ -699,29 +683,6 @@ class _InclineFrictionPainter extends CustomPainter {
     final mid = params.theta / 2;
     final labelAt = origin + Offset(math.cos(mid), math.sin(mid)) * (radius + 14);
     _label(canvas, labelAt, 'θ', _force);
-  }
-
-  void _drawStopMark(Canvas canvas, _SMap map) {
-    final stop = kineticFrictionInclineStopDistance(params);
-    if (stop == null || stop < 1e-6) return;
-    final p = map.at(stop);
-    final up = -map.normal.dy;
-    final room = math.max(0.0, p.dy - map.ceiling - 14);
-    final maxLen = up < 0.15 ? 78.0 : math.min(78.0, room / up);
-    if (maxLen < 12) return;
-    final paint = Paint()
-      ..color = _force
-      ..strokeWidth = 1.4;
-    var d = 6.0;
-    while (d < maxLen) {
-      canvas.drawLine(
-        p + map.normal * d,
-        p + map.normal * math.min(d + 6, maxLen),
-        paint,
-      );
-      d += 10;
-    }
-    _label(canvas, p + map.normal * (maxLen + 12), '停止', _force);
   }
 
   void _drawTrail(Canvas canvas, _SMap map) {

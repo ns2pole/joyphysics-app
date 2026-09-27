@@ -62,7 +62,7 @@ class MovablePulleySample {
   final double aPulleyUp;
   final double tension;
 
-  /// 見せる区間の端まで来て止めている。床には当たっていない。
+  /// 下がる側が地面に着いて止めている。
   final bool stopped;
 
   /// おもり $M$ の下向き変位。上がるときは負。
@@ -147,7 +147,8 @@ EnergyLedger movablePulleyEnergy(
   );
 }
 
-/// 画面上の配置。落ちる側を少し高くし、定滑車には触れないところで止める。
+/// 画面上の配置。青（動滑車）は赤より下。地面までの空きは 1:2。
+/// 下がる側が地面に着いたら止める。上がる側は定滑車に触れない。
 class MovablePulleyLayout {
   const MovablePulleyLayout({
     required this.fixed,
@@ -226,77 +227,29 @@ MovablePulleyLayout layoutMovablePulley({
   final loadX = fixedX + fixedR;
   final stem = 6.0;
   final groundY = height - 22;
-  const groundGap = 12.0;
   const gapPulley = 30.0;
   const gapLoad = 22.0;
 
   final minAxleY = fixedY + fixedR + gapPulley + movableR;
   final minLoadY = fixedY + fixedR + gapLoad + loadR;
-  final maxBobBottom = groundY - groundGap;
-  final maxAxleY = maxBobBottom - stem - 2 * bobR - movableR;
-  final maxLoadY = groundY - groundGap - loadR;
 
-  // 釣り合いは教科書の絵（おもり M が少し上）に揃える。
+  // 動滑車の変位を T とすると、おもり M は 2T 動く。
+  // 青の地面までの空きを T、赤を 2T にすると、どちらが下がっても地面で止まる。
+  final roomAxle = groundY - minAxleY - 2 * bobR - stem - movableR;
+  final roomLoad = groundY - minLoadY - loadR;
+  final pulleyPx = math.max(
+    12.0,
+    math.min(roomAxle / 2, math.min(roomAxle, math.min(roomLoad / 2, roomLoad / 4))),
+  );
   final risingLayout = params.balanced || params.pulleyRises;
 
-  var pulleyPx = 72.0;
-  var higherBy = 48.0;
-
-  bool fits(double travelPx, double lift) {
-    final loadPx = 2 * travelPx;
-    if (risingLayout) {
-      final axle0 = minAxleY + travelPx;
-      final bob0 = axle0 + movableR + stem + bobR;
-      final load0 = bob0 - lift;
-      final load1 = load0 + loadPx;
-      final axle1 = axle0 - travelPx;
-      if (axle0 > maxAxleY || axle1 < minAxleY - 0.5) return false;
-      if (load0 < minLoadY || load1 > maxLoadY) return false;
-      if (bob0 + bobR > maxBobBottom) return false;
-      return true;
-    }
-    final load1 = minLoadY;
-    final load0 = load1 + loadPx;
-    final bob0 = load0 - lift;
-    final axle0 = bob0 - movableR - stem - bobR;
-    final axle1 = axle0 + travelPx;
-    final bob1 = axle1 + movableR + stem + bobR;
-    if (axle0 < minAxleY || axle1 > maxAxleY) return false;
-    if (load0 > maxLoadY || load1 < minLoadY - 0.5) return false;
-    if (bob1 + bobR > maxBobBottom) return false;
-    return true;
-  }
-
-  var ok = fits(pulleyPx, higherBy);
-  while (!ok && pulleyPx > 36) {
-    pulleyPx -= 4;
-    ok = fits(pulleyPx, higherBy);
-  }
-  while (!ok && higherBy > 24) {
-    higherBy -= 4;
-    ok = fits(pulleyPx, higherBy);
-  }
-  while (!ok && pulleyPx > 16) {
-    pulleyPx -= 4;
-    ok = fits(pulleyPx, higherBy);
-  }
-
-  late final double axleY0;
-  late final double loadY0;
-  if (risingLayout) {
-    axleY0 = minAxleY + pulleyPx;
-    final bob0 = axleY0 + movableR + stem + bobR;
-    loadY0 = bob0 - higherBy;
-  } else {
-    loadY0 = minLoadY + 2 * pulleyPx;
-    final bob0 = loadY0 - higherBy;
-    axleY0 = bob0 - movableR - stem - bobR;
-  }
+  final bobY0 = groundY - pulleyPx - bobR;
+  final loadY0 = groundY - 2 * pulleyPx - loadR;
+  final axleY0 = bobY0 - bobR - stem - movableR;
 
   final pxPerMeter = pulleyPx / kMovablePulleyTravel;
   final axleY = axleY0 - sPulleyUp * pxPerMeter;
   final loadY = loadY0 + 2 * sPulleyUp * pxPerMeter;
-  final bobY0 = axleY0 + movableR + stem + bobR;
   final bobY = axleY + movableR + stem + bobR;
 
   return MovablePulleyLayout(
@@ -319,14 +272,8 @@ MovablePulleyLayout layoutMovablePulley({
   );
 }
 
-const String kMovablePulleyCaption =
-    '動滑車と質量 m は一体。おもり M が x 動くと、動滑車は x/2 動く。\n'
-    '2M > m なら動滑車は上がり、おもり M は下がる。m > 2M なら逆。\n'
-    '落ちる側を少し高くしてある。定滑車に当たる前で止める。\n'
-    '2M = m なら加速度は 0 で、放しても動かない。';
-
 final movablePulley1D = Video(
-  isNew: true,
+  isNew: false,
   isSimulation: true,
   category: 'dynamics',
   iconName: 'dynamics',
@@ -441,25 +388,10 @@ class MovablePulley1DSimulation extends PhysicsSimulation {
     return ValueListenableBuilder<bool>(
       valueListenable: running,
       builder: (context, isRunning, _) {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              kMovablePulleyCaption,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 12,
-                height: 1.4,
-                color: Color(0xFF546E7A),
-              ),
-            ),
-            const SizedBox(height: 8),
-            PlayPauseResetButtons(
-              playing: isRunning,
-              onPlayPause: isRunning ? pause : start,
-              onReset: resetMotion,
-            ),
-          ],
+        return PlayPauseResetButtons(
+          playing: isRunning,
+          onPlayPause: isRunning ? pause : start,
+          onReset: resetMotion,
         );
       },
     );

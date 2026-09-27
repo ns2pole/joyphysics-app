@@ -226,7 +226,7 @@ void main() {
     );
   });
 
-  test('鉛直ループは斜面を下るあいだ保存する', () {
+  test('ジェットコースターは斜面を下るあいだ保存する', () {
     final sim = LoopSim(heightRatio: 1.75);
     final start = verticalLoopEnergy(sim.h, sim.snapshot());
     expect(start.kinetic, closeTo(0, 1e-9));

@@ -248,7 +248,7 @@ const String kVerticalSpringCaption =
     '自然長から静かに放すと、つりあい mg/k の上下に振れる。';
 
 final horizontalSpring1D = Video(
-  isNew: true,
+  isNew: false,
   isSimulation: true,
   category: 'dynamics',
   iconName: 'dynamics',
@@ -274,7 +274,7 @@ final horizontalSpring1D = Video(
 );
 
 final verticalSpring1D = Video(
-  isNew: true,
+  isNew: false,
   isSimulation: true,
   category: 'dynamics',
   iconName: 'dynamics',
@@ -753,7 +753,13 @@ double springWireWidth(double k) => 1.15 + 3.2 * _sliderT(k, kSpringMinK, kSprin
 
 double springCoilAmp(double k) => 6.0 + 8.0 * _sliderT(k, kSpringMinK, kSpringMaxK);
 
-void paintCoilSpring(Canvas canvas, Offset start, Offset end, double k) {
+void paintCoilSpring(
+  Canvas canvas,
+  Offset start,
+  Offset end,
+  double k, {
+  int coils = 12,
+}) {
   final dir = end - start;
   final len = dir.distance;
   if (len < 1) return;
@@ -769,7 +775,7 @@ void paintCoilSpring(Canvas canvas, Offset start, Offset end, double k) {
     canvas.drawLine(start, end, paint);
     return;
   }
-  const coils = 12;
+  final nCoils = coils.clamp(4, 36);
   final amp = springCoilAmp(k);
   const loop = 0.48;
   final stubLen = math.min(10.0, len * 0.1);
@@ -779,10 +785,10 @@ void paintCoilSpring(Canvas canvas, Offset start, Offset end, double k) {
   final path = Path()..moveTo(start.dx, start.dy);
   path.lineTo(coilStart.dx, coilStart.dy);
   const samplesPerCoil = 16;
-  final samples = coils * samplesPerCoil;
+  final samples = nCoils * samplesPerCoil;
   for (var i = 1; i <= samples; i++) {
     final t = i / samples;
-    final theta = t * coils * 2 * math.pi;
+    final theta = t * nCoils * 2 * math.pi;
     final along = t * body + amp * loop * (math.cos(theta) - 1);
     final p = coilStart + u * along + perp * (amp * math.sin(theta));
     path.lineTo(p.dx, p.dy);

@@ -25,6 +25,10 @@ const double kCollisionApproach = 1.5;
 /// 静止した目。再生中もスライダーを動かしても、この範囲は変えない。
 const double kCollisionViewMin = -3.0;
 const double kCollisionViewMax = 4.0;
+
+/// 軸の左右にある余白。物体はこの外まで出て、画面から消えてから止める。
+const double kCollisionPadLeft = 28.0;
+const double kCollisionPadRight = 20.0;
 const double kCollisionStrobeDt = 0.08;
 const double kCollisionHalfAt1kg = 0.22;
 
@@ -159,11 +163,28 @@ Collision1DSample collision1DAt(Collision1DParams params, double t) {
   );
 }
 
-/// 速さがある物体が、固定した軸の中にまだいる。
-bool collision1DOnStage(Collision1DParams params, Collision1DSample sample) {
+/// 軸の外側、キャンバス端までの余白をメートルにしたもの。
+double collisionCanvasMarginMeters(double canvasWidth) {
+  final track = math.max(
+    canvasWidth - kCollisionPadLeft - kCollisionPadRight,
+    1.0,
+  );
+  final pxPerMeter = track / (kCollisionViewMax - kCollisionViewMin);
+  return math.max(kCollisionPadLeft, kCollisionPadRight) / pxPerMeter;
+}
+
+/// 速さがある物体が、画面の中にまだ残っている。
+bool collision1DOnStage(
+  Collision1DParams params,
+  Collision1DSample sample, {
+  double canvasWidth = 390,
+}) {
+  final margin = collisionCanvasMarginMeters(canvasWidth);
+  final left = kCollisionViewMin - margin;
+  final right = kCollisionViewMax + margin;
   bool movingInside(double x, double half, double v) {
     if (v.abs() < 1e-3) return false;
-    return x + half > kCollisionViewMin && x - half < kCollisionViewMax;
+    return x + half > left && x - half < right;
   }
 
   return movingInside(sample.xm, collisionHalfWidth(params.m), sample.vm) ||
@@ -195,7 +216,7 @@ const String kCollisionCaption =
     'e = 1 で m = M なら速度が入れ替わる。e = 0 なら同じ速度で進む。';
 
 final collision1D = Video(
-  isNew: true,
+  isNew: false,
   isSimulation: true,
   category: 'dynamics',
   iconName: 'dynamics',
@@ -240,12 +261,15 @@ class Collision1DSimulation extends PhysicsSimulation {
     final next = simTime.value + dt * 0.55;
     final sample = collision1DAt(_params, next);
     simTime.value = next;
-    if (!collision1DOnStage(_params, sample)) _loop.pause();
+    if (!collision1DOnStage(_params, sample, canvasWidth: _canvasWidth)) {
+      _loop.pause();
+    }
   });
 
   ValueNotifier<bool> get running => _loop.running;
 
   Map<String, double> _latestParams = {};
+  double _canvasWidth = 390;
 
   @override
   Set<String> get initialActiveIds => {};
@@ -284,7 +308,8 @@ class Collision1DSimulation extends PhysicsSimulation {
   void start() {
     if (running.value) return;
     final now = collision1DAt(_params, simTime.value);
-    if (simTime.value > 1e-3 && !collision1DOnStage(_params, now)) {
+    if (simTime.value > 1e-3 &&
+        !collision1DOnStage(_params, now, canvasWidth: _canvasWidth)) {
       simTime.value = 0.0;
     }
     _loop.start();
@@ -369,13 +394,43 @@ class Collision1DSimulation extends PhysicsSimulation {
         onChanged: (v) => updateParam('M', v),
         semanticLabel: '質量 M',
       ),
+      Padding(
+        padding: const EdgeInsets.only(top: 2, bottom: 2),
+        child: Row(
+          children: [
+            Expanded(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: ChoiceChip(
+                  label: const Text('完全非弾性', style: TextStyle(fontSize: 12)),
+                  selected: p.e <= kCollisionMinE + 1e-9,
+                  onSelected: (_) => updateParam('e', kCollisionMinE),
+                  selectedColor: const Color(0xFF6A1B9A).withOpacity(0.22),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: ChoiceChip(
+                  label: const Text('完全弾性', style: TextStyle(fontSize: 12)),
+                  selected: p.e >= kCollisionMaxE - 1e-9,
+                  onSelected: (_) => updateParam('e', kCollisionMaxE),
+                  selectedColor: const Color(0xFF1565C0).withOpacity(0.22),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
       _CollisionSlider(
         label: 'e',
         value: p.e,
         min: kCollisionMinE,
         max: kCollisionMaxE,
         onChanged: (v) => updateParam('e', v),
-        semanticLabel: '反発係数 e',
+        semanticLabel: '反発係数 e（0 が完全非弾性、1 が完全弾性）',
       ),
       _CollisionSlider(
         label: 'v',
@@ -415,14 +470,20 @@ class Collision1DSimulation extends PhysicsSimulation {
       builder: (context, _) {
         final p = Collision1DParams.fromMap(parameters);
         final sample = collision1DAt(p, simTime.value);
-        return CustomPaint(
-          size: Size.infinite,
-          painter: _CollisionPainter(
-            params: p,
-            sample: sample,
-            strobes: collision1DStrobe(p, sample.t),
-            running: running.value,
-          ),
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final width = constraints.maxWidth;
+            if (width.isFinite && width > 1) _canvasWidth = width;
+            return CustomPaint(
+              size: Size.infinite,
+              painter: _CollisionPainter(
+                params: p,
+                sample: sample,
+                strobes: collision1DStrobe(p, sample.t),
+                running: running.value,
+              ),
+            );
+          },
         );
       },
     );
@@ -537,8 +598,8 @@ class _CollisionPainter extends CustomPainter {
   }
 
   _XMap _mapper(Size size) {
-    const left = 28.0;
-    final right = size.width - 20;
+    const left = kCollisionPadLeft;
+    final right = size.width - kCollisionPadRight;
     const xMin = kCollisionViewMin;
     const xMax = kCollisionViewMax;
     final span = xMax - xMin;

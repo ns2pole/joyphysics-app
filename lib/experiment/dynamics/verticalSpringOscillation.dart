@@ -3,7 +3,7 @@ final verticalSpringOscillation = Video(
   isExperiment: true,
   category: 'dynamics', // ← 追加
     iconName: "verticalSpringOscillation",
-    title: "単振動 (鉛直バネ振り子)",
+    title: "鉛直バネ",
     videoURL: "W6dxv-MvDxo",
     equipment: ["バネ", "おもり", "スマホ"],
     costRating: "★★☆", latex: r"""

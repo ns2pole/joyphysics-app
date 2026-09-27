@@ -296,11 +296,11 @@ double? _quadTime(double a, double b, double c, double limit) {
 }
 
 final floatingOscillation1D = Video(
-  isNew: true,
+  isNew: false,
   isSimulation: true,
   category: 'dynamics',
   iconName: 'dynamics',
-  title: '浮体の単振動',
+  title: '浮力による単振動',
   videoURL: '',
   equipment: [],
   costRating: '★',
@@ -322,7 +322,7 @@ final floatingOscillation1D = Video(
 class FloatingOscillation1DSimulation extends PhysicsSimulation {
   FloatingOscillation1DSimulation()
       : super(
-          title: '浮体の単振動',
+          title: '浮力による単振動',
           formula: const FormulaDisplay(
             r'\displaystyle T=2\pi\sqrt{\frac{h}{g}}',
           ),

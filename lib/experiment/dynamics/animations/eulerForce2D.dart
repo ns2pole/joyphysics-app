@@ -23,8 +23,8 @@ class EulerParams {
   final double alpha;
   final double mass;
 
-  /// 1回転するまでの時間。$\theta=\frac{1}{2}\alpha t^{2}=2\pi$。
-  double get duration => math.sqrt(4 * math.pi / alpha);
+  /// 3回転するまでの時間。$\theta=\frac{1}{2}\alpha t^{2}=6\pi$。
+  double get duration => math.sqrt(12 * math.pi / alpha);
 
   factory EulerParams.fromMap(Map<String, double> params) {
     return EulerParams(
@@ -97,7 +97,7 @@ String eulerCaption() {
 }
 
 final eulerForce2D = Video(
-  isNew: true,
+  isNew: false,
   isSimulation: true,
   category: 'dynamics',
   iconName: 'dynamics',
@@ -352,6 +352,9 @@ class _EulerPainter extends CustomPainter {
   static const _floorB = Color(0xFFD2C3B0);
   static const _person = Color(0xFF6D4C41);
   static const _ink = Color(0xFF37474F);
+  static const _maxArrow = 72.0;
+  /// 接線成分は一定で、3回転後の中心向き力の約 $1/(12\pi)$。矢印が見える倍率。
+  static const _tangentBoost = 14.0;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -374,7 +377,7 @@ class _EulerPainter extends CustomPainter {
     canvas.save();
     canvas.clipRect(panel);
     final plot = Rect.fromLTRB(panel.left + 8, panel.top + 26, panel.right - 8, panel.bottom - 28);
-    final reach = params.r * (1.85 / 1.75);
+    final reach = kEulerMaxR * (1.85 / 1.75);
     final scale = math.min(plot.width, plot.height) / (2 * reach);
     Offset of(double x, double y) => Offset(plot.center.dx + x * scale, plot.center.dy - y * scale);
     _drawFloor(canvas, panel, of, scale, ground: ground);
@@ -412,47 +415,6 @@ class _EulerPainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.2,
     );
-    final inward = (pin - ball);
-    final inwardLen = inward.distance;
-    if (inwardLen > 8) {
-      final inDir = inward / inwardLen;
-      final side = Offset(-inDir.dy, inDir.dx);
-      _arrow(canvas, ball, inDir, _px(sample.realRadial.abs()), _real, '摩擦');
-      _arrow(canvas, ball, side, _px(sample.realTangential) * 3, _real, '摩擦');
-      if (!ground) {
-        _arrow(
-          canvas,
-          ball + side * 12,
-          -inDir,
-          _px(sample.centrifugal),
-          _centrifugal,
-          '遠心力',
-          dashed: true,
-          labelDir: side,
-        );
-        _arrow(
-          canvas,
-          ball + inDir * 12,
-          -side,
-          _px(sample.euler.abs()) * 3,
-          _euler,
-          'オイラー',
-          dashed: true,
-          labelDir: inDir,
-        );
-      } else if (sample.speed > 0.05) {
-        final velDir = _unit(sample.vx, sample.vy, of);
-        if (velDir != null) _arrow(
-          canvas,
-          ball + inDir * 12,
-          velDir,
-          (sample.speed * 16).clamp(18.0, 64.0),
-          _velocity,
-          'v',
-        );
-      }
-    }
-
     final nose = ground ? sample.theta : 0.0;
     canvas.drawCircle(pin, 7, Paint()..color = _person);
     canvas.drawLine(
@@ -465,9 +427,58 @@ class _EulerPainter extends CustomPainter {
     _text(canvas, pin + const Offset(0, 10), '人', _person);
     canvas.drawCircle(ball.translate(1.2, 1.4), 9, Paint()..color = Colors.black12);
     canvas.drawCircle(ball, 8, Paint()..color = _ball);
+    _forces(canvas, pin, ball, of, ground: ground);
   }
 
-  double _px(double newtons) => (newtons * 18).clamp(0.0, 72.0);
+  void _forces(
+    Canvas canvas,
+    Offset pin,
+    Offset ball,
+    Offset Function(double x, double y) of, {
+    required bool ground,
+  }) {
+    final inward = pin - ball;
+    final inwardLen = inward.distance;
+    if (inwardLen <= 8) return;
+    final inDir = inward / inwardLen;
+    final side = Offset(-inDir.dy, inDir.dx);
+    _arrow(canvas, ball, inDir, _px(sample.realRadial.abs()), _real, '摩擦');
+    _arrow(canvas, ball, side, _px(sample.realTangential) * _tangentBoost, _real, '摩擦');
+    if (!ground) {
+      _arrow(
+        canvas,
+        ball,
+        -inDir,
+        _px(sample.centrifugal),
+        _centrifugal,
+        '遠心力',
+        dashed: true,
+        labelDir: side,
+      );
+      _arrow(
+        canvas,
+        ball,
+        -side,
+        _px(sample.euler.abs()) * _tangentBoost,
+        _euler,
+        'オイラー',
+        dashed: true,
+        labelDir: inDir,
+      );
+    } else if (sample.speed > 0.05) {
+      final velDir = _unit(sample.vx, sample.vy, of);
+      if (velDir != null) {
+        _arrow(canvas, ball, velDir, (sample.speed * 16).clamp(18.0, 64.0), _velocity, 'v');
+      }
+    }
+  }
+
+  /// 3回転の終わりの中心向き摩擦が画面上の上限。途中で長さを止めない。
+  double _px(double newtons) {
+    final peak = params.mass * 12 * math.pi * params.alpha * params.r;
+    if (peak < 1e-9) return 0;
+    return newtons / peak * _maxArrow;
+  }
 
   Offset? _unit(double vx, double vy, Offset Function(double x, double y) of) {
     final ahead = of(vx, vy) - of(0, 0);
@@ -535,7 +546,7 @@ class _EulerPainter extends CustomPainter {
     bool dashed = false,
     Offset? labelDir,
   }) {
-    if (length < 8) return;
+    if (length < 2) return;
     final tip = origin + dir * length;
     const headLen = 9.0;
     const headHalf = 4.5;

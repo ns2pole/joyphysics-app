@@ -17,6 +17,8 @@ const double kLinearDragMinVt = 2.0;
 const double kLinearDragMaxVt = 12.0;
 const double kLinearDragDefaultVt = 5.0;
 const double kLinearDragStrobeDt = 0.20;
+/// 表示高さ（m）。最高点・落下高さに合わせてズームしない。
+const double kLinearDragViewMax = kLinearDragMaxH + 0.6;
 
 enum LinearDragKind { drop, throwUp, throwDown }
 
@@ -229,7 +231,7 @@ String linearDragCaption(LinearDragKind kind) {
 }
 
 final linearDrag1D = Video(
-  isNew: true,
+  isNew: false,
   isSimulation: true,
   category: 'dynamics',
   iconName: 'dynamics',
@@ -641,14 +643,8 @@ class _LinearDragPainter extends CustomPainter {
   }
 
   _YMap _mapper(Size size, double marginTop) {
-    final dragTop = kind == LinearDragKind.throwUp
-        ? linearDragApexHeight(params)
-        : params.h;
-    final vacuumTop = kind == LinearDragKind.throwUp
-        ? params.v0 * params.v0 / (2 * kLinearDragG)
-        : params.h;
     const yMin = -0.15;
-    final yMax = math.max(dragTop, vacuumTop) + 0.6;
+    const yMax = kLinearDragViewMax;
     const marginBottom = 22.0;
     final s = (size.height - marginTop - marginBottom) / (yMax - yMin);
     return _YMap(

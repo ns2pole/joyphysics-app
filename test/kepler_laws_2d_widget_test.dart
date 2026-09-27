@@ -20,17 +20,17 @@ void main() {
     await tester.pump();
   }
 
-  testWidgets('再生と第2・第3法則ボタンだけが出る', (tester) async {
+  testWidgets('再生と第1・第2・第3法則ボタンが出る', (tester) async {
     await pumpSimulation(tester);
     expect(find.byIcon(Icons.play_arrow), findsOneWidget);
     expect(find.byIcon(Icons.restore), findsOneWidget);
-    expect(find.text('第1法則'), findsNothing);
+    expect(find.byIcon(Icons.add), findsOneWidget);
+    expect(find.byIcon(Icons.remove), findsOneWidget);
+    expect(find.text('第1法則'), findsOneWidget);
+    expect(find.text(kKeplerFirstLawNote), findsNothing);
     expect(find.text('第2法則'), findsOneWidget);
     expect(find.text('第3法則'), findsOneWidget);
-    expect(
-      find.text('30日ごとに面積を塗っています。'),
-      findsNothing,
-    );
+    expect(find.text(kKeplerSecondLawNote), findsNothing);
     expect(
       find.text('外側は a を2倍。周期は 2√2 倍なので、内側が3周いかないうちに外側が1周します。'),
       findsNothing,
@@ -66,9 +66,14 @@ void main() {
     await tester.pump();
     expect(find.text(aText), findsWidgets);
     expect(find.text(eText), findsWidgets);
-    expect(
-      find.text('30日ごとに面積を塗っています。'),
-      findsOneWidget,
-    );
+    expect(find.text(kKeplerSecondLawNote), findsOneWidget);
+
+    await tester.ensureVisible(find.text('第1法則'));
+    await tester.tap(find.text('第1法則'));
+    await tester.pump();
+    expect(find.text(aText), findsWidgets);
+    expect(find.text('0.50'), findsWidgets);
+    expect(find.text(kKeplerFirstLawNote), findsOneWidget);
+    expect(find.text(kKeplerSecondLawNote), findsNothing);
   });
 }

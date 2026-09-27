@@ -100,6 +100,27 @@ void main() {
     final gone = collision1DAt(equal, hit + 3);
     expect(collision1DOnStage(equal, gone), isFalse);
     expect(gone.xM - collisionHalfWidth(equal.capitalM), greaterThan(kCollisionViewMax));
+
+    final half = collisionHalfWidth(equal.capitalM);
+    final margin = collisionCanvasMarginMeters(390);
+    final stillInPad = Collision1DSample(
+      t: 1,
+      xm: -10,
+      xM: kCollisionViewMax + half + margin * 0.4,
+      vm: 0,
+      vM: 1,
+      collided: true,
+    );
+    expect(collision1DOnStage(equal, stillInPad, canvasWidth: 390), isTrue);
+    final offCanvas = Collision1DSample(
+      t: 2,
+      xm: -10,
+      xM: kCollisionViewMax + half + margin + 0.05,
+      vm: 0,
+      vM: 1,
+      collided: true,
+    );
+    expect(collision1DOnStage(equal, offCanvas, canvasWidth: 390), isFalse);
     expect(gone.t, closeTo(hit + 3, 1e-12));
   });
 
