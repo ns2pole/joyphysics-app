@@ -1,7 +1,7 @@
 import 'dart:math' as math; // 準備中透かしの回転で使用
 import 'package:joyphysics/experiment/HasHeight.dart';
+import 'package:flutter/foundation.dart' show ValueListenable, kIsWeb;
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:joyphysics/LatexView.dart';
 import 'package:joyphysics/model.dart';
 import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
@@ -17,6 +17,7 @@ import 'package:joyphysics/theory/TheoryView.dart'; //画面遷移用
 import 'package:html/dom.dart' as dom; // ← これが重要
 import 'package:joyphysics/shared_components.dart';
 import 'package:joyphysics/document_title.dart';
+import 'package:joyphysics/mindMap/mind_map_highlight.dart';
 
 // 表示モード
 enum VideoViewMode { byCategory, byFormula }
@@ -505,6 +506,38 @@ class _VideoDetailViewState extends State<VideoDetailView> {
 
   String get _pageTitle => widget.video.title;
 
+  ValueListenable<String>? get _dynamicExplanation {
+    final widgets = widget.video.experimentWidgets;
+    if (widgets == null) return null;
+    for (final w in widgets) {
+      if (w is PhysicsSimulationView) {
+        final live = w.simulation.explanationHtmlListenable;
+        if (live != null) return live;
+      }
+    }
+    return null;
+  }
+
+  Widget? _buildExplanationLatex() {
+    final live = _dynamicExplanation;
+    if (live != null) {
+      return ValueListenableBuilder<String>(
+        valueListenable: live,
+        builder: (context, html, _) {
+          return LatexWebView(
+            key: ValueKey('latex-${widget.video.title}-${html.hashCode}'),
+            latexHtml: html,
+          );
+        },
+      );
+    }
+    if (widget.video.latex == null) return null;
+    return LatexWebView(
+      key: ValueKey('latex-${widget.video.title}'),
+      latexHtml: widget.video.latex!,
+    );
+  }
+
   bool _isWideWeb(BuildContext context) {
     if (!kIsWeb) return false;
     final size = MediaQuery.sizeOf(context);
@@ -546,7 +579,15 @@ class _VideoDetailViewState extends State<VideoDetailView> {
   }
 
   Widget _buildLeftVisualPane(BuildContext context) {
-    final items = <Widget>[];
+    final items = <Widget>[
+      Center(
+        child: VideoMindMapBanner(
+          category: widget.video.category,
+          title: widget.video.title,
+          mindMapQuery: widget.video.mindMapQuery,
+        ),
+      ),
+    ];
 
     // シミュレーション・実験
     if (widget.video.experimentWidgets != null &&
@@ -706,7 +747,9 @@ class _VideoDetailViewState extends State<VideoDetailView> {
                           ?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
-                    if (sim.formula != null) sim.formula!,
+                    if (sim.buildFormulaOverlay(state.parameters) ?? sim.formula
+                        case final formula?)
+                      formula,
                     if (extra != null) ...[
                       const SizedBox(height: 10),
                       extra,
@@ -727,11 +770,9 @@ class _VideoDetailViewState extends State<VideoDetailView> {
     }
 
     // 解説・ポイント
-    if (widget.video.latex != null) {
-      items.add(LatexWebView(
-        key: ValueKey('latex-${widget.video.title}'),
-        latexHtml: widget.video.latex!,
-      ));
+    final latex = _buildExplanationLatex();
+    if (latex != null) {
+      items.add(latex);
     }
 
     // 実験道具
@@ -793,6 +834,14 @@ class _VideoDetailViewState extends State<VideoDetailView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // 0. 全体像での位置付け（OCR で自動マッチできたときだけ）
+            Center(
+              child: VideoMindMapBanner(
+                category: widget.video.category,
+                title: widget.video.title,
+                mindMapQuery: widget.video.mindMapQuery,
+              ),
+            ),
             // 1. シミュレーション・実験ウィジェットを最上部に
             // 先頭はヘッダ画像の直下に数式が来るので、上の帯は付けない
             if (widget.video.experimentWidgets != null &&
@@ -817,13 +866,10 @@ class _VideoDetailViewState extends State<VideoDetailView> {
                 ),
               ),
             // 3. 解説・ポイント
-            if (widget.video.latex != null)
+            if (_buildExplanationLatex() case final latex?)
               Padding(
                 padding: const EdgeInsets.only(top: 16),
-                child: LatexWebView(
-                  key: ValueKey('latex-${widget.video.title}'),
-                  latexHtml: widget.video.latex!,
-                ),
+                child: latex,
               ),
             // 4. 実験道具を最後に
             if (widget.video.equipment.isNotEmpty)

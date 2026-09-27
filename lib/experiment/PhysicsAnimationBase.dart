@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
@@ -74,6 +75,10 @@ abstract class PhysicsSimulation {
 
   /// 数式とアニメのあいだに置く、慣性系から見た状況。
   String? get situation => null;
+
+  /// 解説 HTML をパラメータ／トグルで切り替えるとき使う。
+  /// [VideoDetailView] がこれを購読して記事本文を差し替える。
+  ValueListenable<String>? get explanationHtmlListenable => null;
 
   /// キャンバス幅に応じた縦横比。未使用のシミュレーションは [aspectRatio] のまま。
   double aspectRatioForWidth(double width) => aspectRatio;
@@ -497,10 +502,12 @@ Video createWaveVideo({
   required PhysicsSimulation simulation,
   double height = 650,
   bool playsSound = false,
+  String category = 'waves',
+  String iconName = 'wave',
 }) {
   return Video(
-    category: 'waves',
-    iconName: "wave",
+    category: category,
+    iconName: iconName,
     title: title,
     videoURL: "",
     equipment: [],

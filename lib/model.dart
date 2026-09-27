@@ -17,6 +17,9 @@ class Video {
   final bool warnsHighPitchSound;
   final String? latex;
   final List<Widget>? experimentWidgets; // 複数のWidgetを許可
+  /// 全体像 OCR マッチ用。原則は [title] から自動照合するので不要。
+  /// タイトルと全体像の文言が違うときだけ上書きする（例: `'2体問題'`）。
+  final String? mindMapQuery;
 
   Video({
     this.isNew,
@@ -34,6 +37,7 @@ class Video {
     this.warnsHighPitchSound = false,
     this.latex,
     this.experimentWidgets, // ← optional, default null
+    this.mindMapQuery,
   });
 
   String get assetPath => 'assets/$category/$iconName.png';

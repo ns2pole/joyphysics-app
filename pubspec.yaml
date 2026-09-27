@@ -119,6 +119,7 @@ flutter:
     - assets/electroMagnetismDetail/
     - assets/mindMap/
     - assets/mindMap/forTopics/
+    - assets/mindMap/ocr/
     - assets/icon/
     - assets/app_badge/
     - assets/fonts/
