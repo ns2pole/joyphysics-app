@@ -23,6 +23,8 @@ alwaysApply: true
 - 「監視しますか？」「再起動しますか？」と聞かない
 - nohup だけの弱い監視に戻さない（必ず launchd `com.joyphysics.watchforever` / KeepAlive）
 - ユーザーが止めると言わない限り、監視を意図的に止めない
+- **`adb shell monkey` でアプリ起動しない**（Pixel の自動回転が勝手にオンになる）。前面表示は必ず:
+  `adb -s "$SERIAL" shell am start -n com.joyphysics/.MainActivity`
 
 ## 参照
 

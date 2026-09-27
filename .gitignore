@@ -85,6 +85,8 @@ fastlane/Matchfile.lock
 
 # Local release tooling (venv / upload helpers)
 .tools/
+.venv-ocr/
+.venv-ocr312/
 
 # Codemagic secrets / signing (never commit)
 codemagic-signing/
