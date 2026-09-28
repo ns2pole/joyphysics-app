@@ -11,7 +11,7 @@ final bismuthDiamagnetism = Video(
 <p>反磁性とは、磁場に反発する性質である。</p>
 <p>ビスマスは外部磁場に反発する反磁性を強く示す物質である。</p>
 <div class="common-box">解説</div>
-<p>ビスマス（原子番号83の金属）はすべての物質の中でも特に強い反磁性を持ち、磁場中に置くと明確に力を受けて移動する様子が観察できる。</p>
+<p>ビスマス（原子番号83の金属）は金属のなかでは特に強い反磁性を持ち、磁場中に置くと明確に力を受けて移動する様子が観察できる。</p>
 <p>この実験では、ビスマス板をネオジム磁石に近づけたときに、反発力によってわずかに押し戻される現象が確認できる。</p>
 
 <div class="common-box">反磁性を持つ主な金属とその強さ<br><small>（測定温度：室温 約20 °C）</small></div>
@@ -31,8 +31,8 @@ final bismuthDiamagnetism = Video(
     </tr>
     <tr>
       <td>水銀 (Hg（液体）)</td>
-      <td>$\displaystyle -2.0\times10^{-4}$</td>
-      <td>強い反磁性</td>
+      <td>$\displaystyle -2.9\times10^{-5}$</td>
+      <td>ビスマスより弱い反磁性</td>
     </tr>
     <tr>
       <td>金 (Au)</td>

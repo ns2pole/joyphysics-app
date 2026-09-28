@@ -28,9 +28,9 @@ L & = \text{インダクタンス} \\[2pt]
   & = 5.0\times 10^{-3}\,\mathrm{H} \\[6pt]
 i_1(t) & = \text{ON 中のコイル電流} \\[6pt]
 i(t) & = \text{OFF 後のコイル電流} \\[6pt]
-\tau_1 & = \dfrac{L}{R_1} \\[6pt]
-\tau_2 & = \dfrac{L}{R_1+R_2} \\[6pt]
-I_0 & = \dfrac{E}{R_1}
+\tau_1 & = \frac{L}{R_1} \\[6pt]
+\tau_2 & = \frac{L}{R_1+R_2} \\[6pt]
+I_0 & = \frac{E}{R_1}
 \end{aligned}
 \]
 
@@ -50,21 +50,21 @@ i_{\text{源}}(t) & = i_{R_1}(t) \\[2pt]
 <p><b>KVL（ON 中）：</b> 電源・抵抗・コイルを一周して電圧和がゼロ。</p>
 \[
 \begin{aligned}
-E - R_1\,i_1(t) - L\,\dfrac{di_1}{dt} & = 0
+E - R_1\,i_1(t) - L\,\frac{di_1}{dt} & = 0
 \end{aligned}
 \]
 <p><b>KVL（OFF 直後以降）：</b> 電源は切り離され，抵抗 \(R_1+R_2\) とコイルを一周。</p>
 \[
 \begin{aligned}
-- R_1\,i(t) - R_2\,i(t) - L\,\dfrac{di}{dt} & = 0
+- R_1\,i(t) - R_2\,i(t) - L\,\frac{di}{dt} & = 0
 \end{aligned}
 \]
 
 <div class="common-box">微分方程式の形（KVL を整理）</div>
 \[
 \begin{aligned}
-L\,\dfrac{di_1}{dt} + R_1\,i_1(t) & = E \\[6pt]
-L\,\dfrac{di}{dt} + (R_1+R_2)\,i(t) & = 0
+L\,\frac{di_1}{dt} + R_1\,i_1(t) & = E \\[6pt]
+L\,\frac{di}{dt} + (R_1+R_2)\,i(t) & = 0
 \end{aligned}
 \]
 
@@ -108,29 +108,29 @@ v_L(0^+) & = -\bigl(R_1+R_2\bigr)\,I_0
 <div class="common-box">数値代入（最後にまとめて）</div>
 \[
 \begin{aligned}
-I_0 & \underset{definintion}{:=} \text{定常電流（ON の最終値）} \\[2pt]
-    & = \dfrac{E}{R_1} \\[2pt]
-    & = \dfrac{3}{47} \\[2pt]
+I_0 & \underset{definition}{:=} \text{定常電流（ON の最終値）} \\[2pt]
+    & = \frac{E}{R_1} \\[2pt]
+    & = \frac{3}{47} \\[2pt]
     & = \boxed{0.0638\ \mathrm{A}} \\[10pt]
-\tau_1 & \underset{definintion}{:=} \text{ON 時の時定数} \\[2pt]
-      & = \dfrac{L}{R_1} \\[2pt]
-      & = \dfrac{0.005}{47} \\[2pt]
+\tau_1 & \underset{definition}{:=} \text{ON 時の時定数} \\[2pt]
+      & = \frac{L}{R_1} \\[2pt]
+      & = \frac{0.005}{47} \\[2pt]
       & = \boxed{1.06\times 10^{-4}\ \mathrm{s}} \\[10pt]
-\tau_2 & \underset{definintion}{:=} \text{OFF 時の時定数} \\[2pt]
-      & = \dfrac{L}{R_1+R_2} \\[2pt]
-      & = \dfrac{0.005}{147} \\[2pt]
+\tau_2 & \underset{definition}{:=} \text{OFF 時の時定数} \\[2pt]
+      & = \frac{L}{R_1+R_2} \\[2pt]
+      & = \frac{0.005}{147} \\[2pt]
       & = \boxed{3.40\times 10^{-5}\ \mathrm{s}} \\[10pt]
-v_{R_2}(0^+) & \underset{definintion}{:=} \text{遮断直後の }R_2\text{ 両端電圧} \\[2pt]
+v_{R_2}(0^+) & \underset{definition}{:=} \text{遮断直後の }R_2\text{ 両端電圧} \\[2pt]
             & = R_2\,I_0 \\[2pt]
             & = 100 \times 0.0638 \\[2pt]
             & = \boxed{6.38\ \mathrm{V}} \\[10pt]
-v_{L}(0^+) & \underset{definintion}{:=} \text{遮断直後のコイル電圧（逆極性）} \\[2pt]
+v_{L}(0^+) & \underset{definition}{:=} \text{遮断直後のコイル電圧（逆極性）} \\[2pt]
           & = -\bigl(R_1+R_2\bigr)\,I_0 \\[2pt]
           & = -147 \times 0.0638 \\[2pt]
           & = \boxed{-9.38\ \mathrm{V}} \\[10pt]
-U & \underset{definintion}{:=} \text{ON 時にコイルへ蓄えられる磁場エネルギー} \\[2pt]
-  & = \tfrac{1}{2} L I_0^2 \\[2pt]
-  & = \tfrac{1}{2}\times 0.005 \times (0.0638)^2 \\[2pt]
+U & \underset{definition}{:=} \text{ON 時にコイルへ蓄えられる磁場エネルギー} \\[2pt]
+  & = \frac{1}{2} L I_0^2 \\[2pt]
+  & = \frac{1}{2}\times 0.005 \times (0.0638)^2 \\[2pt]
   & = \boxed{1.02\times 10^{-5}\ \mathrm{J}}
 \end{aligned}
 \]

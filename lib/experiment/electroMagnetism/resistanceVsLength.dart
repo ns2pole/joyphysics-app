@@ -23,8 +23,8 @@ $$</p>
 <p>以下の条件でニクロム線の抵抗値を求めて下さい。</p>
 <ul>
   <li>抵抗率 $\rho = 1.10 \times 10^{-6}\,\Omega\cdot\mathrm{m}$</li>
-  <li>直径 $d = 0.5,\mathrm{mm}$ または $0.35\mathrm{mm}$</li>
-  <li>長さ $L = 0.5,\mathrm{m}$ または $1.0\mathrm{m}$</li>
+  <li>直径 $d = 0.5\,\mathrm{mm}$ または $0.35\,\mathrm{mm}$</li>
+  <li>長さ $L = 0.5\,\mathrm{m}$ または $1.0\,\mathrm{m}$</li>
 </ul>
 
 <div class="common-box">理論計算</div>
@@ -53,26 +53,26 @@ $$</p>
     <tr>
       <td>0.5</td>
       <td>0.5</td>
-      <td>$$7.85 \times 10^{-8}$$</td>
-      <td>7.01</td>
+      <td>$$1.96 \times 10^{-7}$$</td>
+      <td>2.80</td>
     </tr>
     <tr>
       <td>0.5</td>
       <td>1.0</td>
-      <td>$$7.85 \times 10^{-8}$$</td>
-      <td>14.03</td>
+      <td>$$1.96 \times 10^{-7}$$</td>
+      <td>5.60</td>
     </tr>
     <tr>
       <td>0.35</td>
       <td>0.5</td>
       <td>$$9.62 \times 10^{-8}$$</td>
-      <td>12.14</td>
+      <td>5.72</td>
     </tr>
     <tr>
       <td>0.35</td>
       <td>1.0</td>
       <td>$$9.62 \times 10^{-8}$$</td>
-      <td>24.29</td>
+      <td>11.43</td>
     </tr>
   </tbody>
 </table>

@@ -79,6 +79,6 @@ B_{\text{wire}}=2.0\times10^{-5}\ \mathrm{T}\ (=20\ \mu\mathrm{T})
 
 <hr/>
 <p style="font-size:0.95em;">
-<b>位置を変えたとき</b>：東側に置けば \(\overrightarrow{B}_{\text{wire}}\) は北向きで増強（約 \(50\ \mu\mathrm{T}\)）。西側なら南向きで減少（約 \(10\ \mu\mathrm{T}\)）。評価は常に \(\overrightarrow{B}_{\text{E}}+\overrightarrow{B}_{\text{wire}}\) で行い、角度は \(\cos\theta=\dfrac{(\overrightarrow{B}_{\text{tot}})_y}{|\overrightarrow{B}_{\text{tot}}|}\) で求めるとよい。</p>
+<b>位置を変えたとき</b>：東側に置けば \(\overrightarrow{B}_{\text{wire}}\) は北向きで増強（約 \(50\ \mu\mathrm{T}\)）。西側なら南向きで減少（約 \(10\ \mu\mathrm{T}\)）。評価は常に \(\overrightarrow{B}_{\text{E}}+\overrightarrow{B}_{\text{wire}}\) で行い、角度は \(\displaystyle \cos\theta=\frac{(\overrightarrow{B}_{\text{tot}})_y}{|\overrightarrow{B}_{\text{tot}}|}\) で求めるとよい。</p>
 """
 );

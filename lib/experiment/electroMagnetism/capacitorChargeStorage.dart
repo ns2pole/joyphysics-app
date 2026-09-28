@@ -18,7 +18,7 @@ final capacitorChargeStorage = Video(
 </ul>
 
 <div class="common-box">問題設定</div>
-<p>容量$5{F}$のコンデンサに1.5Vの電圧を加えたとき、蓄えられる電荷量$Q$を求めて下さい。</p>
+<p>容量 $5\,\mathrm{F}$ のコンデンサに $1.5\,\mathrm{V}$ の電圧を加えたとき、蓄えられる電荷量 $Q$ を求めて下さい。$5\,\mathrm{F}$ は通常の $\mu\mathrm{F}$ 級よりずっと大きく、電気二重層コンデンサの桁です。</p>
 
 <div class="common-box">理論</div>
 <p>コンデンサに蓄えられる電荷量は容量$C$と加えられた電圧$V$の積で与えられる：</p>

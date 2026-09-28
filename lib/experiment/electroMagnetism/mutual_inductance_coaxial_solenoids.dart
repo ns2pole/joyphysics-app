@@ -35,7 +35,7 @@ L_1 & = \text{内側自己インダクタンス} \\[4pt]
 R_1 & = 200\,\Omega \\[4pt]
 f & = 70{,}000\,\mathrm{Hz} \\[4pt]
 \omega & = 2\pi f \\[4pt]
-\phi & = \arctan\!\left(\dfrac{\omega L_1}{R_1}\right) \\[4pt]
+\phi & = \arctan\!\left(\frac{\omega L_1}{R_1}\right) \\[4pt]
 V_{1} & = \text{内側電圧のピーク値} \\[4pt]
 I_{1} & = \text{内側電流のピーク値} \\[4pt]
 i_1(t) & = \text{内側電流（時間関数）} \\[4pt]
@@ -57,7 +57,7 @@ A_{\text{in}} & = \pi a^2 \\
 <div class="common-box">相互インダクタンス（長ソレノイド近似）</div>
 \[
 \begin{aligned}
-\dfrac{M}{\ell} & = \mu_0\,n_1 n_2\,A_{\text{in}} \\
+\frac{M}{\ell} & = \mu_0\,n_1 n_2\,A_{\text{in}} \\
                 & = 1.7765\times10^{-5}\ \mathrm{H/m} \\
                 & = 17.765\ \mu\mathrm{H/m}
 \end{aligned}
@@ -74,25 +74,25 @@ M & = \left(17.765\ \mu\mathrm{H/m}\right)\times 0.20 \\
 \begin{aligned}
 \omega & = 2\pi f \\
        & = 4.3982\times10^{5}\ \mathrm{rad/s} \\[6pt]
-L_1 & = \left(8.873\ \mu\mathrm{H/m}\right)\times 0.20 \\
-    & = 1.7746\ \mu\mathrm{H} \\[6pt]
+L_1 & = \left(8.883\ \mu\mathrm{H/m}\right)\times 0.20 \\
+    & = 1.7765\ \mu\mathrm{H} \\[6pt]
 X_{L1} & = \omega L_1 \\
-      & = (4.3982\times10^{5})\times(1.7746\times10^{-6}) \\
-      & \fallingdotseq \boxed{0.7806\ \Omega} \\[6pt]
+      & = (4.3982\times10^{5})\times(1.7765\times10^{-6}) \\
+      & \fallingdotseq \boxed{0.7814\ \Omega} \\[6pt]
 Z_1 & = \sqrt{R_1^2 + X_{L1}^2} \\
-    & = \sqrt{200^2 + 0.7806^2} \\
+    & = \sqrt{200^2 + 0.7814^2} \\
     & \fallingdotseq \boxed{200.0015\ \Omega} \\[6pt]
 V_{1} & = \sqrt{2}\times 2 \\
                     & = \boxed{2\sqrt{2}\ \mathrm{V}} \\[6pt]
-I_{1} & = \dfrac{V_{1}}{Z_1} \\
-                    & \fallingdotseq \dfrac{2\sqrt{2}}{200.0015} \\
+I_{1} & = \frac{V_{1}}{Z_1} \\
+                    & \fallingdotseq \frac{2\sqrt{2}}{200.0015} \\
                     & \fallingdotseq \boxed{0.01414\ \mathrm{A}}
 \end{aligned}
 \]
 \[
 \begin{aligned}
-\phi & = \arctan\!\left(\dfrac{\omega L_1}{R_1}\right) \\
-     & = \arctan\!\left(\dfrac{0.7806}{200}\right) \\
+\phi & = \arctan\!\left(\frac{\omega L_1}{R_1}\right) \\
+     & = \arctan\!\left(\frac{0.7814}{200}\right) \\
      & \fallingdotseq \boxed{0.224^\circ}
 \end{aligned}
 \]
@@ -101,14 +101,14 @@ I_{1} & = \dfrac{V_{1}}{Z_1} \\
 \[
 \begin{aligned}
 i_1(t) & = I_{1}\,\cos(\omega t - \phi) \\[6pt]
-\dfrac{di_1}{dt} & = -\,I_{1}\,\omega\,\sin(\omega t - \phi)
+\frac{di_1}{dt} & = -\,I_{1}\,\omega\,\sin(\omega t - \phi)
 \end{aligned}
 \]
 
 <div class="common-box">外側の誘導起電力（まずピーク）→ 最後に RMS 換算</div>
 \[
 \begin{aligned}
-v_2(t) & = -\,M\,\dfrac{di_1}{dt} \\[6pt]
+v_2(t) & = -\,M\,\frac{di_1}{dt} \\[6pt]
        & = M\,I_{1}\,\omega\,\sin(\omega t - \phi) \\[6pt]
 V_{2} & = M\,\omega\,I_{1} \\
                     & = (3.553\times10^{-6})\times(4.3982\times10^{5})\times(0.01414) \\
@@ -117,7 +117,7 @@ V_{2} & = M\,\omega\,I_{1} \\
 \]
 \[
 \begin{aligned}
-V_{2,\mathrm{rms}} & = \dfrac{V_{2}}{\sqrt{2}} \\
+V_{2,\mathrm{rms}} & = \frac{V_{2}}{\sqrt{2}} \\
                    & \fallingdotseq \boxed{15.6\ \mathrm{mV}}
 \end{aligned}
 \]
@@ -125,7 +125,7 @@ V_{2,\mathrm{rms}} & = \dfrac{V_{2}}{\sqrt{2}} \\
 <div class="common-box">チェック（1 m あたり表現との一致）</div>
 \[
 \begin{aligned}
-\dfrac{V_{2,\mathrm{rms}}}{\ell} & = (17.765\times10^{-6})\times(4.3982\times10^{5})\times\left(\dfrac{2}{Z_1}\right) \\
+\frac{V_{2,\mathrm{rms}}}{\ell} & = (17.765\times10^{-6})\times(4.3982\times10^{5})\times\left(\frac{2}{Z_1}\right) \\
                                  & \fallingdotseq 0.07813\ \mathrm{V/m} \\[4pt]
 V_{2,\mathrm{rms}} & = 0.07813\times 0.20 \\
                    & \fallingdotseq 15.6\ \mathrm{mV}

@@ -34,7 +34,7 @@ X_L &= 2\pi f L \\
 \end{aligned}
 $$</p>
 
-<p>交流のオーム則 $I = \dfrac{V}{X_L}$ より、</p>
+<p>交流のオーム則 $\displaystyle I = \frac{V}{X_L}$ より、</p>
 <p>$$
 \begin{aligned}
 I_{\mathrm{rms}} &= \frac{2.0}{131.95} \\

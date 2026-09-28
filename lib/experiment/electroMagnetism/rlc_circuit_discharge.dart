@@ -34,14 +34,14 @@ T_{LC} &= 2\pi\sqrt{LC}\\
 \]
 
 <div class="common-box">実RLC（不足減衰・振動しつつ減衰）</div>
-<p>不足減衰の判定： \(R<2\sqrt{\frac{L}{C}}\)。
-数値的に \(2\sqrt{\frac{L}{C}}\fallingdotseq 30.15\ \Omega > 10\ \Omega\) より不足減衰。</p>
+<p>不足減衰の判定： \(\displaystyle R<2\sqrt{\frac{L}{C}}\)。
+数値的に \(\displaystyle 2\sqrt{\frac{L}{C}}\fallingdotseq 30.15\ \Omega > 10\ \Omega\) より不足減衰。</p>
 
 <p>このときの振動周期 \(T\) は</p>
 \[
 \begin{aligned}
-T &= \frac{2\pi}{\sqrt{\dfrac{1}{LC}-\left(\dfrac{R}{2L}\right)^2}}\\
-  &= \frac{2\pi}{\sqrt{\dfrac{1}{(5.0\,\mathrm{mH})(22\,\mu\mathrm{F})}-\left(\dfrac{10}{2\cdot 5.0\,\mathrm{mH}}\right)^2}}\\
+T &= \frac{2\pi}{\sqrt{\frac{1}{LC}-\left(\frac{R}{2L}\right)^2}}\\
+  &= \frac{2\pi}{\sqrt{\frac{1}{(5.0\,\mathrm{mH})(22\,\mu\mathrm{F})}-\left(\frac{10}{2\cdot 5.0\,\mathrm{mH}}\right)^2}}\\
   &\fallingdotseq \boxed{2.209\ \mathrm{ms}}
 \end{aligned}
 \]
@@ -64,7 +64,7 @@ v_C(t)
 &= V_0\,\exp\!\Big(-\frac{R}{2L}t\Big)\,
 \Bigg[
 \cos\!\Big(t\sqrt{\frac{1}{LC}-\Big(\frac{R}{2L}\Big)^2}\Big)
-+ \frac{\dfrac{R}{2L}}{\sqrt{\dfrac{1}{LC}-\Big(\dfrac{R}{2L}\Big)^2}}\,
++ \frac{\frac{R}{2L}}{\sqrt{\frac{1}{LC}-\Big(\frac{R}{2L}\Big)^2}}\,
   \sin\!\Big(t\sqrt{\frac{1}{LC}-\Big(\frac{R}{2L}\Big)^2}\Big)
 \Bigg]
 \end{aligned}

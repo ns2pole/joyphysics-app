@@ -8,7 +8,7 @@ final parallelResistance = Video(
     equipment: ["抵抗", "マルチメータ"],
     costRating: "★★☆", latex: r"""
         <div class="common-box">ポイント</div>
-        <p>並列接続での合成抵抗は、$\frac{1}{R_{\mathrm{parallel}}} = \frac{1}{R_1} + \frac{1}{R_2} + \cdots + \frac{1}{R_n}$で得られる。</p>
+        <p>並列接続での合成抵抗は、$\displaystyle \frac{1}{R_{\mathrm{parallel}}} = \frac{1}{R_1} + \frac{1}{R_2} + \cdots + \frac{1}{R_n}$で得られる。</p>
         <p>すべて同じ抵抗 $R$ なら、</p>
         <p>$$R_{\mathrm{parallel}} = \frac{R}{n}$$</p>
 

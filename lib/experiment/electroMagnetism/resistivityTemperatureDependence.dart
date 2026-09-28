@@ -19,7 +19,7 @@ final resistivityTemperatureDependence = Video(
         <p>条件：</p>
         <ul>
             <li>銅の抵抗率（0℃基準）：$\rho_0 = 1.55 \times 10^{-8} \, \Omega\cdot m$</li>
-            <li>温度係数：$\alpha = 0.00393$</li>
+            <li>温度係数：$\alpha = 0.00393\ ^{\circ}\mathrm{C}^{-1}$（$0^{\circ}\mathrm{C}$ 基準）</li>
         </ul>
 
         <div class="common-box">理論値計算</div>
@@ -27,18 +27,16 @@ final resistivityTemperatureDependence = Video(
 
         <p>(1)温度 $10^{\circ}\mathrm{C}$ のとき：</p>
         <p>$$R_{10} = \frac{\rho_0 (1 + \alpha \times 10) L}{A}$$</p>
-        <p>$$R_{10} = \frac{1.55 \times 10^{-8} \times (1 + 0.00393 \times 10) \times 15}{2.0106 \times 10^{-8}} \fallingdotseq 12.01 \, \Omega$$</p>
+        <p>$$R_{10} = \frac{1.55 \times 10^{-8} \times (1 + 0.00393 \times 10) \times 15}{2.0106 \times 10^{-8}} \fallingdotseq 12.02 \, \Omega$$</p>
 
         <p>(2)温度 $100^{\circ}\mathrm{C}$ のとき：</p>
         <p>$$R_{100} = \frac{\rho_0 (1 + \alpha \times 100) L}{A}$$</p>
-        <p>$$R_{100} = \frac{1.55 \times 10^{-8} \times (1 + 0.00393 \times 100) \times 15}{2.0106 \times 10^{-8}} \fallingdotseq 16.10 \, \Omega$$</p>
+        <p>$$R_{100} = \frac{1.55 \times 10^{-8} \times (1 + 0.00393 \times 100) \times 15}{2.0106 \times 10^{-8}} \fallingdotseq 16.11 \, \Omega$$</p>
 
         <div class="common-box">答え</div>
-        <p>$$\boxed{
-    $$\begin{aligned}
-            10^{\circ}\mathrm{C} のとき：R \fallingdotseq 12.01 \, \Omega \\
-            100^{\circ}\mathrm{C} のとき：R \fallingdotseq 16.10 \, \Omega
-    \end{aligned}$$
-    }$$</p>
+        <p>$$\boxed{\begin{aligned}
+            10^{\circ}\mathrm{C}&:\ R \fallingdotseq 12.02 \, \Omega \\
+            100^{\circ}\mathrm{C}&:\ R \fallingdotseq 16.11 \, \Omega
+        \end{aligned}}$$</p>
     """
 );

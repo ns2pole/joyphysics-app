@@ -7,10 +7,7 @@ final solenoidSelfInductance = Video(
     videoURL: "_M7kIijXf9M",
     equipment: ["導線", "絶縁体パイプ", "マルチメーター（Co)"],
     costRating: "★★★", latex: r"""
-    <div class=\"common-box\">ポイント</div>
-    <p>・コイルの電圧 $V$ と電流 $I$ の関係は $\displaystyle V = L \frac{dI}{dt}$ で表される。</p>
-    <p>・ソレノイドコイルの自己インダクタンスは $\displaystyle L = \mu_0 \mu_r \frac{N^2 A}{l}$</p>
-    <p>※記号の定義：</p>
+    <div class="common-box">ポイント</div>
     <p>・コイルの電圧 $V$ と電流 $I$ の関係は $\displaystyle V = L \frac{dI}{dt}$ で表される。</p>
     <p>・ソレノイドコイルの自己インダクタンスは $\displaystyle L = \mu_0 \mu_r \frac{N^2 A}{l}$</p>
     <p>※記号の定義：</p>
@@ -26,14 +23,14 @@ final solenoidSelfInductance = Video(
       <li>$V$：電圧（ボルト, V）</li>
       <li>$I$：電流（アンペア, A）</li>
     </ul>
-    <div class=\"common-box\">問題設定</div>
+    <div class="common-box">問題設定</div>
     <p>単層のソレノイドコイル（長さ30cm、管半径4mm、巻き数300回、導線半径0.275mm）の自己インダクタンスを求めよ。</p>
     <div style="text-align:center; margin:1em 0;">
       <img src="assets/electroMagnetismDetail/solenoidCrossSection.png"
            alt=" ソレノイド断面"
            style="max-width:65%; height:auto;" />
     </div>
-    <div class=\"common-box\">理論計算</div>
+    <div class="common-box">理論計算</div>
     <p>条件：</p>
    <p>
    $$\begin{aligned}
@@ -55,9 +52,9 @@ final solenoidSelfInductance = Video(
     &\fallingdotseq 2.16 \times 10^{-5}\ \mathrm{H} = 21.6\ \mu\mathrm{H}
     \end{aligned}$$</p>
 
-    <div class=\"common-box\">答え</div>
+    <div class="common-box">答え</div>
     <p>ソレノイドの自己インダクタンスは約 $21.6\ \mu\mathrm{H}$ である。</p>
-    <div class=\"common-box\">補足（一般的な導出）</div>
+    <div class="common-box">補足（一般的な導出）</div>
     <p>ソレノイド内部の磁場 $ \displaystyle B = \mu_0 \mu_r \frac{N}{l} I$、1巻あたりの磁束 $\Phi_{\mathrm{turn}}=BA$ として</p>
     <p>$$\Phi = N \Phi_{\mathrm{turn}} = \mu_0 \mu_r \frac{N^2 A}{l} I$$</p>
     <p>より $\Phi = LI$ から $ \displaystyle L = \mu_0 \mu_r \frac{N^2 A}{l}$ を得る。</p>

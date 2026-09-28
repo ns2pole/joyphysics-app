@@ -58,8 +58,8 @@ RI(t) &= V e^{-\frac{t}{RC}} \\
 <p>電圧降下が $\frac{V}{2}$、$\frac{V}{4}$ となる時刻：</p>
 
 <p>$$\begin{aligned}
-t &= RC\log 2 \fallingdotseq 0.693 RC \\
-t &= 2RC\log 2 \fallingdotseq 1.386 RC
+t &= RC\ln 2 \fallingdotseq 0.693 RC \\
+t &= 2RC\ln 2 \fallingdotseq 1.386 RC
 \end{aligned}$$</p>
 
 <div class="common-box">答え</div>
@@ -84,7 +84,7 @@ RI(t) &= 3 e^{-\frac{t}{6.6}} \\
 
 <p>$$\begin{aligned}
 t &= 6.6 \times 0.693 \fallingdotseq 4.6\ [\mathrm{s}] \\
-t &= 6.6 \times 1.386 \fallingdotseq 9.2\ [\mathrm{s}]
+t &= 6.6 \times 1.386 \fallingdotseq 9.1\ [\mathrm{s}]
 \end{aligned}$$</p>
 """
 );
