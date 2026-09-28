@@ -154,7 +154,7 @@ class _AppVersionLabel extends StatefulWidget {
 }
 
 class _AppVersionLabelState extends State<_AppVersionLabel> {
-  static const String _updateDate = '2026-09-24';
+  static const String _updateDate = '2026-09-28';
   static const TextStyle _metaStyle = TextStyle(
     fontFamily: 'KeiFont',
     fontSize: 13,

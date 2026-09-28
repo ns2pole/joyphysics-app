@@ -24,8 +24,8 @@ void main() {
     PackageInfo.setMockInitialValues(
       appName: 'joyphysics',
       packageName: 'com.joyphysics',
-      version: '7.0.0',
-      buildNumber: '107',
+      version: '8.0.0',
+      buildNumber: '108',
       buildSignature: '',
     );
 
@@ -33,7 +33,7 @@ void main() {
     await tester.pump();
 
     expect(find.text('高校物理'), findsOneWidget);
-    expect(find.text('ver 7.0.0'), findsOneWidget);
-    expect(find.text('update 2026-09-24'), findsOneWidget);
+    expect(find.text('ver 8.0.0'), findsOneWidget);
+    expect(find.text('update 2026-09-28'), findsOneWidget);
   });
 }
