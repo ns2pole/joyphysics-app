@@ -22,7 +22,8 @@ const double kEarthDefaultLatDeg = 35.0;
 const double kEarthSideBySideWidth = 640.0;
 const double kEarthPlayback = 0.70;
 /// 力矢印の画面上の長さ倍率（物理の大きさはそのまま。見えやすくするため）。
-const double kEarthForceArrowExaggeration = 5.0;
+/// 大きすぎると clip で切れて「長さが変わる」ように見えるので抑える。
+const double kEarthForceArrowExaggeration = 2.4;
 
 class EarthStandingParams {
   const EarthStandingParams({
@@ -216,13 +217,13 @@ double earthStandingRotatingResidual(EarthStandingForces f) {
 String earthStandingCaption(EarthStandingParams params) {
   final f = earthStandingForces(params);
   if (params.latDeg.abs() < 1) {
-    return '赤道では抗力と重力は一直線。N = mg − mω²R。';
+    return '赤道: 抗力∥重力。慣性系 R+Fg=ma、共回転系は遠心力込みで合力0。';
   }
   if (params.latDeg.abs() > 89) {
-    return '極では円運動の半径が 0。抗力と重力がつり合う。';
+    return '極: ρ=0 で遠心力なし。抗力と重力がつり合う。';
   }
-  return '中緯度では抗力が重力と平行でない（摩擦成分 '
-      '${f.friction.toStringAsFixed(2)} N）。';
+  return '中緯度: 抗力に摩擦成分 ${f.friction.toStringAsFixed(2)}。'
+      '共回転系は遠心力込みで合力0。';
 }
 
 final earthStandingPerson3D = Video(
@@ -238,10 +239,10 @@ final earthStandingPerson3D = Video(
   <div class="common-box">ポイント</div>
   <p>球対称の地球上に立つ人を、宇宙（慣性系）と、地球と一緒に回る座標系で比べます。広い画面では左右、狭い画面では上下です。人は最初から地球と同じ角速度 $\omega$ で回っています。$\omega$ は見えやすくするため大きく誇張し、力矢印の長さもさらに強調しています。</p>
   <p>緯度を $\lambda$、半径を $R$ とすると、自転軸からの距離は $\displaystyle\rho=R\cos\lambda$ です。慣性系では人は軸まわりの等速円運動をし、加速度は軸向きの $\displaystyle\vec{a}=-\omega^{2}\vec{\rho}$ です。速さは一定でも、向きが変わるので加速度があります。</p>
-  <p>真の力は重力 $\vec{F}_g$（地心向き）と、地球からの抗力 $\vec{R}$ です。慣性系ではその合力が向心加速度を担います。</p>
+  <p>真の力は重力 $\vec{F}_g$（地心向き）と、地球からの抗力 $\vec{R}$ です。慣性系ではその合力が向心加速度を担います。アニメの左側（または上側）では、この合力 $\vec{R}+\vec{F}_g=m\vec{a}$ を軸向きの矢印で示します。</p>
   <p>$$\vec{R}+\vec{F}_g=m\vec{a}$$</p>
   <p>中緯度では必要な $\vec{a}$ が地心向きと一致しないので、$\vec{R}$ は重力と平行になりません。球モデルでは、その接線成分を静止摩擦と呼びます。赤道・極では接線成分は $0$ です。アニメでは軸に垂直な断面（半径 $\rho$ の円運動の面）も描きます。</p>
-  <p>地球と一緒に回る系では人は止まって見え、コリオリ力は出ません。軸から外向きの遠心力 $\displaystyle m\omega^{2}\rho$ を足すと</p>
+  <p>地球と一緒に回る系では人は止まって見え、コリオリ力は出ません。軸から外向きの遠心力 $\displaystyle m\omega^{2}\rho$ を足すとつり合い、合力は $0$ です（右側・下側のパネルでは遠心力を描き、合力矢印は出しません）。</p>
   <p>$$\vec{R}+\vec{F}_g+\vec{F}_{\mathrm{遠}}=\vec{0}$$</p>
   <p>赤道では $\displaystyle N=mg-m\omega^{2}R$ です。実地球は扁球なので、局所鉛直が有効重力に揃うと接線成分はほぼ要りませんが、ここでは球＋摩擦で一貫させています。</p>
 """,
@@ -258,12 +259,18 @@ class EarthStandingPerson3DSimulation extends PhysicsSimulation {
       : super(
           title: '地上に立つ人と遠心力',
           formula: const FormulaDisplay(
-            r'\displaystyle \rho=R\cos\lambda,\quad \vec{R}+\vec{F}_{g}=m\vec{a}',
+            r'\displaystyle \rho=R\cos\lambda,\quad'
+            r' \vec{R}+\vec{F}_{g}=m\vec{a}\ \text{(慣性)},\ '
+            r'\vec{R}+\vec{F}_{g}+\vec{F}_{\mathrm{cen}}=\vec{0}\ \text{(共回転)}',
           ),
           aspectRatio: 0.72,
           enableTime: false,
           showTimeOverlay: false,
+          is3D: true,
         );
+
+  @override
+  bool get showZoomButtons => true;
 
   final ValueNotifier<double> simTime = ValueNotifier(0.0);
   Map<String, double> _latestParams = {};
@@ -346,6 +353,31 @@ class EarthStandingPerson3DSimulation extends PhysicsSimulation {
                 height: 1.4,
                 color: Color(0xFF546E7A),
               ),
+            ),
+            const SizedBox(height: 8),
+            FilterChip(
+              avatar: Icon(
+                Icons.vertical_align_top,
+                size: 16,
+                color: activeIds.contains('showWavefrontTopView')
+                    ? const Color(0xFF1565C0)
+                    : Colors.black54,
+              ),
+              label: const Text('真上から見る', style: TextStyle(fontSize: 12)),
+              selected: activeIds.contains('showWavefrontTopView'),
+              onSelected: (on) {
+                final next = Set<String>.from(activeIds);
+                if (on) {
+                  next.add('showWavefrontTopView');
+                } else {
+                  next.remove('showWavefrontTopView');
+                }
+                updateActiveIds(next);
+              },
+              selectedColor: const Color(0xFFBBDEFB),
+              checkmarkColor: const Color(0xFF1565C0),
+              visualDensity: VisualDensity.compact,
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
             const SizedBox(height: 8),
             PlayPauseResetButtons(
@@ -434,7 +466,13 @@ class EarthStandingPerson3DSimulation extends PhysicsSimulation {
         final sample = earthStandingSampleAt(p, simTime.value);
         return CustomPaint(
           size: Size.infinite,
-          painter: _EarthStandingPainter(params: p, sample: sample),
+          painter: _EarthStandingPainter(
+            params: p,
+            sample: sample,
+            azimuth: azimuth,
+            tilt: tilt,
+            scale: scale,
+          ),
         );
       },
     );
@@ -500,10 +538,16 @@ class _EarthStandingPainter extends CustomPainter {
   _EarthStandingPainter({
     required this.params,
     required this.sample,
+    required this.azimuth,
+    required this.tilt,
+    required this.scale,
   });
 
   final EarthStandingParams params;
   final EarthStandingSample sample;
+  final double azimuth;
+  final double tilt;
+  final double scale;
 
   static const _bg = Color(0xFF0B1220);
   static const _ink = Color(0xFFECEFF1);
@@ -512,7 +556,7 @@ class _EarthStandingPainter extends CustomPainter {
   static const _grid = Color(0xFFBBDEFB);
   static const _gridBack = Color(0x3342A5F5);
   static const _axis = Color(0xFF80CBC4);
-  static const _person = Color(0xFFFFCC80);
+  static const _person = Color(0xFFE0E0E0);
   static const _gravity = Color(0xFFEF9A9A);
   static const _reaction = Color(0xFFFFF176);
   static const _centrifugal = Color(0xFFA5D6A7);
@@ -520,8 +564,8 @@ class _EarthStandingPainter extends CustomPainter {
   static const _orbitPlane = Color(0xFF81D4FA);
   static const _star = Color(0xFFCFD8DC);
 
-  static const double _az = 0.85;
-  static const double _tilt = 0.55;
+  /// 波動と同じ操作系。初期は見やすい斜め上へ少しずらす。
+  static const double _az0 = 0.85;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -550,30 +594,36 @@ class _EarthStandingPainter extends CustomPainter {
       panel.right - 8,
       panel.bottom - 28,
     );
-    final unit = math.min(plot.width, plot.height) / 3.1;
+    final unit = math.min(plot.width, plot.height) / 2.8 * scale;
+    final az = azimuth + _az0;
+    final t = tilt.clamp(0.05, math.pi / 2);
+    final cA = math.cos(az);
+    final sA = math.sin(az);
+    final cT = math.cos(t);
+    final sT = math.sin(t);
 
+    // 正投影（画面縦横同スケール）。球の輪郭は常に円。
     Offset proj(double x, double y, double z) {
-      final cA = math.cos(_az);
-      final sA = math.sin(_az);
-      final cT = math.cos(_tilt);
-      final sT = math.sin(_tilt);
-      final xr = x * cA - y * sA;
-      final yr = x * sA + y * cA;
-      final px = plot.center.dx + (yr - xr) * 0.72 * unit;
-      final py = plot.center.dy + (xr + yr) * 0.42 * sT * unit - z * cT * unit;
-      return Offset(px, py);
+      final x1 = x * cA - y * sA;
+      final y1 = x * sA + y * cA;
+      final xCam = x1;
+      final yCam = -y1 * sT + z * cT;
+      return Offset(
+        plot.center.dx + xCam * unit,
+        plot.center.dy - yCam * unit,
+      );
     }
 
     double depth(double x, double y, double z) {
-      final cA = math.cos(_az);
-      final sA = math.sin(_az);
-      return x * sA + y * cA;
+      final y1 = x * sA + y * cA;
+      return y1 * cT + z * sT;
     }
 
     if (!ground) {
-      _drawStars(canvas, plot, reverse: true);
+      // 共回転系：地球固定なので恒星は逆回転して見える。
+      _drawStars(canvas, plot, skyAngle: -sample.phi);
     } else {
-      _drawStars(canvas, plot, reverse: false);
+      _drawStars(canvas, plot, skyAngle: 0.0);
     }
 
     canvas.drawRect(
@@ -592,7 +642,7 @@ class _EarthStandingPainter extends CustomPainter {
 
     final phi = ground ? sample.phi : 0.0;
     _drawAxis(canvas, proj);
-    _drawGlobe(canvas, proj, depth, phi);
+    _drawGlobe(canvas, proj, depth, phi, unit);
     _drawOrbitCrossSection(canvas, proj, depth, ground: ground);
     _drawPersonAndForces(canvas, proj, depth, ground: ground);
 
@@ -600,22 +650,22 @@ class _EarthStandingPainter extends CustomPainter {
       canvas,
       Offset(panel.center.dx, panel.bottom - 16),
       ground
-          ? '人は軸まわりに等速円運動する。'
-          : '人は静止。遠心力で抗力が傾く。',
+          ? '真の力の合力 R+Fg = ma（軸向き）'
+          : 'R+Fg+遠心力 = 0（人は静止）',
       _muted,
     );
     canvas.restore();
   }
 
-  void _drawStars(Canvas canvas, Rect plot, {required bool reverse}) {
+  void _drawStars(Canvas canvas, Rect plot, {required double skyAngle}) {
     final rng = _StarRng(42);
-    final angle = reverse ? sample.phi : 0.0;
-    final ca = math.cos(angle);
-    final sa = math.sin(angle);
+    final ca = math.cos(skyAngle);
+    final sa = math.sin(skyAngle);
+    final rotateSky = skyAngle.abs() > 1e-12;
     for (var i = 0; i < 48; i++) {
       var x = (rng.next() - 0.5) * 2.4;
       var y = (rng.next() - 0.5) * 2.4;
-      if (reverse) {
+      if (rotateSky) {
         final xr = x * ca - y * sa;
         final yr = x * sa + y * ca;
         x = xr;
@@ -654,24 +704,20 @@ class _EarthStandingPainter extends CustomPainter {
     Offset Function(double, double, double) proj,
     double Function(double, double, double) depth,
     double phi,
+    double unit,
   ) {
-    // 球のディスク（簡易）
     final center = proj(0, 0, 0);
-    final rim = proj(kEarthR, 0, 0);
-    final radius = (rim - center).distance;
+    // 正投影なので輪郭は常に半径 R の円。
+    final rimR = kEarthR * unit;
     canvas.drawCircle(
       center,
-      radius,
-      Paint()..color = _ocean.withValues(alpha: 0.55),
-    );
-    canvas.drawCircle(
-      center,
-      radius,
+      rimR,
       Paint()
-        ..color = _grid.withValues(alpha: 0.35)
+        ..color = _grid.withValues(alpha: 0.40)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.2,
+        ..strokeWidth = 1.3,
     );
+    canvas.drawCircle(center, 3.5, Paint()..color = _ocean);
 
     final segs = <({Offset a, Offset b, double d, bool front})>[];
 
@@ -814,7 +860,7 @@ class _EarthStandingPainter extends CustomPainter {
     _text(
       canvas,
       axisHit + const Offset(14, -10),
-      '円運動の断面',
+      ground ? '円運動の断面' : '遠心力の面',
       _orbitPlane,
       alignLeft: true,
     );
@@ -848,7 +894,7 @@ class _EarthStandingPainter extends CustomPainter {
       (feet.dy + head.dy) / 2,
     );
 
-    // 簡易人型
+    // 簡易人型（胴だけ。腕は抗力・遠心力の起点オフセットと同方向で被るので描かない）
     canvas.drawLine(
       feet,
       head,
@@ -858,106 +904,125 @@ class _EarthStandingPainter extends CustomPainter {
         ..strokeCap = StrokeCap.round,
     );
     canvas.drawCircle(head, 5.5, Paint()..color = _person);
-    final side = Offset(-(head.dy - feet.dy), head.dx - feet.dx);
-    final sideN = side.distance < 1e-6 ? const Offset(1, 0) : side / side.distance;
-    canvas.drawLine(
-      mid + sideN * 10,
-      mid - sideN * 10,
-      Paint()
-        ..color = _person
-        ..strokeWidth = 2.4
-        ..strokeCap = StrokeCap.round,
-    );
 
     final f = sample.forces;
-    // 力矢印は共回転系の xz 成分を、人の位置の局所接平面に載せる。
-    // 慣性系でも力自体は同じ（共回転成分表示）。位置だけ回す。
+    // 長さは理論の |F| に比例（視点・φ で変えない）。向きだけ投影する。
+    // 慣性系: 重力・抗力・合力(=ma)。共回転系: 重力・抗力・遠心力（三者で 0）。
     final forceOrigin = mid;
 
-    // 画面上の局所基底：ê_r と ê_λ を投影
     final er = head - feet;
     if (er.distance < 2) return;
     final erN = er / er.distance;
 
-    // 子午線北向きを近似：極方向へのスクリーン差分
-    final north = proj(0, 0, kEarthR * 1.2) - proj(0, 0, 0);
-    var eLam = Offset(
-      north.dx - erN.dx * (north.dx * erN.dx + north.dy * erN.dy),
-      north.dy - erN.dy * (north.dx * erN.dx + north.dy * erN.dy),
+    final phi = ground ? sample.phi : 0.0;
+    final cp = math.cos(phi);
+    final sp = math.sin(phi);
+    final lam = f.latRad;
+
+    const epsLam = 0.3;
+    var eLam = proj(
+          px - math.sin(lam) * math.cos(phi) * epsLam,
+          py - math.sin(lam) * math.sin(phi) * epsLam,
+          pz + math.cos(lam) * epsLam,
+        ) -
+        proj(px, py, pz);
+    eLam = Offset(
+      eLam.dx - erN.dx * (eLam.dx * erN.dx + eLam.dy * erN.dy),
+      eLam.dy - erN.dy * (eLam.dx * erN.dx + eLam.dy * erN.dy),
     );
     if (eLam.distance < 1e-3) {
       eLam = Offset(-erN.dy, erN.dx);
     }
     eLam = eLam / eLam.distance;
 
-    Offset worldForceToScreen(double fx, double fz) {
-      // φ=0 での (fx,0,fz) を ê_r, ê_λ に分解してスクリーンへ
-      final c = math.cos(f.latRad);
-      final s = math.sin(f.latRad);
-      final fr = fx * c + fz * s;
-      final fl = fx * (-s) + fz * c;
-      return erN * fr + eLam * fl;
+    (double, double, double) rotForce(double fx, double fz) =>
+        (fx * cp, fx * sp, fz);
+
+    /// 単位ベクトルを少し伸ばして投影 → 向きのみ（長さは使わない）。
+    Offset dirOfUnit(double ux, double uy, double uz) {
+      const eps = 0.2;
+      return proj(px + ux * eps, py + uy * eps, pz + uz * eps) -
+          proj(px, py, pz);
     }
 
-    double forcePx(double mag) =>
-        (20 * kEarthForceArrowExaggeration * mag / (params.mass * kEarthG))
-            .clamp(28.0, 160.0);
+    Offset dirOfForce(double fx, double fy, double fz) {
+      final mag = math.sqrt(fx * fx + fy * fy + fz * fz);
+      if (mag < 1e-12) return Offset.zero;
+      return dirOfUnit(fx / mag, fy / mag, fz / mag);
+    }
 
-    final gScr = worldForceToScreen(f.gx, f.gz);
-    if (gScr.distance > 1) {
+    // |F|→px。clamp 上限だけ（下限なし＝小さい力はちゃんと小さく）。
+    double forcePx(double mag) {
+      final raw =
+          22 * kEarthForceArrowExaggeration * mag / (params.mass * kEarthG);
+      return raw.clamp(0.0, 52.0);
+    }
+
+    void drawArrow(
+      Offset dir,
+      double mag,
+      Offset origin,
+      Color color,
+      String label, {
+      bool dashed = false,
+    }) {
+      if (mag < 0.05 || dir.distance < 1e-6) return;
       _arrow(
         canvas,
-        forceOrigin,
-        gScr / gScr.distance,
-        forcePx(f.gMag),
-        _gravity,
-        '重力',
+        origin,
+        dir / dir.distance,
+        forcePx(mag),
+        color,
+        label,
+        dashed: dashed,
       );
     }
 
-    final rScr = worldForceToScreen(f.rx, f.rz);
-    if (rScr.distance > 1) {
-      _arrow(
-        canvas,
-        forceOrigin + eLam * 10,
-        rScr / rScr.distance,
-        forcePx(f.rMag),
-        _reaction,
-        '抗力',
-      );
-    }
+    // 重力：地心向き、|Fg|=mg（一定）
+    final gDir = dirOfUnit(-px / kEarthR, -py / kEarthR, -pz / kEarthR);
+    drawArrow(
+      gDir.distance > 1e-6 ? gDir : (proj(0, 0, 0) - proj(px, py, pz)),
+      f.gMag,
+      forceOrigin,
+      _gravity,
+      '重力',
+    );
 
-    if (!ground && f.cenMag > 0.05) {
-      final cScr = worldForceToScreen(f.cenX, 0);
-      if (cScr.distance > 1) {
-        _arrow(
-          canvas,
-          forceOrigin - eLam * 10,
-          cScr / cScr.distance,
-          forcePx(f.cenMag),
+    // 抗力：φ 回転した 3D
+    final r3 = rotForce(f.rx, f.rz);
+    var rDir = dirOfForce(r3.$1, r3.$2, r3.$3);
+    if (rDir.distance < 1e-6) {
+      rDir = erN * f.normal + eLam * f.friction;
+    }
+    drawArrow(rDir, f.rMag, forceOrigin + eLam * 8, _reaction, '抗力');
+
+    // 軸水平の単位ベクトル（外向き ê_ρ）
+    final rho = math.sqrt(px * px + py * py);
+    if (rho > 1e-6) {
+      final eRhoX = px / rho;
+      final eRhoY = py / rho;
+      final outDir = dirOfUnit(eRhoX, eRhoY, 0);
+      if (!ground) {
+        drawArrow(
+          outDir,
+          f.cenMag,
+          forceOrigin - eLam * 8,
           _centrifugal,
           '遠心力',
           dashed: true,
         );
-      }
-    }
-
-    // 真の力の合力 R+Fg（= ma、軸向き）。両系で同じ。
-    if (f.sumTrueMag > 0.05) {
-      final sScr = worldForceToScreen(f.sumTrueX, f.sumTrueZ);
-      if (sScr.distance > 1) {
-        _arrow(
-          canvas,
-          forceOrigin + erN * 12,
-          sScr / sScr.distance,
-          forcePx(f.sumTrueMag),
+      } else {
+        // 合力 = ma = −mω²ρ ê_ρ。長さは mω²ρ で φ によらず一定。
+        drawArrow(
+          -outDir,
+          f.sumTrueMag,
+          forceOrigin + erN * 10,
           _resultant,
-          ground ? '合力(=ma)' : '合力',
+          '合力(=ma)',
         );
       }
     }
 
-    // silence unused depth
     assert(depth(px, py, pz).isFinite);
   }
 
@@ -1036,7 +1101,10 @@ class _EarthStandingPainter extends CustomPainter {
         oldDelegate.sample.phi != sample.phi ||
         oldDelegate.params.latDeg != params.latDeg ||
         oldDelegate.params.omega != params.omega ||
-        oldDelegate.params.mass != params.mass;
+        oldDelegate.params.mass != params.mass ||
+        oldDelegate.azimuth != azimuth ||
+        oldDelegate.tilt != tilt ||
+        oldDelegate.scale != scale;
   }
 }
 
