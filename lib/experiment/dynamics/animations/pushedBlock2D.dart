@@ -559,16 +559,85 @@ class _PushedBlockPainter extends CustomPainter {
   static const _normal = Color(0xFF2E7D32); // N 垂直抗力
   static const _friction = Color(0xFF1565C0); // f 摩擦
   static const _hand = Color(0xFFD81B60);
+  static const _warn = Color(0xFFC62828);
 
   @override
   void paint(Canvas canvas, Size size) {
     canvas.drawRect(Offset.zero & size, Paint()..color = _bg);
-    final map = _mapper(size, 8);
+    // 文言の有無で壁・物体が動かないよう、帯の高さを常時確保する。
+    final top = _statusReservedBottom(size);
+    _drawStatusBanner(canvas, size);
+    final map = _mapper(size, top);
     _drawFloor(canvas, map);
     _drawBlock(canvas, map);
     _drawHand(canvas, map);
     _drawForces(canvas, map);
     _drawForceLegend(canvas, size);
+  }
+
+  String? _statusMessage() {
+    switch (sample.phase) {
+      case PushedBlockPhase.equilibrium:
+        return null;
+      case PushedBlockPhase.sliding:
+        return '物体が滑り始めました';
+      case PushedBlockPhase.tipping:
+        return '物体が転倒し始めました';
+      case PushedBlockPhase.freeTip:
+        return '手が離れました';
+      case PushedBlockPhase.onSide:
+        return '側面に着地しました';
+    }
+  }
+
+  static const _statusTextStyle = TextStyle(
+    fontSize: 15,
+    fontWeight: FontWeight.w700,
+    color: _warn,
+  );
+
+  /// 最長メッセージ相当の高さを常に確保する。
+  double _statusReservedBottom(Size size) {
+    final tp = TextPainter(
+      text: const TextSpan(
+        text: '物体が転倒し始めました',
+        style: _statusTextStyle,
+      ),
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
+    )..layout(maxWidth: size.width - 40);
+    return 10 + tp.height + 16 + 6;
+  }
+
+  void _drawStatusBanner(Canvas canvas, Size size) {
+    final msg = _statusMessage();
+    if (msg == null) return;
+    final tp = TextPainter(
+      text: TextSpan(text: msg, style: _statusTextStyle),
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
+    )..layout(maxWidth: size.width - 40);
+    final width = tp.width + 28;
+    final height = tp.height + 16;
+    final card = Rect.fromLTWH(
+      (size.width - width) / 2,
+      10,
+      width,
+      height,
+    );
+    final rrect = RRect.fromRectAndRadius(card, const Radius.circular(8));
+    canvas.drawRRect(
+      rrect,
+      Paint()..color = const Color(0xFFFFEBEE).withValues(alpha: 0.96),
+    );
+    canvas.drawRRect(
+      rrect,
+      Paint()
+        ..color = _warn
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2,
+    );
+    tp.paint(canvas, Offset(card.left + 14, card.top + 8));
   }
 
   void _drawForceLegend(Canvas canvas, Size size) {

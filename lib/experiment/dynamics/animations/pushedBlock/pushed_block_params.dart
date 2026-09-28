@@ -50,10 +50,10 @@ Map<String, double> pushedBlockDemoShape(PushedBlockDemo demo) {
       return {
         'w': 1.10,
         'H': 0.75,
-        'h': 0.22,
+        'h': 0.40,
         'F': 0.0,
-        'mu': 0.28,
-        'muS': 0.45,
+        'mu': 0.60,
+        'muS': 0.90,
       };
     case PushedBlockDemo.tip:
       return {
