@@ -777,10 +777,10 @@ class _PlatformSpringPainter extends CustomPainter {
   static const _mass = Color(0xFF1E88E5);
   static const _eq = Color(0xFFEF6C00);
   static const _natural = Color(0xFF607D8B);
-  static const _velocity = Color(0xFF1565C0);
-  static const _gravity = Color(0xFFEF6C00);
-  static const _springForce = Color(0xFF2E7D32);
-  static const _normal = Color(0xFF00897B);
+  static const _velocity = Color(0xFF6A1B9A);
+  static const _gravity = Color(0xFFBF360C); // 重力（おもり・台の重心）
+  static const _springForce = Color(0xFF2E7D32); // ばね力（台とばねの接点）
+  static const _normal = Color(0xFF0277BD); // 垂直抗力（おもりと台の接点）
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -815,8 +815,8 @@ class _PlatformSpringPainter extends CustomPainter {
     final naturalScreen = sy(0);
     final rMass = springMassRadius(params.m);
     final cx = size.width * 0.40;
-    const platformHalf = 54.0;
-    const platformH = 14.0;
+    const platformHalf = 56.0;
+    const platformH = 24.0;
 
     // 床
     canvas.drawRRect(
@@ -834,12 +834,13 @@ class _PlatformSpringPainter extends CustomPainter {
       _label(canvas, 'つりあい δ', size.width - 92, sy(params.delta) - 16, _eq);
     }
 
-    final platformTop = sy(sample.yPlatform);
-    final springTop = platformTop + platformH * 0.15;
+    final platformCenterY = sy(sample.yPlatform);
+    final platformSurfaceY = platformCenterY - platformH * 0.5;
+    final platformBottomY = platformCenterY + platformH * 0.5;
     paintCoilSpring(
       canvas,
       Offset(cx, floorY),
-      Offset(cx, springTop),
+      Offset(cx, platformBottomY),
       params.k,
       coils: 20,
     );
@@ -847,11 +848,11 @@ class _PlatformSpringPainter extends CustomPainter {
     // 台
     final platRect = RRect.fromRectAndRadius(
       Rect.fromCenter(
-        center: Offset(cx, platformTop),
+        center: Offset(cx, platformCenterY),
         width: platformHalf * 2,
         height: platformH,
       ),
-      const Radius.circular(3),
+      const Radius.circular(4),
     );
     canvas.drawRRect(platRect, Paint()..color = _platform);
     canvas.drawRRect(
@@ -861,11 +862,11 @@ class _PlatformSpringPainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.5,
     );
-    _label(canvas, 'M', cx - 8, platformTop - 6, Colors.white);
+    _label(canvas, 'M', cx - 8, platformCenterY - 6, Colors.white);
 
     // おもり（接触中は台の上、離れているときは yMass）
     final massY = sample.contact
-        ? platformTop - platformH * 0.5 - rMass
+        ? platformSurfaceY - rMass
         : sy(sample.yMass) - rMass;
     final massCenter = Offset(cx, massY);
     canvas.drawCircle(
@@ -898,7 +899,13 @@ class _PlatformSpringPainter extends CustomPainter {
       Offset(massCenter.dx - tp.width / 2, massCenter.dy - tp.height / 2),
     );
 
-    // —— 力の図示（下向き正の物理に対応：下向き矢印＝重力など）——
+    // —— 力の図示：作用点＝重力は重心、N は接点、ky はばね接点 ——
+    // 作用線が重ならないよう、水平に少しだけずらす。
+    const dxMg = -10.0;
+    const dxMgPlat = 10.0;
+    const dxKy = 22.0;
+    const dxNMass = -20.0;
+    const dxNPlat = 20.0;
     final fScale = 46.0 / math.max(params.m * math.max(params.g, 1.0), 1e-6);
     final mgLen = (params.m * params.g * fScale).clamp(8.0, 70.0);
     final MgLen = (params.bigM * params.g * fScale).clamp(8.0, 80.0);
@@ -906,94 +913,130 @@ class _PlatformSpringPainter extends CustomPainter {
     final springLen = (springF.abs() * fScale).clamp(0.0, 90.0);
     final nLen = (sample.normal * fScale).clamp(0.0, 70.0);
 
-    // おもり m: mg ↓、接触中は N ↑
-    final massForceX = massCenter.dx + rMass + 16;
-    _arrowDown(canvas, Offset(massForceX, massCenter.dy), mgLen, _gravity);
+    // おもり m：重力は重心から下向き
+    final mgOrigin = massCenter.translate(dxMg, 0);
+    _arrowDown(canvas, mgOrigin, mgLen, _gravity);
     _label(
       canvas,
       'mg',
-      massForceX + 6,
-      massCenter.dy + mgLen + 2,
+      mgOrigin.dx - 22,
+      mgOrigin.dy + mgLen + 2,
       _gravity,
     );
+
+    // おもり↔台の接点での垂直抗力（作用・反作用）
     if (sample.contact && nLen > 2) {
-      _arrowUp(canvas, Offset(massForceX + 22, massCenter.dy), nLen, _normal);
-      _label(
-        canvas,
-        'N',
-        massForceX + 14,
-        massCenter.dy - nLen - 14,
-        _normal,
-      );
+      final contactY = platformSurfaceY;
+      // おもり側：接点から上向き
+      final nOnMass = Offset(cx + dxNMass, contactY);
+      _arrowUp(canvas, nOnMass, nLen, _normal);
+      _label(canvas, 'N', nOnMass.dx - 14, contactY - nLen - 14, _normal);
+      // 台側：同じ接点から下向き
+      final nOnPlat = Offset(cx + dxNPlat, contactY);
+      _arrowDown(canvas, nOnPlat, nLen, _normal);
+      _label(canvas, 'N', nOnPlat.dx + 6, contactY + nLen + 2, _normal);
     }
 
-    // 台 M: Mg ↓、ばね力（圧縮なら上、伸びなら下）、接触中は N ↓（作用反作用）
-    final platForceX = cx + platformHalf + 18;
-    _arrowDown(canvas, Offset(platForceX, platformTop), MgLen, _gravity);
+    // 台 M：重力は台の重心から下向き
+    final platCm = Offset(cx + dxMgPlat, platformCenterY);
+    _arrowDown(canvas, platCm, MgLen, _gravity);
     _label(
       canvas,
       'Mg',
-      platForceX + 6,
-      platformTop + MgLen + 2,
+      platCm.dx + 8,
+      platCm.dy + MgLen + 2,
       _gravity,
     );
+
+    // ばね力：台とばねの接点（台底面中央）
     if (springLen > 2) {
+      final springAttach = Offset(cx + dxKy, platformBottomY);
       if (sample.yPlatform >= 0) {
-        _arrowUp(
-          canvas,
-          Offset(platForceX + 24, platformTop),
-          springLen,
-          _springForce,
-        );
+        _arrowUp(canvas, springAttach, springLen, _springForce);
         _label(
           canvas,
           'ky',
-          platForceX + 16,
-          platformTop - springLen - 14,
+          springAttach.dx + 10,
+          springAttach.dy - springLen - 14,
           _springForce,
         );
       } else {
-        _arrowDown(
-          canvas,
-          Offset(platForceX + 24, platformTop),
-          springLen,
-          _springForce,
-        );
+        _arrowDown(canvas, springAttach, springLen, _springForce);
         _label(
           canvas,
           'ky',
-          platForceX + 16,
-          platformTop + springLen + 2,
+          springAttach.dx + 10,
+          springAttach.dy + springLen + 2,
           _springForce,
         );
       }
-    }
-    if (sample.contact && nLen > 2) {
-      _arrowDown(
-        canvas,
-        Offset(platForceX + 48, platformTop),
-        nLen,
-        _normal,
-      );
-      _label(
-        canvas,
-        'N',
-        platForceX + 40,
-        platformTop + nLen + 2,
-        _normal,
-      );
     }
 
     final vMax = math.max(amp * params.omega, 0.3);
     _arrowY(
       canvas,
-      Offset(cx - platformHalf - 18, platformTop),
+      Offset(cx - platformHalf - 18, platformCenterY),
       sample.vPlatform / vMax * 64,
       _velocity,
     );
-    _label(canvas, 'v', cx - platformHalf - 38, platformTop - 18, _velocity);
+    _label(canvas, 'v', cx - platformHalf - 38, platformCenterY - 18, _velocity);
 
+    _drawForceLegend(canvas, size);
     paintDynamicsReadout(canvas, hud, ledger, textColumnWidth: 200);
+  }
+
+  void _drawForceLegend(Canvas canvas, Size size) {
+    final items = <(Color, String)>[
+      (_gravity, '重力（重心）'),
+      (_normal, 'N 垂直抗力（接点）'),
+      (_springForce, 'ky ばね力（ばね接点）'),
+      (_velocity, 'v 速度'),
+    ];
+    const rightPad = 10.0;
+    const topPad = 10.0;
+    const lineH = 18.0;
+    const dotGap = 10.0;
+    final painters = <TextPainter>[];
+    var maxW = 0.0;
+    for (final item in items) {
+      final tp = TextPainter(
+        text: TextSpan(
+          text: item.$2,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            color: item.$1,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      painters.add(tp);
+      if (tp.width > maxW) maxW = tp.width;
+    }
+    final cardW = 8 + 9 + dotGap + maxW + 12;
+    final cardH = 8 + items.length * lineH + 4;
+    final card = Rect.fromLTWH(
+      size.width - rightPad - cardW,
+      topPad,
+      cardW,
+      cardH,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(card, const Radius.circular(8)),
+      Paint()..color = Colors.white.withValues(alpha: 0.92),
+    );
+    for (var i = 0; i < items.length; i++) {
+      final color = items[i].$1;
+      final painter = painters[i];
+      final y = card.top + 8 + i * lineH;
+      final textLeft = card.right - 12 - painter.width;
+      canvas.drawCircle(
+        Offset(textLeft - dotGap, y + painter.height / 2),
+        4.5,
+        Paint()..color = color,
+      );
+      painter.paint(canvas, Offset(textLeft, y));
+    }
   }
 
   @override

@@ -27,6 +27,15 @@ class PushedBlockRuntime {
 
   PushedBlockSample get sample => _toSample();
 
+  /// 側面着地、または滑って画面外。自動リセットせず UI 側で待つ。
+  bool get isFinished {
+    if (phase == PushedBlockPhase.onSide) return true;
+    if (phase == PushedBlockPhase.sliding && x >= kPushedBlockOffscreenX) {
+      return true;
+    }
+    return false;
+  }
+
   void reset() {
     time = 0;
     x = 0;
@@ -67,12 +76,18 @@ class PushedBlockRuntime {
         x += v * stepDt + 0.5 * a * stepDt * stepDt;
         v += a * stepDt;
         time += stepDt;
+        if (x >= kPushedBlockOffscreenX) {
+          return false;
+        }
       } else if (phase == PushedBlockPhase.tipping ||
           phase == PushedBlockPhase.freeTip) {
         if (!_stepTip(stepDt)) break;
       } else {
         break;
       }
+    }
+    if (phase == PushedBlockPhase.sliding && x >= kPushedBlockOffscreenX) {
+      return false;
     }
     return phase != PushedBlockPhase.onSide;
   }

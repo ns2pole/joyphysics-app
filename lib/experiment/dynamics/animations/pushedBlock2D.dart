@@ -5,7 +5,6 @@ import 'package:joyphysics/experiment/dynamics/animations/pushedBlock/pushed_blo
 import 'package:joyphysics/experiment/dynamics/animations/pushedBlock/pushed_block_pipeline.dart';
 import 'package:joyphysics/experiment/dynamics/animations/pushedBlock/pushed_block_runtime.dart';
 import 'package:joyphysics/experiment/dynamics/animations/pushedBlock/pushed_block_statics.dart';
-import 'package:joyphysics/experiment/dynamics/animations/pushedBlock/pushed_block_tipping.dart';
 import 'package:joyphysics/experiment/playback_controls.dart';
 import 'package:joyphysics/model.dart';
 
@@ -83,11 +82,7 @@ class PushedBlock2DSimulation extends PhysicsSimulation {
 
   ValueNotifier<bool> get running => _loop.running;
   Map<String, double> _latestParams = {};
-  /// LOCK_MARKER_v4: 再生開始後は初期条件ロック。リセットで解除。
-  bool _icsLocked = false;
-  final ValueNotifier<int> _lockTick = ValueNotifier(0);
   static const double _playback = 0.55;
-  static const String _lockHint = '再生中は変更できません。リセットで戻ります。';
 
   @override
   Set<String> get initialActiveIds => {};
@@ -109,21 +104,6 @@ class PushedBlock2DSimulation extends PhysicsSimulation {
     return PushedBlockParams.fromMap(_latestParams);
   }
 
-  void _setIcsLocked(bool locked) {
-    if (_icsLocked == locked) return;
-    _icsLocked = locked;
-    _lockTick.value++;
-  }
-
-  void _lockAndRun() {
-    if (_runtime.phase == PushedBlockPhase.onSide) {
-      _runtime.reset();
-    }
-    _setIcsLocked(true);
-    _loop.start();
-    _frame.value++;
-  }
-
   void _rememberParams(Map<String, double> params) {
     final next = Map<String, double>.from(params);
     final changed = _latestParams.isEmpty ||
@@ -133,29 +113,39 @@ class PushedBlock2DSimulation extends PhysicsSimulation {
         _latestParams['F'] != next['F'] ||
         _latestParams['mu'] != next['mu'] ||
         _latestParams['muS'] != next['muS'];
-    if (!changed) return;
-    if (_icsLocked) return;
     _latestParams = next;
-    _runtime.setParams(_params);
-    _frame.value++;
-    if (!pushedBlockHolds(_params)) {
-      _lockAndRun();
-    } else {
-      _loop.pause();
+    if (changed) {
+      _runtime.setParams(_params);
+      _frame.value++;
+      // 静止を外れたら自動再生（「滑っている」表示のまま止まらない）。
+      final shouldRun = !pushedBlockHolds(_params);
+      Future.microtask(() {
+        if (shouldRun) {
+          if (_runtime.phase == PushedBlockPhase.onSide) {
+            _runtime.reset();
+          }
+          _loop.start();
+        } else {
+          _loop.pause();
+        }
+        _frame.value++;
+      });
     }
   }
 
   void start() {
     if (running.value) return;
     if (pushedBlockHolds(_params)) return;
-    _lockAndRun();
+    if (_runtime.phase == PushedBlockPhase.onSide) {
+      _runtime.reset();
+    }
+    _loop.start();
   }
 
   void pause() => _loop.pause();
 
   void resetMotion() {
     _loop.reset();
-    _setIcsLocked(false);
     _runtime.reset();
     _frame.value++;
   }
@@ -186,9 +176,9 @@ class PushedBlock2DSimulation extends PhysicsSimulation {
     Set<String> activeIds,
     void Function(Set<String> ids) updateActiveIds,
   ) {
-    return AnimatedBuilder(
-      animation: Listenable.merge([running, _lockTick, _frame]),
-      builder: (context, _) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: running,
+      builder: (context, isRunning, _) {
         final holds = pushedBlockHolds(_params);
         return Column(
           mainAxisSize: MainAxisSize.min,
@@ -202,19 +192,11 @@ class PushedBlock2DSimulation extends PhysicsSimulation {
                 color: Color(0xFF546E7A),
               ),
             ),
-            if (_icsLocked) ...[
-              const SizedBox(height: 6),
-              const Text(
-                _lockHint,
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 12, color: Color(0xFF546E7A)),
-              ),
-            ],
             const SizedBox(height: 8),
-            if (!holds || _icsLocked)
+            if (!holds)
               PlayPauseResetButtons(
-                playing: running.value,
-                onPlayPause: running.value ? pause : start,
+                playing: isRunning,
+                onPlayPause: isRunning ? pause : start,
                 onReset: resetMotion,
               )
             else
@@ -236,125 +218,82 @@ class PushedBlock2DSimulation extends PhysicsSimulation {
     void Function(String key, double value) updateParam,
   ) {
     _rememberParams(parameters);
+    final p = _params;
     return [
-      AnimatedBuilder(
-        animation: Listenable.merge([running, _lockTick, _frame]),
-        builder: (context, _) {
-          final p = _params;
-          final st = pushedBlockStatics(p);
-          final locked = _icsLocked;
-          final summary =
-              'Fslide=${st.fSlide.toStringAsFixed(2)} N    '
-              'Ftip=${st.fTip.toStringAsFixed(2)} N    '
-              'F=${p.force.toStringAsFixed(2)} N';
-          return IgnorePointer(
-            ignoring: locked,
-            child: Opacity(
-              opacity: locked ? 0.45 : 1,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const Text(
-                    '初期条件（m = 1 kg、g = 9.8 m/s²）',
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                  ),
-                  if (locked)
-                    const Padding(
-                      padding: EdgeInsets.only(top: 2, bottom: 4),
-                      child: Text(
-                        _lockHint,
-                        style: TextStyle(fontSize: 11, color: Color(0xFF546E7A)),
-                      ),
-                    ),
-                  _SliderRow(
-                    label: 'w',
-                    value: p.width,
-                    min: kPushedBlockMinW,
-                    max: kPushedBlockMaxW,
-                    onChanged: (v) {
-                      if (_icsLocked) return;
-                      updateParam('w', v);
-                    },
-                    semanticLabel: '幅 w',
-                  ),
-                  _SliderRow(
-                    label: 'H',
-                    value: p.height,
-                    min: kPushedBlockMinH,
-                    max: kPushedBlockMaxH,
-                    onChanged: (v) {
-                          if (_icsLocked) return;
-                            updateParam('H', v);
-                            if (p.pushHeight > v) updateParam('h', v);
-                          },
-                    semanticLabel: '高さ H',
-                  ),
-                  _SliderRow(
-                    label: 'h',
-                    value: p.pushHeight,
-                    min: kPushedBlockMinPushH,
-                    max: p.height,
-                    onChanged: (v) {
-                      if (_icsLocked) return;
-                      updateParam('h', v);
-                    },
-                    semanticLabel: '押し高 h',
-                  ),
-                  _SliderRow(
-                    label: 'F',
-                    value: p.force,
-                    min: kPushedBlockMinF,
-                    max: kPushedBlockMaxF,
-                    onChanged: (v) {
-                      if (_icsLocked) return;
-                      updateParam('F', v);
-                    },
-                    semanticLabel: '力 F',
-                  ),
-                  _SliderRow(
-                    label: 'μ',
-                    value: p.muK,
-                    min: kPushedBlockMinMu,
-                    max: kPushedBlockMaxMu,
-                    onChanged: (v) {
-                          if (_icsLocked) return;
-                            updateParam('mu', v);
-                            final need = v + kPushedBlockMuGap;
-                            if (p.muS < need) updateParam('muS', need);
-                          },
-                    semanticLabel: '動摩擦係数',
-                  ),
-                  _SliderRow(
-                    label: 'μs',
-                    value: p.muS,
-                    min: kPushedBlockMinMuS,
-                    max: kPushedBlockMaxMuS,
-                    onChanged: (v) {
-                          if (_icsLocked) return;
-                            updateParam('muS', v);
-                            final maxK = v - kPushedBlockMuGap;
-                            if (p.muK > maxK) updateParam('mu', maxK);
-                          },
-                    semanticLabel: '静止摩擦係数',
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: Text(
-                      summary,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontFamily: 'Courier',
-                        color: st.holds
-                            ? const Color(0xFF37474F)
-                            : const Color(0xFFC62828),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
+      const Text(
+        '初期条件（m = 1 kg、g = 9.8 m/s²）',
+        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+      ),
+      _SliderRow(
+        label: 'w',
+        value: p.width,
+        min: kPushedBlockMinW,
+        max: kPushedBlockMaxW,
+        onChanged: (v) {
+          updateParam('w', v);
+          resetMotion();
         },
+        semanticLabel: '幅 w',
+      ),
+      _SliderRow(
+        label: 'H',
+        value: p.height,
+        min: kPushedBlockMinH,
+        max: kPushedBlockMaxH,
+        onChanged: (v) {
+          updateParam('H', v);
+          if (p.pushHeight > v) updateParam('h', v);
+          resetMotion();
+        },
+        semanticLabel: '高さ H',
+      ),
+      _SliderRow(
+        label: 'h',
+        value: p.pushHeight,
+        min: kPushedBlockMinPushH,
+        max: p.height,
+        onChanged: (v) {
+          updateParam('h', v);
+          resetMotion();
+        },
+        semanticLabel: '押し高 h',
+      ),
+      _SliderRow(
+        label: 'F',
+        value: p.force,
+        min: kPushedBlockMinF,
+        max: kPushedBlockMaxF,
+        onChanged: (v) {
+          updateParam('F', v);
+          resetMotion();
+        },
+        semanticLabel: '力 F',
+      ),
+      _SliderRow(
+        label: 'μ',
+        value: p.muK,
+        min: kPushedBlockMinMu,
+        max: kPushedBlockMaxMu,
+        onChanged: (v) {
+          updateParam('mu', v);
+          final need = v + kPushedBlockMuGap;
+          if (p.muS < need) updateParam('muS', need);
+          resetMotion();
+        },
+        semanticLabel: '動摩擦係数',
+      ),
+      _SliderRow(
+        label: 'μs',
+        value: p.muS,
+        min: kPushedBlockMinMuS,
+        max: kPushedBlockMaxMuS,
+        onChanged: (v) {
+          updateParam('muS', v);
+          final maxK = v - kPushedBlockMuGap;
+          if (p.muK > maxK) updateParam('mu', maxK);
+          resetMotion();
+        },
+        semanticLabel: '静止摩擦係数',
       ),
     ];
   }
@@ -401,7 +340,7 @@ class _SliderRow extends StatelessWidget {
   final double value;
   final double min;
   final double max;
-  final ValueChanged<double>? onChanged;
+  final ValueChanged<double> onChanged;
   final String semanticLabel;
 
   @override
@@ -456,13 +395,11 @@ class _PushedBlockPainter extends CustomPainter {
   static const _normal = Color(0xFF2E7D32); // N 垂直抗力
   static const _friction = Color(0xFF1565C0); // f 摩擦
   static const _hand = Color(0xFFD81B60);
-  static const _warn = Color(0xFFC62828);
 
   @override
   void paint(Canvas canvas, Size size) {
     canvas.drawRect(Offset.zero & size, Paint()..color = _bg);
-    final hud = _drawHud(canvas, size);
-    final map = _mapper(size, hud.bottom + 8);
+    final map = _mapper(size, 8);
     _drawFloor(canvas, map);
     _drawBlock(canvas, map);
     _drawHand(canvas, map);
@@ -494,36 +431,6 @@ class _PushedBlockPainter extends CustomPainter {
       canvas.drawCircle(Offset(textLeft - 10, y + tp.height / 2), 4.5, Paint()..color = color);
       tp.paint(canvas, Offset(textLeft, y));
     }
-  }
-
-  Rect _drawHud(Canvas canvas, Size size) {
-    final leave = pushedBlockFingerLeaveTheta(params) * 180 / math.pi;
-    final lines = <String>[
-      'F = ${params.force.toStringAsFixed(2)} N  h = ${params.pushHeight.toStringAsFixed(2)} m',
-      'Fslide = ${statics.fSlide.toStringAsFixed(2)}  Ftip = ${statics.fTip.toStringAsFixed(2)}',
-      if (statics.onset == PushedBlockOnset.tip)
-        '離れ目安 θ = ${leave.toStringAsFixed(0)}°',
-    ];
-    final tp = TextPainter(
-      text: TextSpan(
-        text: lines.join('\n'),
-        style: TextStyle(
-          fontSize: 12,
-          height: 1.35,
-          fontFamily: 'Courier',
-          fontWeight: FontWeight.w600,
-          color: statics.holds ? _ink : _warn,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout(maxWidth: size.width - 40);
-    final card = Rect.fromLTWH(8, 8, tp.width + 24, tp.height + 16);
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(card, const Radius.circular(8)),
-      Paint()..color = Colors.white.withValues(alpha: 0.92),
-    );
-    tp.paint(canvas, const Offset(20, 16));
-    return card;
   }
 
   _Map _mapper(Size size, double top) {

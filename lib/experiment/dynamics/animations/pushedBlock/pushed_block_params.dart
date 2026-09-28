@@ -28,6 +28,9 @@ const double kPushedBlockDefaultMuS = 0.50;
 /// 直方体が見やすいよう、やや寄った視野（約 1.5 倍表示）。
 const double kPushedBlockViewWidth = 5.0 / 1.5;
 const double kPushedBlockViewHeight = 3.0 / 1.5;
+/// 滑走停止判定。右下ピボットが視野右端＋最大幅を超えたら画面外。
+const double kPushedBlockOffscreenX =
+    kPushedBlockViewWidth + kPushedBlockMaxW;
 final double kPushedBlockOnSideTheta = math.pi / 2 - 0.02;
 
 /// 質量。拡張時は [kPushedBlockMassFromArea] を true にするか、ここを差し替える。

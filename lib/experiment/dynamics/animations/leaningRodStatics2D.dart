@@ -80,12 +80,8 @@ class LeaningRodStatics2DSimulation extends PhysicsSimulation {
   ValueNotifier<bool> get running => _loop.running;
 
   Map<String, double> _latestParams = {};
-  /// LOCK_MARKER_v4: 再生開始後は初期条件ロック。リセットで解除。
-  bool _icsLocked = false;
-  final ValueNotifier<int> _lockTick = ValueNotifier(0);
 
   static const double _playback = 0.45;
-  static const String _lockHint = '再生中は変更できません。リセットで戻ります。';
 
   @override
   Set<String> get initialActiveIds => {};
@@ -104,50 +100,45 @@ class LeaningRodStatics2DSimulation extends PhysicsSimulation {
     return LeaningRodParams.fromMap(_latestParams);
   }
 
-  void _setIcsLocked(bool locked) {
-    if (_icsLocked == locked) return;
-    _icsLocked = locked;
-    _lockTick.value++;
-  }
-
-  void _lockAndRun() {
-    if (_runtime.phase == LeaningRodPhase.flat) {
-      _runtime.reset();
-    }
-    _setIcsLocked(true);
-    _loop.start();
-    _frame.value++;
-  }
-
   void _rememberParams(Map<String, double> params) {
     final next = Map<String, double>.from(params);
     final changed = _latestParams.isEmpty ||
         _latestParams['theta'] != next['theta'] ||
         _latestParams['mu'] != next['mu'] ||
         _latestParams['muS'] != next['muS'];
-    if (!changed) return;
-    if (_icsLocked) return;
     _latestParams = next;
-    _runtime.setParams(_params);
-    _frame.value++;
-    if (!leaningRodHolds(_params)) {
-      _lockAndRun();
-    } else {
-      _loop.pause();
+    if (changed) {
+      _runtime.setParams(_params);
+      _frame.value++;
+      // 静止を外れたら自動再生。
+      final shouldRun = !leaningRodHolds(_params);
+      Future.microtask(() {
+        if (shouldRun) {
+          if (_runtime.phase == LeaningRodPhase.flat) {
+            _runtime.reset();
+          }
+          _loop.start();
+        } else {
+          _loop.pause();
+        }
+        _frame.value++;
+      });
     }
   }
 
   void start() {
     if (running.value) return;
     if (leaningRodHolds(_params)) return;
-    _lockAndRun();
+    if (_runtime.phase == LeaningRodPhase.flat) {
+      _runtime.reset();
+    }
+    _loop.start();
   }
 
   void pause() => _loop.pause();
 
   void resetMotion() {
     _loop.reset();
-    _setIcsLocked(false);
     _runtime.reset();
     _frame.value++;
   }
@@ -169,9 +160,9 @@ class LeaningRodStatics2DSimulation extends PhysicsSimulation {
     Set<String> activeIds,
     void Function(Set<String> ids) updateActiveIds,
   ) {
-    return AnimatedBuilder(
-      animation: Listenable.merge([running, _lockTick, _frame]),
-      builder: (context, _) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: running,
+      builder: (context, isRunning, _) {
         final holds = leaningRodHolds(_params);
         return Column(
           mainAxisSize: MainAxisSize.min,
@@ -185,19 +176,11 @@ class LeaningRodStatics2DSimulation extends PhysicsSimulation {
                 color: Color(0xFF546E7A),
               ),
             ),
-            if (_icsLocked) ...[
-              const SizedBox(height: 6),
-              const Text(
-                _lockHint,
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 12, color: Color(0xFF546E7A)),
-              ),
-            ],
             const SizedBox(height: 8),
-            if (!holds || _icsLocked)
+            if (!holds)
               PlayPauseResetButtons(
-                playing: running.value,
-                onPlayPause: running.value ? pause : start,
+                playing: isRunning,
+                onPlayPause: isRunning ? pause : start,
                 onReset: resetMotion,
               )
             else
@@ -219,103 +202,78 @@ class LeaningRodStatics2DSimulation extends PhysicsSimulation {
     void Function(String key, double value) updateParam,
   ) {
     _rememberParams(parameters);
+    final p = _params;
+    final sample = _runtime.sample;
+    final need = 0.5 * math.tan(p.theta);
+    final String summary;
+    final wallDeg = sample.phase == LeaningRodPhase.equilibrium
+        ? p.thetaDeg
+        : (math.pi / 2 - sample.theta) * 180 / math.pi;
+    if (leaningRodHolds(p)) {
+      summary =
+          '必要 μs ≥ ${need.toStringAsFixed(2)}    '
+          'Nw=${sample.nw.toStringAsFixed(2)} N';
+    } else {
+      summary =
+          'θ=${wallDeg.toStringAsFixed(1)}°    '
+          'Nw=${sample.nw.toStringAsFixed(2)} N';
+    }
     return [
-      AnimatedBuilder(
-        animation: Listenable.merge([running, _lockTick, _frame]),
-        builder: (context, _) {
-          final p = _params;
-          final sample = _runtime.sample;
-          final locked = _icsLocked;
-          final need = 0.5 * math.tan(p.theta);
-          final wallDeg = sample.phase == LeaningRodPhase.equilibrium
-              ? p.thetaDeg
-              : (math.pi / 2 - sample.theta) * 180 / math.pi;
-          final String summary;
-          if (leaningRodHolds(p)) {
-            summary =
-                '必要 μs ≥ ${need.toStringAsFixed(2)}    '
-                'Nw=${sample.nw.toStringAsFixed(2)} N';
-          } else {
-            summary =
-                'θ=${wallDeg.toStringAsFixed(1)}°    '
-                'Nw=${sample.nw.toStringAsFixed(2)} N';
-          }
-          return IgnorePointer(
-            ignoring: locked,
-            child: Opacity(
-              opacity: locked ? 0.45 : 1,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const Text(
-                    '初期条件（壁滑らか、m = 1 kg、L = 2 m、g = 9.8 m/s²）',
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                  ),
-                  if (locked)
-                    const Padding(
-                      padding: EdgeInsets.only(top: 2, bottom: 4),
-                      child: Text(
-                        _lockHint,
-                        style: TextStyle(fontSize: 11, color: Color(0xFF546E7A)),
-                      ),
-                    ),
-                  _RodSlider(
-                    label: 'θ',
-                    value: p.thetaDeg,
-                    min: kLeaningRodMinTheta,
-                    max: kLeaningRodMaxTheta,
-                    digits: 0,
-                    suffix: '°',
-                    onChanged: (v) {
-                      if (_icsLocked) return;
-                      updateParam('theta', v);
-                    },
-                    semanticLabel: '棒と壁の角 θ',
-                  ),
-                  _RodSlider(
-                    label: 'μ',
-                    value: p.muK,
-                    min: kLeaningRodMinMu,
-                    max: kLeaningRodMaxMu,
-                    onChanged: (v) {
-                          if (_icsLocked) return;
-                            updateParam('mu', v);
-                            final needS = v + kLeaningRodMuGap;
-                            if (p.muS < needS) updateParam('muS', needS);
-                          },
-                    semanticLabel: '床の動摩擦係数 μ',
-                  ),
-                  _RodSlider(
-                    label: 'μs',
-                    value: p.muS,
-                    min: kLeaningRodMinMuS,
-                    max: kLeaningRodMaxMuS,
-                    onChanged: (v) {
-                          if (_icsLocked) return;
-                            updateParam('muS', v);
-                            final maxK = v - kLeaningRodMuGap;
-                            if (p.muK > maxK) updateParam('mu', maxK);
-                          },
-                    semanticLabel: '床の静止摩擦係数 μs',
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: Text(
-                      summary,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontFamily: 'Courier',
-                        color: leaningRodHolds(p)
-                            ? const Color(0xFF37474F)
-                            : const Color(0xFFC62828),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
+      const Text(
+        '初期条件（壁滑らか、m = 1 kg、L = 2 m、g = 9.8 m/s²）',
+        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+      ),
+      _RodSlider(
+        label: 'θ',
+        value: p.thetaDeg,
+        min: kLeaningRodMinTheta,
+        max: kLeaningRodMaxTheta,
+        digits: 0,
+        suffix: '°',
+        onChanged: (v) {
+          updateParam('theta', v);
+          resetMotion();
         },
+        semanticLabel: '棒と壁の角 θ',
+      ),
+      _RodSlider(
+        label: 'μ',
+        value: p.muK,
+        min: kLeaningRodMinMu,
+        max: kLeaningRodMaxMu,
+        onChanged: (v) {
+          updateParam('mu', v);
+          final needS = v + kLeaningRodMuGap;
+          if (p.muS < needS) updateParam('muS', needS);
+          resetMotion();
+        },
+        semanticLabel: '床の動摩擦係数 μ',
+      ),
+      _RodSlider(
+        label: 'μs',
+        value: p.muS,
+        min: kLeaningRodMinMuS,
+        max: kLeaningRodMaxMuS,
+        onChanged: (v) {
+          updateParam('muS', v);
+          final maxK = v - kLeaningRodMuGap;
+          if (p.muK > maxK) updateParam('mu', maxK);
+          resetMotion();
+        },
+        semanticLabel: '床の静止摩擦係数 μs',
+      ),
+      Padding(
+        padding: const EdgeInsets.only(top: 4),
+        child: Text(
+          summary,
+          style: TextStyle(
+            fontSize: 12,
+            fontFamily: 'Courier',
+            color: leaningRodHolds(p)
+                ? const Color(0xFF37474F)
+                : const Color(0xFFC62828),
+          ),
+        ),
       ),
     ];
   }
@@ -344,7 +302,6 @@ class LeaningRodStatics2DSimulation extends PhysicsSimulation {
     );
   }
 }
-
 class _RodSlider extends StatelessWidget {
   const _RodSlider({
     required this.label,
@@ -361,7 +318,7 @@ class _RodSlider extends StatelessWidget {
   final double value;
   final double min;
   final double max;
-  final ValueChanged<double>? onChanged;
+  final ValueChanged<double> onChanged;
   final String semanticLabel;
   final int digits;
   final String suffix;
