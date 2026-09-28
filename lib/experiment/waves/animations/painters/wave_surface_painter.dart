@@ -275,6 +275,7 @@ class WaveSurfacePainter extends CustomPainter {
     this.nodalMetric,
     this.showAntinodalLines = false,
     this.antinodalMetric,
+    this.wavefrontStrokeScale = 1.0,
   });
 
   final double time;
@@ -309,6 +310,8 @@ class WaveSurfacePainter extends CustomPainter {
   final bool showAntinodalLines;
   /// ゼロが腹線となる指標（例: sin(δ/2)）
   final double Function(double x, double y)? antinodalMetric;
+  /// 真上視点の波面（山・谷）の線幅倍率。1 が既定。
+  final double wavefrontStrokeScale;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -922,13 +925,13 @@ class WaveSurfacePainter extends CustomPainter {
 
         final crestPaint = Paint()
           ..color = layer.lineColor
-          ..strokeWidth = 2.6
+          ..strokeWidth = 2.6 * wavefrontStrokeScale
           ..style = PaintingStyle.stroke
           ..strokeCap = StrokeCap.round
           ..isAntiAlias = true;
         final troughPaint = Paint()
           ..color = layer.lineColor
-          ..strokeWidth = 2.1
+          ..strokeWidth = 2.1 * wavefrontStrokeScale
           ..style = PaintingStyle.stroke
           ..strokeCap = StrokeCap.round
           ..isAntiAlias = true;
@@ -1208,6 +1211,7 @@ class WaveSurfacePainter extends CustomPainter {
         oldDelegate.showNodalLines != showNodalLines ||
         oldDelegate.showAntinodalLines != showAntinodalLines ||
         oldDelegate.radialCrossSections.length != radialCrossSections.length ||
+        oldDelegate.wavefrontStrokeScale != wavefrontStrokeScale ||
         !_sameCrossSections(oldDelegate.radialCrossSections, radialCrossSections);
   }
 

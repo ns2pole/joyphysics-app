@@ -15,6 +15,8 @@ class WaveParameterSlider extends StatelessWidget {
   final TextAlign labelAlign;
   final double labelWidth;
   final bool labelAbove;
+  final String Function(double value)? formatValue;
+  final double valueWidth;
 
   const WaveParameterSlider({
     super.key,
@@ -27,6 +29,8 @@ class WaveParameterSlider extends StatelessWidget {
     this.labelAlign = TextAlign.start,
     this.labelWidth = 56,
     this.labelAbove = false,
+    this.formatValue,
+    this.valueWidth = 44,
   });
 
   @override
@@ -55,9 +59,10 @@ class WaveParameterSlider extends StatelessWidget {
           ),
         ),
         SizedBox(
-          width: 44,
+          width: valueWidth,
           child: Text(
-            value.toStringAsFixed(value < 0.1 ? 3 : 2),
+            formatValue?.call(value) ??
+                value.toStringAsFixed(value < 0.1 ? 3 : 2),
             style: const TextStyle(fontSize: 12, fontFamily: 'Courier'),
             textAlign: TextAlign.end,
           ),
@@ -116,10 +121,15 @@ class ThetaSlider extends WaveParameterSlider {
     required super.value,
     required super.onChanged,
     double maxDeg = 90.0,
+    bool showDegrees = false,
   }) : super(
           label: 'θ',
           min: 0.0,
           max: maxDeg * math.pi / 180,
+          valueWidth: showDegrees ? 52 : 44,
+          formatValue: showDegrees
+              ? (v) => '${(v * 180 / math.pi).toStringAsFixed(1)}°'
+              : null,
         );
 }
 

@@ -295,6 +295,144 @@ class SlabRefractionWaveField extends WaveField {
   int get hashCode => Object.hash(theta, lambda, periodT, n, slabWidth, amplitude);
 }
 
+/// 空気 (n=1) から屈折率 n の媒質へ。θ は法線からの角。
+double snellTheta2(double theta1, double n) {
+  if (n <= 1e-9) return theta1;
+  final s = (math.sin(theta1) / n).clamp(-1.0, 1.0);
+  return math.asin(s);
+}
+
+/// 境界面 x=0 の右側全体が媒質（厚さは十分で、出てこない）。
+/// 赤と青は空気中の速さが同じで、媒質中の屈折率だけが違う。
+class HalfPlaneDispersionWaveField extends WaveField {
+  const HalfPlaneDispersionWaveField({
+    required this.theta,
+    required this.lambdaRed,
+    required this.periodRed,
+    required this.nRed,
+    required this.lambdaBlue,
+    required this.periodBlue,
+    required this.nBlue,
+    this.amplitude = 0.4,
+  });
+
+  final double theta;
+  final double lambdaRed;
+  final double periodRed;
+  final double nRed;
+  final double lambdaBlue;
+  final double periodBlue;
+  final double nBlue;
+  final double amplitude;
+
+  double get _travelSpeed => lambdaRed / periodRed;
+
+  double get _startOffset =>
+      kPlaneWaveStartOffset + _travelSpeed * kPlaneWaveEntryDelay;
+
+  double _lambdaOf(String id) => id == 'blue' ? lambdaBlue : lambdaRed;
+
+  double _periodOf(String id) => id == 'blue' ? periodBlue : periodRed;
+
+  double _nOf(String id) => id == 'blue' ? nBlue : nRed;
+
+  double thetaInside(String id) => snellTheta2(theta, _nOf(id));
+
+  double _rawPhase(String id, double x, double y, double t) {
+    final lambda = _lambdaOf(id);
+    final k1 = 2 * math.pi / lambda;
+    final n = _nOf(id);
+    final k2 = (n <= 0) ? k1 : n * k1;
+    final omega = 2 * math.pi / _periodOf(id);
+    final ky = k1 * math.sin(theta);
+    final kx1 = k1 * math.cos(theta);
+    final kx2 = math.sqrt(math.max(k2 * k2 - ky * ky, 0.0));
+    final kx = x < 0 ? kx1 : kx2;
+    return kx * x + ky * y - omega * t;
+  }
+
+  @override
+  double phase(double x, double y, double t) => _rawPhase('red', x, y, t);
+
+  @override
+  double componentPhase(String id, double x, double y, double t) {
+    final k1 = 2 * math.pi / _lambdaOf(id);
+    return -(_rawPhase(id, x, y, t) + k1 * _startOffset);
+  }
+
+  @override
+  bool hasReached(String id, double x, double y, double t) {
+    return componentPhase(id, x, y, t) > 0;
+  }
+
+  @override
+  double z(double x, double y, double t) {
+    final p = componentPhase('red', x, y, t);
+    return (p > 0) ? amplitude * math.sin(p) : 0.0;
+  }
+
+  double _zOf(String id, double x, double y, double t) {
+    final p = componentPhase(id, x, y, t);
+    return (p > 0) ? amplitude * math.sin(p) : 0.0;
+  }
+
+  @override
+  List<WavefrontLayer> get wavefrontLayers => const [
+        WavefrontLayer(id: 'red', label: '赤', color: Colors.red),
+        WavefrontLayer(id: 'blue', label: '青', color: Colors.blue),
+      ];
+
+  @override
+  List<WaveComponent> getComponents(
+      double x, double y, double t, Set<String> activeIds) {
+    // 真上では波面の線だけにする。色面を重ねると黄色の媒質が濁る。
+    if (activeIds.contains('showWavefrontTopView')) return [];
+    final out = <WaveComponent>[];
+    if (activeIds.contains('red')) {
+      out.add(WaveComponent(
+        id: 'red',
+        label: '赤',
+        color: Colors.red,
+        value: _zOf('red', x, y, t),
+      ));
+    }
+    if (activeIds.contains('blue')) {
+      out.add(WaveComponent(
+        id: 'blue',
+        label: '青',
+        color: Colors.blue,
+        value: _zOf('blue', x, y, t),
+      ));
+    }
+    return out;
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is HalfPlaneDispersionWaveField &&
+        other.theta == theta &&
+        other.lambdaRed == lambdaRed &&
+        other.periodRed == periodRed &&
+        other.nRed == nRed &&
+        other.lambdaBlue == lambdaBlue &&
+        other.periodBlue == periodBlue &&
+        other.nBlue == nBlue &&
+        other.amplitude == amplitude;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+        theta,
+        lambdaRed,
+        periodRed,
+        nRed,
+        lambdaBlue,
+        periodBlue,
+        nBlue,
+        amplitude,
+      );
+}
+
 enum ReflectionMode { incident, reflected, combined }
 
 class ReflectionWaveField extends WaveField {
@@ -1922,6 +2060,17 @@ class DopplerEffect1DField extends WaveField {
 
   @override
   int get hashCode => Object.hash(lambda, periodT, vSource, amplitude);
+}
+
+/// 静止音源を動く観測者が聞く周波数比 f/f0。
+/// [uParallel] は波の進む向きの観測者速度。波に向かうと負になり、比は 1 より大きい。
+/// 教科書: f = (V - u_∥) / V * f0
+double observerDopplerRatio({
+  required double waveSpeed,
+  required double uParallel,
+}) {
+  if (waveSpeed.abs() < 1e-9) return 0.0;
+  return (waveSpeed - uParallel) / waveSpeed;
 }
 
 class StaticSource1DField extends WaveField {
