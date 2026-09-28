@@ -1,6 +1,7 @@
 import 'dart:math' as math;
-import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
 import 'package:joyphysics/experiment/HasHeight.dart';
 import 'package:joyphysics/experiment/playback_controls.dart';
 import 'waves/animations/fields/wave_fields.dart';
@@ -102,6 +103,90 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
 
   void _zoomIn() => _zoomBy(_zoomFactor);
   void _zoomOut() => _zoomBy(1 / _zoomFactor);
+
+  /// 記事の SingleChildScrollView と視点ドラッグが競合しないよう、
+  /// 3D では Scale を先に取る（連成振動の EagerPan と同じ考え方）。
+  Widget _buildCanvasGestures({
+    required WaveCoordinateTransformer transformer,
+    required double time,
+    required Widget child,
+  }) {
+    void onScaleStart(ScaleStartDetails details) {
+      _baseScale = _scale;
+      _draggingMarkerIndex = -1;
+
+      if (widget.onMarkerDragged != null && widget.getMarkers != null) {
+        final markers = widget.getMarkers!(time);
+        for (int i = 0; i < markers.length; i++) {
+          final m = markers[i];
+          if (m.color != Colors.red) continue;
+          final screenPos = transformer.worldToScreen(
+            m.point.x,
+            m.point.y,
+            0,
+          );
+          final dist = (screenPos - details.localFocalPoint).distance;
+          if (dist < 30.0) {
+            _draggingMarkerIndex = i;
+            break;
+          }
+        }
+      }
+    }
+
+    void onScaleUpdate(ScaleUpdateDetails details) {
+      if (_draggingMarkerIndex != -1) {
+        final newWorldPoint =
+            transformer.screenToWorld(details.localFocalPoint);
+        widget.onMarkerDragged!(
+            _draggingMarkerIndex, newWorldPoint, time);
+        return;
+      }
+
+      setState(() {
+        _scale =
+            (_baseScale * details.scale).clamp(_minScale, _maxScale);
+
+        // 波面真上ビュー中は視点をロック（OFF で保存視点へ戻すため）
+        if (widget.is3D && !_wavefrontTopViewActive) {
+          _azimuth =
+              (_azimuth + details.focalPointDelta.dx * 0.01) % (2 * math.pi);
+          _tilt = (_tilt + details.focalPointDelta.dy * 0.005)
+              .clamp(0.0, _tiltMax);
+        }
+      });
+    }
+
+    void onScaleEnd(ScaleEndDetails details) {
+      _draggingMarkerIndex = -1;
+    }
+
+    if (!widget.is3D) {
+      return GestureDetector(
+        onScaleStart: onScaleStart,
+        onScaleUpdate: onScaleUpdate,
+        onScaleEnd: onScaleEnd,
+        child: child,
+      );
+    }
+
+    return RawGestureDetector(
+      behavior: HitTestBehavior.opaque,
+      gestures: {
+        _EagerScaleGestureRecognizer:
+            GestureRecognizerFactoryWithHandlers<_EagerScaleGestureRecognizer>(
+          () => _EagerScaleGestureRecognizer(),
+          (instance) {
+            instance
+              ..onStart = onScaleStart
+              ..onUpdate = onScaleUpdate
+              ..onEnd = onScaleEnd;
+          },
+        ),
+      },
+      child: child,
+    );
+  }
 
   Widget _buildZoomButtons() {
     final canZoomOut = _scale > _minScale + 0.01;
@@ -233,62 +318,9 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
                       tilt: _tilt,
                     );
 
-                    return GestureDetector(
-                      onScaleStart: (details) {
-                        _baseScale = _scale;
-                        _draggingMarkerIndex = -1;
-
-                        if (widget.onMarkerDragged != null &&
-                            widget.getMarkers != null) {
-                          final markers = widget.getMarkers!(time);
-                          // ヒットテスト: 赤いマーカーのみドラッグ可能にする
-                          for (int i = 0; i < markers.length; i++) {
-                            final m = markers[i];
-                            if (m.color != Colors.red) continue;
-
-                            // 本来は波の高さzを考慮すべきだが、簡略化のためz=0で判定
-                            final screenPos = transformer.worldToScreen(
-                              m.point.x,
-                              m.point.y,
-                              0,
-                            );
-                            final dist =
-                                (screenPos - details.localFocalPoint).distance;
-                            if (dist < 30.0) {
-                              _draggingMarkerIndex = i;
-                              break;
-                            }
-                          }
-                        }
-                      },
-                      onScaleUpdate: (details) {
-                        if (_draggingMarkerIndex != -1) {
-                          final newWorldPoint =
-                              transformer.screenToWorld(details.localFocalPoint);
-                          widget.onMarkerDragged!(
-                              _draggingMarkerIndex, newWorldPoint, time);
-                          return;
-                        }
-
-                        setState(() {
-                          // Handle Scaling (Pinch)
-                          _scale = (_baseScale * details.scale)
-                              .clamp(_minScale, _maxScale);
-
-                          // Handle Rotation (Pan) - only for 3D
-                          // 波面真上ビュー中は視点をロック（OFF で保存視点へ戻すため）
-                          if (widget.is3D && !_wavefrontTopViewActive) {
-                            _azimuth =
-                                (_azimuth + details.focalPointDelta.dx * 0.01) %
-                                    (2 * math.pi);
-                            _tilt = (_tilt + details.focalPointDelta.dy * 0.005)
-                                .clamp(0.0, _tiltMax);
-                          }
-                        });
-                      },
-                      onScaleEnd: (details) {
-                        _draggingMarkerIndex = -1;
-                      },
+                    return _buildCanvasGestures(
+                      transformer: transformer,
+                      time: time,
                       child: ClipRect(
                         child: RepaintBoundary(
                           child: widget.animationBuilder(
@@ -540,6 +572,15 @@ class _CanvasZoomButton extends StatelessWidget {
         tooltip: tooltip,
       ),
     );
+  }
+}
+
+/// 親の ScrollView より先にドラッグを取る（3D 視点回転用）。
+class _EagerScaleGestureRecognizer extends ScaleGestureRecognizer {
+  @override
+  void addAllowedPointer(PointerDownEvent event) {
+    super.addAllowedPointer(event);
+    resolve(GestureDisposition.accepted);
   }
 }
 
