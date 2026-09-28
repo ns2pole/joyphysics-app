@@ -14,14 +14,32 @@ class SearchableArticle {
   });
 }
 
-bool isSearchableVideo(Video video) {
-  if (video.inPreparation == true) return false;
+bool isListedArticle(Video video) {
   final hasVideo = video.videoURL.isNotEmpty &&
       video.videoURL.trim() != '（動画URLをここに）' &&
       !video.videoURL.contains('（動画URL');
   final hasWidget = video.experimentWidgets != null &&
       video.experimentWidgets!.isNotEmpty;
   return hasVideo || hasWidget;
+}
+
+bool isSearchableVideo(Video video) {
+  if (video.inPreparation == true) return false;
+  return isListedArticle(video);
+}
+
+/// ホームのカテゴリ名横に出す記事数。準備中は含めない。
+int countCategoryArticles(Category category) {
+  final seen = <Video>{};
+  var count = 0;
+  for (final subcategory in category.subcategories) {
+    for (final video in subcategory.videos) {
+      if (!isSearchableVideo(video)) continue;
+      if (!seen.add(video)) continue;
+      count++;
+    }
+  }
+  return count;
 }
 
 List<SearchableArticle> flattenSearchableArticles(List<Category> categories) {

@@ -9,6 +9,7 @@ import 'package:joyphysics/model.dart';
 import 'package:joyphysics/formulaCollectionView.dart';
 import 'package:joyphysics/home_promo_links.dart';
 import 'package:joyphysics/search/article_search_page.dart';
+import 'package:joyphysics/search/searchable_articles.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
@@ -125,29 +126,37 @@ class JoyPhysicsApp extends StatelessWidget {
 
 class _Header extends StatelessWidget {
   @override
-  Widget build(BuildContext context) => Column(
-        children: [
-          const TutoringPromoLink(),
-          const SizedBox(height: 6),
-          Image.asset('assets/init/profile_arrange.png', width: 90, height: 60),
-          SizedBox(height: 4),
-          Text('アニメと実験で学ぶ',
-              style: TextStyle(
-                      fontFamily: 'KeiFont',fontSize: 34,  color: Colors.black
-                  ),),
-          Text('高校物理',
-          style: TextStyle(
-                  fontFamily: 'KeiFont',fontSize: 34, color: Colors.black,
-                  height: 1.0, // 行間を揃える
-                  )),
-          const SizedBox(height: 6),
-          const _AppVersionLabel(),
-        ],
-      );
+  Widget build(BuildContext context) {
+    final articleCount = categoriesData.fold<int>(
+      0,
+      (sum, category) => sum + countCategoryArticles(category),
+    );
+    return Column(
+      children: [
+        const TutoringPromoLink(),
+        const SizedBox(height: 6),
+        Image.asset('assets/init/profile_arrange.png', width: 90, height: 60),
+        SizedBox(height: 4),
+        Text('アニメと実験で学ぶ',
+            style: TextStyle(
+                    fontFamily: 'KeiFont',fontSize: 34,  color: Colors.black
+                ),),
+        Text('高校物理',
+        style: TextStyle(
+                fontFamily: 'KeiFont',fontSize: 34, color: Colors.black,
+                height: 1.0, // 行間を揃える
+                )),
+        const SizedBox(height: 6),
+        _AppVersionLabel(articleCount: articleCount),
+      ],
+    );
+  }
 }
 
 class _AppVersionLabel extends StatefulWidget {
-  const _AppVersionLabel();
+  const _AppVersionLabel({required this.articleCount});
+
+  final int articleCount;
 
   @override
   State<_AppVersionLabel> createState() => _AppVersionLabelState();
@@ -175,7 +184,14 @@ class _AppVersionLabelState extends State<_AppVersionLabel> {
         }
         return Column(
           children: [
-            Text('ver $version', style: _metaStyle),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('ver $version', style: _metaStyle),
+                const SizedBox(width: 10),
+                Text('${widget.articleCount}記事', style: _metaStyle),
+              ],
+            ),
             const SizedBox(height: 2),
             const Text('update $_updateDate', style: _metaStyle),
           ],
@@ -394,13 +410,21 @@ class CategoryList extends StatelessWidget {
               children: [
                 Image.asset(cat.gifUrl, width: 35, height: 35),
                 SizedBox(width: 8),
-                Text(
-                  cat.name,
-                  style: TextStyle(
-                    fontFamily: 'KeiFont',
-                    fontSize: 22,
-                    fontWeight: FontWeight.w300,
-                    color: Colors.white,
+                Text.rich(
+                  TextSpan(
+                    style: const TextStyle(
+                      fontFamily: 'KeiFont',
+                      fontSize: 22,
+                      fontWeight: FontWeight.w300,
+                      color: Colors.white,
+                    ),
+                    children: [
+                      TextSpan(text: cat.name),
+                      TextSpan(
+                        text: '(${countCategoryArticles(cat)})',
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                    ],
                   ),
                 ),
               ],
