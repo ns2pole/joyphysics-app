@@ -33,6 +33,6 @@ $$\begin{aligned}
 &= \frac{1}{2} m |\overrightarrow{v_1}|^2 + \frac{1}{2} m |\overrightarrow{v_2}|^2 \\
 \Longleftrightarrow |\overrightarrow{v}|^2 &= |\overrightarrow{v_1}|^2 + |\overrightarrow{v_2}|^2.
 \end{aligned}$$
-<p>この2つの条件を同時に満たすとき、衝突後の2つの速度ベクトルは直角（90°）をなす。</p>
+<p>この2つの条件を同時に満たすとき、衝突後の2つの速度がどちらも $0$ でなければ、それらは直角（90°）をなす。正面衝突では、止まっていた物体が $\overrightarrow{v}$ を受け取り、当たった物体は止まる。</p>
 """
 );

@@ -12,7 +12,7 @@ final buoyancyComparison = Video(
             <p>浮力の大きさは$\  F = \rho V g $で表される</p>
             <p>ここで、$F$ は浮力 [N]、$\rho$ は流体の密度 [kg/m³]、$V$ は物体の体積 [m³]、$g$ は重力加速度 [m/s²]。</p>
         <div class="common-box">問題設定</div>
-        <p>直径 $r=1\,\mathrm{cm}$、長さ $L=20\,\mathrm{cm}$、質量 $m=8\,\mathrm{g}$ の木の棒を体積 $V=5\pi\,[\mathrm{cm^3}]$ として、</p>
+        <p>半径 $r=0.5\,\mathrm{cm}$、長さ $L=20\,\mathrm{cm}$、質量 $m=8\,\mathrm{g}$ の木の棒を体積 $\displaystyle V=\pi r^{2}L=5\pi\,[\mathrm{cm^3}]$ として、</p>
         <p>密度</p>
         <ul>
           <li>飽和食塩水：$\rho_{salt}=1.20\,[\mathrm{g/cm^3}]$</li>

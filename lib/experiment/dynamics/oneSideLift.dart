@@ -14,7 +14,7 @@ final oneSideLift = Video(
             <p>$\displaystyle \vec{F_1} + \vec{F_2} + \cdots = \vec{0}$（力のつり合い）</p>
             <p>$\displaystyle \tau_1 + \tau_2 + \cdots = 0$（モーメントのつり合い）</p>
         <div class="common-box">問題設定</div>
-        <p>質量$m = 273\mathrm{g}\;)$ の木のブロックを剛体とみなす。片側を持ち上げた時に秤は何グラムを指すか？</p>
+        <p>質量 $m = 273\,\mathrm{g}$ の木のブロックを剛体とみなす。片側を持ち上げた時に秤は何グラムを指すか？</p>
         <div class="common-box">理論値計算</div>
         <p>力とモーメントのつり合い条件により、持ち上げに必要な力を求める。</p>
         <div style="text-align:center; margin:1em 0;">

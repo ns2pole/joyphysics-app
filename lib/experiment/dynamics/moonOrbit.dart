@@ -10,7 +10,7 @@ final moonOrbit = Video(
     costRating: "★☆☆",
     latex: r"""
         <div class="common-box">ポイント</div>
-        <p>地球の質量を $M$、万有引力定数を $G$ とする。地球が月に比べて十分重いという近似のもとで、全惑星の公転周期 $T$ と軌道長半径 $a$ は$\displaystyle \frac{T^2}{a^3} =  \frac{4\pi^2}{GM}$を満たす（ケプラーの第3法則）</p>
+        <p>地球の質量を $M$、万有引力定数を $G$ とする。地球が月に比べて十分重いという近似のもとで、月の公転周期 $T$ と軌道長半径 $a$ は$\displaystyle \frac{T^2}{a^3} =  \frac{4\pi^2}{GM}$を満たす（ケプラーの第3法則）</p>
         
         <div class="common-box">地球の基本データから $GM$ を求める</div>
         <p>地球一周の長さは約 $4 \times 10^7$ m。この周長は地球の半径 $R$ を使って $2\pi R$ で表されるので：</p>
