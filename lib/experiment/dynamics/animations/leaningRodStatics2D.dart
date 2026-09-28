@@ -87,11 +87,12 @@ class LeaningRodStatics2DSimulation extends PhysicsSimulation {
   /// LOCK_MARKER_v5: 再生開始後は初期条件ロック。リセットで解除。
   bool _icsLocked = false;
   final ValueNotifier<int> _lockTick = ValueNotifier(0);
+  void Function(String key, double value)? _updateParam;
   Timer? _autoResetTimer;
-
+  Timer? _demoTimer;
+  bool _autoResetPending = false;
   static const double _playback = 0.45;
   static const String _lockHint = '再生中は変更できません。リセットで戻ります。';
-  static const Duration _autoResetDelay = Duration(milliseconds: 700);
 
   @override
   Set<String> get initialActiveIds => {};
@@ -110,10 +111,21 @@ class LeaningRodStatics2DSimulation extends PhysicsSimulation {
     return LeaningRodParams.fromMap(_latestParams);
   }
 
-  void _scheduleAutoReset() {
+  void _cancelTimers() {
     _autoResetTimer?.cancel();
-    _autoResetTimer = Timer(_autoResetDelay, () {
+    _autoResetTimer = null;
+    _demoTimer?.cancel();
+    _demoTimer = null;
+    _autoResetPending = false;
+  }
+
+  void _scheduleAutoReset() {
+    if (_autoResetPending) return;
+    _autoResetPending = true;
+    _autoResetTimer?.cancel();
+    _autoResetTimer = Timer(kLeaningRodAutoResetDelay, () {
       _autoResetTimer = null;
+      _autoResetPending = false;
       resetMotion();
     });
   }
@@ -128,8 +140,11 @@ class LeaningRodStatics2DSimulation extends PhysicsSimulation {
     if (_runtime.phase == LeaningRodPhase.flat) {
       _runtime.reset();
     }
+    _demoTimer?.cancel();
+    _demoTimer = null;
     _autoResetTimer?.cancel();
     _autoResetTimer = null;
+    _autoResetPending = false;
     _setIcsLocked(true);
     _loop.start();
     _frame.value++;
@@ -153,6 +168,54 @@ class LeaningRodStatics2DSimulation extends PhysicsSimulation {
     }
   }
 
+  /// 親のパラメータ state を上書きする。常に全キーを書く（差分スキップしない）。
+  void _syncParentParams(Map<String, double> next) {
+    final updater = _updateParam;
+    if (updater == null) return;
+    for (final e in next.entries) {
+      updater(e.key, e.value);
+    }
+  }
+
+  void runDemo(LeaningRodDemo demo) {
+    _cancelTimers();
+    _loop.pause();
+    _setIcsLocked(false);
+    final shape = Map<String, double>.from(leaningRodDemoShape(demo));
+    _latestParams = shape;
+    _runtime.setParams(LeaningRodParams.fromMap(shape));
+    _syncParentParams(shape);
+    _frame.value++;
+
+    final target = leaningRodDemoThetaDeg(LeaningRodParams.fromMap(shape));
+    final start = shape['theta'] ?? kLeaningRodDefaultTheta;
+    final step = math.max((target - start) / kLeaningRodDemoRampSteps, 0.15);
+    _demoTimer = Timer.periodic(kLeaningRodDemoRampPeriod, (timer) {
+      if (_icsLocked) {
+        timer.cancel();
+        _demoTimer = null;
+        return;
+      }
+      final cur = _latestParams['theta'] ?? start;
+      final nextTheta = math.min(cur + step, target);
+      _latestParams =
+          Map<String, double>.from(_latestParams)..['theta'] = nextTheta;
+      _runtime.setParams(_params);
+      _updateParam?.call('theta', nextTheta);
+      _frame.value++;
+      if (!leaningRodHolds(_params)) {
+        timer.cancel();
+        _demoTimer = null;
+        _lockAndRun();
+        return;
+      }
+      if (nextTheta >= target - 1e-9) {
+        timer.cancel();
+        _demoTimer = null;
+      }
+    });
+  }
+
   void start() {
     if (running.value) return;
     if (leaningRodHolds(_params)) return;
@@ -161,12 +224,17 @@ class LeaningRodStatics2DSimulation extends PhysicsSimulation {
 
   void pause() => _loop.pause();
 
+  /// 姿勢・ロック解除に加え、初期条件もデフォルトの静止パラメータへ戻す。
   void resetMotion() {
-    _autoResetTimer?.cancel();
-    _autoResetTimer = null;
+    _cancelTimers();
     _loop.reset();
+    // 親へデフォルトを流すあいだはロックし、旧 θ の再適用を防ぐ。
+    _icsLocked = true;
+    final defaults = Map<String, double>.from(initialParameters);
+    _latestParams = defaults;
+    _runtime.setParams(LeaningRodParams.fromMap(defaults));
+    _syncParentParams(defaults);
     _setIcsLocked(false);
-    _runtime.reset();
     _frame.value++;
   }
 
@@ -203,6 +271,18 @@ class LeaningRodStatics2DSimulation extends PhysicsSimulation {
                 color: Color(0xFF546E7A),
               ),
             ),
+            const SizedBox(height: 8),
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                OutlinedButton(
+                  onPressed: () => runDemo(LeaningRodDemo.slip),
+                  child: const Text('滑る Auto'),
+                ),
+              ],
+            ),
             if (_icsLocked) ...[
               const SizedBox(height: 6),
               const Text(
@@ -236,6 +316,7 @@ class LeaningRodStatics2DSimulation extends PhysicsSimulation {
     Map<String, double> parameters,
     void Function(String key, double value) updateParam,
   ) {
+    _updateParam = updateParam;
     _rememberParams(parameters);
     return [
       AnimatedBuilder(
@@ -442,7 +523,10 @@ class _LeaningRodPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     canvas.drawRect(Offset.zero & size, Paint()..color = _bg);
-    final hud = _drawHud(canvas, size);
+    // 文言の有無で壁・棒が動かないよう、帯の高さを常時確保する。
+    final statusBottom = _statusReservedBottom(size);
+    _drawStatusBanner(canvas, size);
+    final hud = _drawHud(canvas, size, top: statusBottom);
     final map = _mapper(size, hud.bottom + 8);
     _drawRoom(canvas, map);
     _drawRod(canvas, map);
@@ -453,6 +537,69 @@ class _LeaningRodPainter extends CustomPainter {
       _drawForces(canvas, map);
     }
     _drawForceLegend(canvas, size);
+  }
+
+  String? _statusMessage() {
+    switch (sample.phase) {
+      case LeaningRodPhase.equilibrium:
+        return null;
+      case LeaningRodPhase.slidingBoth:
+        return '物体が滑り始めました';
+      case LeaningRodPhase.afterLeave:
+        return '壁から離れました';
+      case LeaningRodPhase.flat:
+        return '床に倒れました';
+    }
+  }
+
+  static const _statusTextStyle = TextStyle(
+    fontSize: 15,
+    fontWeight: FontWeight.w700,
+    color: _warn,
+  );
+
+  /// 最長メッセージ相当の高さを常に確保する。
+  double _statusReservedBottom(Size size) {
+    final tp = TextPainter(
+      text: const TextSpan(
+        text: '物体が滑り始めました',
+        style: _statusTextStyle,
+      ),
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
+    )..layout(maxWidth: size.width - 40);
+    return 10 + tp.height + 16 + 6;
+  }
+
+  void _drawStatusBanner(Canvas canvas, Size size) {
+    final msg = _statusMessage();
+    if (msg == null) return;
+    final tp = TextPainter(
+      text: TextSpan(text: msg, style: _statusTextStyle),
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
+    )..layout(maxWidth: size.width - 40);
+    final width = tp.width + 28;
+    final height = tp.height + 16;
+    final card = Rect.fromLTWH(
+      (size.width - width) / 2,
+      10,
+      width,
+      height,
+    );
+    final rrect = RRect.fromRectAndRadius(card, const Radius.circular(8));
+    canvas.drawRRect(
+      rrect,
+      Paint()..color = const Color(0xFFFFEBEE).withValues(alpha: 0.96),
+    );
+    canvas.drawRRect(
+      rrect,
+      Paint()
+        ..color = _warn
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2,
+    );
+    tp.paint(canvas, Offset(card.left + 14, card.top + 8));
   }
 
   void _drawForceLegend(Canvas canvas, Size size) {
@@ -508,7 +655,7 @@ class _LeaningRodPainter extends CustomPainter {
     }
   }
 
-  Rect _drawHud(Canvas canvas, Size size) {
+  Rect _drawHud(Canvas canvas, Size size, {double top = 8}) {
     final wallDeg = (math.pi / 2 - sample.theta) * 180 / math.pi;
     final lines = <String>[
       'θ = ${wallDeg.toStringAsFixed(1)}°（壁との角）',
@@ -528,12 +675,12 @@ class _LeaningRodPainter extends CustomPainter {
       ),
       textDirection: TextDirection.ltr,
     )..layout(maxWidth: size.width - 40);
-    final card = Rect.fromLTWH(8, 8, tp.width + 24, tp.height + 16);
+    final card = Rect.fromLTWH(8, top, tp.width + 24, tp.height + 16);
     canvas.drawRRect(
       RRect.fromRectAndRadius(card, const Radius.circular(8)),
       Paint()..color = Colors.white.withValues(alpha: 0.92),
     );
-    tp.paint(canvas, const Offset(20, 16));
+    tp.paint(canvas, Offset(20, top + 8));
     return card;
   }
 

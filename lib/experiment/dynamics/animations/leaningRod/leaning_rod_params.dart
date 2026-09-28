@@ -23,6 +23,37 @@ const double kLeaningRodFlatTheta = 0.04;
 const double kLeaningRodViewWidth = 3.2;
 const double kLeaningRodViewHeight = 2.6;
 
+/// 終了後、自動リセットまでの待ち。
+const Duration kLeaningRodAutoResetDelay = Duration(milliseconds: 650);
+
+/// Auto デモで θ を段階的に上げる間隔。
+const Duration kLeaningRodDemoRampPeriod = Duration(milliseconds: 40);
+
+/// Auto デモで θ を目標まで上げ切るおおよそのステップ数（〜1.6 s）。
+const int kLeaningRodDemoRampSteps = 40;
+
+enum LeaningRodDemo { slip }
+
+/// 滑りデモの初期形（静止する θ・μ）。
+Map<String, double> leaningRodDemoShape(LeaningRodDemo demo) {
+  switch (demo) {
+    case LeaningRodDemo.slip:
+      return {
+        'theta': 25.0,
+        'mu': 0.25,
+        'muS': 0.45,
+      };
+  }
+}
+
+/// 形固定のうえで滑り出す θ（限界の少し上、度）。
+double leaningRodDemoThetaDeg(LeaningRodParams shape) {
+  final crit = math.atan(2 * shape.muS) * 180 / math.pi;
+  return (crit * 1.18)
+      .clamp(kLeaningRodMinTheta, kLeaningRodMaxTheta)
+      .toDouble();
+}
+
 class LeaningRodParams {
   const LeaningRodParams({
     required this.thetaDeg,

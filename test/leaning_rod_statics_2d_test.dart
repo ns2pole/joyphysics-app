@@ -98,6 +98,20 @@ void main() {
     expect(leaningRodHolds(params), isFalse);
   });
 
+  test('滑る Auto の形は静止し、目標 θ では滑る', () {
+    final shape = leaningRodDemoShape(LeaningRodDemo.slip);
+    final start = LeaningRodParams.fromMap(shape);
+    expect(leaningRodHolds(start), isTrue);
+    final targetDeg = leaningRodDemoThetaDeg(start);
+    expect(targetDeg, greaterThan(start.thetaDeg));
+    final atTarget = LeaningRodParams(
+      thetaDeg: targetDeg,
+      muK: start.muK,
+      muS: start.muS,
+    );
+    expect(leaningRodHolds(atTarget), isFalse);
+  });
+
   test('剛体カテゴリに立て掛け棒が入っている', () {
     final dynamics = categoriesData.firstWhere((c) => c.name == '力学');
     final rigid = dynamics.subcategories.firstWhere((s) => s.name == '剛体');
