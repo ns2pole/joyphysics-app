@@ -375,6 +375,26 @@ final List<FormulaEntry> formulaListData = [
     categoryName: "単振動",
   ),
   FormulaEntry(
+    latex: "\\displaystyle \\omega^{2}=\\frac{g}{l\\cos\\theta}",
+    relatedVideo: conicalPendulum3D,
+    categoryName: "振り子",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle S=\\frac{mg}{\\cos\\theta}",
+    relatedVideo: conicalPendulum3D,
+    categoryName: "振り子",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle T=2\\pi\\sqrt{\\frac{l\\cos\\theta}{g}}",
+    relatedVideo: conicalPendulum3D,
+    categoryName: "振り子",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle r=l\\sin\\theta",
+    relatedVideo: conicalPendulum3D,
+    categoryName: "振り子",
+  ),
+  FormulaEntry(
     latex: "m_{1} v_{1} + m_{2} v_{2} = m_{1} v_{1}' + m_{2} v_{2}'",
     relatedVideo: elasticCollision1D,
     categoryName: "衝突",

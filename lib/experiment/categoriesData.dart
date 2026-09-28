@@ -80,6 +80,8 @@ final categoriesData = <Category>[
       Subcategory(
         name: '振り子',
         videos: [
+          simplePendulum2D,
+          conicalPendulum3D,
           pendulumPeriodMeasurement,
         ],
       ),
@@ -306,6 +308,7 @@ final categoriesData = <Category>[
       Subcategory(
         name: '光の分散',
         videos: [
+          dispersionHalfPlane2D,
           rainbowDroplet2D,
           secondaryRainbowDroplet2D,
           rainbowMultiDroplet2D,
