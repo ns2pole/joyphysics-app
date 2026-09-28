@@ -64,6 +64,42 @@ void main() {
     expect(s.yRot, closeTo(0, 1e-12));
   });
 
+  test('拘束力は接線成分を持たず、回転系のニュートン則を満たす', () {
+    const p = RingBeadParams(
+      r: 0.8,
+      omega: 4.2,
+      mass: 1.5,
+      theta0: 0.7,
+      thetaDot0: -0.8,
+    );
+    final phase = RingBeadPhase(t: 0.3, theta: 0.7, thetaDot: -0.8);
+    final s = ringBeadSampleAt(p, phase);
+    final f = s.forces;
+    final th = s.theta;
+    final c = math.cos(th);
+    final sn = math.sin(th);
+    // N · ê_θ = 0
+    expect(f.nx * c + f.nz * sn, closeTo(0, 1e-9));
+    // m a_rel = Fg + N + Fcf + Fcor
+    final ax = p.r * s.thetaDDot * c - p.r * s.thetaDot * s.thetaDot * sn;
+    final ay = 0.0;
+    final az = p.r * s.thetaDDot * sn + p.r * s.thetaDot * s.thetaDot * c;
+    expect(
+      f.gx + f.nx + f.cfx + f.cox,
+      closeTo(p.mass * ax, 1e-8),
+    );
+    expect(
+      f.gy + f.ny + f.cfy + f.coy,
+      closeTo(p.mass * ay, 1e-8),
+    );
+    expect(
+      f.gz + f.nz + f.cfz + f.coz,
+      closeTo(p.mass * az, 1e-8),
+    );
+    // 重力の大きさは一定
+    expect(f.gMag, closeTo(p.mass * kRingG, 1e-12));
+  });
+
   test('力学の慣性力に回転する円環上のビーズがある', () {
     final dynamics = categoriesData.firstWhere((c) => c.name == '力学');
     final sections = dynamics.subcategories.where((s) => s.name == '慣性力');

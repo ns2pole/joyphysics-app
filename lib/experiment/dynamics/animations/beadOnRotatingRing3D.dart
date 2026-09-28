@@ -94,6 +94,7 @@ class RingBeadSample {
     required this.xRot,
     required this.yRot,
     required this.zRot,
+    required this.forces,
   });
 
   final double t;
@@ -118,7 +119,92 @@ class RingBeadSample {
   final double yRot;
   final double zRot;
 
+  /// 回転系での力の成分（真の力＋慣性力）。
+  final RingBeadForces forces;
+
   double get forceTangential => gravityTangential + centrifugalTangential;
+}
+
+/// 回転系（円環を $xz$ 面に固定）での力。単位は N。
+class RingBeadForces {
+  const RingBeadForces({
+    required this.gx,
+    required this.gy,
+    required this.gz,
+    required this.nx,
+    required this.ny,
+    required this.nz,
+    required this.cfx,
+    required this.cfy,
+    required this.cfz,
+    required this.cox,
+    required this.coy,
+    required this.coz,
+  });
+
+  /// 重力 $m\vec{g}$。
+  final double gx;
+  final double gy;
+  final double gz;
+
+  /// 円環からの拘束力（接線成分は 0）。
+  final double nx;
+  final double ny;
+  final double nz;
+
+  /// 遠心力 $m\omega^{2}\rho\,\hat{\rho}$。
+  final double cfx;
+  final double cfy;
+  final double cfz;
+
+  /// コリオリ力 $-2m\vec{\omega}\times\vec{v}_{\mathrm{rel}}$。
+  final double cox;
+  final double coy;
+  final double coz;
+
+  double get gMag => math.sqrt(gx * gx + gy * gy + gz * gz);
+  double get nMag => math.sqrt(nx * nx + ny * ny + nz * nz);
+  double get cfMag => math.sqrt(cfx * cfx + cfy * cfy + cfz * cfz);
+  double get coMag => math.sqrt(cox * cox + coy * coy + coz * coz);
+}
+
+/// 回転系での力。$\hat{e}_{\theta}=(\cos\theta,0,\sin\theta)$。
+RingBeadForces ringBeadForcesAt(RingBeadParams params, double theta, double thetaDot) {
+  final m = params.mass;
+  final r = params.r;
+  final w = params.omega;
+  final s = math.sin(theta);
+  final c = math.cos(theta);
+  final thd = thetaDot;
+  final gx = 0.0;
+  const gy = 0.0;
+  final gz = -m * kRingG;
+  // 遠心力：軸から外。$\rho=R\sin\theta$、$\hat{\rho}=\hat{x}$。
+  final cfx = m * w * w * r * s;
+  const cfy = 0.0;
+  const cfz = 0.0;
+  // コリオリ：面に垂直。$\vec{\omega}=\omega\hat{z}$、$v_{\mathrm{rel}}=R\dot\theta\hat{e}_{\theta}$。
+  const cox = 0.0;
+  final coy = -2 * m * w * r * thd * c;
+  const coz = 0.0;
+  // 拘束力（滑らかな円環 ⇒ $\vec{N}\cdot\hat{e}_{\theta}=0$）。
+  final nx = -m * s * (w * w * r * s * s + kRingG * c + r * thd * thd);
+  final ny = 2 * m * w * r * thd * c;
+  final nz = m * c * (w * w * r * s * s + r * thd * thd + kRingG * c);
+  return RingBeadForces(
+    gx: gx,
+    gy: gy,
+    gz: gz,
+    nx: nx,
+    ny: ny,
+    nz: nz,
+    cfx: cfx,
+    cfy: cfy,
+    cfz: cfz,
+    cox: cox,
+    coy: coy,
+    coz: coz,
+  );
 }
 
 /// $\ddot\theta=\sin\theta(\omega^{2}\cos\theta-g/R)$
@@ -207,6 +293,7 @@ RingBeadSample ringBeadSampleAt(RingBeadParams params, RingBeadPhase phase) {
     xRot: xRot,
     yRot: yRot,
     zRot: zRot,
+    forces: ringBeadForcesAt(params, th, phase.thetaDot),
   );
 }
 
@@ -233,7 +320,7 @@ final beadOnRotatingRing3D = Video(
   <p>鉛直な円環が、鉛直直径まわりに一定の角速度 $\omega$ で回ります。円環は滑らかで、ビーズは円環に沿ってだけ動けます。広い画面では左右、狭い画面では上下です。上または左が地上（慣性系）、下または右が円環と一緒に回る座標系です。</p>
   <p>底から測った角を $\theta$ とすると、運動方程式は</p>
   <p>$$\ddot{\theta}=\sin\theta\left(\omega^{2}\cos\theta-\frac{g}{R}\right)$$</p>
-  <p>円環と一緒に回る人から見ると、円環は止まっています。接線方向に効くのは重力と遠心力だけです。ビーズの速さがあるときのコリオリ力は円環の面に垂直なので、拘束力が受け持ち、$\theta$ の式には入りません。</p>
+  <p>真の力は重力と円環からの拘束力です。円環と一緒に回る人から見ると、円環は止まっていて、遠心力と（ビーズが動いていれば）コリオリ力も加わります。接線方向に効くのは重力と遠心力だけで、コリオリ力は面に垂直なので拘束力が受け持ち、$\theta$ の式には入りません。アニメでは両系に力を全部描きます。重力ベクトルそのものは一定です。</p>
   <p>$\omega^{2}&gt;g/R$ のとき、$\displaystyle\cos\theta=\frac{g}{\omega^{2}R}$ の位置が安定なつり合いになります。$\omega$ が小さいときは底 $\theta=0$ が安定です。</p>
 """,
   experimentWidgets: [
@@ -547,6 +634,9 @@ class _RingBeadPainter extends CustomPainter {
   static const _axis = Color(0xFF78909C);
   static const _gravity = Color(0xFF5D4037);
   static const _centrifugal = Color(0xFF2E7D32);
+  static const _coriolis = Color(0xFF0277BD);
+  static const _constraint = Color(0xFFF9A825);
+  static const _velocity = Color(0xFF6A1B9A);
   static const _floorA = Color(0xFFE8E0D4);
   static const _floorB = Color(0xFFD4C6B4);
   static const _eq = Color(0xFF00897B);
@@ -614,8 +704,8 @@ class _RingBeadPainter extends CustomPainter {
       canvas,
       Offset(panel.center.dx, panel.bottom - 18),
       ground
-          ? '円環が鉛直軸まわりにクルクル回る。'
-          : '円環は止まり、遠心力でビーズが動く。',
+          ? '真の力は重力と拘束力。'
+          : '遠心力・コリオリが加わる。',
       _muted,
     );
     canvas.restore();
@@ -641,7 +731,6 @@ class _RingBeadPainter extends CustomPainter {
         ..strokeWidth = 2
         ..strokeCap = StrokeCap.round,
     );
-    _omegaBadge(canvas, top, ground: ground);
 
     // 円環（縞模様で回転が分かる）
     _drawHoop(canvas, proj, r, phi, unit);
@@ -670,15 +759,35 @@ class _RingBeadPainter extends CustomPainter {
         : (sample.xRot, sample.yRot, sample.zRot);
     final beadO = proj(bead.$1, bead.$2, bead.$3);
 
-    if (!ground) {
-      _drawRotatingForces(canvas, proj, beadO, unit);
+    _drawAllForces(canvas, proj, beadO, ground: ground);
+
+    // 速度（力と重ならないよう少しずらす）
+    if (ground) {
+      final s = math.sin(beadTh);
+      final c = math.cos(beadTh);
+      final cp = math.cos(phi);
+      final sp = math.sin(phi);
+      final thd = sample.thetaDot;
+      final phd = params.omega;
+      _drawVelocity(
+        canvas,
+        proj,
+        beadO + const Offset(12, -8),
+        vx: r * (c * thd * cp - s * sp * phd),
+        vy: r * (c * thd * sp + s * cp * phd),
+        vz: r * s * thd,
+      );
     } else {
-      final nextPhi = phi + params.omega * 0.08;
-      final next = _beadWorld(r, beadTh + sample.thetaDot * 0.08, nextPhi);
-      final v = proj(next.$1, next.$2, next.$3) - beadO;
-      if (v.distance > 2) {
-        _arrow(canvas, beadO, v / v.distance, 36, _gravity, '運動');
-      }
+      final s = math.sin(beadTh);
+      final c = math.cos(beadTh);
+      _drawVelocity(
+        canvas,
+        proj,
+        beadO + const Offset(-12, -8),
+        vx: r * sample.thetaDot * c,
+        vy: 0,
+        vz: r * sample.thetaDot * s,
+      );
     }
 
     canvas.drawCircle(beadO.translate(1.4, 1.6), 10, Paint()..color = Colors.black26);
@@ -764,84 +873,96 @@ class _RingBeadPainter extends CustomPainter {
     }
   }
 
-  void _omegaBadge(Canvas canvas, Offset top, {required bool ground}) {
-    final sweep = ground ? sample.phi : -sample.phi;
-    final rect = Rect.fromCenter(center: top, width: 28, height: 28);
-    canvas.drawArc(
-      rect,
-      -math.pi / 2,
-      1.8,
-      false,
-      Paint()
-        ..color = const Color(0xFF0277BD)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.4
-        ..strokeCap = StrokeCap.round,
-    );
-    // 矢印の頭
-    final tipA = -math.pi / 2 + 1.8;
-    final tip = Offset(
-      top.dx + 14 * math.cos(tipA),
-      top.dy + 14 * math.sin(tipA),
-    );
-    final tang = Offset(-math.sin(tipA), math.cos(tipA));
-    final n = Offset(-tang.dy, tang.dx);
-    final head = Path()
-      ..moveTo(tip.dx, tip.dy)
-      ..lineTo((tip - tang * 7 + n * 4).dx, (tip - tang * 7 + n * 4).dy)
-      ..lineTo((tip - tang * 7 - n * 4).dx, (tip - tang * 7 - n * 4).dy)
-      ..close();
-    canvas.drawPath(head, Paint()..color = const Color(0xFF0277BD));
-    _text(
-      canvas,
-      top + const Offset(22, -8),
-      ground ? 'ω' : '床が逆回転',
-      _ink,
-    );
-    // 回転角のマーカー（弧の向きの気配）
-    final mark = Offset(
-      top.dx + 10 * math.cos(sweep),
-      top.dy + 10 * math.sin(sweep),
-    );
-    canvas.drawCircle(mark, 2.5, Paint()..color = const Color(0xFF0277BD));
-  }
-
-  void _drawRotatingForces(
+  void _drawVelocity(
     Canvas canvas,
     Offset Function(double x, double y, double z) proj,
-    Offset beadO,
-    double unit,
-  ) {
-    final th = sample.theta;
-    final s = math.sin(th);
-    final c = math.cos(th);
-    // 接線 ê_θ = (cos θ, 0, sin θ) in rotating frame
-    final eTh = proj(0.2 * c, 0, 0.2 * s) - proj(0, 0, 0);
-    if (eTh.distance < 1) return;
-    final dir = eTh / eTh.distance;
-    double forcePx(double f) => (22 * f.abs() / 8).clamp(14.0, 58.0);
+    Offset beadO, {
+    required double vx,
+    required double vy,
+    required double vz,
+  }) {
+    final speed = math.sqrt(vx * vx + vy * vy + vz * vz);
+    if (speed < 0.08) return;
+    const eps = 0.04;
+    final screen = proj(vx * eps, vy * eps, vz * eps) - proj(0, 0, 0);
+    if (screen.distance < 1.5) return;
+    final len = (speed * 14).clamp(16.0, 56.0);
+    _arrow(canvas, beadO, screen / screen.distance, len, _velocity, 'v');
+  }
 
-    if (sample.gravityTangential.abs() > 0.05) {
-      final sense = sample.gravityTangential >= 0 ? 1.0 : -1.0;
+  /// 両系共通: 重力は常に鉛直下向きの一定ベクトル。接線成分だけ描かない。
+  void _drawAllForces(
+    Canvas canvas,
+    Offset Function(double x, double y, double z) proj,
+    Offset beadO, {
+    required bool ground,
+  }) {
+    final f = sample.forces;
+    final mg = params.mass * kRingG;
+    double forcePx(double mag) => (48 * mag / mg).clamp(16.0, 72.0);
+
+    void drawVec(
+      double fx,
+      double fy,
+      double fz,
+      Offset origin,
+      Color color,
+      String label, {
+      bool dashed = false,
+    }) {
+      final mag = math.sqrt(fx * fx + fy * fy + fz * fz);
+      if (mag < 0.05) return;
+      const eps = 0.05;
+      final screen = proj(fx * eps, fy * eps, fz * eps) - proj(0, 0, 0);
+      if (screen.distance < 1.5) return;
       _arrow(
         canvas,
-        beadO,
-        dir * sense,
-        forcePx(sample.gravityTangential),
-        _gravity,
-        '重力',
+        origin,
+        screen / screen.distance,
+        forcePx(mag),
+        color,
+        label,
+        dashed: dashed,
       );
     }
-    if (sample.centrifugalTangential.abs() > 0.05) {
-      final sense = sample.centrifugalTangential >= 0 ? 1.0 : -1.0;
-      _arrow(
-        canvas,
-        beadO + Offset(-dir.dy, dir.dx) * 10,
-        dir * sense,
-        forcePx(sample.centrifugalTangential),
+
+    if (ground) {
+      // 慣性系: 真の力だけ（重力＋拘束力）。拘束は φ で回す。
+      final cp = math.cos(sample.phi);
+      final sp = math.sin(sample.phi);
+      final nix = f.nx * cp - f.ny * sp;
+      final niy = f.nx * sp + f.ny * cp;
+      final niz = f.nz;
+      drawVec(f.gx, f.gy, f.gz, beadO, _gravity, '重力');
+      drawVec(nix, niy, niz, beadO + const Offset(10, 0), _constraint, '拘束力');
+    } else {
+      // 回転系: 重力・遠心力・コリオリ・拘束力。
+      drawVec(f.gx, f.gy, f.gz, beadO, _gravity, '重力');
+      drawVec(
+        f.cfx,
+        f.cfy,
+        f.cfz,
+        beadO + const Offset(-10, 0),
         _centrifugal,
         '遠心力',
         dashed: true,
+      );
+      drawVec(
+        f.cox,
+        f.coy,
+        f.coz,
+        beadO + const Offset(0, -12),
+        _coriolis,
+        'コリオリ',
+        dashed: true,
+      );
+      drawVec(
+        f.nx,
+        f.ny,
+        f.nz,
+        beadO + const Offset(10, 0),
+        _constraint,
+        '拘束力',
       );
     }
   }
