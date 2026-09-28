@@ -345,6 +345,31 @@ final List<FormulaEntry> formulaListData = [
     categoryName: "慣性力",
   ),
   FormulaEntry(
+    latex: "\\displaystyle \\ddot{\\theta}=\\sin\\theta\\left(\\omega^{2}\\cos\\theta-\\frac{g}{R}\\right)",
+    relatedVideo: beadOnRotatingRing3D,
+    categoryName: "慣性力",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle \\cos\\theta=\\frac{g}{\\omega^{2}R}",
+    relatedVideo: beadOnRotatingRing3D,
+    categoryName: "慣性力",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle \\rho=R\\cos\\lambda",
+    relatedVideo: earthStandingPerson3D,
+    categoryName: "慣性力",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle \\vec{R}+\\vec{F}_{g}=m\\vec{a}",
+    relatedVideo: earthStandingPerson3D,
+    categoryName: "慣性力",
+  ),
+  FormulaEntry(
+    latex: "\\displaystyle N=mg-m\\omega^{2}R",
+    relatedVideo: earthStandingPerson3D,
+    categoryName: "慣性力",
+  ),
+  FormulaEntry(
     latex: "T = 2\\pi \\sqrt{\\frac{l}{g}}",
     relatedVideo: pendulumPeriodMeasurement,
     categoryName: "単振動",

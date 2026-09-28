@@ -46,6 +46,8 @@ export './experiment/dynamics/animations/trainPendulumInertial2D.dart';
 export './experiment/dynamics/animations/centrifugalForce2D.dart';
 export './experiment/dynamics/animations/coriolisSpiral2D.dart';
 export './experiment/dynamics/animations/eulerForce2D.dart';
+export './experiment/dynamics/animations/beadOnRotatingRing3D.dart';
+export './experiment/dynamics/animations/earthStandingPerson3D.dart';
 export './experiment/dynamics/animations/atwoodMachine1D.dart';
 export './experiment/dynamics/animations/movablePulley1D.dart';
 export './experiment/dynamics/animations/twoBodyKepler2D.dart';

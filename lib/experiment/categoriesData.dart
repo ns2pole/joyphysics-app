@@ -73,6 +73,8 @@ final categoriesData = <Category>[
           centrifugalForce2D,
           coriolisSpiral2D,
           eulerForce2D,
+          beadOnRotatingRing3D,
+          earthStandingPerson3D,
         ],
       ),
       Subcategory(
