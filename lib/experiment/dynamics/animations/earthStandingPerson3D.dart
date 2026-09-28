@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
+import 'package:joyphysics/experiment/dynamics/animations/arrow_screen.dart';
 import 'package:joyphysics/experiment/playback_controls.dart';
 import 'package:joyphysics/model.dart';
 
@@ -9,6 +10,7 @@ import 'package:joyphysics/model.dart';
 /// 人は最初から地球と同じ $\omega$ で共回転する。
 const double kEarthG = 9.80;
 const double kEarthR = 1.00;
+
 /// 赤道で $N>0$ を保つ上限の少し手前。$\omega_{\max}<\sqrt{g/R}$。
 const double kEarthMinOmega = 0.40;
 const double kEarthMaxOmega = 3.05;
@@ -21,6 +23,7 @@ const double kEarthMaxLatDeg = 90.0;
 const double kEarthDefaultLatDeg = 35.0;
 const double kEarthSideBySideWidth = 640.0;
 const double kEarthPlayback = 0.70;
+
 /// 力矢印の画面上の長さ倍率（物理の大きさはそのまま。見えやすくするため）。
 /// 大きすぎると clip で切れて「長さが変わる」ように見えるので抑える。
 const double kEarthForceArrowExaggeration = 2.4;
@@ -43,20 +46,11 @@ class EarthStandingParams {
 
   factory EarthStandingParams.fromMap(Map<String, double> params) {
     return EarthStandingParams(
-      latDeg: params['lat']!
-          .clamp(kEarthMinLatDeg, kEarthMaxLatDeg)
-          .toDouble(),
+      latDeg: params['lat']!.clamp(kEarthMinLatDeg, kEarthMaxLatDeg).toDouble(),
       omega: params['W']!.clamp(kEarthMinOmega, kEarthMaxOmega).toDouble(),
       mass: params['m']!.clamp(kEarthMinM, kEarthMaxM).toDouble(),
     );
   }
-}
-
-/// 画面上の向きがほぼ同じとき true。真上視点で抗力と遠心力が重なる判定。
-bool _screenDirsAligned(Offset a, Offset b) {
-  if (a.distance < 1e-6 || b.distance < 1e-6) return false;
-  final d = (a.dx * b.dx + a.dy * b.dy) / (a.distance * b.distance);
-  return d > 0.85;
 }
 
 /// 共回転系の $xz$ 面（$\phi=0$）での力と分解。
@@ -263,18 +257,18 @@ final earthStandingPerson3D = Video(
 
 class EarthStandingPerson3DSimulation extends PhysicsSimulation {
   EarthStandingPerson3DSimulation()
-      : super(
-          title: '地上に立つ人と遠心力',
-          formula: const FormulaDisplay(
-            r'\displaystyle \rho=R\cos\lambda,\quad'
-            r' \vec{R}+\vec{F}_{g}=m\vec{a}\ \text{(慣性)},\ '
-            r'\vec{R}+\vec{F}_{g}+\vec{F}_{\mathrm{cen}}=\vec{0}\ \text{(共回転)}',
-          ),
-          aspectRatio: 0.72,
-          enableTime: false,
-          showTimeOverlay: false,
-          is3D: true,
-        );
+    : super(
+        title: '地上に立つ人と遠心力',
+        formula: const FormulaDisplay(
+          r'\displaystyle \rho=R\cos\lambda,\quad'
+          r' \vec{R}+\vec{F}_{g}=m\vec{a}\ \text{(慣性)},\ '
+          r'\vec{R}+\vec{F}_{g}+\vec{F}_{\mathrm{cen}}=\vec{0}\ \text{(共回転)}',
+        ),
+        aspectRatio: 0.72,
+        enableTime: false,
+        showTimeOverlay: false,
+        is3D: true,
+      );
 
   @override
   bool get showZoomButtons => true;
@@ -282,9 +276,11 @@ class EarthStandingPerson3DSimulation extends PhysicsSimulation {
   final ValueNotifier<double> simTime = ValueNotifier(0.0);
   Map<String, double> _latestParams = {};
 
-  late final PlaybackLoop _loop = PlaybackLoop(onTick: (dt) {
-    simTime.value = simTime.value + dt * kEarthPlayback;
-  });
+  late final PlaybackLoop _loop = PlaybackLoop(
+    onTick: (dt) {
+      simTime.value = simTime.value + dt * kEarthPlayback;
+    },
+  );
 
   bool _didAutoStart = false;
 
@@ -297,8 +293,7 @@ class EarthStandingPerson3DSimulation extends PhysicsSimulation {
   }
 
   @override
-  String? get situation =>
-      '球対称の地球上に直立し、最初から地球と同じ角速度で共回転する人';
+  String? get situation => '球対称の地球上に直立し、最初から地球と同じ角速度で共回転する人';
 
   ValueNotifier<bool> get running => _loop.running;
 
@@ -338,10 +333,10 @@ class EarthStandingPerson3DSimulation extends PhysicsSimulation {
 
   @override
   Map<String, double> get initialParameters => {
-        'lat': kEarthDefaultLatDeg,
-        'W': kEarthDefaultOmega,
-        'm': kEarthDefaultM,
-      };
+    'lat': kEarthDefaultLatDeg,
+    'W': kEarthDefaultOmega,
+    'm': kEarthDefaultM,
+  };
 
   @override
   Widget? buildExtraControls(
@@ -516,7 +511,10 @@ class _EarthSlider extends StatelessWidget {
       children: [
         SizedBox(
           width: 28,
-          child: Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+          child: Text(
+            label,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
         ),
         Expanded(
           child: Semantics(
@@ -618,10 +616,7 @@ class _EarthStandingPainter extends CustomPainter {
       final y1 = x * sA + y * cA;
       final xCam = x1;
       final yCam = -y1 * sT + z * cT;
-      return Offset(
-        plot.center.dx + xCam * unit,
-        plot.center.dy - yCam * unit,
-      );
+      return Offset(plot.center.dx + xCam * unit, plot.center.dy - yCam * unit);
     }
 
     double depth(double x, double y, double z) {
@@ -654,14 +649,12 @@ class _EarthStandingPainter extends CustomPainter {
     _drawAxis(canvas, proj);
     _drawGlobe(canvas, proj, depth, phi, unit);
     _drawOrbitCrossSection(canvas, proj, depth, ground: ground);
-    _drawPersonAndForces(canvas, proj, depth, ground: ground);
+    _drawPersonAndForces(canvas, proj, depth, unit, ground: ground);
 
     _text(
       canvas,
       Offset(panel.center.dx, panel.bottom - 16),
-      ground
-          ? '真の力の合力 R+Fg = ma（軸向き）'
-          : 'R+Fg+遠心力 = 0（人は静止）',
+      ground ? '真の力の合力 R+Fg = ma（軸向き）' : 'R+Fg+遠心力 = 0（人は静止）',
       _muted,
     );
     canvas.restore();
@@ -821,10 +814,7 @@ class _EarthStandingPainter extends CustomPainter {
       disk.lineTo(rim[i].o.dx, rim[i].o.dy);
     }
     disk.close();
-    canvas.drawPath(
-      disk,
-      Paint()..color = _orbitPlane.withValues(alpha: 0.14),
-    );
+    canvas.drawPath(disk, Paint()..color = _orbitPlane.withValues(alpha: 0.14));
 
     final axisHit = proj(0, 0, z);
     canvas.drawCircle(
@@ -885,7 +875,8 @@ class _EarthStandingPainter extends CustomPainter {
   void _drawPersonAndForces(
     Canvas canvas,
     Offset Function(double, double, double) proj,
-    double Function(double, double, double) depth, {
+    double Function(double, double, double) depth,
+    double unit, {
     required bool ground,
   }) {
     final px = ground ? sample.x : sample.xRot;
@@ -899,10 +890,7 @@ class _EarthStandingPainter extends CustomPainter {
     final hy = py / kEarthR * scale;
     final hz = pz / kEarthR * scale;
     final head = proj(px + hx, py + hy, pz + hz);
-    final mid = Offset(
-      (feet.dx + head.dx) / 2,
-      (feet.dy + head.dy) / 2,
-    );
+    final mid = Offset((feet.dx + head.dx) / 2, (feet.dy + head.dy) / 2);
 
     // 簡易人型（胴と頭）
     canvas.drawLine(
@@ -916,14 +904,9 @@ class _EarthStandingPainter extends CustomPainter {
     canvas.drawCircle(head, 5.5, Paint()..color = _person);
 
     final f = sample.forces;
-    // 長さは理論の |F| に比例（視点・φ で変えない）。向きだけ投影する。
-    // 起点はすべて mid。
+    // 正面の長さは |F|。視線方向へ潰れた分は掛ける。起点はすべて mid。
     // 慣性系: 重力・抗力・合力(=ma)。共回転系: 重力・抗力・遠心力（三者で 0）。
     final forceOrigin = mid;
-
-    final er = head - feet;
-    final hasEr = er.distance >= 2;
-    final erN = hasEr ? er / er.distance : Offset.zero;
 
     final phi = ground ? sample.phi : 0.0;
     final cp = math.cos(phi);
@@ -932,39 +915,24 @@ class _EarthStandingPainter extends CustomPainter {
     (double, double, double) rotForce(double fx, double fz) =>
         (fx * cp, fx * sp, fz);
 
-    /// 単位ベクトルの画面向き。正投影は平行移動不変。
-    Offset rawDir(double ux, double uy, double uz) {
-      const eps = 0.25;
-      return proj(ux * eps, uy * eps, uz * eps) - proj(0, 0, 0);
-    }
-
-    /// 真正面で投影が潰れるとき、方位を少しずらして向きを拾う。
-    Offset screenDir(double ux, double uy, double uz) {
-      var d = rawDir(ux, uy, uz);
-      if (d.distance >= 0.75) return d;
-      const dphi = 0.22;
-      for (final s in [1.0, -1.0, 2.0, -2.0]) {
-        final a = s * dphi;
-        final ca = math.cos(a);
-        final sa = math.sin(a);
-        final ux2 = ux * ca - uy * sa;
-        final uy2 = ux * sa + uy * ca;
-        d = rawDir(ux2, uy2, uz);
-        if (d.distance >= 0.75) return d;
-      }
-      if (hasEr) {
-        // 半径成分が残っていれば直立方向で代用
-        final fr = ux * (px / kEarthR) + uy * (py / kEarthR) + uz * (pz / kEarthR);
-        if (fr.abs() > 1e-6) return erN * fr.sign;
-      }
-      // 最後の手段：ゼロにしない（一瞬消えを防ぐ）
-      return d.distance > 1e-12 ? d : const Offset(0, -1);
-    }
-
-    Offset dirOfForce(double fx, double fy, double fz) {
-      final mag = math.sqrt(fx * fx + fy * fy + fz * fz);
-      if (mag < 1e-12) return Offset.zero;
-      return screenDir(fx / mag, fy / mag, fz / mag);
+    /// 単位ベクトルの画面向き。正投影は平行移動不変。視線と平行なら出さない。
+    ({Offset dir, double foreshorten})? projectUnit(
+      double ux,
+      double uy,
+      double uz,
+    ) {
+      final mag = math.sqrt(ux * ux + uy * uy + uz * uz);
+      if (mag < 1e-12) return null;
+      final eps = kArrowWorldEps;
+      final d =
+          proj(ux / mag * eps, uy / mag * eps, uz / mag * eps) - proj(0, 0, 0);
+      if (d.distance < 1e-6) return null;
+      final foreshorten = arrowScreenForeshorten(
+        screenPx: d.distance,
+        pxPerMeter: unit,
+      );
+      if (foreshorten < 0.05) return null;
+      return (dir: d / d.distance, foreshorten: foreshorten);
     }
 
     double forcePx(double mag) {
@@ -974,7 +942,7 @@ class _EarthStandingPainter extends CustomPainter {
     }
 
     void drawArrow(
-      Offset dir,
+      ({Offset dir, double foreshorten})? arrow,
       double mag,
       Color color,
       String label, {
@@ -982,13 +950,14 @@ class _EarthStandingPainter extends CustomPainter {
       Offset? origin,
       double labelSide = 1,
     }) {
-      if (mag < 0.05) return;
-      final d = dir.distance < 1e-9 ? const Offset(0, -1) : dir;
+      if (arrow == null || mag < 0.05) return;
+      final length = forcePx(mag) * arrow.foreshorten;
+      if (length < 4) return;
       _arrow(
         canvas,
         origin ?? forceOrigin,
-        d / d.distance,
-        forcePx(mag),
+        arrow.dir,
+        length,
         color,
         label,
         dashed: dashed,
@@ -998,7 +967,7 @@ class _EarthStandingPainter extends CustomPainter {
 
     // 重力：地心向き、|Fg|=mg（一定）
     drawArrow(
-      screenDir(-px / kEarthR, -py / kEarthR, -pz / kEarthR),
+      projectUnit(-px / kEarthR, -py / kEarthR, -pz / kEarthR),
       f.gMag,
       _gravity,
       '重力',
@@ -1006,52 +975,32 @@ class _EarthStandingPainter extends CustomPainter {
 
     // 抗力：φ 回転した 3D（概ね外向き＝重力と逆）
     final r3 = rotForce(f.rx, f.rz);
-    final rDir = dirOfForce(r3.$1, r3.$2, r3.$3);
+    final reaction = projectUnit(r3.$1, r3.$2, r3.$3);
 
     // 軸水平の単位ベクトル（外向き ê_ρ）
     final rho = math.sqrt(px * px + py * py);
-    final Offset? outDir =
-        rho > 1e-6 ? screenDir(px / rho, py / rho, 0) : null;
+    final outward = rho > 1e-6 ? projectUnit(px / rho, py / rho, 0) : null;
 
-    // 真上から見ると z が潰れ、抗力と遠心力が同じ外向きに重なる。
-    // 向きは保ったまま、矢印と垂直な向きへ起点だけ少しずらす。
-    var reactionOrigin = forceOrigin;
-    var cenOrigin = forceOrigin;
-    var reactionLabelSide = 1.0;
-    var cenLabelSide = 1.0;
-    if (!ground && outDir != null && _screenDirsAligned(rDir, outDir)) {
-      final u = rDir / rDir.distance;
-      final n = Offset(-u.dy, u.dx);
-      const sep = 10.0;
-      reactionOrigin = forceOrigin - n * sep;
-      cenOrigin = forceOrigin + n * sep;
-      reactionLabelSide = -1;
-      cenLabelSide = 1;
-    }
+    drawArrow(reaction, f.rMag, _reaction, '抗力');
 
-    drawArrow(
-      rDir,
-      f.rMag,
-      _reaction,
-      '抗力',
-      origin: reactionOrigin,
-      labelSide: reactionLabelSide,
-    );
-
-    if (outDir != null) {
+    if (outward != null) {
       if (!ground) {
         drawArrow(
-          outDir,
+          outward,
           f.cenMag,
           _centrifugal,
           '遠心力',
           dashed: true,
-          origin: cenOrigin,
-          labelSide: cenLabelSide,
+          labelSide: -1,
         );
       } else {
-        // 合力 = ma = −mω²ρ ê_ρ。長さは mω²ρ で φ によらず一定。
-        drawArrow(-outDir, f.sumTrueMag, _resultant, '合力(=ma)');
+        // 合力 = ma = −mω²ρ ê_ρ。正面の長さは mω²ρ で φ によらず一定。
+        drawArrow(
+          (dir: -outward.dir, foreshorten: outward.foreshorten),
+          f.sumTrueMag,
+          _resultant,
+          '合力(=ma)',
+        );
       }
     }
 
@@ -1068,9 +1017,10 @@ class _EarthStandingPainter extends CustomPainter {
     bool dashed = false,
     double labelSide = 1,
   }) {
+    if (length < 4 || dir.distance < 1e-9) return;
     final tip = origin + dir * length;
-    const headLen = 9.0;
-    const headHalf = 4.5;
+    final headLen = math.min(9.0, length * 0.38);
+    final headHalf = headLen * 0.5;
     final shaftEnd = tip - dir * (headLen * 0.7);
     final n = Offset(-dir.dy, dir.dx);
     final shaft = Paint()
@@ -1097,12 +1047,17 @@ class _EarthStandingPainter extends CustomPainter {
     }
     final head = Path()
       ..moveTo(tip.dx, tip.dy)
-      ..lineTo((tip - dir * headLen + n * headHalf).dx,
-          (tip - dir * headLen + n * headHalf).dy)
-      ..lineTo((tip - dir * headLen - n * headHalf).dx,
-          (tip - dir * headLen - n * headHalf).dy)
+      ..lineTo(
+        (tip - dir * headLen + n * headHalf).dx,
+        (tip - dir * headLen + n * headHalf).dy,
+      )
+      ..lineTo(
+        (tip - dir * headLen - n * headHalf).dx,
+        (tip - dir * headLen - n * headHalf).dy,
+      )
       ..close();
     canvas.drawPath(head, Paint()..color = color);
+    if (length < 16) return;
     _text(canvas, tip + n * (12 * labelSide), label, color);
   }
 

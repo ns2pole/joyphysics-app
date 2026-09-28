@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:joyphysics/experiment/categoriesData.dart';
+import 'package:joyphysics/experiment/dynamics/animations/arrow_screen.dart';
 import 'package:joyphysics/experiment/dynamics/animations/conicalPendulum3D.dart';
 
 void main() {
@@ -102,6 +103,55 @@ void main() {
       expect(s.y, closeTo(0, 1e-9));
       expect(s.z, closeTo(s.zRot, 1e-12));
     });
+  });
+
+  test('張力が視線に沿うと画面上の長さは潰れ、正面では潰れない', () {
+    expect(
+      arrowScreenForeshorten(screenPx: 20, pxPerMeter: 80),
+      closeTo(1, 1e-12),
+    );
+    expect(
+      arrowScreenForeshorten(screenPx: 2, pxPerMeter: 80),
+      closeTo(0.1, 1e-12),
+    );
+    expect(arrowScreenForeshorten(screenPx: 0, pxPerMeter: 80), 0);
+
+    const p = ConicalPendulumParams(thetaDeg: 40, length: 1.2, mass: 1);
+    // 張力は糸に沿い、大きさは一周を通して一定。
+    final early = conicalPendulumForces(p).tensionMag;
+    final later = conicalPendulumSampleAt(p, 0.4).forces.tensionMag;
+    expect(later, closeTo(early, 1e-12));
+
+    // 視線を φ=0 の張力に合わせる。正投影ではこの瞬間、画面成分は 0。
+    final view = (-math.sin(p.theta), 0.0, math.cos(p.theta));
+    double sinPsi(double phi) {
+      final u = (
+        -math.sin(p.theta) * math.cos(phi),
+        -math.sin(p.theta) * math.sin(phi),
+        math.cos(p.theta),
+      );
+      final dot = u.$1 * view.$1 + u.$2 * view.$2 + u.$3 * view.$3;
+      return math.sqrt((1 - dot * dot).clamp(0.0, 1.0));
+    }
+
+    const unit = 90.0;
+    final collapsed = kArrowWorldEps * unit * sinPsi(0);
+    final face = kArrowWorldEps * unit;
+    expect(sinPsi(0), lessThan(1e-6));
+    expect(
+      arrowScreenForeshorten(screenPx: collapsed, pxPerMeter: unit),
+      lessThan(1e-6),
+    );
+    expect(
+      arrowScreenForeshorten(screenPx: face, pxPerMeter: unit),
+      closeTo(1, 1e-12),
+    );
+    // 潰れを捨てて |S| のまま描くと、見えなくなる瞬間に矢印だけ全長で残る。
+    final fullPx = 28 * p.tension / (p.mass * kConeG);
+    final drawn =
+        fullPx * arrowScreenForeshorten(screenPx: collapsed, pxPerMeter: unit);
+    expect(fullPx, greaterThan(20));
+    expect(drawn, lessThan(1));
   });
 
   test('力学の振り子に円錐振り子がある', () {

@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
+import 'package:joyphysics/experiment/dynamics/animations/arrow_screen.dart';
 import 'package:joyphysics/experiment/playback_controls.dart';
 import 'package:joyphysics/model.dart';
 
@@ -631,7 +632,7 @@ class _ConicalPendulumPainter extends CustomPainter {
       _ink,
       alignLeft: true,
     );
-    _scene(canvas, proj, depth, ground: ground);
+    _scene(canvas, proj, depth, unit, ground: ground);
     _text(
       canvas,
       Offset(panel.center.dx, panel.bottom - 18),
@@ -644,7 +645,8 @@ class _ConicalPendulumPainter extends CustomPainter {
   void _scene(
     Canvas canvas,
     Offset Function(double x, double y, double z) proj,
-    double Function(double x, double y, double z) depth, {
+    double Function(double x, double y, double z) depth,
+    double unit, {
     required bool ground,
   }) {
     final phi = ground ? sample.phi : 0.0;
@@ -675,9 +677,9 @@ class _ConicalPendulumPainter extends CustomPainter {
       Paint()..color = Colors.black12,
     );
 
-    _drawForces(canvas, proj, bobO, ground: ground);
+    _drawForces(canvas, proj, bobO, unit, ground: ground);
     if (ground) {
-      _drawVelocity(canvas, proj, bobO);
+      _drawVelocity(canvas, proj, bobO, unit);
     }
 
     canvas.drawCircle(proj(0, 0, 0), 3.2, Paint()..color = _string);
@@ -855,14 +857,19 @@ class _ConicalPendulumPainter extends CustomPainter {
     Canvas canvas,
     Offset Function(double x, double y, double z) proj,
     Offset bobO,
+    double unit,
   ) {
     final speed = math.sqrt(
       sample.vx * sample.vx + sample.vy * sample.vy + sample.vz * sample.vz,
     );
     if (speed < 0.05) return;
     final screen = _screenDir(proj, sample.vx, sample.vy, sample.vz);
-    if (screen.distance < 1.2) return;
-    final len = (speed * 11).clamp(14.0, 46.0);
+    final foreshorten = arrowScreenForeshorten(
+      screenPx: screen.distance,
+      pxPerMeter: unit,
+    );
+    final len = ((speed * 11).clamp(14.0, 46.0)) * foreshorten;
+    if (len < 4 || screen.distance < 1e-6) return;
     _arrow(
       canvas,
       bobO + const Offset(11, -6),
@@ -881,40 +888,48 @@ class _ConicalPendulumPainter extends CustomPainter {
   ) {
     final mag = math.sqrt(ux * ux + uy * uy + uz * uz);
     if (mag < 1e-12) return Offset.zero;
-    const eps = 0.25;
+    final eps = kArrowWorldEps;
     return proj(ux / mag * eps, uy / mag * eps, uz / mag * eps) - proj(0, 0, 0);
-  }
-
-  bool _aligned(Offset a, Offset b) {
-    if (a.distance < 1e-6 || b.distance < 1e-6) return false;
-    final d = (a.dx * b.dx + a.dy * b.dy) / (a.distance * b.distance);
-    return d > 0.85;
   }
 
   void _drawForces(
     Canvas canvas,
     Offset Function(double x, double y, double z) proj,
-    Offset bobO, {
+    Offset bobO,
+    double unit, {
     required bool ground,
   }) {
     final f = sample.forces;
-    // |F| に比例。基準は mg なので、θ を変えても重力の長さは一定。
+    // 正面での長さは |F| に比例（基準は mg）。視線方向へ潰れた分は掛ける。
     double forcePx(double mag) {
       final ref = params.mass * kConeG;
       if (ref < 1e-9) return 0;
       return (28 * mag / ref).clamp(0.0, 78.0);
     }
 
-    ({Offset dir, double mag})? prepare(double fx, double fy, double fz) {
+    ({Offset dir, double mag, double foreshorten})? prepare(
+      double fx,
+      double fy,
+      double fz,
+    ) {
       final mag = math.sqrt(fx * fx + fy * fy + fz * fz);
       if (mag < 0.05) return null;
       final screen = _screenDir(proj, fx, fy, fz);
-      if (screen.distance < 1.2) return null;
-      return (dir: screen / screen.distance, mag: mag);
+      if (screen.distance < 1e-6) return null;
+      final foreshorten = arrowScreenForeshorten(
+        screenPx: screen.distance,
+        pxPerMeter: unit,
+      );
+      if (foreshorten < 0.05) return null;
+      return (
+        dir: screen / screen.distance,
+        mag: mag,
+        foreshorten: foreshorten,
+      );
     }
 
     void draw(
-      ({Offset dir, double mag})? arrow,
+      ({Offset dir, double mag, double foreshorten})? arrow,
       Color color,
       String label, {
       bool dashed = false,
@@ -922,11 +937,13 @@ class _ConicalPendulumPainter extends CustomPainter {
       double labelSide = 1,
     }) {
       if (arrow == null) return;
+      final length = forcePx(arrow.mag) * arrow.foreshorten;
+      if (length < 4) return;
       _arrow(
         canvas,
         origin ?? bobO,
         arrow.dir,
-        forcePx(arrow.mag),
+        length,
         color,
         label,
         dashed: dashed,
@@ -944,33 +961,9 @@ class _ConicalPendulumPainter extends CustomPainter {
 
     if (ground) {
       final resultant = prepare(f.sumTrueX * cp, f.sumTrueX * sp, f.sumTrueZ);
-      var tensionOrigin = bobO;
-      var resultOrigin = bobO;
-      var tensionSide = 1.0;
-      var resultSide = -1.0;
-      if (tension != null &&
-          resultant != null &&
-          _aligned(tension.dir, resultant.dir)) {
-        final u = tension.dir;
-        final n = Offset(-u.dy, u.dx);
-        tensionOrigin = bobO - n * 9;
-        resultOrigin = bobO + n * 9;
-      }
       draw(gravity, _gravity, '重力');
-      draw(
-        tension,
-        _tension,
-        '張力',
-        origin: tensionOrigin,
-        labelSide: tensionSide,
-      );
-      draw(
-        resultant,
-        _resultant,
-        '合力',
-        origin: resultOrigin,
-        labelSide: resultSide,
-      );
+      draw(tension, _tension, '張力');
+      draw(resultant, _resultant, '合力', labelSide: -1);
     } else {
       final cen = prepare(f.cenX, 0, 0);
       draw(gravity, _gravity, '重力', labelSide: -1);
@@ -1039,10 +1032,10 @@ class _ConicalPendulumPainter extends CustomPainter {
     bool dashed = false,
     double labelSide = 1,
   }) {
-    if (length < 2) return;
+    if (length < 4) return;
     final tip = origin + dir * length;
-    const headLen = 9.0;
-    const headHalf = 4.5;
+    final headLen = math.min(9.0, length * 0.38);
+    final headHalf = headLen * 0.5;
     final shaftEnd = tip - dir * (headLen * 0.7);
     final n = Offset(-dir.dy, dir.dx);
     final shaft = Paint()
@@ -1079,6 +1072,7 @@ class _ConicalPendulumPainter extends CustomPainter {
       )
       ..close();
     canvas.drawPath(head, Paint()..color = color);
+    if (length < 16) return;
     _text(canvas, tip + n * (12 * labelSide), label, color);
   }
 
