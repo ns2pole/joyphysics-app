@@ -110,3 +110,34 @@ class PlayPauseResetButtons extends StatelessWidget {
     );
   }
 }
+
+/// アニメ終了後だけ出すリセット。見た目は [PlayPauseResetButtons] に合わせる。
+class ResetOnlyButton extends StatelessWidget {
+  const ResetOnlyButton({
+    super.key,
+    required this.onReset,
+    this.tooltip = 'リセット',
+  });
+
+  final VoidCallback onReset;
+  final String tooltip;
+
+  @override
+  Widget build(BuildContext context) {
+    const btnSize = 26.0;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.45),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: IconButton(
+        visualDensity: VisualDensity.compact,
+        iconSize: btnSize,
+        color: Colors.white,
+        tooltip: tooltip,
+        onPressed: onReset,
+        icon: const Icon(Icons.restore),
+      ),
+    );
+  }
+}
