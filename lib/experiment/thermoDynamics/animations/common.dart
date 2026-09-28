@@ -824,6 +824,9 @@ abstract final class IdealGasRef {
   static const double vMinL = 0.30;
   /// 正規化体積がこの値のとき物理体積 = [v0L]（等温など旧スケール用）
   static const double vNormRef = 0.5;
+  /// 分子の速さの比。運動論では rms が √T に比例する。
+  static double molecularSpeedScale(double tK) => math.sqrt(tK / t0K);
+
   static const double gamma = 5.0 / 3.0; // 単原子分子
   static const double gammaMinus1 = 2.0 / 3.0;
 

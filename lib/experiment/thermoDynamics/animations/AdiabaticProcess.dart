@@ -31,7 +31,7 @@ class AdiabaticSimulation extends PhysicsSimulation {
           aspectRatio: 0.66,
         );
 
-  final ValueNotifier<bool> autoCycle = ValueNotifier(false);
+  final ValueNotifier<bool> autoCycle = ValueNotifier(true);
   void Function(String key, double value)? _updateParam;
   bool _autoTickScheduled = false;
   DateTime? _lastAutoTickAt;
@@ -50,8 +50,12 @@ class AdiabaticSimulation extends PhysicsSimulation {
         'volume': IdealGasRef.v0L,
       };
 
-  void _setAuto(bool enabled) {
-    if (autoCycle.value == enabled) return;
+  /// 記事を開いた瞬間から Auto を回す（力学の playOnOpen と同じタイミング）
+  @override
+  void startPlayback() => _setAuto(true, force: true);
+
+  void _setAuto(bool enabled, {bool force = false}) {
+    if (!force && autoCycle.value == enabled) return;
     autoCycle.value = enabled;
     if (enabled) {
       _autoSession.reset();
@@ -207,7 +211,7 @@ class _AdiabaticAnimationWidgetState extends State<AdiabaticAnimationWidget> {
     if (dt > 0.1) dt = 0.02;
 
     final double temperature = IdealGasRef.adiabaticTemperatureK(widget.volumeL);
-    final double speedScale = math.sqrt(temperature / IdealGasRef.t0K);
+    final double speedScale = IdealGasRef.molecularSpeedScale(temperature);
 
     for (var p in particles) {
       p.update(dt, speedScale);

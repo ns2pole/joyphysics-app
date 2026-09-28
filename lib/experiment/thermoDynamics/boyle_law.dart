@@ -41,7 +41,7 @@ final boyleLaw = Video(
 
         <div class="common-box">答え</div>
         <p>理論的にバネはかりが指す力は
-            $$\boxed{T \fallingdotseq 18 [N]}$$
+            $$\boxed{F \fallingdotseq 18\,\mathrm{[N]}}$$
             （これは約 <strong>1.8 kg</strong>の物体の重さ分の力）</p>
     """
 );

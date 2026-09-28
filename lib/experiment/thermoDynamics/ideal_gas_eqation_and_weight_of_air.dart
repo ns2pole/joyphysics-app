@@ -19,7 +19,7 @@ final ideal_gas_eqation_and_weight_of_air = Video(
 <p>等温・定容では理想気体の状態式 $pV=nRT$ より $n \propto p$（$V,T$一定）。よって容器内の気体量は圧力に比例する。</p>
 
 <div class="common-box">問題設定</div>
-<p>半径 $R=7.5\ \mathrm{cm}$、高さ $H=13\ \mathrm{cm}$ の円筒容器内の空気を、等温（$25^\circ\mathrm{C}$）で大気圧の $\dfrac{3}{5}$ に減圧した。容器から「どれだけ空気が抜けたか」を<b>質量[ g ]</b>で求めよ。
+<p>半径 $R=7.5\ \mathrm{cm}$、高さ $H=13\ \mathrm{cm}$ の円筒容器内の空気を、等温（$25^\circ\mathrm{C}$）で大気圧の $\displaystyle \frac{3}{5}$ に減圧した。容器から「どれだけ空気が抜けたか」を<b>質量[ g ]</b>で求めよ。
 （仮定：乾燥空気、$T=25^\circ\mathrm{C}=298.15\ \mathrm{K}$、$p_0=1.013\times10^5\ \mathrm{Pa}$、モル質量 $M=28.97\ \mathrm{g/mol}$）</p>
 
 <div class="common-box">理論値計算</div>
@@ -32,7 +32,7 @@ V_0 &= \pi R^2 H
 \fallingdotseq 2.296\times10^{-3}\ \mathrm{m^3}\ (\fallingdotseq 2.296\ \mathrm{L})
 \end{aligned}
 $$
-等温・定容 $\Rightarrow\ \dfrac{n_1}{n_0}=\dfrac{p_1}{p_0}=\dfrac{3}{5}$。
+等温・定容では $\displaystyle \frac{n_1}{n_0}=\frac{p_1}{p_0}=\frac{3}{5}$。
 したがって抜けた割合：
 $$
 \frac{n_0-n_1}{n_0}=1-\frac{3}{5}=\frac{2}{5}=0.4\ (40\%).

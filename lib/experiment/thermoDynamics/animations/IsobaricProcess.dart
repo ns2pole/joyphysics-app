@@ -14,7 +14,7 @@ final isobaricProcess = createWaveVideo(
   <p>気体の圧力を一定に保ったまま状態を変化させることを定圧変化といいます。</p>
   <p>シャルルの法則より、圧力が一定のとき、気体の体積 $V$ は絶対温度 $T$ に比例します。</p>
   <p>$$V \propto T$$</p>
-  <p>$$\dfrac{V}{T} = \text{一定}$$</p>
+  <p>$$\frac{V}{T} = \text{一定}$$</p>
   <p>熱力学第一法則 $Q = \Delta U + W$ において、熱を加えると温度が上がって内部エネルギーが増加するとともに、気体が膨張して外部に仕事 $W = P\Delta V$ を行います。</p>
   """,
   simulation: IsobaricSimulation(),
@@ -30,7 +30,7 @@ class IsobaricSimulation extends PhysicsSimulation {
         );
 
   final ValueNotifier<double> temperature = ValueNotifier(300.0);
-  final ValueNotifier<bool> autoCycle = ValueNotifier(false);
+  final ValueNotifier<bool> autoCycle = ValueNotifier(true);
 
   static const double minTemp = 273.0;
   static const double maxTemp = 900.0;
@@ -56,8 +56,12 @@ class IsobaricSimulation extends PhysicsSimulation {
   @override
   Set<String> get initialActiveIds => {};
 
-  void _setAuto(bool enabled) {
-    if (autoCycle.value == enabled) return;
+  /// 記事を開いた瞬間から Auto を回す（力学の playOnOpen と同じタイミング）
+  @override
+  void startPlayback() => _setAuto(true, force: true);
+
+  void _setAuto(bool enabled, {bool force = false}) {
+    if (!force && autoCycle.value == enabled) return;
     autoCycle.value = enabled;
     if (enabled) {
       _autoSession.reset();
@@ -285,7 +289,7 @@ class _IsobaricAnimationWidgetState extends State<IsobaricAnimationWidget> {
     );
 
     final double speedScale =
-        math.pow(temperature / 300.0, 1.35).toDouble() * 1.6;
+        1.6 * IdealGasRef.molecularSpeedScale(temperature);
     for (var p in particles) {
       p.update(dt, speedScale);
     }

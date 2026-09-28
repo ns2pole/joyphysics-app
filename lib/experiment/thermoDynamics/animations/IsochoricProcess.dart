@@ -14,7 +14,7 @@ final isochoricProcess = createWaveVideo(
   <p>気体の体積 $V$ を一定に保ったまま状態を変化させることを定積変化といいます。</p>
   <p>ボイル・シャルルの法則 $\frac{PV}{T} = \text{一定}$ より、$V$ が一定のとき、圧力 $P$ は絶対温度 $T$ に比例します。</p>
   <p>$$P \propto T$$</p>
-  <p>$$\dfrac{P}{T} = \text{一定}$$</p>
+  <p>$$\frac{P}{T} = \text{一定}$$</p>
   <p>熱力学第一法則 $Q = \Delta U + W$ において、体積が変化しないため仕事 $W = P\Delta V = 0$ となり、加えた熱 $Q$ はすべて内部エネルギーの増加（温度上昇）に使われます。</p>
   """,
   simulation: IsochoricSimulation(),
@@ -30,7 +30,7 @@ class IsochoricSimulation extends PhysicsSimulation {
         );
 
   final ValueNotifier<double> temperature = ValueNotifier(300.0);
-  final ValueNotifier<bool> autoCycle = ValueNotifier(false);
+  final ValueNotifier<bool> autoCycle = ValueNotifier(true);
 
   static const double minTemp = 273.0;
   static const double maxTemp = 1000.0;
@@ -56,8 +56,12 @@ class IsochoricSimulation extends PhysicsSimulation {
   @override
   Set<String> get initialActiveIds => {};
 
-  void _setAuto(bool enabled) {
-    if (autoCycle.value == enabled) return;
+  /// 記事を開いた瞬間から Auto を回す（力学の playOnOpen と同じタイミング）
+  @override
+  void startPlayback() => _setAuto(true, force: true);
+
+  void _setAuto(bool enabled, {bool force = false}) {
+    if (!force && autoCycle.value == enabled) return;
     autoCycle.value = enabled;
     if (enabled) {
       _autoSession.reset();
@@ -285,10 +289,9 @@ class _IsochoricAnimationWidgetState extends State<IsochoricAnimationWidget> {
       IsochoricSimulation.maxTemp,
     );
 
-    // 温度差が運動に露骨に出るように、sqrt ではなく強めのスケール
-    // T=300 → 約1.6、T=1000 → 約7.4
+    // 室温での見た目の速さを 1.6 に揃え、温度依存は √T。
     final double speedScale =
-        math.pow(temperature / 300.0, 1.35).toDouble() * 1.6;
+        1.6 * IdealGasRef.molecularSpeedScale(temperature);
     for (var p in particles) {
       p.update(dt, speedScale);
     }

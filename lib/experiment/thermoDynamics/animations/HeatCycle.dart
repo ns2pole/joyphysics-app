@@ -44,7 +44,7 @@ class HeatCycleSimulation extends PhysicsSimulation {
   /// 荷物がピストンに載っているか（開始時は true）
   final ValueNotifier<bool> cargoOn = ValueNotifier(true);
   /// 自動ループ
-  final ValueNotifier<bool> autoCycle = ValueNotifier(false);
+  final ValueNotifier<bool> autoCycle = ValueNotifier(true);
 
   /// Reset ボタンで内部状態を初期化するための世代番号
   final ValueNotifier<int> resetEpoch = ValueNotifier(0);
@@ -129,8 +129,12 @@ class HeatCycleSimulation extends PhysicsSimulation {
     resetEpoch.value++;
   }
 
-  void _setAuto(bool enabled) {
-    if (autoCycle.value == enabled) return;
+  /// 記事を開いた瞬間から Auto を回す（力学の playOnOpen と同じタイミング）
+  @override
+  void startPlayback() => _setAuto(true, force: true);
+
+  void _setAuto(bool enabled, {bool force = false}) {
+    if (!force && autoCycle.value == enabled) return;
     if (enabled) {
       autoCycle.value = true;
       _resetAll(keepAuto: true);
@@ -189,7 +193,7 @@ class HeatCycleSimulation extends PhysicsSimulation {
           "2. 加熱すると定積で昇圧し、約 1313 hPa で定圧持ち上げ。\n"
           "3. 体積が上端まで増えたら加熱は自動で止まり、加熱ボタンも外れます。\n"
           "4. 荷物を取り、断熱をOFFにすると体積が戻り、下端で荷物を載せ直すと一周。\n"
-          "Auto をONにすると自動循環します。右下の Reset で初期化できます。",
+          "Auto は最初からオンで、自動循環します。右下の Reset で初期化できます。",
         ),
       ),
     ];
@@ -488,7 +492,7 @@ class _HeatCycleAnimationWidgetState extends State<HeatCycleAnimationWidget> {
       cargoOn: widget.cargoOn,
     );
 
-    final double speedScale = math.sqrt(temperature / ambientTemp);
+    final double speedScale = IdealGasRef.molecularSpeedScale(temperature);
     for (var p in particles) {
       p.update(dt, speedScale);
     }
