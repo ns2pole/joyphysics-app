@@ -16,7 +16,7 @@ const double kPushedBlockDefaultH = 1.20;
 const double kPushedBlockMinPushH = 0.05;
 const double kPushedBlockMinF = 0.0;
 const double kPushedBlockMaxF = 20.0;
-const double kPushedBlockDefaultF = 3.0;
+const double kPushedBlockDefaultF = 1.5;
 const double kPushedBlockMinMu = 0.0;
 const double kPushedBlockMaxMu = 1.0;
 const double kPushedBlockMuGap = 0.15;
@@ -28,10 +28,56 @@ const double kPushedBlockDefaultMuS = 0.50;
 /// 直方体が見やすいよう、やや寄った視野（約 1.5 倍表示）。
 const double kPushedBlockViewWidth = 5.0 / 1.5;
 const double kPushedBlockViewHeight = 3.0 / 1.5;
-/// 滑走停止判定。右下ピボットが視野右端＋最大幅を超えたら画面外。
-const double kPushedBlockOffscreenX =
-    kPushedBlockViewWidth + kPushedBlockMaxW;
+/// 滑走停止判定。左端が視野右端付近を超えたら画面外（見切れたらすぐ）。
+const double kPushedBlockOffscreenX = kPushedBlockViewWidth - 0.35;
 final double kPushedBlockOnSideTheta = math.pi / 2 - 0.02;
+
+/// 終了後、自動リセットまでの待ち。
+const Duration kPushedBlockAutoResetDelay = Duration(milliseconds: 650);
+
+/// Auto デモで F を段階的に上げる間隔。
+const Duration kPushedBlockDemoRampPeriod = Duration(milliseconds: 40);
+
+/// Auto デモで F を目標まで上げ切るおおよそのステップ数（〜1.6 s）。
+const int kPushedBlockDemoRampSteps = 40;
+
+enum PushedBlockDemo { slide, tip }
+
+/// 滑り／転倒デモの初期形（F=0 で静止）。
+Map<String, double> pushedBlockDemoShape(PushedBlockDemo demo) {
+  switch (demo) {
+    case PushedBlockDemo.slide:
+      return {
+        'w': 1.10,
+        'H': 0.75,
+        'h': 0.22,
+        'F': 0.0,
+        'mu': 0.28,
+        'muS': 0.45,
+      };
+    case PushedBlockDemo.tip:
+      return {
+        'w': 0.65,
+        'H': 1.55,
+        'h': 1.25,
+        'F': 0.0,
+        'mu': 0.30,
+        'muS': 0.55,
+      };
+  }
+}
+
+/// 形固定のうえで該当モードが始まる F（限界の少し上）。
+double pushedBlockDemoForce(PushedBlockParams shape) {
+  final mg = shape.weight;
+  final h = shape.pushHeight.clamp(1e-9, shape.height);
+  final fSlide = shape.muS * mg;
+  final fTip = mg * shape.width / (2 * h);
+  final limit = fSlide <= fTip ? fSlide : fTip;
+  return (limit * 1.18)
+      .clamp(kPushedBlockMinF, kPushedBlockMaxF)
+      .toDouble();
+}
 
 /// 質量。拡張時は [kPushedBlockMassFromArea] を true にするか、ここを差し替える。
 double pushedBlockMass(double width, double height) {
