@@ -143,12 +143,12 @@ final rainbowDroplet2D = createWaveVideo(
   <p>
     入射角 $i$ と屈折角 $r$ を
     \[ i=\arcsin k \]
-    \[ r=\arcsin\left(\dfrac{k}{n}\right) \]
+    \[ r=\arcsin\left(\frac{k}{n}\right) \]
     とすると、主虹（屈折→内部反射→出射）の出射方向は
     \[ \phi(k)=4r-2i\ \ (\mathrm{rad}) \]
-    \[ 4r-2i=4\arcsin\left(\dfrac{k}{n}\right)-2\arcsin(k) \]
+    \[ 4r-2i=4\arcsin\left(\frac{k}{n}\right)-2\arcsin(k) \]
     です。度数表示では
-    \[ \phi_{\deg}(k)=\dfrac{180}{\pi}\,\phi(k) \]
+    \[ \phi_{\deg}(k)=\frac{180}{\pi}\,\phi(k) \]
     となります（赤: $n=1.33$、青: $n=1.34$）。
   </p>
   <p><b>理論曲線（度数表示）</b></p>
@@ -299,14 +299,14 @@ final rainbowDroplet2D = createWaveVideo(
   height: 780,
 );
 
-/// 多数水滴がピーク角で光を送り、弧として見える主虹
+/// 多数水滴。各水滴の光線束がピーク角で密になる。
 final rainbowMultiDroplet2D = createWaveVideo(
   title: "主虹（多数水滴）",
   latex: r"""
   <div class="common-box">ポイント</div>
-  <p>単一水滴では出射方向に光が集中する角度が決まりますが、<b>空に弧として見える虹</b>には多数の水滴が必要です。</p>
-  <p>ここでは多数の水滴を並べ、それぞれからピーク付近の光線が出る様子を示します。観測者の位置から見ると、約42°付近の円弧上に色が並びます。</p>
-  <p>機構の詳細（屈折・内部反射・$k$ と $\phi$）は「単一水滴の光路（主虹）」を参照してください。</p>
+  <p>単一水滴では、赤 ($n=1.33$) で約 $42.5^\circ$、青 ($n=1.34$) で約 $41.1^\circ$ に光が集中します。角が大きい赤が外側です。</p>
+  <p>太陽を背にした観測者には、反太陽点のまわりのこの角度の円錐上にある水滴が見えます。空ではそれが弧です。</p>
+  <p>この画面は水滴を縦に並べ、各水滴からの光線束を描きます。束が密になる方向がピーク角です。</p>
   """,
   simulation: RainbowDroplet2DSimulation(multiDroplet: true),
   height: 780,

@@ -37,11 +37,11 @@ class MovingReflector1DSimulation extends WaveSimulation {
           is3D: false,
           formula: const Column(
             children: [
-              FormulaDisplay(r'y_i = A \sin \left\{ 2\pi \left( \frac{t}{T} - \frac{x - x_s}{\lambda} \right) \right\}'),
+              FormulaDisplay(r'\displaystyle y_i = A \sin \left\{ 2\pi \left( \frac{t}{T} - \frac{x - x_s}{\lambda} \right) \right\}'),
               SizedBox(height: 4),
-              FormulaDisplay(r'y_r = \pm A \sin \left\{ 2\pi \left( \frac{t}{T_r} + \frac{x}{\lambda_r} \right) + \phi \right\}'),
+              FormulaDisplay(r'\displaystyle y_r = \pm A \sin \left\{ 2\pi \left( \frac{t}{T_r} + \frac{x}{\lambda_r} \right) + \phi \right\}'),
               SizedBox(height: 8),
-              FormulaDisplay(r'f_r = f \frac{c - v}{c + v}, \quad \lambda_r = \lambda \frac{c + v}{c - v}'),
+              FormulaDisplay(r'\displaystyle f_r = f \frac{c - v}{c + v}, \quad \lambda_r = \lambda \frac{c + v}{c - v}'),
             ],
           ),
         );

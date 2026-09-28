@@ -22,7 +22,7 @@ class Superposition1DSimulation extends WaveSimulation {
           is3D: false,
           formula: const Column(
             children: [
-              FormulaDisplay(r'y = y_1 + y_2'),
+              FormulaDisplay(r'\displaystyle y = y_1 + y_2'),
             ],
           ),
         );

@@ -14,9 +14,9 @@ final coupledOscillatorLongitudinal1D = createWaveVideo(
   <p>$$\begin{aligned}
   u_j(t)
   &=\sum_{n=1}^{N}\bigl(A_n\cos\omega_n t+B_n\sin\omega_n t\bigr)\\
-  &\quad\times\sin\dfrac{n\pi j}{N+1}
+  &\quad\times\sin\\frac{n\pi j}{N+1}
   \end{aligned}$$</p>
-  <p>$$\omega_n=2\sqrt{\dfrac{k}{m}}\,\sin\dfrac{n\pi}{2(N+1)}$$</p>
+  <p>$$\omega_n=2\sqrt{\\frac{k}{m}}\,\sin\\frac{n\pi}{2(N+1)}$$</p>
   <p>密なところ（圧縮）と疎なところ（伸長）が交互に進むのが縦波である。$N$ を大きくすると連続な媒質の疎密波に近づく。</p>
   """,
   simulation: CoupledOscillatorLongitudinal1DSimulation(),
@@ -93,6 +93,9 @@ class CoupledOscillatorLongitudinal1DSimulation extends PhysicsSimulation {
   }
 
   bool get _inSession => _frozen != null;
+
+  @override
+  void startPlayback() => start();
 
   void start() {
     if (running.value) return;
@@ -907,11 +910,11 @@ const int kTransverseDisplacementGraphFlex = 8;
 const double kTransverseDisplacementGraphPadX = 8;
 const double kTransverseDisplacementGraphTop = 28;
 const double kTransverseDisplacementGraphBottom = 58;
-const double kTransverseDisplacementGraphAmpFrac = 0.42;
-const double kTransverseDisplacementGraphMidFrac = 0.32;
-/// 横波表示の縦方向強調（変位 u に掛ける係数）。
-const double kTransverseDisplacementGraphExaggerate = 2.0;
-const double kTransverseDisplacementGraphExaggerateClamp = 1.2;
+/// 変位 1 がパネル中央から上下に取る割合。|u|≤1 が枠内に収まる。
+const double kTransverseDisplacementGraphAmpFrac = 0.36;
+
+/// 変位 0 を描画領域の中央に置く。
+const double kTransverseDisplacementGraphMidFrac = 0.50;
 
 double transverseDisplacementGraphAmpPx(Size size) {
   return (size.height -
@@ -972,11 +975,7 @@ class _TransverseDisplacementGraphPainter extends CustomPainter {
     final massXs = transverseDisplacementGraphMassXs(size, nMasses);
 
     Offset massAt(int i, double u) {
-      final scaled = (u * kTransverseDisplacementGraphExaggerate).clamp(
-        -kTransverseDisplacementGraphExaggerateClamp,
-        kTransverseDisplacementGraphExaggerateClamp,
-      );
-      return Offset(massXs[i], midY - scaled * ampPx);
+      return Offset(massXs[i], midY - u * ampPx);
     }
 
     // baseline
@@ -1039,8 +1038,8 @@ class _TransverseDisplacementGraphPainter extends CustomPainter {
     final label = TextPainter(
       text: TextSpan(
         text: showDensityLabels
-            ? '同じ変位の横波表示（×2・区間中央の疎／密）'
-            : '同じ変位の横波表示（×2）',
+            ? '同じ変位の横波表示（区間中央の疎／密）'
+            : '同じ変位の横波表示',
         style: const TextStyle(
           color: Color(0xFF102027),
           fontSize: 12,

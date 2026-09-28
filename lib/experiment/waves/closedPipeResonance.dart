@@ -10,15 +10,15 @@ final closedPipeResonance = Video(
         <ul style="line-height:1.6;">
           <li>一端が閉じた管（閉管）では、定常波が形成される際、閉じた端が節、開いた端が腹となる。</li>
           <li>共鳴周波数 $f_n$ は以下の式で表される：<br>
-              $$f_n = \frac{(2n - 1)v}{4L} \quad (n = 1, 2, 3, \dots)$$</li>
+              $$f_n = \frac{nv}{4L} \quad (n = 1, 3, 5, \dots)$$</li>
           <li>現実には、開口端で音波がわずかに外に出て反射される影響があるため、開口端補正 $h$ を加味すると次の式になる：<br>
-              $$f_n = \frac{(2n - 1)v}{4(L + h)}$$</li>
+              $$f_n = \frac{nv}{4(L + h)}$$</li>
           </ul>
 
         <p>※記号の定義：</p>
         <ul style="line-height:1.6;">
-          <li>$f_n$：第 $n$ 番目の共鳴周波数（ヘルツ, Hz）</li>
-          <li>$n$：共鳴モード番号（自然数）</li>
+          <li>$f_n$：$n$ 次の振動数（ヘルツ, Hz）。閉管に出るのは奇数次だけ</li>
+          <li>$n$：$1, 3, 5, \ldots$（高調波の次数）</li>
           <li>$v$：音速（メートル毎秒, m/s）</li>
           <li>$L$：管の物理的な長さ（メートル, m）</li>
           <li>$h$：開口端補正長（メートル, m）</li>
@@ -34,7 +34,7 @@ final closedPipeResonance = Video(
         <p>片側が閉じた管（閉管）では、節と腹の関係から<br>
             $$L = \frac{\lambda}{4},\;\frac{3\lambda}{4},\;\frac{5\lambda}{4},\dots$$<br>
             のような定常波が生じ、振動数は<br>
-            $$f_n = \frac{(2n-1)v}{4L}$$（$n$: 自然数）となる。</p>
+            $$f_n = \frac{nv}{4L}$$（$n=1,3,5,\ldots$）となる。</p>
         <p>音速$v=340\ \mathrm{m/s}$、管の長さ$L=0.16\ \mathrm{m}$とする。</p>
 
         <p>（1）開口端補正なし：</p>

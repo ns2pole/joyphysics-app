@@ -33,6 +33,6 @@ final diffractionGrating = Video(
     \end{aligned}$$
 
     <div class="common-box">答え</div>
-    <p>第1次回折光はスクリーン中央から約<strong>12.6 cm</strong>の位置に現れる。</p>
+    <p>第1次回折光はスクリーン中央から左右それぞれ約 12.6 cm の位置に現れる。$2\lambda/d=1.064>1$ なので、第2次以降は出ない。</p>
     """
 );

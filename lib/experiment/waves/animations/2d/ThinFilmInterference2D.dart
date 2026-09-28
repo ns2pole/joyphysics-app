@@ -10,8 +10,8 @@ final thinFilmInterference2D = createWaveVideo(
   title: "薄膜干渉 (2次元)",
   latex: r"""
   <div class="common-box">ポイント</div>
-  <p>光路差: $\Delta = 2nd \cos \theta_2$</p>
-  <p>反射時に位相がずれる条件（固定端・自由端）に注意して、強め合い・弱め合いの条件が決まります。</p>
+  <p>膜の中を往復する光路差は $\displaystyle \Delta=2nd\cos\theta_2$ です。$\theta_2$ は膜の中の角です。</p>
+  <p>表面（屈折率が小さい側から大きい側）だけ位相が $\pi$ ずれるとき、反射の弱め合いは $\displaystyle \frac{\Delta}{\lambda}=m$、強め合いは $\displaystyle \frac{\Delta}{\lambda}=m+\frac{1}{2}$ です。</p>
   """,
   simulation: ThinFilmInterference2DSimulation(),
 );

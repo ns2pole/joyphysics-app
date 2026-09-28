@@ -12,7 +12,7 @@ final refraction1D = createWaveVideo(
   latex: r"""
   <div class="common-box">ポイント</div>
   <p>異なる媒質の境界で波の速さが変わると、波長も変化します。周波数は変化しません。</p>
-  <p>$n = \frac{v_1}{v_2} = \frac{\lambda_1}{\lambda_2}$</p>
+  <p>媒質2の、媒質1に対する屈折率は $\displaystyle n=\frac{v_1}{v_2}=\frac{\lambda_1}{\lambda_2}$ です。媒質2では波長が $\displaystyle \frac{\lambda_1}{n}$ になります。</p>
   <div class="common-box">注意</div>
   <p>実際には、屈折率が異なる境界面では透過（屈折）と同時に反射も起きます。このシミュレーションでは、波長の変化を見やすくするため、反射波は描いていません。</p>
   """,

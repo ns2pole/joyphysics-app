@@ -13,8 +13,8 @@ final dopplerEffectObserverMoving = createWaveVideo(
   <p>観測者が波に向かって進む場合、単位時間あたりに出会う波の数が増えるため、周波数は高く聞こえます。逆に遠ざかる場合は低く聞こえます。</p>
   <p>このシミュレーションでは、原点に静止した音源から円形波が広がり、観測者（赤丸）が $x = -4$ から正の向きに速度 $u$ で移動する様子を描いています。</p>
   <p>観測される周波数 $f$ は以下のようになります：</p>
-  <p>$$f = \frac{V + u \cos\theta}{V} f_0$$</p>
-  <p>ここで $V$ は波の速さ、$u$ は観測者の速度、$\theta$ は観測者の移動方向と波の進行方向のなす角です。</p>
+  <p>$$\displaystyle f = \frac{V - u \cos\theta}{V} f_0$$</p>
+  <p>ここで $V$ は波の速さ、$u$ は観測者の速さ、$\theta$ は観測者の移動方向と波の進行方向のなす角です。波と同じ向き（$\theta=0$）では低く、波に向かう向き（$\theta=\pi$）では高くなります。</p>
   """,
   simulation: DopplerEffectObserverMovingSimulation(),
 );
@@ -26,7 +26,7 @@ class DopplerEffectObserverMovingSimulation extends WaveSimulation {
           is3D: true,
           formula: const Column(
             children: [
-              FormulaDisplay(r'f = \frac{V + u \cos\theta}{V} f_0'),
+              FormulaDisplay(r'\displaystyle f = \frac{V - u \cos\theta}{V} f_0'),
             ],
           ),
         );
@@ -106,6 +106,12 @@ class DopplerEffectObserverMovingSimulation extends WaveSimulation {
     );
     const source = math.Point(0.0, 0.0);
 
+    final ux = params['vObserver']!;
+    final waveSpeed = params['lambda']! / params['periodT']!;
+    final r = math.sqrt(obs.x * obs.x + obs.y * obs.y);
+    final along = r < 1e-6 ? 0.0 : ux * obs.x / r;
+    final ratio = observerDopplerRatio(waveSpeed: waveSpeed, uParallel: along);
+
     return CustomPaint(
       size: Size.infinite,
       painter: WaveSurfacePainter(
@@ -122,7 +128,7 @@ class DopplerEffectObserverMovingSimulation extends WaveSimulation {
           WaveMarker(
             point: obs,
             color: Colors.red,
-            label: '観測者',
+            label: '観測者  f/f0=${ratio.toStringAsFixed(2)}',
             showZDisplacement: true,
           ),
         ],

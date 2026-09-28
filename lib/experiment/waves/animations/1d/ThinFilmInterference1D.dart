@@ -8,8 +8,10 @@ final thinFilmInterference1D = createWaveVideo(
   latex: r"""
   <div class="common-box">ポイント</div>
   <p>表面での反射と裏面での反射が干渉します。</p>
-  <p>屈折率の大きい媒質から小さい媒質への反射は自由端反射（位相変化なし）、小さい媒質から大きい媒質への反射は固定端反射（位相変化$\pi$）となります。</p>
-  <p>光路差: $2nL$</p>
+  <p>屈折率の小さい媒質から大きい媒質への反射は位相が $\pi$ ずれ、大きい媒質から小さい媒質への反射は位相がずれません。</p>
+  <p>この画面は表面だけ位相がずれる場合です（空気中の薄膜）。裏面までの光路差は $2nL$ で、垂直入射の反射は</p>
+  <p>$$\displaystyle \frac{2nL}{\lambda}=m\quad\text{（弱め合い）}$$</p>
+  <p>$$\displaystyle \frac{2nL}{\lambda}=m+\frac{1}{2}\quad\text{（強め合い）}$$</p>
   """,
   simulation: ThinFilmInterference1DSimulation(),
 );

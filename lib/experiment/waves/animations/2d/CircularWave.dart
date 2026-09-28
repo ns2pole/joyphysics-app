@@ -9,7 +9,9 @@ final circularWave = createWaveVideo(
   title: "円形波",
   latex: r"""
   <div class="common-box">解説</div>
-  <p>点源から周囲に円形に広がる波です。</p>
+  <p>原点の点源から速さ $\displaystyle v=\frac{\lambda}{T}$ で円形に広がる波です。波が距離 $r$ に届いたあと</p>
+  <p>$$z=A\sin\left(2\pi\left(\frac{t}{T}-\frac{r}{\lambda}\right)\right),\quad r=\sqrt{x^{2}+y^{2}}$$</p>
+  <p>届くまでは変位は 0 です。波面は原点を中心とする円です。</p>
   """,
   simulation: CircularWaveSimulation(),
 );
@@ -20,7 +22,7 @@ class CircularWaveSimulation extends WaveSimulation {
           title: "円形波",
           is3D: true,
           formula: const FormulaDisplay(
-              r'z(x,y,t)=A\sin\left(2\pi\left(\frac{t}{T} - \frac{\sqrt{x^2+y^2}}{\lambda}\right)\right)'),
+              r'\displaystyle z=A\sin\left(2\pi\left(\frac{t}{T}-\frac{\sqrt{x^{2}+y^{2}}}{\lambda}\right)\right)'),
         );
 
   @override

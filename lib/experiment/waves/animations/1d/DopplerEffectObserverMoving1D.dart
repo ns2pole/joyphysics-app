@@ -27,9 +27,9 @@ class DopplerEffectObserverMoving1DSimulation extends WaveSimulation {
               FormulaDisplay(
                   r'y = A \sin \left\{ 2\pi \left( f_0 t \mp \frac{x}{\lambda} \right) \right\}'),
               SizedBox(height: 8),
-              FormulaDisplay(r'f = \frac{V \pm u}{V} f_0'),
+              FormulaDisplay(r'\displaystyle f = \frac{V - u_{\parallel}}{V} f_0'),
               SizedBox(height: 4),
-              Text('(複号：音源に近づく時 +, - 、遠ざかる時 -, +)',
+              Text('u∥ は波の進む向きの速度。波に向かうと周波数は上がる。',
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
             ],
           ),
@@ -86,6 +86,15 @@ class DopplerEffectObserverMoving1DSimulation extends WaveSimulation {
     // 観測者の位置 (x = x0 + u*t)
     final obsX = params['obsX']! + params['vObserver']! * time;
 
+    final u = params['vObserver']!;
+    final waveSpeed = params['lambda']! / params['periodT']!;
+    // 原点の音源から外へ進む波。obsX の符号が進む向き。
+    final waveDir = obsX >= 0 ? 1.0 : -1.0;
+    final ratio = observerDopplerRatio(
+      waveSpeed: waveSpeed,
+      uParallel: u * waveDir,
+    );
+
     return CustomPaint(
       size: Size.infinite,
       painter: WaveLinePainter(
@@ -98,7 +107,9 @@ class DopplerEffectObserverMoving1DSimulation extends WaveSimulation {
           const WaveMarker(
               point: math.Point(0.0, 0.0), color: Colors.yellow, label: '音源'),
           WaveMarker(
-              point: math.Point(obsX, 0.0), color: Colors.red, label: '観測者'),
+              point: math.Point(obsX, 0.0),
+              color: Colors.red,
+              label: '観測者  f/f0=${ratio.toStringAsFixed(2)}'),
         ],
       ),
     );

@@ -11,9 +11,9 @@ final closedPipeWaterResonance1D = createWaveVideo(
   latex: r"""
   <div class="common-box">ポイント</div>
   <p>水面が閉口（変位の節）、上端が開口（変位の腹）です。開口は圧力駆動 $p(0)=\varepsilon\sin(2\pi f t)$ で、変位そのものは固定しません。</p>
-  <p>開口端補正 $\Delta l$ だけ実際の反射位置が管の外に出ます。共振条件は</p>
-  <p>$$L+\Delta l=(2n-1)\dfrac{\lambda}{4}$$</p>
-  <p>$$f_n=\dfrac{(2n-1)v}{4(L+\Delta l)}$$</p>
+  <p>開口端補正 $\Delta l$ だけ実際の反射位置が管の外に出ます。$n=1,2,3,\ldots$ を低い方から数えたモードの番号とすると、共振条件は</p>
+  <p>$$L+\Delta l=(2n-1)\frac{\lambda}{4}$$</p>
+  <p>$$f_n=\frac{(2n-1)v}{4(L+\Delta l)}$$</p>
   <p>$$\Delta l=0.6r\ \text{または}\ 0.8r$$</p>
   <p>変位は開口から入り、水面（固定端）と開口（自由端）で反射して積み上がります。音速が速いので画面はスロー再生です。破線は管の外の仮想腹（$\Delta l$）です。</p>
   """,
@@ -74,7 +74,7 @@ class ClosedPipeWaterResonance1DSimulation extends WaveSimulation {
           showTimeOverlay: false,
           formula: const Column(
             children: [
-              FormulaDisplay(r'L+\Delta l=(2n-1)\frac{\lambda}{4}'),
+              FormulaDisplay(r'\displaystyle L+\Delta l=(2n-1)\frac{\lambda}{4}'),
               SizedBox(height: 4),
               FormulaDisplay(r'\Delta l = 0.6r\ \mathrm{or}\ 0.8r'),
             ],

@@ -28,7 +28,7 @@ class DopplerEffect2DSimulation extends WaveSimulation {
               FormulaDisplay(r'z(x, y, t) = A \sin(\omega_0 \tau(x, y, t))'),
               SizedBox(height: 4),
               FormulaDisplay(
-                  r't - \tau = \frac{\sqrt{(x - v\tau)^2 + y^2}}{V}'),
+                  r'\displaystyle t - \tau = \frac{\sqrt{(x - v\tau)^2 + y^2}}{V}'),
             ],
           ),
         );

@@ -24,7 +24,7 @@ class WaveEquationSimulation extends WaveSimulation {
           formula: const Column(
             children: [
               FormulaDisplay(
-                  r'y = A \sin\left\{ 2\pi \left( \frac{t}{T} - \frac{x}{\lambda} \right) + \phi \right\}'),
+                  r'\displaystyle y = A \sin\left\{ 2\pi \left( \frac{t}{T} - \frac{x}{\lambda} \right) + \phi \right\}'),
             ],
           ),
         );

@@ -9,8 +9,11 @@ final twoSource1D = createWaveVideo(
   title: "1次元干渉",
   latex: r"""
   <div class="common-box">ポイント</div>
-  <p>2つの音源から発生した波が重なり合う様子を観察します。</p>
-  <p>2つの音源の距離、波長、周期、位相のずれを変化させて、合成波がどのように変化するかを確認しましょう。</p>
+  <p>一直線上の二つの音源から、同じ振幅・同じ周期の波が出ます。媒質の変位は重ね合わせで</p>
+  <p>$$y=y_1+y_2$$</p>
+  <p>音源1・2までの距離を $r_1$、$r_2$、音源2の初期位相を $\phi$ とすると、位相差は</p>
+  <p>$$\Delta\varphi=2\pi\frac{r_1-r_2}{\lambda}+\phi$$</p>
+  <p>強め合いは $\displaystyle \frac{\Delta\varphi}{2\pi}=m$、弱め合いは $\displaystyle \frac{\Delta\varphi}{2\pi}=m+\frac{1}{2}$（$m$ は整数）です。波は速さ $\displaystyle v=\frac{\lambda}{T}$ で届くまで変位は 0 です。</p>
   """,
   simulation: TwoSource1DSimulation(),
 );
@@ -22,7 +25,8 @@ class TwoSource1DSimulation extends WaveSimulation {
           is3D: false,
           formula: const Column(
             children: [
-              FormulaDisplay(r'y = y_1 + y_2'),
+              FormulaDisplay(
+                  r'\displaystyle y=y_1+y_2,\quad \frac{\Delta\varphi}{2\pi}=\frac{r_1-r_2}{\lambda}+\frac{\phi}{2\pi}'),
             ],
           ),
         );

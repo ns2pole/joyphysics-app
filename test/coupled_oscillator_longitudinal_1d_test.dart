@@ -240,21 +240,16 @@ void main() {
     expect(marks.map((m) => m.y).reduce(math.max), greaterThan(80));
   });
 
-  test('横波表示の縦点線は振幅があっても下余白に届く', () {
+  test('横波表示は変位に比例し、振幅1がラベル帯の上に収まる', () {
     const size = Size(400, 240);
     final mid = transverseDisplacementGraphMidY(size);
     final amp = transverseDisplacementGraphAmpPx(size);
-    final scaled = math.min(
-      0.75 * kTransverseDisplacementGraphExaggerate,
-      kTransverseDisplacementGraphExaggerateClamp,
-    );
-    final troughY = mid + scaled * amp;
+    final troughY = mid + amp;
+    final crestY = mid - amp;
     const labelY = 240.0 - 22.0;
     expect(kTransverseDisplacementGraphFlex, 2 * 4);
-    expect(kTransverseDisplacementGraphExaggerate, 2.0);
-    // 強調後は谷がラベル帯に食い込むことがあるが、キャンバス内に収める
-    expect(troughY, lessThan(size.height - 2));
-    expect(labelY, lessThan(size.height));
+    expect(troughY, lessThan(labelY));
+    expect(crestY, greaterThan(kTransverseDisplacementGraphTop));
   });
 
   test('横波表示の下余白は pause 前後で同じ', () {

@@ -10,8 +10,10 @@ final fixedReflection2D = createWaveVideo(
   title: "反射の法則 (固定端・2次元)",
   latex: r"""
   <div class="common-box">ポイント</div>
-  <p>固定端反射では、反射時に位相が$\pi$（逆位相）ずれます。</p>
-  <p>境界（x=0）では入射波と反射波が打ち消し合い、常に変位が0となります。</p>
+  <p>反射の法則は自由端と同じで、入射角と反射角は等しいです。</p>
+  <p>$$\theta_i=\theta_r$$</p>
+  <p>固定端では反射で位相が $\pi$ ずれます。境界面 $x=0$ では入射波と反射波が打ち消し、変位は常に 0 です。</p>
+  <p>$$z_r=-z_i\quad(x=0)$$</p>
   """,
   simulation: FixedReflection2DSimulation(),
 );
@@ -22,7 +24,7 @@ class FixedReflection2DSimulation extends WaveSimulation {
           title: "反射の法則 (固定端)",
           is3D: true,
           formula: const FormulaDisplay(
-              r'z_{reflected} = -z_{incident}(at\ x=0)'),
+              r'\displaystyle \theta_i=\theta_r,\quad z_r=-z_i\ (x=0)'),
         );
 
   @override

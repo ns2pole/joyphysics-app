@@ -7,7 +7,7 @@ final drivenStringResonance1D = createWaveVideo(
   title: "弦上の定在波(駆動)",
   latex: r"""
   <div class="common-box">ポイント</div>
-  <p>左端はバイブレータによる<strong>駆動</strong>（$y(0,t)=A\sin\dfrac{2\pi t}{T}$）、右端は<strong>固定端</strong>（$y(L)=0$）です。</p>
+  <p>左端はバイブレータによる<strong>駆動</strong>（$\displaystyle y(0,t)=A\sin\frac{2\pi t}{T}$）、右端は<strong>固定端</strong>（$y(L)=0$）です。</p>
   <p>進行波の多重反射の合成（括弧の中が負の項は $0$）：</p>
   <p>
   $$\begin{aligned}
@@ -17,7 +17,7 @@ final drivenStringResonance1D = createWaveVideo(
   \Big]
   \end{aligned}$$
   </p>
-  <p>右端固定のたびに符号が反転し、左端では駆動条件を満たす次の右向き波が足されます。共振は $f\fallingdotseq\dfrac{nv}{2L}$（$\dfrac{f}{f_1}\fallingdotseq 1,2,3,\ldots$）です。</p>
+  <p>右端固定のたびに符号が反転し、左端では駆動条件を満たす次の右向き波が足されます。共振は $\displaystyle f=\frac{nv}{2L}$（$\displaystyle \frac{f}{f_1}=1,2,3,\ldots$）です。画面の和には往復ごとの弱い減衰を掛け、共振でも振幅が際限なく増えないようにしています。</p>
   """,
   simulation: DrivenStringResonance1DSimulation(),
   height: 720,
@@ -52,10 +52,10 @@ class DrivenStringResonance1DSimulation extends WaveSimulation {
           formula: const Column(
             children: [
               FormulaDisplay(
-                  r'y(0,t)=A\sin\frac{2\pi t}{T}'),
+                  r'\displaystyle y(0,t)=A\sin\frac{2\pi t}{T}'),
               SizedBox(height: 4),
               FormulaDisplay(
-                  r'y=A\sum_n\big[\sin\frac{2\pi}{T}(t-\tfrac{2nL+x}{v})-\sin\frac{2\pi}{T}(t-\tfrac{2(n+1)L-x}{v})\big]'),
+                  r'\displaystyle y=A\sum_n\left[\sin\frac{2\pi}{T}\left(t-\frac{2nL+x}{v}\right)-\sin\frac{2\pi}{T}\left(t-\frac{2(n+1)L-x}{v}\right)\right]'),
             ],
           ),
         );

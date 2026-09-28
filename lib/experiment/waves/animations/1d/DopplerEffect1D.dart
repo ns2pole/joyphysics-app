@@ -25,10 +25,10 @@ class DopplerEffect1DSimulation extends WaveSimulation {
           formula: const Column(
             children: [
               FormulaDisplay(
-                  r'y = A \sin \left\{ 2\pi \left( f_\pm t \mp \frac{x}{\lambda_\pm} \right) \right\}'),
+                  r'\displaystyle y = A \sin \left\{ 2\pi \left( f_\pm t \mp \frac{x}{\lambda_\pm} \right) \right\}'),
               SizedBox(height: 8),
               FormulaDisplay(
-                  r'f_\pm = \frac{V}{V \mp v} f_0, \quad \lambda_\pm = \frac{V \mp v}{V} \lambda_0'),
+                  r'\displaystyle f_\pm = \frac{V}{V \mp v} f_0, \quad \lambda_\pm = \frac{V \mp v}{V} \lambda_0'),
               SizedBox(height: 4),
               Text('(複号：進行方向の前方で上、後方で下)',
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),

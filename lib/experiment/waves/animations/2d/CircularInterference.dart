@@ -9,10 +9,11 @@ final circularInterference = createWaveVideo(
   title: "円形波干渉",
   latex: r"""
   <div class="common-box">ポイント</div>
-  <p>2つの波源からの距離の差が、波長の整数倍なら強め合い、半波長の奇数倍なら弱め合います。</p>
-  <p>強め合いの条件: $|r_1 - r_2| = m\lambda$</p>
-  <p>弱め合いの条件: $|r_1 - r_2| = \bigl(m + \frac{1}{2}\bigr)\lambda$</p>
-  <p>観測点の変位は、2つの波の変位の和です。</p>
+  <p>2つの波源からの波を重ねます。位相差 $\phi$ を含めて、描いている強め合いは</p>
+  <p>$$\displaystyle \frac{r_1-r_2}{\lambda}+\frac{\phi}{2\pi}=m$$</p>
+  <p>弱め合いは</p>
+  <p>$$\displaystyle \frac{r_1-r_2}{\lambda}+\frac{\phi}{2\pi}=m+\frac{1}{2}$$</p>
+  <p>$\phi=0$ なら、経路差が波長の整数倍で強め合い、半波長の奇数倍で弱め合います。観測点の変位は、2つの波の変位の和です。</p>
   """,
   simulation: CircularInterferenceSimulation(),
 );
@@ -25,10 +26,8 @@ class CircularInterferenceSimulation extends WaveSimulation {
           formula: const Column(
             children: [
               FormulaDisplay(
-                  r'\color{#B38CFF}{z_1 = A \sin\left(2\pi\left(\frac{t}{T} - \frac{r_1}{\lambda}\right)\right)}'),
-              SizedBox(height: 4),
-              FormulaDisplay(
-                  r'\color{#8CFFB3}{z_2 = A \sin\left(2\pi\left(\frac{t}{T} - \frac{r_2}{\lambda}\right) + \phi\right)}'),
+                r'\displaystyle \frac{r_1-r_2}{\lambda}+\frac{\phi}{2\pi}=m',
+              ),
               SizedBox(height: 4),
               FormulaDisplay(r'\color{#00BFFF}{z = z_1 + z_2}'),
             ],

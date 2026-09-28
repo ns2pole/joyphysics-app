@@ -62,54 +62,54 @@ final dopplerMovingWall = Video(
 
 <div class="common-box">壁の速さの理論式</div>
 <p><b>(i) 壁が音源に近づくとき</b></p>
-<p>壁による反射で観測される周波数は $f_{\mathrm{ref}} = f\dfrac{v+u}{v-u}$ です。よって壁の速さ $u$ は</p>
+<p>壁による反射で観測される周波数は $\displaystyle f_{\mathrm{ref}} = f\frac{v+u}{v-u}$ です。よって壁の速さ $u$ は</p>
 $$
-u = v\dfrac{f_{\mathrm{ref}}-f}{f_{\mathrm{ref}}+f}
+u = v\frac{f_{\mathrm{ref}}-f}{f_{\mathrm{ref}}+f}
 $$
 <p><b>(ii) 壁が音源から遠ざかるとき</b></p>
-<p>壁による反射で観測される周波数は $f_{\mathrm{ref}} = f\dfrac{v-u}{v+u}$ です。よって壁の速さ $u$ は</p>
+<p>壁による反射で観測される周波数は $\displaystyle f_{\mathrm{ref}} = f\frac{v-u}{v+u}$ です。よって壁の速さ $u$ は</p>
 $$
-u = v\dfrac{f-f_{\mathrm{ref}}}{f_{\mathrm{ref}}+f}
+u = v\frac{f-f_{\mathrm{ref}}}{f_{\mathrm{ref}}+f}
 $$
 <p><b>(iii) 壁の速さのまとめた表式</b></p>
 <p>近づく場合も遠ざかる場合も、壁の速さは次のように書けます。</p>
 $$
-u = v\left|\dfrac{f-f_{\mathrm{ref}}}{f+f_{\mathrm{ref}}}\right|
+u = v\left|\frac{f-f_{\mathrm{ref}}}{f+f_{\mathrm{ref}}}\right|
 $$
 
 <div class="common-box">数値計算</div>
 <p>以後は $v=340\,\mathrm{m/s}$、$f=11074\,\mathrm{Hz}$ とします。速さは $u$（$u\ge 0$）として求めます。</p>
-<p>遠ざかるときの式 $u = v\left|\dfrac{f-f_{\mathrm{ref}}}{f_{\mathrm{ref}}+f}\right|$ を用いた計算結果は次の通りです。</p>
+<p>近づくときも遠ざかるときも、$\displaystyle u = v\left|\frac{f-f_{\mathrm{ref}}}{f+f_{\mathrm{ref}}}\right|$ で求めた結果は次の通りです。</p>
 
 <p><b>(1) 1回目：遠ざかり</b></p>
 $$\begin{aligned}
 u_{1,\text{遠}}
-&= 340\dfrac{11074-11050}{11050+11074} \\
-&= 340\dfrac{24}{22124} \\
+&= 340\frac{11074-11050}{11050+11074} \\
+&= 340\frac{24}{22124} \\
 &\fallingdotseq 0.3688\,\mathrm{m/s}
 \end{aligned}$$
 
 <p><b>(2) 1回目：近づき</b></p>
 $$\begin{aligned}
 u_{1,\text{近}}
-&= 340\dfrac{11094-11074}{11094+11074} \\
-&= 340\dfrac{20}{22168} \\
+&= 340\frac{11094-11074}{11094+11074} \\
+&= 340\frac{20}{22168} \\
 &\fallingdotseq 0.3067\,\mathrm{m/s}
 \end{aligned}$$
 
 <p><b>(3) 2回目：遠ざかり</b></p>
 $$\begin{aligned}
 u_{2,\text{遠}}
-&= 340\dfrac{11074-11058}{11058+11074} \\
-&= 340\dfrac{16}{22132} \\
+&= 340\frac{11074-11058}{11058+11074} \\
+&= 340\frac{16}{22132} \\
 &\fallingdotseq 0.2458\,\mathrm{m/s}
 \end{aligned}$$
 
 <p><b>(4) 2回目：近づき</b></p>
 $$\begin{aligned}
 u_{2,\text{近}}
-&= 340\dfrac{11090-11074}{11090+11074} \\
-&= 340\dfrac{16}{22164} \\
+&= 340\frac{11090-11074}{11090+11074} \\
+&= 340\frac{16}{22164} \\
 &\fallingdotseq 0.2454\,\mathrm{m/s}
 \end{aligned}$$
 
@@ -161,24 +161,24 @@ u_{2,\text{近}}
 <p><b>(1) 壁が受け取る周波数（観測者が動くドップラー）</b></p>
 <p>壁が音源に近づくとき、壁が受け取る周波数 $f_1$ は</p>
 $$
-f_1 = f\dfrac{v+u}{v}
+f_1 = f\frac{v+u}{v}
 $$
 <p>です（観測者が動く場合の式）。</p>
 
 <p><b>(2) 反射後の周波数（壁を「動く音源」とみなす）</b></p>
-<p>壁は音源に近づいているので、壁は周波数 $f_1 = f\dfrac{v+u}{v}$ の音を聞きます。さらにこの壁を「周波数 $f_1$ の音源が速さ $u$ で動く音源」と考えると、反射して音源位置へ戻る周波数は</p>
+<p>壁は音源に近づいているので、壁は周波数 $\displaystyle f_1 = f\frac{v+u}{v}$ の音を聞きます。さらにこの壁を「周波数 $f_1$ の音源が速さ $u$ で動く音源」と考えると、反射して音源位置へ戻る周波数は</p>
 $$
-f_{\mathrm{ref}} = f_1\dfrac{v}{v-u}\quad\cdots(1)
+f_{\mathrm{ref}} = f_1\frac{v}{v-u}\quad\cdots(1)
 $$
 <p>となります（音源が動く場合の式）。</p>
-<p>式(1)に $f_1 = f\dfrac{v+u}{v}$ を代入すれば</p>
+<p>式(1)に $\displaystyle f_1 = f\frac{v+u}{v}$ を代入すれば</p>
 $$
-f_{\mathrm{ref}} = f\dfrac{v+u}{v-u}
+f_{\mathrm{ref}} = f\frac{v+u}{v-u}
 $$
 <p>を得ます。</p>
 <p>※壁が遠ざかるときは $u\to -u$ として</p>
 $$
-f_1 = f\dfrac{v-u}{v},\qquad f_{\mathrm{ref}} = f\dfrac{v-u}{v+u}
+f_1 = f\frac{v-u}{v},\qquad f_{\mathrm{ref}} = f\frac{v-u}{v+u}
 $$
 <p>を得ます。</p>
 

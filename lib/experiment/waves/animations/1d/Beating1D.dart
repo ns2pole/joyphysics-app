@@ -9,9 +9,11 @@ final beating1D = createWaveVideo(
   title: "うなり",
   latex: r"""
   <div class="common-box">うなり（beating）</div>
-  <p>振動数がわずかに異なる2つの波を重ね合わせると、振幅が周期的に増減する現象が見られます。これを<b>うなり</b>と呼びます。</p>
-  <p>（例）同じ波長 $\lambda$ を持つ2つの正弦波 $y_1, y_2$ の重ね合わせ</p>
-  <p>$$y = y_1 + y_2$$</p>
+  <p>振動数がわずかに異なる2つの波を、同じ速さで重ねると、振幅が周期的に増減します。これを<b>うなり</b>と呼びます。</p>
+  <p>$$y=y_1+y_2$$</p>
+  <p>うなりの周波数は、2つの周波数の差です。</p>
+  <p>$$\displaystyle f_b=\left|f_1-f_2\right|=\left|\frac{1}{T_1}-\frac{1}{T_2}\right|$$</p>
+  <p>波の速さは共通なので、波長は周期に比例します。$\displaystyle \lambda_2=\lambda_1\frac{T_2}{T_1}$。</p>
   """,
   simulation: Beating1DSimulation(),
 );
@@ -24,6 +26,10 @@ class Beating1DSimulation extends WaveSimulation {
           formula: const Column(
             children: [
               FormulaDisplay(r'y = y_1 + y_2'),
+              SizedBox(height: 4),
+              FormulaDisplay(
+                r'\displaystyle f_b=\left|\frac{1}{T_1}-\frac{1}{T_2}\right|',
+              ),
             ],
           ),
         );
@@ -143,9 +149,11 @@ class BeatingField extends WaveField {
     required this.phase2,
   });
 
-  double _phase(double x, double t, double periodT, double phaseOffset) {
-    // y = A sin( 2π (t/T - x/λ) + φ )
-    return 2 * math.pi * (t / periodT - x / lambda) + phaseOffset;
+  /// 波1の速さ λ/T1 に揃えた波2の波長。同じ媒質なので速さは共通。
+  double get lambda2 => lambda * periodT2 / periodT1;
+
+  double _phase(double x, double t, double periodT, double wavelength, double phaseOffset) {
+    return 2 * math.pi * (t / periodT - x / wavelength) + phaseOffset;
   }
 
   @override
@@ -154,8 +162,10 @@ class BeatingField extends WaveField {
     return 0.0;
   }
 
-  double _z1(double x, double t) => amplitude * math.sin(_phase(x, t, periodT1, 0.0));
-  double _z2(double x, double t) => amplitude * math.sin(_phase(x, t, periodT2, phase2));
+  double _z1(double x, double t) =>
+      amplitude * math.sin(_phase(x, t, periodT1, lambda, 0.0));
+  double _z2(double x, double t) =>
+      amplitude * math.sin(_phase(x, t, periodT2, lambda2, phase2));
 
   @override
   double z(double x, double y, double t) => _z1(x, t) + _z2(x, t);

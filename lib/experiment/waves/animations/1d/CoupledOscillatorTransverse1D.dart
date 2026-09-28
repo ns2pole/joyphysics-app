@@ -14,9 +14,9 @@ final coupledOscillatorTransverse1D = createWaveVideo(
   <p>$$\begin{aligned}
   y_j(t)
   &=\sum_{n=1}^{N}\bigl(A_n\cos\omega_n t+B_n\sin\omega_n t\bigr)\\
-  &\quad\times\sin\dfrac{n\pi j}{N+1}
+  &\quad\times\sin\frac{n\pi j}{N+1}
   \end{aligned}$$</p>
-  <p>$$\omega_n=2\sqrt{\dfrac{k}{m}}\,\sin\dfrac{n\pi}{2(N+1)}$$</p>
+  <p>$$\omega_n=2\sqrt{\frac{k}{m}}\,\sin\frac{n\pi}{2(N+1)}$$</p>
   <p>各モードの形は固定端の定在波と同じで、両端は常に節である。$N$ を大きくすると、連続な弦の固定端定在波に近づく。</p>
   """,
   simulation: CoupledOscillatorTransverse1DSimulation(),
@@ -91,6 +91,9 @@ class CoupledOscillatorTransverse1DSimulation extends PhysicsSimulation {
   }
 
   bool get _inSession => _frozen != null;
+
+  @override
+  void startPlayback() => start();
 
   void start() {
     if (running.value) return;

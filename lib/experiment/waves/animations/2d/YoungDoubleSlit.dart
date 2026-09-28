@@ -11,8 +11,9 @@ final youngDoubleSlit = createWaveVideo(
   latex: r"""
   <div class="common-box">ポイント</div>
   <p>2つのスリットを通過した光が干渉し、スクリーン上に明暗の縞模様（干渉縞）を作ります。</p>
-  <p>明線の条件: $d \sin \theta = m\lambda$</p>
-  <p>明線間隔: $\Delta x = \frac{L\lambda}{d}$</p>
+  <p>描いている強め合いは経路差そのものです。位相差 $\phi$ を含めて</p>
+  <p>$$\displaystyle \frac{r_1-r_2}{\lambda}+\frac{\phi}{2\pi}=m$$</p>
+  <p>$\phi=0$ でスクリーンが十分遠いときは、明線間隔を $\displaystyle \Delta x=\frac{L\lambda}{d}$ と近似できます。この画面は $L$ が $d$ の数倍なので、その間隔は腹線の位置と一致しません。</p>
   """,
   simulation: YoungDoubleSlitSimulation(),
 );
@@ -22,7 +23,9 @@ class YoungDoubleSlitSimulation extends WaveSimulation {
       : super(
           title: "ヤングの実験",
           is3D: true,
-          formula: const FormulaDisplay(r'\Delta x = \frac{L\lambda}{d}'),
+          formula: const FormulaDisplay(
+            r'\displaystyle \frac{r_1-r_2}{\lambda}+\frac{\phi}{2\pi}=m',
+          ),
         );
 
   @override
@@ -68,9 +71,14 @@ class YoungDoubleSlitSimulation extends WaveSimulation {
       SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Math.tex(
-          '\\Delta x = \\frac{L \\lambda}{d} = \\frac{${L.toStringAsFixed(1)} \\times ${lambda.toStringAsFixed(2)}}{${d.toStringAsFixed(2)}} = ${deltaX.toStringAsFixed(2)}',
+          r'\displaystyle \frac{r_1-r_2}{\lambda}+\frac{\phi}{2\pi}=m',
           textStyle: const TextStyle(fontSize: 14),
         ),
+      ),
+      const SizedBox(height: 4),
+      Text(
+        '遠いスクリーンの近似 Δx = Lλ/d = ${deltaX.toStringAsFixed(2)}。この画面の腹線とは一致しない。',
+        style: const TextStyle(fontSize: 11, color: Color(0xFF546E7A)),
       ),
       const SizedBox(height: 8),
       LambdaSlider(
