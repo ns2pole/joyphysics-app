@@ -23,9 +23,6 @@ const double kLeaningRodFlatTheta = 0.04;
 const double kLeaningRodViewWidth = 3.2;
 const double kLeaningRodViewHeight = 2.6;
 
-/// 終了後、自動リセットまでの待ち。
-const Duration kLeaningRodAutoResetDelay = Duration(milliseconds: 650);
-
 /// Auto デモで θ を段階的に上げる間隔。
 const Duration kLeaningRodDemoRampPeriod = Duration(milliseconds: 40);
 

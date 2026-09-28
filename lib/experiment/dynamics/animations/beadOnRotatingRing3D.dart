@@ -26,6 +26,9 @@ const double kRingDefaultThetaDot0 = 0.00;
 const double kRingSideBySideWidth = 640.0;
 const double kRingPlayback = 0.55;
 const double kRingDt = 1.0 / 240.0;
+/// 軌道点線の時間間隔。
+const double kRingTrailDt = 0.045;
+const int kRingTrailMax = 160;
 
 class RingBeadParams {
   const RingBeadParams({
@@ -370,6 +373,8 @@ class BeadOnRotatingRing3DSimulation extends PhysicsSimulation {
   void Function(String key, double value)? _updateParam;
   bool _equilibriumMode = false;
   final ValueNotifier<int> _uiTick = ValueNotifier(0);
+  final List<({double theta, double phi})> _trail = [];
+  double _lastTrailT = -1e9;
 
   late final PlaybackLoop _loop = PlaybackLoop(onTick: (dt) {
     final p = _equilibriumMode ? _params : (_frozen ?? _params);
@@ -390,8 +395,23 @@ class BeadOnRotatingRing3DSimulation extends PhysicsSimulation {
       }
       _phase = phase;
     }
+    _appendTrail(p);
     simTime.value = _phase.t;
   });
+
+  void _clearTrail() {
+    _trail.clear();
+    _lastTrailT = -1e9;
+  }
+
+  void _appendTrail(RingBeadParams p) {
+    if (_trail.isNotEmpty && _phase.t - _lastTrailT < kRingTrailDt) return;
+    _lastTrailT = _phase.t;
+    _trail.add((theta: _phase.theta, phi: p.omega * _phase.t));
+    while (_trail.length > kRingTrailMax) {
+      _trail.removeAt(0);
+    }
+  }
 
   bool _didAutoStart = false;
 
@@ -449,6 +469,7 @@ class BeadOnRotatingRing3DSimulation extends PhysicsSimulation {
   void setEquilibriumMode(bool on) {
     if (_equilibriumMode == on) return;
     _equilibriumMode = on;
+    _clearTrail();
     if (on) {
       _applyEquilibriumIcs();
       if (!running.value) start();
@@ -465,11 +486,16 @@ class BeadOnRotatingRing3DSimulation extends PhysicsSimulation {
       _frozen = _params;
       _phase = RingBeadPhase(t: _phase.t, theta: th, thetaDot: 0);
     }
+    _appendTrail(_params);
     _uiTick.value++;
   }
 
+  @override
+  void startPlayback() => start();
+
   void start() {
     if (running.value) return;
+    _clearTrail();
     if (_equilibriumMode) {
       _frozen = null;
       final th = _params.stableEquilibriumTheta;
@@ -482,6 +508,7 @@ class BeadOnRotatingRing3DSimulation extends PhysicsSimulation {
         thetaDot: _frozen!.thetaDot0,
       );
     }
+    _appendTrail(_frozen ?? _params);
     simTime.value = 0;
     _loop.start();
   }
@@ -491,6 +518,7 @@ class BeadOnRotatingRing3DSimulation extends PhysicsSimulation {
   void resetMotion() {
     _loop.reset();
     _frozen = null;
+    _clearTrail();
     if (_equilibriumMode) {
       _applyEquilibriumIcs();
       _phase = RingBeadPhase(
@@ -502,6 +530,7 @@ class BeadOnRotatingRing3DSimulation extends PhysicsSimulation {
       final p = _params;
       _phase = RingBeadPhase(t: 0, theta: p.theta0, thetaDot: p.thetaDot0);
     }
+    _appendTrail(_params);
     simTime.value = 0;
   }
 
@@ -664,7 +693,10 @@ class BeadOnRotatingRing3DSimulation extends PhysicsSimulation {
                 value: live.r,
                 min: kRingMinR,
                 max: kRingMaxR,
-                onChanged: (v) => updateParam('r', v),
+                onChanged: (v) {
+                  _clearTrail();
+                  updateParam('r', v);
+                },
                 semanticLabel: '半径 R',
               ),
               _RingSlider(
@@ -672,7 +704,10 @@ class BeadOnRotatingRing3DSimulation extends PhysicsSimulation {
                 value: live.omega,
                 min: kRingMinOmega,
                 max: kRingMaxOmega,
-                onChanged: (v) => updateParam('W', v),
+                onChanged: (v) {
+                  _clearTrail();
+                  updateParam('W', v);
+                },
                 semanticLabel: '角速度 ω',
               ),
               _RingSlider(
@@ -680,7 +715,10 @@ class BeadOnRotatingRing3DSimulation extends PhysicsSimulation {
                 value: live.mass,
                 min: kRingMinM,
                 max: kRingMaxM,
-                onChanged: (v) => updateParam('m', v),
+                onChanged: (v) {
+                  _clearTrail();
+                  updateParam('m', v);
+                },
                 semanticLabel: '質量 m',
               ),
               IgnorePointer(
@@ -692,7 +730,10 @@ class BeadOnRotatingRing3DSimulation extends PhysicsSimulation {
                     value: live.theta0,
                     min: kRingMinTheta0,
                     max: kRingMaxTheta0,
-                    onChanged: (v) => updateParam('th0', v),
+                    onChanged: (v) {
+                      _clearTrail();
+                      updateParam('th0', v);
+                    },
                     semanticLabel: '初期角 θ0',
                   ),
                 ),
@@ -706,7 +747,10 @@ class BeadOnRotatingRing3DSimulation extends PhysicsSimulation {
                     value: live.thetaDot0,
                     min: kRingMinThetaDot0,
                     max: kRingMaxThetaDot0,
-                    onChanged: (v) => updateParam('thd0', v),
+                    onChanged: (v) {
+                      _clearTrail();
+                      updateParam('thd0', v);
+                    },
                     semanticLabel: '初期角速度 θドット0',
                   ),
                 ),
@@ -760,6 +804,7 @@ class BeadOnRotatingRing3DSimulation extends PhysicsSimulation {
           painter: _RingBeadPainter(
             params: p,
             sample: sample,
+            trail: List<({double theta, double phi})>.from(_trail),
             azimuth: azimuth,
             tilt: tilt,
             scale: scale,
@@ -825,6 +870,7 @@ class _RingBeadPainter extends CustomPainter {
   _RingBeadPainter({
     required this.params,
     required this.sample,
+    required this.trail,
     required this.azimuth,
     required this.tilt,
     required this.scale,
@@ -832,6 +878,7 @@ class _RingBeadPainter extends CustomPainter {
 
   final RingBeadParams params;
   final RingBeadSample sample;
+  final List<({double theta, double phi})> trail;
   final double azimuth;
   final double tilt;
   final double scale;
@@ -841,12 +888,12 @@ class _RingBeadPainter extends CustomPainter {
   static const _muted = Color(0xFF546E7A);
   static const _bead = Color(0xFFE53935);
   static const _ringA = Color(0xFF1565C0);
-  static const _ringB = Color(0xFFFFB300);
   static const _axis = Color(0xFF78909C);
   static const _gravity = Color(0xFF5D4037);
   static const _centrifugal = Color(0xFF2E7D32);
   static const _coriolis = Color(0xFF0277BD);
   static const _constraint = Color(0xFFF9A825);
+  static const _resultant = Color(0xFF00838F);
   static const _velocity = Color(0xFF6A1B9A);
   static const _floorA = Color(0xFFE8E0D4);
   static const _floorB = Color(0xFFD4C6B4);
@@ -871,6 +918,15 @@ class _RingBeadPainter extends CustomPainter {
       _panel(canvas, Rect.fromLTWH(0, 0, size.width, h), ground: true);
       _panel(canvas, Rect.fromLTWH(0, h + gap, size.width, h), ground: false);
     }
+    if (params.equilibriumTheta != null) {
+      _text(
+        canvas,
+        Offset(size.width - 8, 6),
+        '緑○：安定な釣り合い位置（左右対称）',
+        _eq,
+        alignRight: true,
+      );
+    }
   }
 
   void _panel(Canvas canvas, Rect panel, {required bool ground}) {
@@ -882,20 +938,32 @@ class _RingBeadPainter extends CustomPainter {
       panel.right - 10,
       panel.bottom - 30,
     );
+    // 円環は約 1.5 倍（ズーム +3 回 ≈ 1.15³ 相当）。床の広さは half で別制御。
+    const viewScale = 1.5;
     final unit =
-        math.min(plot.width, plot.height) / (3.5 * kRingMaxR) * scale;
+        math.min(plot.width, plot.height) / (3.5 * kRingMaxR) * scale * viewScale;
     final az = azimuth + _az0;
     final t = tilt.clamp(0.05, math.pi / 2);
+    final cA = math.cos(az);
+    final sA = math.sin(az);
+    final cT = math.cos(t);
+    final sT = math.sin(t);
+
+    // 正投影（画面縦横同スケール）。真上から見ても円環は円に見える。
     Offset proj(double x, double y, double z) {
-      final cA = math.cos(az);
-      final sA = math.sin(az);
-      final cT = math.cos(t);
-      final sT = math.sin(t);
-      final xr = x * cA - y * sA;
-      final yr = x * sA + y * cA;
-      final px = plot.center.dx + (yr - xr) * 0.72 * unit;
-      final py = plot.center.dy + (xr + yr) * 0.42 * sT * unit - z * cT * unit;
-      return Offset(px, py);
+      final x1 = x * cA - y * sA;
+      final y1 = x * sA + y * cA;
+      final xCam = x1;
+      final yCam = -y1 * sT + z * cT;
+      return Offset(
+        plot.center.dx + xCam * unit,
+        plot.center.dy - yCam * unit,
+      );
+    }
+
+    double depth(double x, double y, double z) {
+      final y1 = x * sA + y * cA;
+      return y1 * cT + z * sT;
     }
 
     _drawFloor(canvas, plot, proj, unit, ground: ground);
@@ -912,13 +980,13 @@ class _RingBeadPainter extends CustomPainter {
       _ink,
       alignLeft: true,
     );
-    _scene(canvas, proj, unit, ground: ground);
+    _scene(canvas, proj, depth, unit, ground: ground);
     _text(
       canvas,
       Offset(panel.center.dx, panel.bottom - 18),
       ground
-          ? '真の力は重力と拘束力。'
-          : '遠心力・コリオリが加わる。',
+          ? '真の力の合力 = ma。軌道は時間等間隔の点。'
+          : '遠心力・コリオリ込みの合力。',
       _muted,
     );
     canvas.restore();
@@ -927,6 +995,7 @@ class _RingBeadPainter extends CustomPainter {
   void _scene(
     Canvas canvas,
     Offset Function(double x, double y, double z) proj,
+    double Function(double x, double y, double z) depth,
     double unit, {
     required bool ground,
   }) {
@@ -945,10 +1014,10 @@ class _RingBeadPainter extends CustomPainter {
         ..strokeCap = StrokeCap.round,
     );
 
-    // 円環（縞模様で回転が分かる）
-    _drawHoop(canvas, proj, r, phi, unit, azimuth + _az0);
+    // 円環軌道：時間等間隔ドットの点線（＋淡いガイド円）
+    _drawHoop(canvas, proj, depth, r, phi, ground: ground);
 
-    // 安定つり合いの目印（回転系のみ・存在するとき）
+    // 安定つり合いの目印（回転系のみ・斜めつり合いがあるとき）
     final eq = params.equilibriumTheta;
     if (!ground && eq != null) {
       for (final sign in [1.0, -1.0]) {
@@ -957,11 +1026,16 @@ class _RingBeadPainter extends CustomPainter {
         final o = proj(p.$1, p.$2, p.$3);
         canvas.drawCircle(
           o,
-          5,
+          2.6,
+          Paint()..color = _eq.withValues(alpha: 0.28),
+        );
+        canvas.drawCircle(
+          o,
+          2.6,
           Paint()
-            ..color = _eq.withValues(alpha: 0.35)
+            ..color = _eq.withValues(alpha: 0.95)
             ..style = PaintingStyle.stroke
-            ..strokeWidth = 2,
+            ..strokeWidth = 1.5,
         );
       }
     }
@@ -1003,11 +1077,11 @@ class _RingBeadPainter extends CustomPainter {
       );
     }
 
-    canvas.drawCircle(beadO.translate(1.4, 1.6), 10, Paint()..color = Colors.black26);
-    canvas.drawCircle(beadO, 9, Paint()..color = _bead);
+    canvas.drawCircle(beadO.translate(0.7, 0.8), 5, Paint()..color = Colors.black26);
+    canvas.drawCircle(beadO, 4.5, Paint()..color = _bead);
     canvas.drawCircle(
-      beadO.translate(-2.5, -2.5),
-      2.5,
+      beadO.translate(-1.25, -1.25),
+      1.25,
       Paint()..color = Colors.white70,
     );
 
@@ -1032,57 +1106,51 @@ class _RingBeadPainter extends CustomPainter {
   void _drawHoop(
     Canvas canvas,
     Offset Function(double x, double y, double z) proj,
+    double Function(double x, double y, double z) depth,
     double r,
-    double phi,
-    double unit,
-    double az,
-  ) {
-    const n = 72;
-    final pts = <({Offset o, double depth, int i})>[];
-    for (var i = 0; i <= n; i++) {
-      final th = 2 * math.pi * i / n;
-      final w = _beadWorld(r, th, phi);
-      // depth: カメラ前方ほど大きい（簡易）
-      final cA = math.cos(az);
-      final sA = math.sin(az);
-      final depth = w.$1 * sA + w.$2 * cA;
-      pts.add((o: proj(w.$1, w.$2, w.$3), depth: depth, i: i));
-    }
-    // 奥から手前へセグメント描画
-    final segs = <({Offset a, Offset b, double depth, Color color, double w})>[];
-    for (var i = 0; i < n; i++) {
-      final a = pts[i];
-      final b = pts[i + 1];
-      final stripe = ((i + (phi / (2 * math.pi) * 16).floor()) % 8) < 4;
-      segs.add((
-        a: a.o,
-        b: b.o,
-        depth: 0.5 * (a.depth + b.depth),
-        color: stripe ? _ringA : _ringB,
-        w: stripe ? 4.2 : 3.4,
-      ));
-    }
-    segs.sort((a, b) => a.depth.compareTo(b.depth));
-    for (final s in segs) {
-      canvas.drawLine(
-        s.a,
-        s.b,
-        Paint()
-          ..color = s.color
-          ..strokeWidth = s.w
-          ..strokeCap = StrokeCap.round,
-      );
-    }
-
-    // 円環上の目印ドット（回転がさらに分かりやすい）
-    for (var k = 0; k < 8; k++) {
-      final th = k * math.pi / 4;
+    double phi, {
+    required bool ground,
+  }) {
+    const nGuide = 64;
+    // 淡いガイド円（拘束の形）
+    Offset? prev;
+    for (var i = 0; i <= nGuide; i++) {
+      final th = 2 * math.pi * i / nGuide;
       final w = _beadWorld(r, th, phi);
       final o = proj(w.$1, w.$2, w.$3);
+      if (prev != null) {
+        canvas.drawLine(
+          prev,
+          o,
+          Paint()
+            ..color = _ringA.withValues(alpha: 0.22)
+            ..strokeWidth = 1.4
+            ..strokeCap = StrokeCap.round,
+        );
+      }
+      prev = o;
+    }
+
+    // 軌道：時間等間隔で記録したビーズ位置を点で描く
+    final pts = <({Offset o, double depth})>[];
+    for (final p in trail) {
+      final ringPhi = ground ? p.phi : 0.0;
+      final w = _beadWorld(r, p.theta, ringPhi);
+      pts.add((
+        o: proj(w.$1, w.$2, w.$3),
+        depth: depth(w.$1, w.$2, w.$3),
+      ));
+    }
+    pts.sort((a, b) => a.depth.compareTo(b.depth));
+    final n = pts.length;
+    for (var i = 0; i < n; i++) {
+      final age = n <= 1 ? 1.0 : i / (n - 1);
+      final alpha = 0.25 + 0.70 * age;
+      final rad = 1.6 + 1.4 * age;
       canvas.drawCircle(
-        o,
-        3.2,
-        Paint()..color = k.isEven ? Colors.white : const Color(0xFF0D47A1),
+        pts[i].o,
+        rad,
+        Paint()..color = _ringA.withValues(alpha: alpha),
       );
     }
   }
@@ -1097,14 +1165,27 @@ class _RingBeadPainter extends CustomPainter {
   }) {
     final speed = math.sqrt(vx * vx + vy * vy + vz * vz);
     if (speed < 0.08) return;
-    const eps = 0.04;
-    final screen = proj(vx * eps, vy * eps, vz * eps) - proj(0, 0, 0);
-    if (screen.distance < 1.5) return;
-    final len = (speed * 14).clamp(16.0, 56.0);
+    final screen = _screenDir(proj, vx, vy, vz);
+    // 視線方向の速度（真上から見た鉛直成分など）は描かない。
+    if (screen.distance < 1.2) return;
+    final len = (speed * 14).clamp(12.0, 48.0);
     _arrow(canvas, beadO, screen / screen.distance, len, _velocity, 'v');
   }
 
-  /// 両系共通: 重力は常に鉛直下向きの一定ベクトル。接線成分だけ描かない。
+  /// 単位ベクトルの画面向き。視線と平行ならほぼ 0（真上から見た重力など）。
+  Offset _screenDir(
+    Offset Function(double, double, double) proj,
+    double ux,
+    double uy,
+    double uz,
+  ) {
+    final mag = math.sqrt(ux * ux + uy * uy + uz * uz);
+    if (mag < 1e-12) return Offset.zero;
+    const eps = 0.25;
+    return proj(ux / mag * eps, uy / mag * eps, uz / mag * eps) - proj(0, 0, 0);
+  }
+
+  /// 両系共通: 向きは投影、長さは理論の |F| のみ（視点で伸び縮みさせない）。
   void _drawAllForces(
     Canvas canvas,
     Offset Function(double x, double y, double z) proj,
@@ -1112,26 +1193,29 @@ class _RingBeadPainter extends CustomPainter {
     required bool ground,
   }) {
     final f = sample.forces;
-    final mg = params.mass * kRingG;
-    double forcePx(double mag) => (48 * mag / mg).clamp(16.0, 72.0);
+    // 慣性系／回転系で同じ px/N（重力・拘束力がパネル間で別長さにならないように）。
+    final biggest = [f.gMag, f.nMag, f.cfMag, f.coMag].reduce(math.max);
+    double forcePx(double mag) {
+      if (biggest < 1e-9) return 0;
+      return 48 * mag / biggest;
+    }
 
     void drawVec(
       double fx,
       double fy,
       double fz,
-      Offset origin,
       Color color,
       String label, {
       bool dashed = false,
     }) {
       final mag = math.sqrt(fx * fx + fy * fy + fz * fz);
       if (mag < 0.05) return;
-      const eps = 0.05;
-      final screen = proj(fx * eps, fy * eps, fz * eps) - proj(0, 0, 0);
-      if (screen.distance < 1.5) return;
+      final screen = _screenDir(proj, fx, fy, fz);
+      // 視線に平行な力（真上から見た重力など）は画面に出さない。
+      if (screen.distance < 1.2) return;
       _arrow(
         canvas,
-        origin,
+        beadO,
         screen / screen.distance,
         forcePx(mag),
         color,
@@ -1147,30 +1231,28 @@ class _RingBeadPainter extends CustomPainter {
       final nix = f.nx * cp - f.ny * sp;
       final niy = f.nx * sp + f.ny * cp;
       final niz = f.nz;
-      drawVec(f.gx, f.gy, f.gz, beadO, _gravity, '重力');
-      drawVec(nix, niy, niz, beadO, _constraint, '拘束力');
+      drawVec(f.gx, f.gy, f.gz, _gravity, '重力');
+      drawVec(nix, niy, niz, _constraint, '拘束力');
+      drawVec(
+        f.gx + nix,
+        f.gy + niy,
+        f.gz + niz,
+        _resultant,
+        '合力(=ma)',
+      );
     } else {
       // 回転系: 重力・遠心力・コリオリ・拘束力。
-      drawVec(f.gx, f.gy, f.gz, beadO, _gravity, '重力');
+      drawVec(f.gx, f.gy, f.gz, _gravity, '重力');
+      drawVec(f.cfx, f.cfy, f.cfz, _centrifugal, '遠心力', dashed: true);
+      drawVec(f.cox, f.coy, f.coz, _coriolis, 'コリオリ', dashed: true);
+      drawVec(f.nx, f.ny, f.nz, _constraint, '拘束力');
       drawVec(
-        f.cfx,
-        f.cfy,
-        f.cfz,
-        beadO + const Offset(-10, 0),
-        _centrifugal,
-        '遠心力',
-        dashed: true,
+        f.gx + f.nx + f.cfx + f.cox,
+        f.gy + f.ny + f.cfy + f.coy,
+        f.gz + f.nz + f.cfz + f.coz,
+        _resultant,
+        '合力',
       );
-      drawVec(
-        f.cox,
-        f.coy,
-        f.coz,
-        beadO + const Offset(0, -12),
-        _coriolis,
-        'コリオリ',
-        dashed: true,
-      );
-      drawVec(f.nx, f.ny, f.nz, beadO, _constraint, '拘束力');
     }
   }
 
@@ -1181,9 +1263,9 @@ class _RingBeadPainter extends CustomPainter {
     double unit, {
     required bool ground,
   }) {
-    // 広めに敷いてドラッグで視点を回しやすいドラッグ面にする。
+    // 床の半幅（いまの 1.5 倍）。
     const n = 11;
-    const half = 2.85 / 1.5;
+    const half = (2.85 / 1.5) * (2.0 / 1.5) * 1.2 * 1.5 * 0.75;
     final step = (2 * half) / n;
     final z = -params.r * 1.05;
     final angle = ground ? 0.0 : sample.phi;
@@ -1281,6 +1363,7 @@ class _RingBeadPainter extends CustomPainter {
     String text,
     Color color, {
     bool alignLeft = false,
+    bool alignRight = false,
   }) {
     final tp = TextPainter(
       text: TextSpan(
@@ -1294,13 +1377,21 @@ class _RingBeadPainter extends CustomPainter {
       ),
       textDirection: TextDirection.ltr,
     )..layout();
-    tp.paint(canvas, Offset(alignLeft ? o.dx : o.dx - tp.width / 2, o.dy));
+    final dx = alignRight
+        ? o.dx - tp.width
+        : (alignLeft ? o.dx : o.dx - tp.width / 2);
+    tp.paint(canvas, Offset(dx, o.dy));
   }
 
   @override
   bool shouldRepaint(covariant _RingBeadPainter oldDelegate) {
     return oldDelegate.sample.t != sample.t ||
         oldDelegate.sample.theta != sample.theta ||
+        oldDelegate.trail.length != trail.length ||
+        (trail.isNotEmpty &&
+            oldDelegate.trail.isNotEmpty &&
+            (oldDelegate.trail.last.theta != trail.last.theta ||
+                oldDelegate.trail.last.phi != trail.last.phi)) ||
         oldDelegate.params.r != params.r ||
         oldDelegate.params.omega != params.omega ||
         oldDelegate.params.mass != params.mass ||

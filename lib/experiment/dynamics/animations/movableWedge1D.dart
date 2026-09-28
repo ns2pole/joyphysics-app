@@ -238,6 +238,9 @@ class MovableWedgeSimulation extends PhysicsSimulation {
     _latestParams = Map<String, double>.from(params);
   }
 
+  @override
+  void startPlayback() => start();
+
   void start() {
     if (running.value) return;
     final duration = wedgeSlideDuration(_params);
@@ -502,19 +505,14 @@ class _WedgePainter extends CustomPainter {
   void _drawScene(Canvas canvas, Rect plot, {required bool ground}) {
     final length = params.length;
     final th = params.theta;
-    // 表示範囲はパラメータ最大時で固定（現在の移動距離に合わせたズームはしない）。
-    final maxCos = math.cos(kWedgeMinTheta * math.pi / 180.0);
-    final maxSin = math.sin(kWedgeMaxTheta * math.pi / 180.0);
-    final maxDistance = kWedgeMaxBlock *
-        kWedgeMaxLength *
-        maxCos /
-        (kWedgeMinM + kWedgeMaxBlock);
+    // 表示範囲は「今のパラメータでの到達範囲」で固定（再生中の位置でズームしない）。
+    final distance = wedgeCartDistance(params);
     final x0 = ground ? -0.15 : -0.35;
     final x1 = ground
-        ? maxDistance + kWedgeMaxLength * maxCos + 0.35
-        : kWedgeMaxLength * maxCos + 0.55;
+        ? distance + length * math.cos(th) + 0.35
+        : length * math.cos(th) + 0.55;
     const y0 = -0.08;
-    final y1 = kWedgeMaxLength * maxSin + 0.55;
+    final y1 = length * math.sin(th) + 0.55;
     final spanX = x1 - x0;
     final spanY = y1 - y0;
     final scale = math.min(plot.width / spanX, plot.height / spanY);
@@ -565,18 +563,44 @@ class _WedgePainter extends CustomPainter {
     canvas.drawCircle(center.translate(0, 1.5), 9, Paint()..color = Colors.black12);
     canvas.drawCircle(center, 8, Paint()..color = _block);
 
-    final gLen = 68.0;
-    _arrow(canvas, center, const Offset(0, 1), gLen, _gravity, '重力', dashed: false);
-    final nScale = (wedgeNormal(params) / (params.blockMass * kWedgeG)).clamp(0.25, 1.4);
+    final mg = params.blockMass * kWedgeG;
+    final normalForce = wedgeNormal(params);
+    final aCart = wedgeCartAcceleration(params);
+    final blockInertialMag = params.blockMass * aCart;
+    final cartInertialMag = params.cartMass * aCart;
+    final blockInertial = ground ? 0.0 : blockInertialMag;
+    final cartWeight = params.cartMass * kWedgeG;
+    final floorNormal = cartWeight + normalForce * math.cos(th);
+    final cartInertial = ground ? 0.0 : cartInertialMag;
+    // 物体・台、および地上／非慣性パネルで同じ px/N。
+    final biggest = [
+      mg,
+      normalForce,
+      blockInertialMag,
+      cartWeight,
+      floorNormal,
+      cartInertialMag,
+    ].fold<double>(0, math.max);
+    final unit = biggest > 1e-9 ? 68.0 / biggest : 1.0;
+    _arrow(canvas, center, const Offset(0, 1), mg * unit, _gravity, '重力', dashed: false);
     final nDir = Offset(normal.dx, -normal.dy);
-    _arrow(canvas, center, nDir, 56 * nScale, _normal, 'N', dashed: false);
-    if (!ground) {
-      final aScale = (wedgeCartAcceleration(params) / kWedgeG).clamp(0.35, 1.6);
-      final inertialLen = 96 * aScale;
+    _arrow(canvas, center, nDir, normalForce * unit, _normal, 'N', dashed: false);
+    if (!ground && blockInertial > 1e-6) {
+      final inertialLen = blockInertial * unit;
       _arrow(canvas, center, const Offset(-1, 0), inertialLen, _inertial, '', dashed: true);
       _label(canvas, center + Offset(-inertialLen - 22, -8), '慣性力', _inertial);
     }
-    _drawWedgeForces(canvas, world, shift, ground: ground);
+    _drawWedgeForces(
+      canvas,
+      world,
+      shift,
+      ground: ground,
+      unit: unit,
+      weight: cartWeight,
+      floorNormal: floorNormal,
+      n: normalForce,
+      inertial: cartInertial,
+    );
   }
 
   void _drawWedgeForces(
@@ -584,6 +608,11 @@ class _WedgePainter extends CustomPainter {
     Offset Function(double, double) world,
     double shift, {
     required bool ground,
+    required double unit,
+    required double weight,
+    required double floorNormal,
+    required double n,
+    required double inertial,
   }) {
     final th = params.theta;
     final length = params.length;
@@ -591,15 +620,6 @@ class _WedgePainter extends CustomPainter {
       shift + (2 / 3) * length * math.cos(th),
       length * math.sin(th) / 3,
     );
-    final n = wedgeNormal(params);
-    final weight = params.cartMass * kWedgeG;
-    final floorNormal = weight + n * math.cos(th);
-    final inertial = params.cartMass * wedgeCartAcceleration(params);
-    final biggest = math.max(
-      weight,
-      math.max(floorNormal, math.max(n, ground ? 0.0 : inertial)),
-    );
-    final unit = 70 / biggest;
     canvas.drawCircle(cm, 2.4, Paint()..color = _ink);
     _arrow(canvas, cm, const Offset(0, 1), weight * unit, _gravity, '重力', dashed: false);
     _arrow(canvas, cm, const Offset(0, -1), floorNormal * unit, _normal, '垂直抗力', dashed: false);

@@ -297,6 +297,9 @@ class TwoBodyKepler2DSimulation extends PhysicsSimulation {
     _latestParams = Map<String, double>.from(params);
   }
 
+  @override
+  void startPlayback() => start();
+
   void start() {
     if (running.value) return;
     _loop.start();
@@ -342,8 +345,11 @@ class TwoBodyKepler2DSimulation extends PhysicsSimulation {
         const SizedBox(height: 4),
         Text(
           'T = ${formatBinaryStarTime(years, _selected)}    '
-          'm₁:m₂ = ${p.m1.toStringAsFixed(3)} : ${p.m2.toStringAsFixed(3)}    '
-          'T²/a³ = ${ratio.toStringAsFixed(2)}',
+          'm₁:m₂ = ${p.m1.toStringAsFixed(3)} : ${p.m2.toStringAsFixed(3)}',
+          style: const TextStyle(fontSize: 13, fontFamily: 'Courier'),
+        ),
+        Text(
+          'T = ${t.toStringAsFixed(2)}（GM=1）    T²/a³ = ${ratio.toStringAsFixed(2)}',
           style: const TextStyle(fontSize: 13, fontFamily: 'Courier'),
         ),
       ],

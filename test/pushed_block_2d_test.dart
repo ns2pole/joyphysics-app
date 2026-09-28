@@ -111,6 +111,25 @@ void main() {
     expect(noF.forceApplied, closeTo(0, 1e-12));
   });
 
+  test('転倒中の床反力は押し力と重力そのものではない', () {
+    final tip = base(h: 0.90, F: 7.0, muS: 0.80, muK: 0.40);
+    final held = pushedBlockPivotReactions(tip, 0, 0, fingerContact: true);
+    expect(held.fx, greaterThan(-tip.force));
+    expect(held.normal, greaterThan(tip.weight));
+
+    final threshold = base(
+      h: 0.90,
+      F: base().weight * 0.80 / (2 * 0.90),
+      muS: 0.80,
+    );
+    final edge = pushedBlockPivotReactions(threshold, 0, 0, fingerContact: true);
+    expect(edge.fx, closeTo(-threshold.force, 1e-9));
+    expect(edge.normal, closeTo(threshold.weight, 1e-9));
+
+    final free = pushedBlockPivotReactions(tip, 0.4, 0.2, fingerContact: false);
+    expect(free.fx, isNot(closeTo(0, 1e-6)));
+  });
+
   test('転倒は指離れを経て側面着地し、エネルギー的におかしくない', () {
     final tip = base(h: 0.90, F: 7.0, muS: 0.80, muK: 0.40);
     expect(pushedBlockStatics(tip).onset, PushedBlockOnset.tip);

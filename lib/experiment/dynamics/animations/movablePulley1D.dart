@@ -350,6 +350,9 @@ class MovablePulley1DSimulation extends PhysicsSimulation {
     _latestParams = Map<String, double>.from(params);
   }
 
+  @override
+  void startPlayback() => start();
+
   void start() {
     if (running.value || _params.balanced) return;
     final stop = movablePulleyStopTime(_params);
@@ -528,10 +531,12 @@ class _MovablePulleyPainter extends CustomPainter {
   static const _bg = Color(0xFFF7FAFC);
   static const _bob = Color(0xFF1E88E5);
   static const _load = Color(0xFFE53935);
+  static const _bobVelocity = Color(0xFF0D47A1);
+  static const _loadVelocity = Color(0xFFB71C1C);
   static const _gravity = Color(0xFFEF6C00);
   static const _tension = Color(0xFFAD1457);
-  static const _velocity = Color(0xFF1565C0);
   static const _ink = Color(0xFF37474F);
+  static const _ballAlpha = 0.34;
   static const _pulley = Color(0xFF546E7A);
   static const _ground = Color(0xFF8D6E63);
 
@@ -562,6 +567,7 @@ class _MovablePulleyPainter extends CustomPainter {
     if (!sample.stopped && sample.vPulleyUp.abs() > 0.04) {
       _drawVelocity(canvas, layout);
     }
+    _drawMassLabels(canvas, layout);
     if (sample.stopped) {
       _drawDisplacement(canvas, size, layout);
     }
@@ -830,74 +836,102 @@ class _MovablePulleyPainter extends CustomPainter {
   }
 
   void _drawMasses(Canvas canvas, MovablePulleyLayout layout) {
-    _bobCircle(canvas, layout.bob, layout.bobR, _bob, 'm');
-    _bobCircle(canvas, layout.load, layout.loadR, _load, 'M');
+    _bobCircle(canvas, layout.bob, layout.bobR, _bob);
+    _bobCircle(canvas, layout.load, layout.loadR, _load);
 
-    const pxPerNewton = 1.6;
-    final mg = params.m * kMovablePulleyG * pxPerNewton;
-    final Mg = params.M * kMovablePulleyG * pxPerNewton;
+    final mgN = params.m * kMovablePulleyG;
+    final bigN = params.M * kMovablePulleyG;
+    final twoT = 2 * sample.tension;
+    final pxPerNewton = 72.0 / math.max(mgN, math.max(bigN, twoT));
+    // T と mg は各質点の中心付近から。左右にずらして重ならないようにする。
+    const forceGap = 7.0;
     _arrow(
       canvas,
-      layout.bob + Offset(layout.bobR + 8, 0),
-      mg,
+      layout.bob + const Offset(forceGap, 0),
+      mgN * pxPerNewton,
       _gravity,
       'mg',
     );
     _arrow(
       canvas,
-      layout.load + Offset(-layout.loadR - 8, 0),
-      Mg,
+      layout.load + const Offset(-forceGap, 0),
+      bigN * pxPerNewton,
       _gravity,
       'Mg',
     );
     final tLen = sample.tension * pxPerNewton;
-    _arrow(canvas, layout.load + Offset(layout.loadR + 8, 0), -tLen, _tension, 'T');
     _arrow(
       canvas,
-      layout.axle + Offset(0, -layout.movableR),
-      -math.min(2 * tLen, 48).toDouble(),
+      layout.load + const Offset(forceGap, 0),
+      -tLen,
+      _tension,
+      'T',
+    );
+    _arrow(
+      canvas,
+      layout.bob + const Offset(-forceGap, 0),
+      -2 * tLen,
       _tension,
       '2T',
     );
   }
 
   void _drawVelocity(Canvas canvas, MovablePulleyLayout layout) {
-    final endSpeed = math.sqrt(2 * params.alpha.abs() * kMovablePulleyTravel);
-    final pulleyLen = (sample.vPulleyUp.abs() / math.max(endSpeed, 0.3) * 36).clamp(10.0, 42.0);
-    final loadLen = (pulleyLen * 2).clamp(12.0, 64.0);
-    final pulleyDown = sample.vPulleyUp < 0;
-    final loadDown = sample.vLoadDown > 0;
+    final vPulley = sample.vPulleyUp;
+    final vLoad = sample.vLoadDown;
+    final vStop = math.sqrt(2 * params.alpha.abs() * kMovablePulleyTravel);
+    final px = 56.0 / math.max(2 * vStop, 0.5);
+    // 上向き速度は画面の上（dy が負）。おもりの下向き速度は dy が正。
     _arrow(
       canvas,
-      layout.bob.translate(0, pulleyDown ? layout.bobR : -layout.bobR),
-      pulleyDown ? pulleyLen : -pulleyLen,
-      _velocity,
-      'α',
+      layout.bob,
+      -(vPulley * px).clamp(-64.0, 64.0).toDouble(),
+      _bobVelocity,
+      'v',
+      strokeWidth: 3.4,
+      labelBesideTip: true,
     );
     _arrow(
       canvas,
-      layout.load.translate(0, loadDown ? layout.loadR : -layout.loadR),
-      loadDown ? loadLen : -loadLen,
-      _velocity,
-      'β',
+      layout.load,
+      (vLoad * px).clamp(-72.0, 72.0).toDouble(),
+      _loadVelocity,
+      'v',
+      strokeWidth: 3.4,
     );
   }
 
-  void _bobCircle(Canvas canvas, Offset c, double r, Color color, String label) {
+  void _drawMassLabels(Canvas canvas, MovablePulleyLayout layout) {
+    _label(canvas, layout.bob, 'm', _bobVelocity);
+    _label(canvas, layout.load, 'M', _loadVelocity);
+  }
+
+  void _bobCircle(Canvas canvas, Offset c, double r, Color color) {
     canvas.drawCircle(c.translate(1.4, 1.8), r, Paint()..color = Colors.black12);
-    canvas.drawCircle(c, r, Paint()..color = color);
+    canvas.drawCircle(
+      c,
+      r,
+      Paint()..color = color.withValues(alpha: _ballAlpha),
+    );
     canvas.drawCircle(
       c,
       r,
       Paint()
-        ..color = Colors.white.withValues(alpha: 0.28)
+        ..color = color.withValues(alpha: 0.55)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 2,
+        ..strokeWidth = 1.5,
     );
-    _label(canvas, c, label, Colors.white);
   }
 
-  void _arrow(Canvas canvas, Offset origin, double dy, Color color, String label) {
+  void _arrow(
+    Canvas canvas,
+    Offset origin,
+    double dy,
+    Color color,
+    String label, {
+    double strokeWidth = 2.2,
+    bool labelBesideTip = false,
+  }) {
     if (dy.abs() < 2) return;
     final tip = origin.translate(0, dy);
     final dir = dy >= 0 ? 1.0 : -1.0;
@@ -907,7 +941,7 @@ class _MovablePulleyPainter extends CustomPainter {
       tip.translate(0, -dir * headLen * 0.65),
       Paint()
         ..color = color
-        ..strokeWidth = 2.2
+        ..strokeWidth = strokeWidth
         ..strokeCap = StrokeCap.round,
     );
     canvas.drawPath(
@@ -918,7 +952,9 @@ class _MovablePulleyPainter extends CustomPainter {
         ..close(),
       Paint()..color = color,
     );
-    final labelAt = dy >= 0 ? tip + const Offset(8, -2) : tip + const Offset(8, -10);
+    final labelAt = labelBesideTip
+        ? tip + const Offset(10, 0)
+        : (dy >= 0 ? tip + const Offset(8, -2) : tip + const Offset(8, -10));
     _label(canvas, labelAt, label, color, size: 10);
   }
 

@@ -18,7 +18,8 @@ export 'leaningRod/leaning_rod_runtime.dart';
 
 const String kLeaningRodCaption =
     '壁は滑らか、床は粗い。θ は棒と壁の角。\n'
-    '静止できなければ自動で滑り始め、Nw=0 で壁から離れ、倒れる。';
+    '静止できなければ自動で滑り始め、Nw=0 で壁から離れ、倒れる。\n'
+    '倒れるか画面外に出たら止まり、「最初から」で戻る。';
 
 final leaningRodStatics2D = Video(
   isNew: true,
@@ -63,6 +64,9 @@ class LeaningRodStatics2DSimulation extends PhysicsSimulation {
           showTimeOverlay: false,
         );
 
+  @override
+  bool get playOnOpen => false;
+
   final ValueNotifier<int> _frame = ValueNotifier(0);
 
   late final LeaningRodRuntime _runtime =
@@ -74,11 +78,16 @@ class LeaningRodStatics2DSimulation extends PhysicsSimulation {
 
   late final PlaybackLoop _loop = PlaybackLoop(onTick: (dt) {
     final alive = _runtime.step(dt * _playback);
-    _frame.value++;
-    if (!alive || _runtime.phase == LeaningRodPhase.flat) {
+    final ended = !alive ||
+        _runtime.phase == LeaningRodPhase.flat ||
+        _rodLeftView(_runtime.sample);
+    if (ended) {
+      if (_runtime.phase != LeaningRodPhase.equilibrium) {
+        _awaitingRestart = true;
+      }
       _loop.pause();
-      _scheduleAutoReset();
     }
+    _frame.value++;
   });
 
   ValueNotifier<bool> get running => _loop.running;
@@ -88,11 +97,13 @@ class LeaningRodStatics2DSimulation extends PhysicsSimulation {
   bool _icsLocked = false;
   final ValueNotifier<int> _lockTick = ValueNotifier(0);
   void Function(String key, double value)? _updateParam;
-  Timer? _autoResetTimer;
   Timer? _demoTimer;
-  bool _autoResetPending = false;
+  /// 転倒・画面外で停止。自動では戻さず「最初から」を出す。
+  bool _awaitingRestart = false;
   static const double _playback = 0.45;
   static const String _lockHint = '再生中は変更できません。リセットで戻ります。';
+  static const String _restartHint =
+      'ここで止まりました。「最初から」で初期状態に戻ります。';
 
   @override
   Set<String> get initialActiveIds => {};
@@ -112,22 +123,18 @@ class LeaningRodStatics2DSimulation extends PhysicsSimulation {
   }
 
   void _cancelTimers() {
-    _autoResetTimer?.cancel();
-    _autoResetTimer = null;
     _demoTimer?.cancel();
     _demoTimer = null;
-    _autoResetPending = false;
   }
 
-  void _scheduleAutoReset() {
-    if (_autoResetPending) return;
-    _autoResetPending = true;
-    _autoResetTimer?.cancel();
-    _autoResetTimer = Timer(kLeaningRodAutoResetDelay, () {
-      _autoResetTimer = null;
-      _autoResetPending = false;
-      resetMotion();
-    });
+  /// 足または上端が固定視野の外に出たか。
+  bool _rodLeftView(LeaningRodSample sample) {
+    const edge = 0.08;
+    final maxX = kLeaningRodViewWidth - 0.3;
+    final maxY = kLeaningRodViewHeight - 0.25;
+    return sample.xA > maxX + edge ||
+        sample.xB > maxX + edge ||
+        sample.yB > maxY + edge;
   }
 
   void _setIcsLocked(bool locked) {
@@ -142,9 +149,7 @@ class LeaningRodStatics2DSimulation extends PhysicsSimulation {
     }
     _demoTimer?.cancel();
     _demoTimer = null;
-    _autoResetTimer?.cancel();
-    _autoResetTimer = null;
-    _autoResetPending = false;
+    _awaitingRestart = false;
     _setIcsLocked(true);
     _loop.start();
     _frame.value++;
@@ -179,6 +184,7 @@ class LeaningRodStatics2DSimulation extends PhysicsSimulation {
 
   void runDemo(LeaningRodDemo demo) {
     _cancelTimers();
+    _awaitingRestart = false;
     _loop.pause();
     _setIcsLocked(false);
     final shape = Map<String, double>.from(leaningRodDemoShape(demo));
@@ -227,6 +233,7 @@ class LeaningRodStatics2DSimulation extends PhysicsSimulation {
   /// 姿勢・ロック解除に加え、初期条件もデフォルトの静止パラメータへ戻す。
   void resetMotion() {
     _cancelTimers();
+    _awaitingRestart = false;
     _loop.reset();
     // 親へデフォルトを流すあいだはロックし、旧 θ の再適用を防ぐ。
     _icsLocked = true;
@@ -285,14 +292,16 @@ class LeaningRodStatics2DSimulation extends PhysicsSimulation {
             ),
             if (_icsLocked) ...[
               const SizedBox(height: 6),
-              const Text(
-                _lockHint,
+              Text(
+                _awaitingRestart ? _restartHint : _lockHint,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 12, color: Color(0xFF546E7A)),
+                style: const TextStyle(fontSize: 12, color: Color(0xFF546E7A)),
               ),
             ],
             const SizedBox(height: 8),
-            if (!holds || _icsLocked)
+            if (_awaitingRestart)
+              RestartFromStartButton(onPressed: resetMotion)
+            else if (!holds || _icsLocked)
               PlayPauseResetButtons(
                 playing: running.value,
                 onPlayPause: running.value ? pause : start,
@@ -435,9 +444,22 @@ class LeaningRodStatics2DSimulation extends PhysicsSimulation {
       builder: (context, _) {
         _rememberParams(parameters);
         final sample = _runtime.sample;
-        return CustomPaint(
-          size: Size.infinite,
-          painter: _LeaningRodPainter(params: _params, sample: sample),
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            CustomPaint(
+              size: Size.infinite,
+              painter: _LeaningRodPainter(params: _params, sample: sample),
+            ),
+            if (_awaitingRestart)
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: RestartFromStartButton(onPressed: resetMotion),
+                ),
+              ),
+          ],
         );
       },
     );
@@ -796,14 +818,16 @@ class _LeaningRodPainter extends CustomPainter {
     if (sample.nf > 1e-6) {
       _drawArrow(canvas, a, const Offset(0, -1), sample.nf * scale, _normal, 'Nf');
     }
-    // 床の摩擦 f：足 A（壁向きが正なら左向き）
+    // 床の摩擦 f：足 A。滑り・静止は壁向きが正で左向き。
+    // 離脱後の ff は実験室の +x（壁から離れる向き）成分。
     if (sample.ff.abs() > 1e-6) {
       final sliding = sample.phase == LeaningRodPhase.slidingBoth ||
           sample.phase == LeaningRodPhase.afterLeave;
+      final towardWall = sample.phase != LeaningRodPhase.afterLeave;
       _drawArrow(
         canvas,
         a,
-        Offset(sample.ff >= 0 ? -1 : 1, 0),
+        Offset((sample.ff >= 0) == towardWall ? -1 : 1, 0),
         sample.ff.abs() * scale,
         _friction,
         sliding ? 'fk' : 'fs',

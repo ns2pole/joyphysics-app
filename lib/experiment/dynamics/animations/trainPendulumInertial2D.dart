@@ -363,6 +363,9 @@ class TrainPendulumSimulation extends PhysicsSimulation {
     _frame.value++;
   }
 
+  @override
+  void startPlayback() => start();
+
   void start() {
     if (running.value) return;
     _loop.start();
@@ -736,15 +739,28 @@ class _TrainPendulumPainter extends CustomPainter {
       _arrow(canvas, world(right - 0.15, ceil + 0.02), const Offset(1, 0), 36, _accel, 'A');
     }
 
-    final mg = 36.0;
-    final tScale = sample.tension / (params.mass * kTrainG);
-    final tLen = (mg * tScale).clamp(12.0, 78.0);
+    final mgForce = params.mass * kTrainG;
+    final tForce = math.max(0.0, sample.tension);
+    final iForce = (!ground && params.accel > 0.05) ? params.mass * params.accel : 0.0;
+    // 地上／電車で同じ px/N（同じ T・mg がパネル間で別長さにならないように）。
+    final biggest = math.max(
+      mgForce,
+      math.max(tForce, params.mass * params.accel),
+    );
+    final unit = biggest > 1e-9 ? 48.0 / biggest : 1.0;
     final toPivot = Offset(-math.sin(theta), -math.cos(theta));
-    _arrow(canvas, bob, toPivot, tLen, _tension, 'T');
-    _arrow(canvas, bob + const Offset(-16, 0), const Offset(0, 1), mg, _gravity, '重力');
-    if (!ground && params.accel > 0.05) {
-      final iLen = (mg * params.accel / kTrainG).clamp(10.0, 70.0);
-      _arrow(canvas, bob + const Offset(0, 16), const Offset(-1, 0), iLen, _inertial, '慣性力', dashed: true);
+    _arrow(canvas, bob, toPivot, tForce * unit, _tension, 'T');
+    _arrow(canvas, bob + const Offset(-16, 0), const Offset(0, 1), mgForce * unit, _gravity, '重力');
+    if (iForce > 1e-6) {
+      _arrow(
+        canvas,
+        bob + const Offset(0, 16),
+        const Offset(-1, 0),
+        iForce * unit,
+        _inertial,
+        '慣性力',
+        dashed: true,
+      );
     }
 
     final leanDeg = sample.lean * 180 / math.pi;

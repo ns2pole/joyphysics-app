@@ -346,6 +346,9 @@ class HorizontalSpring1DSimulation extends PhysicsSimulation {
     _latestParams = Map<String, double>.from(params);
   }
 
+  @override
+  void startPlayback() => start();
+
   void start() {
     if (running.value) return;
     _loop.start();
@@ -537,6 +540,9 @@ class VerticalSpring1DSimulation extends PhysicsSimulation {
   void _rememberParams(Map<String, double> params) {
     _latestParams = Map<String, double>.from(params);
   }
+
+  @override
+  void startPlayback() => start();
 
   void start() {
     if (running.value) return;
@@ -979,7 +985,7 @@ class _VerticalSpringPainter extends CustomPainter {
     _label(canvas, 'mg', origin.dx - 8, origin.dy + gravLen + 4, _gravity);
     _label(
       canvas,
-      'kx',
+      'ばね力',
       origin.dx + 10,
       extension >= 0 ? origin.dy - springLen - 16 : origin.dy + springLen + 4,
       _springForce,

@@ -43,6 +43,18 @@ void main() {
     expect(s1, closeTo(0.5 * h * 0.1 * keplerPeriod(a), 1e-12));
   });
 
+  test('楕円の掃引面積は周期をまたいでも時刻に比例する', () {
+    final s01 = keplerSweptAreaFromPeriapsis(a, e, 0.1);
+    final s11 = keplerSweptAreaFromPeriapsis(a, e, 1.1);
+    expect(s11 - s01, closeTo(s01 / 0.1, 1e-9));
+  });
+
+  test('放物線と双曲線の極方程式は近日点距離と一致する', () {
+    expect(keplerPolarRadius(1.2, 1, 0), closeTo(1.2, 1e-12));
+    expect(keplerPolarRadius(1.2, 1.5, 0), closeTo(1.2 * 0.5, 1e-12));
+    expect(keplerPolarRadius(1.2, 0.5, 0), closeTo(1.2 * 0.5, 1e-12));
+  });
+
   test('T²/a³ は 4π²', () {
     for (final aa in [0.5, 1.0, 1.7]) {
       final t = keplerPeriod(aa);

@@ -280,6 +280,9 @@ class VerticalMotion1DSimulation extends PhysicsSimulation {
 
   double get _duration => verticalFlightDuration(_kind, _params);
 
+  @override
+  void startPlayback() => start();
+
   void start() {
     if (running.value) return;
     if (simTime.value >= _duration - 1e-3) {

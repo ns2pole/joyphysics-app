@@ -52,6 +52,13 @@ class EarthStandingParams {
   }
 }
 
+/// 画面上の向きがほぼ同じとき true。真上視点で抗力と遠心力が重なる判定。
+bool _screenDirsAligned(Offset a, Offset b) {
+  if (a.distance < 1e-6 || b.distance < 1e-6) return false;
+  final d = (a.dx * b.dx + a.dy * b.dy) / (a.distance * b.distance);
+  return d > 0.85;
+}
+
 /// 共回転系の $xz$ 面（$\phi=0$）での力と分解。
 class EarthStandingForces {
   const EarthStandingForces({
@@ -305,6 +312,9 @@ class EarthStandingPerson3DSimulation extends PhysicsSimulation {
   void _rememberParams(Map<String, double> params) {
     _latestParams = Map<String, double>.from(params);
   }
+
+  @override
+  void startPlayback() => start();
 
   void start() {
     if (running.value) return;
@@ -894,7 +904,7 @@ class _EarthStandingPainter extends CustomPainter {
       (feet.dy + head.dy) / 2,
     );
 
-    // 簡易人型（胴だけ。腕は抗力・遠心力の起点オフセットと同方向で被るので描かない）
+    // 簡易人型（胴と頭）
     canvas.drawLine(
       feet,
       head,
@@ -907,51 +917,56 @@ class _EarthStandingPainter extends CustomPainter {
 
     final f = sample.forces;
     // 長さは理論の |F| に比例（視点・φ で変えない）。向きだけ投影する。
+    // 起点はすべて mid。
     // 慣性系: 重力・抗力・合力(=ma)。共回転系: 重力・抗力・遠心力（三者で 0）。
     final forceOrigin = mid;
 
     final er = head - feet;
-    if (er.distance < 2) return;
-    final erN = er / er.distance;
+    final hasEr = er.distance >= 2;
+    final erN = hasEr ? er / er.distance : Offset.zero;
 
     final phi = ground ? sample.phi : 0.0;
     final cp = math.cos(phi);
     final sp = math.sin(phi);
-    final lam = f.latRad;
-
-    const epsLam = 0.3;
-    var eLam = proj(
-          px - math.sin(lam) * math.cos(phi) * epsLam,
-          py - math.sin(lam) * math.sin(phi) * epsLam,
-          pz + math.cos(lam) * epsLam,
-        ) -
-        proj(px, py, pz);
-    eLam = Offset(
-      eLam.dx - erN.dx * (eLam.dx * erN.dx + eLam.dy * erN.dy),
-      eLam.dy - erN.dy * (eLam.dx * erN.dx + eLam.dy * erN.dy),
-    );
-    if (eLam.distance < 1e-3) {
-      eLam = Offset(-erN.dy, erN.dx);
-    }
-    eLam = eLam / eLam.distance;
 
     (double, double, double) rotForce(double fx, double fz) =>
         (fx * cp, fx * sp, fz);
 
-    /// 単位ベクトルを少し伸ばして投影 → 向きのみ（長さは使わない）。
-    Offset dirOfUnit(double ux, double uy, double uz) {
-      const eps = 0.2;
-      return proj(px + ux * eps, py + uy * eps, pz + uz * eps) -
-          proj(px, py, pz);
+    /// 単位ベクトルの画面向き。正投影は平行移動不変。
+    Offset rawDir(double ux, double uy, double uz) {
+      const eps = 0.25;
+      return proj(ux * eps, uy * eps, uz * eps) - proj(0, 0, 0);
+    }
+
+    /// 真正面で投影が潰れるとき、方位を少しずらして向きを拾う。
+    Offset screenDir(double ux, double uy, double uz) {
+      var d = rawDir(ux, uy, uz);
+      if (d.distance >= 0.75) return d;
+      const dphi = 0.22;
+      for (final s in [1.0, -1.0, 2.0, -2.0]) {
+        final a = s * dphi;
+        final ca = math.cos(a);
+        final sa = math.sin(a);
+        final ux2 = ux * ca - uy * sa;
+        final uy2 = ux * sa + uy * ca;
+        d = rawDir(ux2, uy2, uz);
+        if (d.distance >= 0.75) return d;
+      }
+      if (hasEr) {
+        // 半径成分が残っていれば直立方向で代用
+        final fr = ux * (px / kEarthR) + uy * (py / kEarthR) + uz * (pz / kEarthR);
+        if (fr.abs() > 1e-6) return erN * fr.sign;
+      }
+      // 最後の手段：ゼロにしない（一瞬消えを防ぐ）
+      return d.distance > 1e-12 ? d : const Offset(0, -1);
     }
 
     Offset dirOfForce(double fx, double fy, double fz) {
       final mag = math.sqrt(fx * fx + fy * fy + fz * fz);
       if (mag < 1e-12) return Offset.zero;
-      return dirOfUnit(fx / mag, fy / mag, fz / mag);
+      return screenDir(fx / mag, fy / mag, fz / mag);
     }
 
-    // |F|→px。clamp 上限だけ（下限なし＝小さい力はちゃんと小さく）。
     double forcePx(double mag) {
       final raw =
           22 * kEarthForceArrowExaggeration * mag / (params.mass * kEarthG);
@@ -961,65 +976,82 @@ class _EarthStandingPainter extends CustomPainter {
     void drawArrow(
       Offset dir,
       double mag,
-      Offset origin,
       Color color,
       String label, {
       bool dashed = false,
+      Offset? origin,
+      double labelSide = 1,
     }) {
-      if (mag < 0.05 || dir.distance < 1e-6) return;
+      if (mag < 0.05) return;
+      final d = dir.distance < 1e-9 ? const Offset(0, -1) : dir;
       _arrow(
         canvas,
-        origin,
-        dir / dir.distance,
+        origin ?? forceOrigin,
+        d / d.distance,
         forcePx(mag),
         color,
         label,
         dashed: dashed,
+        labelSide: labelSide,
       );
     }
 
     // 重力：地心向き、|Fg|=mg（一定）
-    final gDir = dirOfUnit(-px / kEarthR, -py / kEarthR, -pz / kEarthR);
     drawArrow(
-      gDir.distance > 1e-6 ? gDir : (proj(0, 0, 0) - proj(px, py, pz)),
+      screenDir(-px / kEarthR, -py / kEarthR, -pz / kEarthR),
       f.gMag,
-      forceOrigin,
       _gravity,
       '重力',
     );
 
-    // 抗力：φ 回転した 3D
+    // 抗力：φ 回転した 3D（概ね外向き＝重力と逆）
     final r3 = rotForce(f.rx, f.rz);
-    var rDir = dirOfForce(r3.$1, r3.$2, r3.$3);
-    if (rDir.distance < 1e-6) {
-      rDir = erN * f.normal + eLam * f.friction;
-    }
-    drawArrow(rDir, f.rMag, forceOrigin + eLam * 8, _reaction, '抗力');
+    final rDir = dirOfForce(r3.$1, r3.$2, r3.$3);
 
     // 軸水平の単位ベクトル（外向き ê_ρ）
     final rho = math.sqrt(px * px + py * py);
-    if (rho > 1e-6) {
-      final eRhoX = px / rho;
-      final eRhoY = py / rho;
-      final outDir = dirOfUnit(eRhoX, eRhoY, 0);
+    final Offset? outDir =
+        rho > 1e-6 ? screenDir(px / rho, py / rho, 0) : null;
+
+    // 真上から見ると z が潰れ、抗力と遠心力が同じ外向きに重なる。
+    // 向きは保ったまま、矢印と垂直な向きへ起点だけ少しずらす。
+    var reactionOrigin = forceOrigin;
+    var cenOrigin = forceOrigin;
+    var reactionLabelSide = 1.0;
+    var cenLabelSide = 1.0;
+    if (!ground && outDir != null && _screenDirsAligned(rDir, outDir)) {
+      final u = rDir / rDir.distance;
+      final n = Offset(-u.dy, u.dx);
+      const sep = 10.0;
+      reactionOrigin = forceOrigin - n * sep;
+      cenOrigin = forceOrigin + n * sep;
+      reactionLabelSide = -1;
+      cenLabelSide = 1;
+    }
+
+    drawArrow(
+      rDir,
+      f.rMag,
+      _reaction,
+      '抗力',
+      origin: reactionOrigin,
+      labelSide: reactionLabelSide,
+    );
+
+    if (outDir != null) {
       if (!ground) {
         drawArrow(
           outDir,
           f.cenMag,
-          forceOrigin - eLam * 8,
           _centrifugal,
           '遠心力',
           dashed: true,
+          origin: cenOrigin,
+          labelSide: cenLabelSide,
         );
       } else {
         // 合力 = ma = −mω²ρ ê_ρ。長さは mω²ρ で φ によらず一定。
-        drawArrow(
-          -outDir,
-          f.sumTrueMag,
-          forceOrigin + erN * 10,
-          _resultant,
-          '合力(=ma)',
-        );
+        drawArrow(-outDir, f.sumTrueMag, _resultant, '合力(=ma)');
       }
     }
 
@@ -1034,6 +1066,7 @@ class _EarthStandingPainter extends CustomPainter {
     Color color,
     String label, {
     bool dashed = false,
+    double labelSide = 1,
   }) {
     final tip = origin + dir * length;
     const headLen = 9.0;
@@ -1070,7 +1103,7 @@ class _EarthStandingPainter extends CustomPainter {
           (tip - dir * headLen - n * headHalf).dy)
       ..close();
     canvas.drawPath(head, Paint()..color = color);
-    _text(canvas, tip + n * 12, label, color);
+    _text(canvas, tip + n * (12 * labelSide), label, color);
   }
 
   void _text(

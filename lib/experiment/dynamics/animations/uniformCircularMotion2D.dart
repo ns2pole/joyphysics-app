@@ -168,6 +168,9 @@ class UniformCircularMotion2DSimulation extends PhysicsSimulation {
     _latestParams = Map<String, double>.from(params);
   }
 
+  @override
+  void startPlayback() => start();
+
   void start() {
     if (running.value) return;
     _loop.start();
@@ -477,7 +480,7 @@ class _CircularPainter extends CustomPainter {
     final pinLen = toPin.distance;
     if (pinLen > 8) {
       final tensionLen =
-          (params.tension * map.pxPerForce).clamp(18.0, pinLen * 0.72);
+          (params.tension * map.pxPerForce).clamp(4.0, pinLen * 0.72);
       _arrow(canvas, c, toPin / pinLen, tensionLen, _force, '張力(向心力)');
     }
     final ahead = map.of(

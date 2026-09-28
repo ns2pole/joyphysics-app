@@ -242,6 +242,9 @@ class AtwoodMachine1DSimulation extends PhysicsSimulation {
     _latestParams = Map<String, double>.from(params);
   }
 
+  @override
+  void startPlayback() => start();
+
   void start() {
     if (running.value) return;
     final hit = atwoodHitTime(_params);
@@ -601,12 +604,14 @@ class _AtwoodPainter extends CustomPainter {
     const pxPerNewton = 2.4;
     final g1 = params.m1 * kAtwoodG * pxPerNewton;
     final g2 = params.m2 * kAtwoodG * pxPerNewton;
-    _arrowDown(canvas, c1 + Offset(layout.r1 + 10, 0), g1, _gravity, 'm1g');
-    _arrowDown(canvas, c2 + Offset(layout.r2 + 10, 0), g2, _gravity, 'm2g');
+    // 矢印は各質点の中心付近から（T と mg が重ならないようわずかに左右へ）。
+    const forceGap = 5.0;
+    _arrowDown(canvas, c1 + const Offset(forceGap, 0), g1, _gravity, 'm1g');
+    _arrowDown(canvas, c2 + const Offset(forceGap, 0), g2, _gravity, 'm2g');
     if (!sample.stopped && sample.tension > 1e-6) {
       final tLen = sample.tension * pxPerNewton;
-      _arrowUp(canvas, c1 + Offset(-layout.r1 - 10, 0), tLen, _tension, 'T');
-      _arrowUp(canvas, c2 + Offset(-layout.r2 - 10, 0), tLen, _tension, 'T');
+      _arrowUp(canvas, c1 + const Offset(-forceGap, 0), tLen, _tension, 'T');
+      _arrowUp(canvas, c2 + const Offset(-forceGap, 0), tLen, _tension, 'T');
     }
     if (sample.v.abs() > 0.05) {
       final vLen = (sample.v.abs() / math.max(atwoodHitSpeed(params) ?? 1, 0.4) * 48)
@@ -614,14 +619,14 @@ class _AtwoodPainter extends CustomPainter {
       final down = sample.v > 0;
       _arrowSigned(
         canvas,
-        c1.translate(0, down ? layout.r1 : -layout.r1),
+        c1,
         (down ? 1 : -1) * vLen,
         _velocity,
         'v',
       );
       _arrowSigned(
         canvas,
-        c2.translate(0, down ? -layout.r2 : layout.r2),
+        c2,
         (down ? -1 : 1) * vLen,
         _velocity,
         'v',

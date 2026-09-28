@@ -315,6 +315,9 @@ class LinearDrag1DSimulation extends PhysicsSimulation {
     _latestParams = Map<String, double>.from(params);
   }
 
+  @override
+  void startPlayback() => start();
+
   void start() {
     if (running.value) return;
     final duration = linearDragFlightDuration(_kind, _params);

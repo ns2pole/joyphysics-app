@@ -16,7 +16,7 @@ const double kFrictionDefaultMu = 0.20;
 const double kFrictionStrobeDt = 0.10;
 /// 表示幅（m）。停止距離に合わせてズームしない。μ が小さいと画面外へ出る。
 const double kFrictionViewMax =
-    kFrictionMaxV0 * kFrictionMaxV0 / (2 * 0.05 * kFrictionG);
+    kFrictionMaxV0 * kFrictionMaxV0 / (2 * 0.05 * kFrictionG) / 4;
 
 class KineticFrictionParams {
   const KineticFrictionParams({required this.v0, required this.mu});
@@ -209,6 +209,9 @@ class KineticFriction1DSimulation extends PhysicsSimulation {
   void _rememberParams(Map<String, double> params) {
     _latestParams = Map<String, double>.from(params);
   }
+
+  @override
+  void startPlayback() => start();
 
   void start() {
     if (running.value) return;
@@ -461,16 +464,7 @@ class _KineticFrictionPainter extends CustomPainter {
         ..color = _ground
         ..strokeWidth = 3,
     );
-    final span = map.xMax - map.xMin;
-    final step = span > 8
-        ? 4.0
-        : span > 3
-            ? 2.0
-            : span > 1
-                ? 1.0
-                : span > 0.4
-                    ? 0.4
-                    : 0.1;
+    const step = 1.0;
     final first = (map.xMin / step).ceil() * step;
     for (var x = first; x <= map.xMax + 1e-9; x += step) {
       final px = map.xOf(x);
@@ -481,9 +475,7 @@ class _KineticFrictionPainter extends CustomPainter {
           ..color = _ground
           ..strokeWidth = 1.4,
       );
-      if ((x / step).round().isEven || step >= 0.5) {
-        _label(canvas, Offset(px, railY + 12), x.toStringAsFixed(step < 0.2 ? 2 : 1), _ink);
-      }
+      _label(canvas, Offset(px, railY + 12), x.toStringAsFixed(0), _ink);
     }
   }
 

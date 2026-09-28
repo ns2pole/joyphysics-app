@@ -32,9 +32,6 @@ const double kPushedBlockViewHeight = 3.0 / 1.5;
 const double kPushedBlockOffscreenX = kPushedBlockViewWidth - 0.35;
 final double kPushedBlockOnSideTheta = math.pi / 2 - 0.02;
 
-/// 終了後、自動リセットまでの待ち。
-const Duration kPushedBlockAutoResetDelay = Duration(milliseconds: 650);
-
 /// Auto デモで F を段階的に上げる間隔。
 const Duration kPushedBlockDemoRampPeriod = Duration(milliseconds: 40);
 

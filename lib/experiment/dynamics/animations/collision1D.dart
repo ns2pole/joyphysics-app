@@ -305,6 +305,9 @@ class Collision1DSimulation extends PhysicsSimulation {
     return true;
   }
 
+  @override
+  void startPlayback() => start();
+
   void start() {
     if (running.value) return;
     final now = collision1DAt(_params, simTime.value);
@@ -686,7 +689,7 @@ class _CollisionPainter extends CustomPainter {
       return;
     }
     final dir = velocity >= 0 ? const Offset(1, 0) : const Offset(-1, 0);
-    final len = (velocity.abs() / kCollisionMaxV * 64).clamp(16.0, 78.0);
+    final len = velocity.abs() / kCollisionMaxV * 64;
     final origin = c + Offset(dir.dx * width / 2, -6);
     _drawArrow(canvas, origin, dir, len, color);
   }

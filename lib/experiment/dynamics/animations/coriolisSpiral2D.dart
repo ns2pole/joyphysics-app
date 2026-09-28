@@ -278,6 +278,9 @@ class CoriolisSpiral2DSimulation extends PhysicsSimulation {
     );
   }
 
+  @override
+  void startPlayback() => start();
+
   void start() {
     if (running.value) return;
     if (simTime.value >= _params.turn - 1e-3) simTime.value = 0.0;
@@ -554,10 +557,13 @@ class _SpiralPainter extends CustomPainter {
       alignLeft: true,
     );
     _scene(canvas, of, scale, ground: ground);
+    final rest = params.v.abs() < 1e-9;
     _text(
       canvas,
       Offset(panel.center.dx, panel.bottom - 18),
-      ground ? 'y 軸上をまっすぐ進む。' : 'アルキメデスの螺旋を描く。',
+      ground
+          ? (rest ? '止まっている。' : 'y 軸上をまっすぐ進む。')
+          : (rest ? '半径 R の円を描く。' : 'アルキメデスの螺旋を描く。'),
       const Color(0xFF546E7A),
     );
     canvas.restore();

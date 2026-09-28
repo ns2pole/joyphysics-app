@@ -20,7 +20,7 @@ export 'pushedBlock/pushed_block_runtime.dart';
 const String kPushedBlockCaption =
     '粗い床の直方体を一定の水平力 F で押す。\n'
     '押し高で滑り／転倒が分かれる。静止を外すと自動で動き出す。\n'
-    '転倒中、手が高さ h を外れると F=0。画面外・転倒完了で自動リセット。';
+    '転倒中、手が高さ h を外れると F=0。画面外・転倒完了では止まり、「最初から」で戻る。';
 
 final pushedBlock2D = Video(
   isNew: true,
@@ -42,6 +42,9 @@ final pushedBlock2D = Video(
   <p>滑り出したあと、加速度は $\displaystyle a=\frac{F-\mu_k mg}{m}$ です。</p>
   <div class="common-box">転倒</div>
   <p>右下端を軸に傾きます。手の高さは $h$ 固定で、左面が $y=h$ を外れると手が離れ $F=0$ になります（目安 $\displaystyle\theta=\arcsin\frac{h}{w}$）。そのあと側面まで倒れます。</p>
+  <p>右下端が止まっているあいだ、床の水平力と垂直抗力は重心の加速度から決まります。手が当たっているときは</p>
+  <p>$$\displaystyle I_P\ddot\theta=-mg\Bigl(\frac{w}{2}\cos\theta-\frac{H}{2}\sin\theta\Bigr)+Fh$$</p>
+  <p>手が離れたあとは $Fh$ の項が消えます。</p>
 """,
   experimentWidgets: [
     PhysicsSimulationView(
@@ -63,6 +66,9 @@ class PushedBlock2DSimulation extends PhysicsSimulation {
           showTimeOverlay: false,
         );
 
+  @override
+  bool get playOnOpen => false;
+
   final ValueNotifier<int> _frame = ValueNotifier(0);
 
   late final PushedBlockRuntime _runtime = PushedBlockRuntime(
@@ -78,11 +84,13 @@ class PushedBlock2DSimulation extends PhysicsSimulation {
 
   late final PlaybackLoop _loop = PlaybackLoop(onTick: (dt) {
     final alive = _runtime.step(dt * _playback);
-    _frame.value++;
     if (!alive || _runtime.isFinished) {
+      if (_runtime.isFinished) {
+        _awaitingRestart = true;
+      }
       _loop.pause();
-      _scheduleAutoReset();
     }
+    _frame.value++;
   });
 
   ValueNotifier<bool> get running => _loop.running;
@@ -91,11 +99,13 @@ class PushedBlock2DSimulation extends PhysicsSimulation {
   bool _icsLocked = false;
   final ValueNotifier<int> _lockTick = ValueNotifier(0);
   void Function(String key, double value)? _updateParam;
-  Timer? _autoResetTimer;
   Timer? _demoTimer;
-  bool _autoResetPending = false;
+  /// 転倒完了・画面外で停止。自動では戻さず「最初から」を出す。
+  bool _awaitingRestart = false;
   static const double _playback = 0.55;
   static const String _lockHint = '再生中は変更できません。リセットで戻ります。';
+  static const String _restartHint =
+      'ここで止まりました。「最初から」で初期状態に戻ります。';
 
   @override
   Set<String> get initialActiveIds => {};
@@ -118,22 +128,8 @@ class PushedBlock2DSimulation extends PhysicsSimulation {
   }
 
   void _cancelTimers() {
-    _autoResetTimer?.cancel();
-    _autoResetTimer = null;
     _demoTimer?.cancel();
     _demoTimer = null;
-    _autoResetPending = false;
-  }
-
-  void _scheduleAutoReset() {
-    if (_autoResetPending) return;
-    _autoResetPending = true;
-    _autoResetTimer?.cancel();
-    _autoResetTimer = Timer(kPushedBlockAutoResetDelay, () {
-      _autoResetTimer = null;
-      _autoResetPending = false;
-      resetMotion();
-    });
   }
 
   void _setIcsLocked(bool locked) {
@@ -148,9 +144,7 @@ class PushedBlock2DSimulation extends PhysicsSimulation {
     }
     _demoTimer?.cancel();
     _demoTimer = null;
-    _autoResetTimer?.cancel();
-    _autoResetTimer = null;
-    _autoResetPending = false;
+    _awaitingRestart = false;
     _setIcsLocked(true);
     _loop.start();
     _frame.value++;
@@ -188,6 +182,7 @@ class PushedBlock2DSimulation extends PhysicsSimulation {
 
   void runDemo(PushedBlockDemo demo) {
     _cancelTimers();
+    _awaitingRestart = false;
     _loop.pause();
     _setIcsLocked(false);
     final shape = Map<String, double>.from(pushedBlockDemoShape(demo));
@@ -234,6 +229,7 @@ class PushedBlock2DSimulation extends PhysicsSimulation {
   /// 姿勢・ロック解除に加え、初期条件もデフォルトの静止パラメータへ戻す。
   void resetMotion() {
     _cancelTimers();
+    _awaitingRestart = false;
     _loop.reset();
     // 親へデフォルトを流すあいだはロックし、旧 F の再適用を防ぐ。
     _icsLocked = true;
@@ -260,8 +256,15 @@ class PushedBlock2DSimulation extends PhysicsSimulation {
           r'\displaystyle a=\frac{F-\mu_k mg}{m}\ \text{（滑り）}',
         );
       case PushedBlockOnset.tip:
+        final phase = _runtime.phase;
+        if (phase == PushedBlockPhase.freeTip ||
+            phase == PushedBlockPhase.onSide) {
+          return const FormulaDisplay(
+            r'\displaystyle I_P\ddot\theta=-mg\bigl(\frac{w}{2}\cos\theta-\frac{H}{2}\sin\theta\bigr)',
+          );
+        }
         return const FormulaDisplay(
-          r'\displaystyle I_P\ddot\theta=-mg\bigl(\tfrac{w}{2}\cos\theta-\tfrac{H}{2}\sin\theta\bigr)+Fh',
+          r'\displaystyle I_P\ddot\theta=-mg\bigl(\frac{w}{2}\cos\theta-\frac{H}{2}\sin\theta\bigr)+Fh',
         );
     }
   }
@@ -306,14 +309,16 @@ class PushedBlock2DSimulation extends PhysicsSimulation {
             ),
             if (_icsLocked) ...[
               const SizedBox(height: 6),
-              const Text(
-                _lockHint,
+              Text(
+                _awaitingRestart ? _restartHint : _lockHint,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 12, color: Color(0xFF546E7A)),
+                style: const TextStyle(fontSize: 12, color: Color(0xFF546E7A)),
               ),
             ],
             const SizedBox(height: 8),
-            if (!holds || _icsLocked)
+            if (_awaitingRestart)
+              RestartFromStartButton(onPressed: resetMotion)
+            else if (!holds || _icsLocked)
               PlayPauseResetButtons(
                 playing: running.value,
                 onPlayPause: running.value ? pause : start,
@@ -477,13 +482,26 @@ class PushedBlock2DSimulation extends PhysicsSimulation {
       animation: Listenable.merge([running, _frame]),
       builder: (context, _) {
         _rememberParams(parameters);
-        return CustomPaint(
-          size: Size.infinite,
-          painter: _PushedBlockPainter(
-            params: _params,
-            sample: _runtime.sample,
-            statics: pushedBlockStatics(_params),
-          ),
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            CustomPaint(
+              size: Size.infinite,
+              painter: _PushedBlockPainter(
+                params: _params,
+                sample: _runtime.sample,
+                statics: pushedBlockStatics(_params),
+              ),
+            ),
+            if (_awaitingRestart)
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: RestartFromStartButton(onPressed: resetMotion),
+                ),
+              ),
+          ],
         );
       },
     );
@@ -775,11 +793,37 @@ class _PushedBlockPainter extends CustomPainter {
     if (contact == null) return;
     final foot = map.at(contact.dx, contact.dy);
 
+    if (sample.phase == PushedBlockPhase.tipping ||
+        sample.phase == PushedBlockPhase.freeTip) {
+      final rx = pushedBlockPivotReactions(
+        params,
+        sample.theta,
+        sample.omega,
+        fingerContact: sample.fingerContact,
+      );
+      if (rx.normal > 1e-4) {
+        final nLen = (gLen * rx.normal / params.weight).clamp(8.0, 90.0);
+        _arrow(canvas, foot, const Offset(0, -1), nLen, _normal, 'N');
+      }
+      if (rx.fx.abs() > 1e-4) {
+        final fLen = (rx.fx.abs() * 3).clamp(12.0, 70.0);
+        _arrow(
+          canvas,
+          foot,
+          Offset(rx.fx >= 0 ? 1 : -1, 0),
+          fLen,
+          _friction,
+          'fs',
+        );
+      }
+      return;
+    }
+
     // 垂直抗力 N：床の作用点から上向き
     final nLen = (22 + params.weight * 2.2).clamp(28.0, 56.0);
     _arrow(canvas, foot, const Offset(0, -1), nLen, _normal, 'N');
 
-    // 摩擦力 f：同じ作用点。静止は F に対抗、滑りは μk N、転倒中は枢軸で水平
+    // 摩擦力 f：同じ作用点。静止は F に対抗、滑りは μk mg
     final friction = _frictionMagnitude();
     if (friction > 1e-6) {
       final fLen = (14 + friction * 3).clamp(12.0, 56.0);

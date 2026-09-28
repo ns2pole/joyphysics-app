@@ -70,6 +70,32 @@ double pushedBlockTippingAlpha(
   return (gravityTorque + fingerTorque) / ip;
 }
 
+/// 枢軸が床に止まっているときの水平反力 $f_x$（右向き正）と垂直抗力 $N$。
+/// $\displaystyle m\ddot{x}=F_{\mathrm{eff}}+f_x$、$\displaystyle m\ddot{y}=N-mg$（$y$ は上向き）。
+({double fx, double normal}) pushedBlockPivotReactions(
+  PushedBlockParams params,
+  double theta,
+  double omega, {
+  required bool fingerContact,
+}) {
+  final alpha = pushedBlockTippingAlpha(
+    params,
+    theta,
+    fingerContact: fingerContact,
+  );
+  final w = params.width;
+  final H = params.height;
+  final m = params.mass;
+  final c = math.cos(theta);
+  final s = math.sin(theta);
+  final w2 = omega * omega;
+  final ax = 0.5 * w * (c * w2 + s * alpha) + 0.5 * H * (-s * w2 + c * alpha);
+  final ay =
+      0.5 * w * (-s * w2 + c * alpha) + 0.5 * H * (-c * w2 - s * alpha);
+  final fApplied = fingerContact ? params.force : 0.0;
+  return (fx: m * ax - fApplied, normal: m * ay + m * kPushedBlockG);
+}
+
 PushedBlockTippingState pushedBlockTippingAccel(
   PushedBlockParams params,
   double theta,

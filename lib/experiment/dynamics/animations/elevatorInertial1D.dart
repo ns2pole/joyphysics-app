@@ -166,6 +166,9 @@ class ElevatorInertialSimulation extends PhysicsSimulation {
     _latestParams = Map<String, double>.from(params);
   }
 
+  @override
+  void startPlayback() => start();
+
   void start() {
     if (running.value) return;
     if (simTime.value >= kElevatorDuration - 1e-3) simTime.value = 0.0;
@@ -449,16 +452,33 @@ class _ElevatorPainter extends CustomPainter {
   void _scene(Canvas canvas, Rect plot, {required bool ground}) {
     final maxTravel =
         0.5 * kElevatorMaxA * kElevatorDuration * kElevatorDuration;
-    final yLo = ground ? -0.25 : -0.35;
-    final yHi = ground ? maxTravel + _cabinH + 0.45 : _cabinH + 0.55;
-    final scale = math.min(plot.width / 2.4, plot.height / (yHi - yLo));
+    // 両系とも下（エレベータ内）の窓に合わせる。慣性系は全行程を入れるとカゴが縮む。
+    const viewLo = -0.35;
+    const viewHi = _cabinH + 0.55;
+    final span = viewHi - viewLo;
+    final scale = math.min(plot.width / 2.4, plot.height / span);
     final floor0 = ground
         ? (kind == ElevatorMotionKind.up ? 0.0 : maxTravel)
         : 0.0;
     final floor = floor0 + (ground ? sample.y : 0.0);
+    // 慣性系はカゴに追従。大きさは下と同じで、建物の目盛りが流れて移動が見える。
+    final cam = ground ? floor : 0.0;
     final left = plot.center.dx - 0.55 * scale;
     final right = plot.center.dx + 0.55 * scale;
-    double yOf(double y) => plot.bottom - (y - yLo) * scale - (plot.height - (yHi - yLo) * scale) / 2;
+    double yOf(double y) =>
+        plot.bottom - (y - cam - viewLo) * scale - (plot.height - span * scale) / 2;
+
+    if (ground) {
+      final tick = Paint()
+        ..color = const Color(0xFFB0BEC5)
+        ..strokeWidth = 1.2;
+      for (var m = -1; m <= (maxTravel + _cabinH + 1).ceil(); m++) {
+        final yy = yOf(m.toDouble());
+        if (yy < plot.top || yy > plot.bottom) continue;
+        canvas.drawLine(Offset(left - 16, yy), Offset(left - 6, yy), tick);
+        canvas.drawLine(Offset(right + 6, yy), Offset(right + 16, yy), tick);
+      }
+    }
 
     final floorY = yOf(floor);
     final ceilY = yOf(floor + _cabinH);

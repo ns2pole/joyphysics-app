@@ -22,7 +22,16 @@ const double kInclineFrictionMaxTheta = 40.0;
 const double kInclineFrictionDefaultTheta = 15.0;
 const double kInclineFrictionStrobeDt = 0.10;
 /// 斜面に沿った表示幅（m）。停止距離に合わせてズームしない。
-const double kInclineFrictionViewMax = 12.0;
+/// ほぼ水平では 12、急斜面ではそれ以上（12 超の目盛りが見える）。
+const double kInclineFrictionViewMaxFlat = 12.0;
+const double kInclineFrictionViewMaxSteep = 20.0;
+
+/// 傾角に応じた斜面表示幅（m）。
+double inclineFrictionViewMax(double thetaDeg) {
+  final t = ((thetaDeg - 15.0) / (kInclineFrictionMaxTheta - 15.0)).clamp(0.0, 1.0);
+  return kInclineFrictionViewMaxFlat +
+      (kInclineFrictionViewMaxSteep - kInclineFrictionViewMaxFlat) * t;
+}
 
 class KineticFrictionInclineParams {
   const KineticFrictionInclineParams({
@@ -243,7 +252,7 @@ final kineticFrictionIncline1D = Video(
   experimentWidgets: [
     PhysicsSimulationView(
       simulation: KineticFrictionIncline1DSimulation(),
-      height: 880,
+      height: 1320,
     ),
   ],
 );
@@ -255,7 +264,7 @@ class KineticFrictionIncline1DSimulation extends PhysicsSimulation {
           formula: const FormulaDisplay(
             r'\displaystyle a=g(\sin\theta-\mu\cos\theta),\quad \mu_s\ge\tan\theta\text{ なら滑らない}',
           ),
-          aspectRatio: (16 / 9) / 1.5,
+          aspectRatio: (16 / 9) / 2.25,
           enableTime: false,
           showTimeOverlay: false,
         );
@@ -300,6 +309,9 @@ class KineticFrictionIncline1DSimulation extends PhysicsSimulation {
   void _rememberParams(Map<String, double> params) {
     _latestParams = Map<String, double>.from(params);
   }
+
+  @override
+  void startPlayback() => start();
 
   void start() {
     if (running.value) return;
@@ -571,7 +583,7 @@ class _InclineFrictionPainter extends CustomPainter {
 
   _SMap _mapper(Size size, double ceiling, double extra) {
     const sMin = -1.8;
-    const sMax = kInclineFrictionViewMax;
+    final sMax = inclineFrictionViewMax(params.thetaDeg);
     final span = sMax - sMin;
     final th = params.theta;
     final down = Offset(math.cos(th), math.sin(th));
@@ -644,6 +656,8 @@ class _InclineFrictionPainter extends CustomPainter {
     final into = -map.normal;
     final first = (map.sMin / step).ceil() * step;
     for (var s = first; s <= map.sMax + 1e-9; s += step) {
+      // 右下の頂点は θ の印に使う。
+      if (params.thetaDeg >= 1 && (map.sMax - s).abs() < step * 0.35) continue;
       final p = map.at(s);
       canvas.drawLine(
         p,
@@ -658,31 +672,42 @@ class _InclineFrictionPainter extends CustomPainter {
     }
   }
 
+  /// くさび右下の頂点。底辺と斜辺の内角が傾角 θ。
   void _drawAngle(Canvas canvas, _SMap map) {
     if (params.thetaDeg < 1) return;
-    final origin = map.at(map.sMin + (map.sMax - map.sMin) * 0.08);
-    const radius = 36.0;
-    canvas.drawLine(
-      origin,
-      origin + const Offset(radius + 8, 0),
-      Paint()
-        ..color = _ink
-        ..strokeWidth = 1.2,
-    );
-    final rect = Rect.fromCircle(center: origin, radius: radius);
+    final a = map.at(map.sMin);
+    final b = map.at(map.sMax);
+    final high = a.dy <= b.dy ? a : b;
+    final low = a.dy <= b.dy ? b : a;
+    final rise = low.dy - high.dy;
+    final run = (low.dx - high.dx).abs();
+    if (rise < 2 || run < 2) return;
+
+    final radius = math.min(34.0, math.min(run, rise) * 0.45);
+    if (radius < 8) return;
+    final arc = Paint()
+      ..color = _force
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.6;
     canvas.drawArc(
-      rect,
-      0,
+      Rect.fromCircle(center: low, radius: radius),
+      math.pi,
       params.theta,
       false,
-      Paint()
-        ..color = _force
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.6,
+      arc,
     );
-    final mid = params.theta / 2;
-    final labelAt = origin + Offset(math.cos(mid), math.sin(mid)) * (radius + 14);
-    _label(canvas, labelAt, 'θ', _force);
+
+    // 二等分線上で、文字が底辺と斜辺のあいだに収まる位置。
+    final half = params.theta / 2;
+    final inward = Offset(-math.cos(half), -math.sin(half));
+    final sinHalf = math.max(math.sin(half), 1e-3);
+    const glyph = 12.0;
+    final minDist = (glyph / 2 + 2) / sinHalf;
+    final maxByRise = (rise - 2) / sinHalf;
+    final maxByRun = (run * 0.62) / math.max(math.cos(half), 1e-3);
+    final room = math.max(radius + 8, math.min(maxByRise, maxByRun));
+    final dist = minDist.clamp(radius + 8, room);
+    _label(canvas, low + inward * dist, 'θ', _force);
   }
 
   void _drawTrail(Canvas canvas, _SMap map) {

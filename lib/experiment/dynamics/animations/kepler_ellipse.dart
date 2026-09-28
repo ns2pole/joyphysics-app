@@ -28,6 +28,18 @@ double keplerPeriapsisRadius(double a, double e) {
   return a * (e - 1);
 }
 
+/// 極方程式。放物線は $r=2a/(1+\cos\theta)$、双曲線は $a(e^{2}-1)$。
+double keplerPolarRadius(double a, double e, double theta) {
+  if (keplerIsParabola(e)) {
+    final den = 1 + math.cos(theta);
+    if (den.abs() < 1e-8) return double.infinity;
+    return 2 * a / den;
+  }
+  final numerator =
+      keplerIsHyperbola(e) ? a * (e * e - 1) : a * (1 - e * e);
+  return numerator / (1 + e * math.cos(theta));
+}
+
 double keplerApoapsisRadius(double a, double e) => a * (1 + e);
 
 double keplerPeriapsisSpeed(double a, double e, {double gm = kKeplerGM}) {
@@ -351,20 +363,13 @@ List<({double x, double y})> keplerConicPoints(
   return pts;
 }
 
+/// 近日点からの掃引面積。中心力なので $\frac{1}{2}ht$ で、楕円も周期をまたいで足し続ける。
 double keplerSweptAreaFromPeriapsis(
   double a,
   double e,
   double phase, {
   double gm = kKeplerGM,
 }) {
-  if (!keplerIsEllipse(e)) {
-    final t = phase * keplerPeriod(a, gm: gm);
-    return 0.5 * keplerSpecificAngularMomentum(a, e, gm: gm) * t;
-  }
-  final frac = phase - phase.floorToDouble();
-  final wrapped = frac < 0 ? frac + 1 : frac;
-  return 0.5 *
-      keplerSpecificAngularMomentum(a, e, gm: gm) *
-      wrapped *
-      keplerPeriod(a, gm: gm);
+  final t = phase * keplerPeriod(a, gm: gm);
+  return 0.5 * keplerSpecificAngularMomentum(a, e, gm: gm) * t;
 }

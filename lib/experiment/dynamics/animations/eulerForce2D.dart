@@ -167,6 +167,9 @@ class EulerForce2DSimulation extends PhysicsSimulation {
     return EulerParams.fromMap(_latestParams);
   }
 
+  @override
+  void startPlayback() => start();
+
   void start() {
     if (running.value) return;
     if (simTime.value >= _params.duration - 1e-3) simTime.value = 0.0;
@@ -353,8 +356,6 @@ class _EulerPainter extends CustomPainter {
   static const _person = Color(0xFF6D4C41);
   static const _ink = Color(0xFF37474F);
   static const _maxArrow = 72.0;
-  /// 接線成分は一定で、3回転後の中心向き力の約 $1/(12\pi)$。矢印が見える倍率。
-  static const _tangentBoost = 14.0;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -443,7 +444,7 @@ class _EulerPainter extends CustomPainter {
     final inDir = inward / inwardLen;
     final side = Offset(-inDir.dy, inDir.dx);
     _arrow(canvas, ball, inDir, _px(sample.realRadial.abs()), _real, '摩擦');
-    _arrow(canvas, ball, side, _px(sample.realTangential) * _tangentBoost, _real, '摩擦');
+    _arrow(canvas, ball, side, _px(sample.realTangential), _real, '摩擦');
     if (!ground) {
       _arrow(
         canvas,
@@ -459,7 +460,7 @@ class _EulerPainter extends CustomPainter {
         canvas,
         ball,
         -side,
-        _px(sample.euler.abs()) * _tangentBoost,
+        _px(sample.euler.abs()),
         _euler,
         'オイラー',
         dashed: true,
@@ -473,9 +474,10 @@ class _EulerPainter extends CustomPainter {
     }
   }
 
-  /// 3回転の終わりの中心向き摩擦が画面上の上限。途中で長さを止めない。
+  /// いま描いている力のうち最大を画面上限にする。中心向きと接線は同じ尺度。
   double _px(double newtons) {
-    final peak = params.mass * 12 * math.pi * params.alpha * params.r;
+    final tangent = params.mass * params.alpha * params.r;
+    final peak = math.max(sample.centrifugal.abs(), tangent.abs());
     if (peak < 1e-9) return 0;
     return newtons / peak * _maxArrow;
   }

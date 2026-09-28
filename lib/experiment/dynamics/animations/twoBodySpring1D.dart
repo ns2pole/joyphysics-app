@@ -17,18 +17,18 @@ final twoBodySpring1D = Video(
   latex: r"""
   <div class="common-box">ポイント</div>
   <p>外力のない2質点をばねでつなぐと、重心は等速直線運動、相対運動は換算質量の単振動になる。</p>
-  <p>$$\mu = \dfrac{m_1 m_2}{m_1+m_2}$$</p>
+  <p>$$\mu = \frac{m_1 m_2}{m_1+m_2}$$</p>
   <p>$$\mu\,\ddot R = -k(R-\ell)$$</p>
-  <p>$$\omega=\sqrt{\dfrac{k}{\mu}}$$</p>
+  <p>$$\omega=\sqrt{\frac{k}{\mu}}$$</p>
   <p>相対座標 $R=x_2-x_1$ の厳密解は</p>
   <p>$$\begin{aligned}
   R(t)&=\ell+(R(0)-\ell)\cos\omega t\\
-  &\quad+\dfrac{\dot R(0)}{\omega}\sin\omega t
+  &\quad+\frac{\dot R(0)}{\omega}\sin\omega t
   \end{aligned}$$</p>
   <p>各質点の位置は、重心 $R_G(t)=R_G(0)+V_G t$ から</p>
-  <p>$$x_1(t)=R_G(t)-\dfrac{m_2}{m_1+m_2}R(t)$$</p>
-  <p>$$x_2(t)=R_G(t)+\dfrac{m_1}{m_1+m_2}R(t)$$</p>
-  <p>質点が交差しない条件は、振幅 $A=\sqrt{(R(0)-\ell)^2+\Biggl(\dfrac{\dot R(0)}{\omega}\Biggr)^2}$ に対して $A<\ell$（すなわち $R_{\min}=\ell-A>0$）である。</p>
+  <p>$$x_1(t)=R_G(t)-\frac{m_2}{m_1+m_2}R(t)$$</p>
+  <p>$$x_2(t)=R_G(t)+\frac{m_1}{m_1+m_2}R(t)$$</p>
+  <p>質点が交差しない条件は、振幅 $A=\sqrt{(R(0)-\ell)^2+\Biggl(\frac{\dot R(0)}{\omega}\Biggr)^2}$ に対して $A<\ell$（すなわち $R_{\min}=\ell-A>0$）である。</p>
   """,
   experimentWidgets: [
     PhysicsSimulationView(
@@ -308,7 +308,7 @@ class TwoBodySpring1DSimulation extends PhysicsSimulation {
       : super(
           title: '2体問題(ばね・1次元)',
           formula: const FormulaDisplay(
-            r'\mu\ddot{R}=-k(R-\ell),\quad R=x_2-x_1',
+            r'\displaystyle \mu\ddot{R}=-k(R-\ell),\quad R=x_2-x_1',
           ),
           aspectRatio: 16 / 9,
           enableTime: false,
@@ -357,6 +357,9 @@ class TwoBodySpring1DSimulation extends PhysicsSimulation {
   void _rememberParams(Map<String, double> params) {
     _latestParams = Map<String, double>.from(params);
   }
+
+  @override
+  void startPlayback() => start();
 
   void start() {
     if (running.value) return;
@@ -417,7 +420,7 @@ class TwoBodySpring1DSimulation extends PhysicsSimulation {
     final ics = _liveIcs;
     return Column(
       children: [
-        const FormulaDisplay(r'\mu\ddot{R}=-k(R-\ell),\quad \omega=\sqrt{\frac{k}{\mu}}'),
+        const FormulaDisplay(r'\displaystyle \mu\ddot{R}=-k(R-\ell),\quad \omega=\sqrt{\frac{k}{\mu}}'),
         const SizedBox(height: 4),
         Text(
           'ω = ${ics.omega.toStringAsFixed(2)}    '

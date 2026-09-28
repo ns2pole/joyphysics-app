@@ -209,6 +209,9 @@ class ProjectileMotion2DSimulation extends PhysicsSimulation {
 
   double get _duration => projectileFlightDuration(_params);
 
+  @override
+  void startPlayback() => start();
+
   void start() {
     if (running.value) return;
     if (simTime.value >= _duration - 1e-3) {

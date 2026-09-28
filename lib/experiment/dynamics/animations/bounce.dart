@@ -239,7 +239,7 @@ String bounce1DCaption(Bounce1DKind kind) {
       return '高さ H から下向きに投げる。\n'
           '下向きの初速度があるぶん、着く直前の速さは大きい。\n'
           '跳ね返った直後の上向きの速さは、着く直前の e 倍。\n'
-          '次に上がる高さは e² 倍。e = 0 なら着いたら止まり、e = 1 なら高さが戻る。';
+          '上がる高さは着く直前の速さで決まる。e = 1 でも出した高さより高くなる。';
   }
 }
 
@@ -247,7 +247,7 @@ String bounce2DCaption() {
   return '水平速度は一定。鉛直速度だけが重力で変わる。\n'
       'θ は水平から。正は上向き、負は下向き。\n'
       '着地すると vy だけが -e 倍になる。vx はそのまま。\n'
-      '山の高さは跳ねるたびに e² 倍。e = 0 なら最初の着地で止まり、e = 1 なら高さが戻る。';
+      '上向き・水平では山の高さが e² 倍。下向きでは e = 1 でも出した高さより高く上がる。';
 }
 
 final bounce1D = Video(
@@ -288,7 +288,7 @@ final bounce2D = Video(
   <div class="common-box">ポイント</div>
   <p>なめらかな水平な地面では、水平方向の速度は着地でも変わりません。鉛直方向だけが跳ね返り係数 $e$ で折り返します。</p>
   <p>$$\displaystyle v_x'=v_x,\quad v_y'=-ev_y$$</p>
-  <p>高さ $h$ の高台から角度 $\theta$、速さ $v_0$ で投げます。$\theta$ は上向きが正、下向きが負です。地面で跳ね返ったあとの山の高さは、直前の山の $e^{2}$ 倍になります。</p>
+  <p>高さ $h$ の高台から角度 $\theta$、速さ $v_0$ で投げます。$\theta$ は上向きが正、下向きが負です。地面に着く直前の鉛直方向の速さを $v_y$ とすると、跳ね返ったあとの山の高さは $\displaystyle H=\frac{(ev_y)^{2}}{2g}$ です。$\theta\ge 0$ なら、これは直前の山の $e^{2}$ 倍です。下向き（$\theta<0$）では着く直前の速さが大きいので、$e=1$ でも山は出した高さより高くなります。</p>
 """,
   experimentWidgets: [
     PhysicsSimulationView(
@@ -340,6 +340,9 @@ class Bounce1DSimulation extends PhysicsSimulation {
   void _remember(Map<String, double> params) {
     _latest = Map<String, double>.from(params);
   }
+
+  @override
+  void startPlayback() => start();
 
   void start() {
     if (running.value || _duration < 1e-4) return;
@@ -533,6 +536,9 @@ class Bounce2DSimulation extends PhysicsSimulation {
   void _remember(Map<String, double> params) {
     _latest = Map<String, double>.from(params);
   }
+
+  @override
+  void startPlayback() => start();
 
   void start() {
     if (running.value || _duration < 1e-4) return;
@@ -775,7 +781,7 @@ class _Bounce1DPainter extends CustomPainter {
         canvas,
         c + const Offset(16, 0),
         dir,
-        (sample.vy.abs() * 6).clamp(12.0, 90.0),
+        (sample.vy.abs() * 6).clamp(4.0, 90.0),
         _ball,
         'v',
       );
@@ -883,11 +889,18 @@ class _Bounce2DPainter extends CustomPainter {
     _arrow(canvas, c + const Offset(-12, 0), const Offset(0, 1), 36, _force, 'g');
     final px = math.min(4.2, 64 / math.max(sample.vx.abs(), 1));
     if (sample.vx.abs() > 0.2) {
-      _arrow(canvas, c, const Offset(1, 0), (sample.vx.abs() * px).clamp(12.0, 70.0), _vx, 'vx');
+      _arrow(
+        canvas,
+        c,
+        Offset(sample.vx >= 0 ? 1 : -1, 0),
+        (sample.vx.abs() * px).clamp(4.0, 70.0),
+        _vx,
+        'vx',
+      );
     }
     if (sample.vy.abs() > 0.35) {
       final dir = sample.vy >= 0 ? const Offset(0, -1) : const Offset(0, 1);
-      _arrow(canvas, c, dir, (sample.vy.abs() * px).clamp(12.0, 70.0), _vy, 'vy');
+      _arrow(canvas, c, dir, (sample.vy.abs() * px).clamp(4.0, 70.0), _vy, 'vy');
     }
     _hud(canvas, lines, ledger, size, textColumnWidth: 248);
   }

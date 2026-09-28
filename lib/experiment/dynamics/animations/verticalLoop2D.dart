@@ -530,6 +530,9 @@ class VerticalLoopSimulation extends PhysicsSimulation {
     if (!was) _loop.pause();
   }
 
+  @override
+  void startPlayback() => start();
+
   void start() {
     if (running.value) return;
     if (sim.finished) {

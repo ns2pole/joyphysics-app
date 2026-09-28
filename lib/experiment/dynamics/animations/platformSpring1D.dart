@@ -285,7 +285,6 @@ double? _contactSeparateTau(
   double vc,
   double limit,
 ) {
-  if (params.g < 1e-12) return null;
   final w = params.omega;
   final ye = params.delta;
   final ampCos = yc - ye;
@@ -458,6 +457,9 @@ PlatformSpringSample platformSpringAt(PlatformSpringParams params, double t) {
 const String kPlatformSpringFormula =
     r'\displaystyle (M+m)\ddot y=(M+m)g-ky';
 
+const String kPlatformSpringSeparatedFormula =
+    r'\displaystyle \ddot y_m=g,\quad M\ddot y_M=Mg-ky_M';
+
 final platformSpring1D = Video(
   isNew: true,
   isSimulation: true,
@@ -535,6 +537,9 @@ class PlatformSpring1DSimulation extends PhysicsSimulation {
     _latestParams = Map<String, double>.from(params);
   }
 
+  @override
+  void startPlayback() => start();
+
   void start() {
     if (running.value) return;
     _loop.start();
@@ -550,7 +555,16 @@ class PlatformSpring1DSimulation extends PhysicsSimulation {
   @override
   Widget? buildFormulaOverlay(Map<String, double> parameters) {
     _rememberParams(parameters);
-    return const FormulaDisplay(kPlatformSpringFormula);
+    if (!_params.willSeparate) {
+      return const FormulaDisplay(kPlatformSpringFormula);
+    }
+    return const Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        FormulaDisplay(kPlatformSpringFormula),
+        FormulaDisplay(kPlatformSpringSeparatedFormula),
+      ],
+    );
   }
 
   @override
@@ -670,7 +684,7 @@ class PlatformSpring1DSimulation extends PhysicsSimulation {
         child: Text(
           'δ = ${p.delta.toStringAsFixed(3)} m    '
           '2δ = ${(2 * p.delta).toStringAsFixed(3)} m    '
-          'T = ${p.period.toStringAsFixed(2)} s',
+          '接触の T = ${p.period.toStringAsFixed(2)} s',
           style: const TextStyle(
             fontSize: 12,
             fontFamily: 'Courier',
@@ -786,12 +800,15 @@ class _PlatformSpringPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     canvas.drawRect(Offset.zero & size, Paint()..color = _bg);
     final contactLabel = sample.contact ? '接触' : '離れている';
+    final periodLabel = sample.contact
+        ? 'T = ${params.period.toStringAsFixed(2)} s'
+        : '台の T = ${(2 * math.pi / params.omegaPlatform).toStringAsFixed(2)} s';
     final hud = 't = ${sample.t.toStringAsFixed(2)} s\n'
         'y = ${sample.yPlatform.toStringAsFixed(3)} m\n'
         'v = ${springVelocityReadout(sample.vPlatform, downwardPositive: true)} m/s\n'
         'N = ${sample.normal.toStringAsFixed(2)} N\n'
         '$contactLabel\n'
-        'T = ${params.period.toStringAsFixed(2)} s';
+        '$periodLabel';
     final ledger = platformSpringEnergy(params, sample);
     final ceiling = dynamicsReadoutCard(
       hud,
@@ -864,10 +881,9 @@ class _PlatformSpringPainter extends CustomPainter {
     );
     _label(canvas, 'M', cx - 8, platformCenterY - 6, Colors.white);
 
-    // おもり（接触中は台の上、離れているときは yMass）
-    final massY = sample.contact
-        ? platformSurfaceY - rMass
-        : sy(sample.yMass) - rMass;
+    // おもり。y は台と同じ点の座標なので、見た目は常に台の上面に半径を足す。
+    // 接触フラグで描き分けると、離れる瞬間に台の厚み分だけ下へ飛ぶ。
+    final massY = sy(sample.yMass) - platformH * 0.5 - rMass;
     final massCenter = Offset(cx, massY);
     canvas.drawCircle(
       massCenter.translate(1.5, 2),
@@ -981,62 +997,7 @@ class _PlatformSpringPainter extends CustomPainter {
     );
     _label(canvas, 'v', cx - platformHalf - 38, platformCenterY - 18, _velocity);
 
-    _drawForceLegend(canvas, size);
     paintDynamicsReadout(canvas, hud, ledger, textColumnWidth: 200);
-  }
-
-  void _drawForceLegend(Canvas canvas, Size size) {
-    final items = <(Color, String)>[
-      (_gravity, '重力（重心）'),
-      (_normal, 'N 垂直抗力（接点）'),
-      (_springForce, 'ky ばね力（ばね接点）'),
-      (_velocity, 'v 速度'),
-    ];
-    const rightPad = 10.0;
-    const topPad = 10.0;
-    const lineH = 18.0;
-    const dotGap = 10.0;
-    final painters = <TextPainter>[];
-    var maxW = 0.0;
-    for (final item in items) {
-      final tp = TextPainter(
-        text: TextSpan(
-          text: item.$2,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-            color: item.$1,
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-      )..layout();
-      painters.add(tp);
-      if (tp.width > maxW) maxW = tp.width;
-    }
-    final cardW = 8 + 9 + dotGap + maxW + 12;
-    final cardH = 8 + items.length * lineH + 4;
-    final card = Rect.fromLTWH(
-      size.width - rightPad - cardW,
-      topPad,
-      cardW,
-      cardH,
-    );
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(card, const Radius.circular(8)),
-      Paint()..color = Colors.white.withValues(alpha: 0.92),
-    );
-    for (var i = 0; i < items.length; i++) {
-      final color = items[i].$1;
-      final painter = painters[i];
-      final y = card.top + 8 + i * lineH;
-      final textLeft = card.right - 12 - painter.width;
-      canvas.drawCircle(
-        Offset(textLeft - dotGap, y + painter.height / 2),
-        4.5,
-        Paint()..color = color,
-      );
-      painter.paint(canvas, Offset(textLeft, y));
-    }
   }
 
   @override

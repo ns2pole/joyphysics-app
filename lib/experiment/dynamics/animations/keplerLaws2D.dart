@@ -20,13 +20,17 @@ final keplerLaws2D = Video(
   latex: r"""
   <div class="common-box">ポイント</div>
   <p>中心星が十分重いとき、原点に固定した質量のまわりの束縛軌道は楕円になる。近点から出発し、速度が半径に垂直なら、半長軸 $a$ と離心率 $e$ は近点の $r,v$ と一対一である。</p>
+  <p>楕円（$e&lt;1$）では近日点距離と近日点速度は</p>
   <p>$$r_{\min}=a(1-e),\quad v_{\mathrm{peri}}=\sqrt{\frac{GM(1+e)}{a(1-e)}}$$</p>
   <p>軌道の形（第1法則）</p>
   <p>$$r=\frac{a(1-e^{2})}{1+e\cos\theta}$$</p>
-  <p>$e&lt;1$ の楕円がケプラーの第1法則です。$e=1$ は放物線、$e&gt;1$ は双曲線で、閉じた軌道にはなりません。</p>
-  <p>時間は離心近点離角 $u$ への変数変換 $\displaystyle r=a(1-e\cos u)$ で閉じ、ケプラー方程式になる。</p>
+  <p>閉じた軌道はこれです。時間は離心近点離角 $u$ への変数変換 $\displaystyle r=a(1-e\cos u)$ で閉じ、ケプラー方程式になります。</p>
   <p>$$nt=u-e\sin u,\quad n=\sqrt{\frac{GM}{a^{3}}}$$</p>
   <p>位置は $\displaystyle x=a(\cos u-e),\; y=a\sqrt{1-e^{2}}\sin u$。</p>
+  <p>$e=1$ は放物線です。スライダーの $a$ は近日点距離で、</p>
+  <p>$$r_{\min}=a,\quad r=\frac{2a}{1+\cos\theta},\quad v_{\mathrm{peri}}=\sqrt{\frac{2GM}{a}}$$</p>
+  <p>$e&gt;1$ は双曲線です。周期はなく、</p>
+  <p>$$r_{\min}=a(e-1),\quad r=\frac{a(e^{2}-1)}{1+e\cos\theta}$$</p>
   <p>$$T=2\pi\sqrt{\frac{a^{3}}{GM}}$$</p>
   <p>より第3法則</p>
   <p>$$\frac{T^{2}}{a^{3}}=\frac{4\pi^{2}}{GM}$$</p>
@@ -211,6 +215,9 @@ class KeplerLaws2DSimulation extends PhysicsSimulation {
     _latestParams = Map<String, double>.from(params);
   }
 
+  @override
+  void startPlayback() => start();
+
   void start() {
     if (running.value) return;
     _loop.start();
@@ -256,8 +263,10 @@ class KeplerLaws2DSimulation extends PhysicsSimulation {
     if (!keplerIsEllipse(p.e)) {
       return Column(
         children: [
-          const FormulaDisplay(
-            r'\displaystyle r=\frac{a|1-e^{2}|}{1+e\cos\theta}',
+          FormulaDisplay(
+            keplerIsParabola(p.e)
+                ? r'\displaystyle r=\frac{2a}{1+\cos\theta}'
+                : r'\displaystyle r=\frac{a(e^{2}-1)}{1+e\cos\theta}',
           ),
           const SizedBox(height: 4),
           Text(

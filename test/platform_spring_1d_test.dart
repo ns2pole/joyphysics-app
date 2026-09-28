@@ -30,6 +30,26 @@ void main() {
     e: 0.80,
   );
 
+  test('g=0 では圧縮したおもりが自然長で離れる', () {
+    const weightless = PlatformSpringParams(
+      bigM: 0.50,
+      m: 0.20,
+      k: 40,
+      g: 0,
+      y0: 0.20,
+    );
+    expect(weightless.delta, closeTo(0, 1e-12));
+    expect(weightless.willSeparate, isTrue);
+    final leave = 0.5 * math.pi / weightless.omega;
+    final atLeave = platformSpringAt(weightless, leave);
+    expect(atLeave.contact, isFalse);
+    expect(atLeave.yMass, closeTo(0, 1e-6));
+    expect(atLeave.normal, closeTo(0, 1e-9));
+    final later = platformSpringAt(weightless, leave + 0.05);
+    expect(later.contact, isFalse);
+    expect(later.yMass, lessThan(later.yPlatform));
+  });
+
   test('つりあいと周期は M+m と k で決まる', () {
     expect(stuck.delta, closeTo(0.70 * 9.8 / 40, 1e-12));
     expect(stuck.period, closeTo(2 * math.pi * math.sqrt(0.70 / 40), 1e-12));

@@ -103,8 +103,8 @@ String floatCaption(FloatRegime regime, FloatParams params) {
   final h = params.draft;
   switch (regime) {
     case FloatRegime.harmonic:
-      return '一部だけ水中。復元力は変位に比例し、単振動です。\n'
-          '周期は喫水 h = ${h.toStringAsFixed(3)} m だけで決まり、液体の密度は式から消えます。\n'
+      return '一部だけ水中。つりあいの喫水 h = ρ₀H/ρ = ${h.toStringAsFixed(3)} m の上下に単振動します。\n'
+          '周期は液体の密度 ρ を含み、ρ が大きいほど短くなります。\n'
           '水面から出ず、全部も沈みません。';
     case FloatRegime.rises:
       return '全部沈んだ状態から浮かび上がります。\n'
@@ -306,10 +306,13 @@ final floatingOscillation1D = Video(
   costRating: '★',
   latex: r"""
   <div class="common-box">ポイント</div>
-  <p>水平断面が一定の物体が液体に浮くとき、つりあいの喫水を $h$ とします。下向きを正、つりあいからの変位を $x$ とすると、水面から出ず全部も沈まないあいだは</p>
-  <p>$$\displaystyle x''=-\frac{g}{h}x,\quad T=2\pi\sqrt{\frac{h}{g}}$$</p>
-  <p>重さと浮力のつりあい $m=\rho S h$ から、液体の密度 $\rho$ と断面積 $S$ は周期の式から消えます。物体を固定して $\rho$ を変えると $h$ が変わり、周期は $\sqrt{h}$ に従います。</p>
-  <p>全部沈むと浮力は一定、空中では重力だけです。密度比と初期の沈め深さで、単振動・浮上・飛び出し・沈降に分かれます。</p>
+  <p>水平断面が一定の物体を考えます。物体の密度を $\rho_0$、高さを $H$、断面積を $S$、液体の密度を $\rho$ とします。質量は $m=\rho_0 S H$ です。</p>
+  <p>下向きを正、水面を $0$、物体の底の深さを $y$ とします。一部だけ沈んでいるとき、沈んでいる長さは $y$ なので浮力は $\rho S y g$ です。</p>
+  <p>$$my''=mg-\rho Syg$$</p>
+  <p>重さと浮力がつりあう底の深さ（喫水）は $\displaystyle h=\frac{\rho_0}{\rho}H$ です。ここからの変位を $x=y-h$ とすると、水面から出ず全部も沈まないあいだは</p>
+  <p>$$x''=-\frac{\rho g}{\rho_0 H}x,\quad T=2\pi\sqrt{\frac{\rho_0 H}{\rho g}}$$</p>
+  <p>断面積 $S$ は消えます。液体の密度 $\rho$ は周期に残ります。$\rho$ を大きくすると $h$ は浅くなり、同じ周期は $\displaystyle T=2\pi\sqrt{\frac{h}{g}}$ とも書けます。</p>
+  <p>全部沈むと浮力は $\rho SHg$ で一定になり、加速度は $\displaystyle a=g\left(1-\frac{\rho}{\rho_0}\right)$ です。空中では重力だけです。</p>
 """,
   experimentWidgets: [
     PhysicsSimulationView(
@@ -323,8 +326,14 @@ class FloatingOscillation1DSimulation extends PhysicsSimulation {
   FloatingOscillation1DSimulation()
       : super(
           title: '浮力による単振動',
-          formula: const FormulaDisplay(
-            r'\displaystyle T=2\pi\sqrt{\frac{h}{g}}',
+          formula: const Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FormulaDisplay(r'\displaystyle h=\frac{\rho_{0}}{\rho}H'),
+              FormulaDisplay(
+                r'\displaystyle T=2\pi\sqrt{\frac{\rho_{0}H}{\rho g}}',
+              ),
+            ],
           ),
           aspectRatio: 4 / 5,
           enableTime: false,
@@ -363,6 +372,9 @@ class FloatingOscillation1DSimulation extends PhysicsSimulation {
     _latestParams = Map<String, double>.from(params);
   }
 
+  @override
+  void startPlayback() => start();
+
   void start() {
     if (running.value) return;
     _loop.start();
@@ -378,11 +390,20 @@ class FloatingOscillation1DSimulation extends PhysicsSimulation {
   @override
   Widget? buildFormulaOverlay(Map<String, double> parameters) {
     _rememberParams(parameters);
-    final regime = floatRegime(_params);
-    final tex = regime == FloatRegime.harmonic || _params.sigma < 1
-        ? r'\displaystyle T=2\pi\sqrt{\frac{h}{g}}'
-        : r'\displaystyle a=g\left(1-\frac{\rho}{\rho_0}\right)';
-    return FormulaDisplay(tex);
+    if (floatRegime(_params) == FloatRegime.harmonic || _params.sigma < 1) {
+      return const Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FormulaDisplay(r'\displaystyle h=\frac{\rho_{0}}{\rho}H'),
+          FormulaDisplay(
+            r'\displaystyle T=2\pi\sqrt{\frac{\rho_{0}H}{\rho g}}',
+          ),
+        ],
+      );
+    }
+    return const FormulaDisplay(
+      r'\displaystyle a=g\left(1-\frac{\rho}{\rho_{0}}\right)',
+    );
   }
 
   @override
@@ -433,7 +454,7 @@ class FloatingOscillation1DSimulation extends PhysicsSimulation {
         : '単振動の範囲の外';
     return [
       const Text(
-        '物体の密度 500 kg/m³、高さ 0.20 m。静かに離す。',
+        '物体の密度 ρ₀ = 500 kg/m³、高さ H = 0.20 m。静かに離す。',
         style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
       ),
       _FloatSlider(
@@ -570,11 +591,13 @@ class _FloatPainter extends CustomPainter {
         ..strokeWidth = 3,
     );
 
-    final eq = params.draft.clamp(0.0, kFloatObjectH);
-    final guide = Paint()
-      ..color = const Color(0xFF607D8B)
-      ..strokeWidth = 1.5;
-    _drawDashedLine(canvas, py(eq), size.width, guide);
+    final hasEquilibrium = params.draft <= kFloatObjectH + 1e-9;
+    if (hasEquilibrium) {
+      final guide = Paint()
+        ..color = const Color(0xFF607D8B)
+        ..strokeWidth = 1.5;
+      _drawDashedLine(canvas, py(params.draft), size.width, guide);
+    }
 
     final bodyW = size.width * 0.34;
     final left = (size.width - bodyW) / 2;
@@ -604,6 +627,7 @@ class _FloatPainter extends CustomPainter {
       textDirection: TextDirection.ltr,
     )..layout();
     label.paint(canvas, Offset(8, surface - 16));
+    _paintEquilibriumNote(canvas, size, params, hasEquilibrium);
   }
 
   @override
@@ -612,6 +636,46 @@ class _FloatPainter extends CustomPainter {
         oldDelegate.params.rho != params.rho ||
         oldDelegate.params.y0 != params.y0;
   }
+}
+
+void _paintEquilibriumNote(
+  Canvas canvas,
+  Size size,
+  FloatParams params,
+  bool hasEquilibrium,
+) {
+  final text = hasEquilibrium
+      ? '点線：つりあい\n底の深さ h = ${params.draft.toStringAsFixed(3)} m'
+      : 'つりあいは水中にない\n物体のほうが重い';
+  final tp = TextPainter(
+    text: TextSpan(
+      text: text,
+      style: const TextStyle(
+        color: Color(0xFF37474F),
+        fontSize: 11,
+        height: 1.35,
+        fontWeight: FontWeight.w700,
+      ),
+    ),
+    textAlign: TextAlign.right,
+    textDirection: TextDirection.ltr,
+  )..layout(maxWidth: size.width * 0.62);
+  const margin = 8.0;
+  const pad = 8.0;
+  final card = RRect.fromRectAndRadius(
+    Rect.fromLTWH(
+      size.width - tp.width - pad * 2 - margin,
+      margin,
+      tp.width + pad * 2,
+      tp.height + pad * 2,
+    ),
+    const Radius.circular(8),
+  );
+  canvas.drawRRect(
+    card,
+    Paint()..color = Colors.white.withValues(alpha: 0.92),
+  );
+  tp.paint(canvas, Offset(card.left + pad, card.top + pad));
 }
 
 void _drawDashedLine(Canvas canvas, double y, double width, Paint paint) {
