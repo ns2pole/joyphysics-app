@@ -111,6 +111,27 @@ class PlayPauseResetButtons extends StatelessWidget {
   }
 }
 
+/// 転倒・画面外で止まったあとだけ出す。自動では戻さない。
+class RestartFromStartButton extends StatelessWidget {
+  const RestartFromStartButton({super.key, required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return FilledButton.icon(
+      onPressed: onPressed,
+      style: FilledButton.styleFrom(
+        backgroundColor: const Color(0xFF37474F),
+        foregroundColor: Colors.white,
+        visualDensity: VisualDensity.compact,
+      ),
+      icon: const Icon(Icons.replay, size: 18),
+      label: const Text('最初から'),
+    );
+  }
+}
+
 /// アニメ終了後だけ出すリセット。見た目は [PlayPauseResetButtons] に合わせる。
 class ResetOnlyButton extends StatelessWidget {
   const ResetOnlyButton({

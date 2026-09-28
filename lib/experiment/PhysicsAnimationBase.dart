@@ -116,6 +116,12 @@ abstract class PhysicsSimulation {
   /// キャンバス右下の拡大縮小ボタンを表示するか
   bool get showZoomButtons => false;
 
+  /// 記事を開いたらデフォルト値で再生する。剛体の静力学は false。
+  bool get playOnOpen => true;
+
+  /// 再生ボタンと同じ開始。自前クロックのシミュレーションが実装する。
+  void startPlayback() {}
+
   /// 「真上から波面を見る」トグルを出すか（2D曲面波動向け）
   bool get enableWavefrontTopView => false;
 
@@ -420,6 +426,12 @@ class _PhysicsSimulationViewState extends State<PhysicsSimulationView> {
     super.initState();
     _parameters = Map.from(widget.simulation.initialParameters);
     _activeIds = Set.from(widget.simulation.initialActiveIds);
+    if (widget.simulation.playOnOpen) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        widget.simulation.startPlayback();
+      });
+    }
   }
 
   void _updateParam(String key, double value) {

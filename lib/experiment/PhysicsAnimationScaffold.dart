@@ -29,7 +29,7 @@ class PhysicsAnimationScaffold extends StatefulWidget with HasHeight {
   final bool compactButtonSpacing;
   final double animationOffsetY;
   final bool showZoomButtons;
-  /// 真上から波面を見るモード。ON で tilt=π/2、OFF で直前の視点に戻す。
+  /// 真上から波面を見るモード。ON で tilt=π/2（横ドラッグで方位角は回せる）、OFF で直前の視点に戻す。
   final bool wavefrontTopView;
 
   const PhysicsAnimationScaffold({
@@ -147,12 +147,15 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
         _scale =
             (_baseScale * details.scale).clamp(_minScale, _maxScale);
 
-        // 波面真上ビュー中は視点をロック（OFF で保存視点へ戻すため）
-        if (widget.is3D && !_wavefrontTopViewActive) {
+        // 真上ビューでも横ドラッグで方位角を回す（x-y 平面回転）。傾きは π/2 固定。
+        // 入る前の方位・傾きは _saved* に残し、OFF で戻す。
+        if (widget.is3D) {
           _azimuth =
               (_azimuth + details.focalPointDelta.dx * 0.01) % (2 * math.pi);
-          _tilt = (_tilt + details.focalPointDelta.dy * 0.005)
-              .clamp(0.0, _tiltMax);
+          if (!_wavefrontTopViewActive) {
+            _tilt = (_tilt + details.focalPointDelta.dy * 0.005)
+                .clamp(0.0, _tiltMax);
+          }
         }
       });
     }
