@@ -21,11 +21,11 @@ final dispersionHalfPlane2D = createWaveVideo(
   <div class="common-box">ポイント</div>
   <p>色によって屈折率が違うので、同じ入射角でも屈折角が少し違います。</p>
   <p>スネルの法則: $\sin\theta_1=n\sin\theta_2$（空気側の屈折率は $1$）</p>
-  <p>水では、赤 $n=1.331$、青 $n=1.337$ です。入射角 $80^\circ$ のとき、屈折角は赤 $47.72^\circ$、青 $47.44^\circ$ で、差は $0.28^\circ$ です。</p>
+  <p>水では、赤 $n=1.331$、青 $n=1.337$ です。入射角 $80^\circ$ のとき、屈折角は赤 $47.72^\circ$、青 $47.44^\circ$ です。青の方が法線側へ $0.28^\circ$ 大きく折れます。</p>
   <p>黄色の領域は厚さが十分な水で、境界面の右側はずっと水です。</p>
   <div class="common-box">注意</div>
   <p>境界面では透過と同時に反射も起きます。このシミュレーションでは、屈折した波面を見やすくするため、反射波は描いていません。</p>
-  <p>角の差は $1^\circ$ より小さいので、波面の折れ方は赤と青でほとんど重なって見えます。波面の間隔（波長）の違いの方がはっきりします。</p>
+  <p>角の差は $1^\circ$ より小さいので、波面の折れ方は赤と青でほとんど重なって見えます。よく見ると、青の方がわずかに大きく屈折しています。波面の間隔（波長）の違いの方がはっきりします。</p>
   <p>「光線」をオンにすると、入射光線と、赤・青の屈折光線を重ねます。</p>
   """,
   simulation: DispersionHalfPlaneSimulation(),
@@ -36,14 +36,44 @@ class DispersionHalfPlaneSimulation extends WaveSimulation {
       : super(
           title: "2次元直線波の分散",
           is3D: true,
-          formula: const Column(
-            children: [
-              FormulaDisplay(r'\sin\theta_1=n\sin\theta_2'),
-              SizedBox(height: 4),
-              FormulaDisplay(r'n_{\mathrm{red}}=1.331,\ n_{\mathrm{blue}}=1.337'),
-            ],
-          ),
         );
+
+  /// 入射角 $80^\circ$ の屈折角。画面上の具体値はここと同じ定数から出す。
+  static ({double redDeg, double blueDeg, double gapDeg}) exampleAt80() {
+    const theta = 80 * math.pi / 180;
+    final redDeg = snellTheta2(theta, kWaterNRed) * 180 / math.pi;
+    final blueDeg = snellTheta2(theta, kWaterNBlue) * 180 / math.pi;
+    return (redDeg: redDeg, blueDeg: blueDeg, gapDeg: redDeg - blueDeg);
+  }
+
+  @override
+  Widget? buildFormulaOverlay(Map<String, double> parameters) {
+    final ex = exampleAt80();
+    return Column(
+      children: [
+        const FormulaDisplay(r'\sin\theta_1=n\sin\theta_2'),
+        const SizedBox(height: 4),
+        const FormulaDisplay(r'n_{\mathrm{red}}=1.331,\ n_{\mathrm{blue}}=1.337'),
+        const SizedBox(height: 6),
+        Text(
+          '80°入射: 赤 ${ex.redDeg.toStringAsFixed(2)}°、'
+          '青 ${ex.blueDeg.toStringAsFixed(2)}°'
+          '（青の方が ${ex.gapDeg.toStringAsFixed(2)}° 大きく折れる）',
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontSize: 14,
+            height: 1.35,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF37474F),
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  String? get situation =>
+      'よく見ると、青の方がわずかに大きく屈折しています。';
 
   static double get lambdaRed =>
       kDispersionLambdaBlue * kWaterLambdaRedNm / kWaterLambdaBlueNm;
@@ -96,7 +126,8 @@ class DispersionHalfPlaneSimulation extends WaveSimulation {
     final gap = redDeg - blueDeg;
     return [
       Text(
-        '赤 ${redDeg.toStringAsFixed(2)}°   青 ${blueDeg.toStringAsFixed(2)}°   差 ${gap.toStringAsFixed(2)}°',
+        'いまの入射角: 赤 ${redDeg.toStringAsFixed(2)}°   青 ${blueDeg.toStringAsFixed(2)}°   差 ${gap.toStringAsFixed(2)}°',
+        textAlign: TextAlign.center,
         style: const TextStyle(fontSize: 12),
       ),
       ThetaSlider(
@@ -116,6 +147,8 @@ class DispersionHalfPlaneSimulation extends WaveSimulation {
       context, time, azimuth, tilt, scale, params, activeIds) {
     final periodBlue = params['periodBlue']!;
     final theta = params['theta']!;
+    // 縮小（scale<1）した分だけ遠方まで描く。拡大はそのまま ±5。
+    final viewRange = 5.0 / math.min(scale, 1.0);
     final field = HalfPlaneDispersionWaveField(
       theta: theta,
       lambdaRed: lambdaRed,
@@ -139,9 +172,10 @@ class DispersionHalfPlaneSimulation extends WaveSimulation {
             activeComponentIds: activeIds,
             scale: scale,
             wavefrontStrokeScale: 0.5,
-            mediumSlab: const MediumSlabOverlay(
+            worldHalfRange: viewRange,
+            mediumSlab: MediumSlabOverlay(
               xStart: 0.0,
-              xEnd: 5.0,
+              xEnd: viewRange,
               color: Colors.yellow,
               opacity: 0.45,
             ),
@@ -157,6 +191,7 @@ class DispersionHalfPlaneSimulation extends WaveSimulation {
               theta: theta,
               thetaRed: snellTheta2(theta, kWaterNRed),
               thetaBlue: snellTheta2(theta, kWaterNBlue),
+              range: viewRange,
             ),
           ),
       ],
@@ -193,6 +228,7 @@ class DispersionRayPainter extends CustomPainter {
     required this.theta,
     required this.thetaRed,
     required this.thetaBlue,
+    this.range = 5.0,
   });
 
   final double azimuth;
@@ -201,6 +237,7 @@ class DispersionRayPainter extends CustomPainter {
   final double theta;
   final double thetaRed;
   final double thetaBlue;
+  final double range;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -211,9 +248,9 @@ class DispersionRayPainter extends CustomPainter {
       azimuth: azimuth,
       tilt: tilt,
     );
-    final incident = dispersionRayEnd(angle: theta, intoMedium: false);
-    final red = dispersionRayEnd(angle: thetaRed, intoMedium: true);
-    final blue = dispersionRayEnd(angle: thetaBlue, intoMedium: true);
+    final incident = dispersionRayEnd(angle: theta, intoMedium: false, range: range);
+    final red = dispersionRayEnd(angle: thetaRed, intoMedium: true, range: range);
+    final blue = dispersionRayEnd(angle: thetaBlue, intoMedium: true, range: range);
 
     _drawRay(canvas, transformer, incident.x, incident.y, 0, 0, Colors.black87);
     _drawRay(canvas, transformer, 0, 0, blue.x, blue.y, Colors.blue.shade800);
@@ -269,6 +306,7 @@ class DispersionRayPainter extends CustomPainter {
         oldDelegate.scale != scale ||
         oldDelegate.theta != theta ||
         oldDelegate.thetaRed != thetaRed ||
-        oldDelegate.thetaBlue != thetaBlue;
+        oldDelegate.thetaBlue != thetaBlue ||
+        oldDelegate.range != range;
   }
 }

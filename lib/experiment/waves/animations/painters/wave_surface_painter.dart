@@ -276,6 +276,7 @@ class WaveSurfacePainter extends CustomPainter {
     this.showAntinodalLines = false,
     this.antinodalMetric,
     this.wavefrontStrokeScale = 1.0,
+    this.worldHalfRange = 5.0,
   });
 
   final double time;
@@ -312,6 +313,8 @@ class WaveSurfacePainter extends CustomPainter {
   final double Function(double x, double y)? antinodalMetric;
   /// 真上視点の波面（山・谷）の線幅倍率。1 が既定。
   final double wavefrontStrokeScale;
+  /// 描画する xy の半幅。既定は 5（領域 [-5, 5]）。
+  final double worldHalfRange;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -357,9 +360,9 @@ class WaveSurfacePainter extends CustomPainter {
       return field.getComponents(x, y, time, activeComponentIds!);
     }
 
-    const range = 5.0;
+    final range = worldHalfRange;
     const div = 140;
-    const step = (range * 2) / div;
+    final step = (range * 2) / div;
 
     // Pre-calculate grid bases for efficiency
     final numPoints = div + 1;
@@ -913,7 +916,8 @@ class WaveSurfacePainter extends CustomPainter {
         return activeComponentIds?.contains(layer.toggleId) ?? false;
       }).toList();
 
-      const contourDiv = 48;
+      // 領域を広げても波面の折れが粗くならないよう、セル幅は ±5 のときと同じにする。
+      final contourDiv = math.max(48, (48 * range / 5.0).round());
 
       for (final layer in selected) {
         final segs = _ZeroContourCache.marchOnce(
@@ -1212,6 +1216,7 @@ class WaveSurfacePainter extends CustomPainter {
         oldDelegate.showAntinodalLines != showAntinodalLines ||
         oldDelegate.radialCrossSections.length != radialCrossSections.length ||
         oldDelegate.wavefrontStrokeScale != wavefrontStrokeScale ||
+        oldDelegate.worldHalfRange != worldHalfRange ||
         !_sameCrossSections(oldDelegate.radialCrossSections, radialCrossSections);
   }
 
