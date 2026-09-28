@@ -17,7 +17,7 @@ const double kRingDefaultOmega = 4.20;
 const double kRingMinM = 0.50;
 const double kRingMaxM = 4.00;
 const double kRingDefaultM = 1.00;
-const double kRingMinTheta0 = 0.05;
+const double kRingMinTheta0 = 0.0;
 const double kRingMaxTheta0 = math.pi - 0.05;
 const double kRingDefaultTheta0 = 0.35;
 const double kRingMinThetaDot0 = -4.00;
@@ -54,6 +54,12 @@ class RingBeadParams {
     if (c == null) return null;
     return math.acos(c);
   }
+
+  /// 安定なつり合い角。$\omega^{2}\le g/R$ なら底 $\theta=0$、それ以外は斜めつり合い。
+  double get stableEquilibriumTheta => equilibriumTheta ?? 0.0;
+
+  /// $\omega^{2}>g/R$ なら斜めつり合いが安定。
+  bool get hasObliqueEquilibrium => equilibriumTheta != null;
 
   factory RingBeadParams.fromMap(Map<String, double> params) {
     return RingBeadParams(
@@ -297,7 +303,16 @@ RingBeadSample ringBeadSampleAt(RingBeadParams params, RingBeadPhase phase) {
   );
 }
 
-String ringBeadCaption(RingBeadParams params) {
+String ringBeadCaption(RingBeadParams params, {bool equilibriumMode = false}) {
+  if (equilibriumMode) {
+    final th = params.stableEquilibriumTheta;
+    if (!params.hasObliqueEquilibrium) {
+      return '釣り合いモード：底 θ=0 に固定。円環だけ回る。\n'
+          'ω を上げると斜めつり合いへ移る。';
+    }
+    return '釣り合いモード：θ=${th.toStringAsFixed(2)} rad に固定。\n'
+        '円環と一緒に回り、回転系では止まって見える。';
+  }
   final eq = params.equilibriumTheta;
   if (eq == null) {
     return 'ω が小さいと底が安定。ビーズは底のまわりで揺れる。';
@@ -341,23 +356,41 @@ class BeadOnRotatingRing3DSimulation extends PhysicsSimulation {
           aspectRatio: 0.72,
           enableTime: false,
           showTimeOverlay: false,
+          is3D: true,
         );
 
+  @override
+  bool get showZoomButtons => true;
+
   final ValueNotifier<double> simTime = ValueNotifier(0.0);
-  RingBeadPhase _phase = const RingBeadPhase(t: 0, theta: kRingDefaultTheta0, thetaDot: 0);
+  RingBeadPhase _phase =
+      const RingBeadPhase(t: 0, theta: kRingDefaultTheta0, thetaDot: 0);
   RingBeadParams? _frozen;
   Map<String, double> _latestParams = {};
+  void Function(String key, double value)? _updateParam;
+  bool _equilibriumMode = false;
+  final ValueNotifier<int> _uiTick = ValueNotifier(0);
 
   late final PlaybackLoop _loop = PlaybackLoop(onTick: (dt) {
-    final p = _frozen ?? _params;
-    final steps = math.max(1, (dt * kRingPlayback / kRingDt).ceil());
-    final step = dt * kRingPlayback / steps;
-    var phase = _phase;
-    for (var i = 0; i < steps; i++) {
-      phase = ringBeadStep(phase, p, step);
+    final p = _equilibriumMode ? _params : (_frozen ?? _params);
+    final advanced = dt * kRingPlayback;
+    if (_equilibriumMode) {
+      final th = p.stableEquilibriumTheta;
+      _phase = RingBeadPhase(
+        t: _phase.t + advanced,
+        theta: th,
+        thetaDot: 0,
+      );
+    } else {
+      final steps = math.max(1, (advanced / kRingDt).ceil());
+      final step = advanced / steps;
+      var phase = _phase;
+      for (var i = 0; i < steps; i++) {
+        phase = ringBeadStep(phase, p, step);
+      }
+      _phase = phase;
     }
-    _phase = phase;
-    simTime.value = phase.t;
+    simTime.value = _phase.t;
   });
 
   bool _didAutoStart = false;
@@ -390,18 +423,65 @@ class BeadOnRotatingRing3DSimulation extends PhysicsSimulation {
 
   void _syncPhaseToIcs(RingBeadParams p) {
     if (running.value) return;
-    _phase = RingBeadPhase(t: 0, theta: p.theta0, thetaDot: p.thetaDot0);
+    if (_equilibriumMode) {
+      final th = p.stableEquilibriumTheta;
+      _phase = RingBeadPhase(t: 0, theta: th, thetaDot: 0);
+    } else {
+      _phase = RingBeadPhase(t: 0, theta: p.theta0, thetaDot: p.thetaDot0);
+    }
     simTime.value = 0;
+  }
+
+  void _applyEquilibriumIcs() {
+    final th = _params.stableEquilibriumTheta;
+    _latestParams = Map<String, double>.from(
+      _latestParams.isEmpty ? initialParameters : _latestParams,
+    )
+      ..['th0'] = th
+      ..['thd0'] = 0.0;
+    _updateParam?.call('th0', th);
+    _updateParam?.call('thd0', 0.0);
+    _frozen = null;
+    _phase = RingBeadPhase(t: _phase.t, theta: th, thetaDot: 0);
+    simTime.value = _phase.t;
+  }
+
+  void setEquilibriumMode(bool on) {
+    if (_equilibriumMode == on) return;
+    _equilibriumMode = on;
+    if (on) {
+      _applyEquilibriumIcs();
+      if (!running.value) start();
+    } else {
+      // いまの釣り合い位置を運動モードの初期条件にする。
+      final th = _phase.theta;
+      _latestParams = Map<String, double>.from(
+        _latestParams.isEmpty ? initialParameters : _latestParams,
+      )
+        ..['th0'] = th
+        ..['thd0'] = 0.0;
+      _updateParam?.call('th0', th);
+      _updateParam?.call('thd0', 0.0);
+      _frozen = _params;
+      _phase = RingBeadPhase(t: _phase.t, theta: th, thetaDot: 0);
+    }
+    _uiTick.value++;
   }
 
   void start() {
     if (running.value) return;
-    _frozen = _params;
-    _phase = RingBeadPhase(
-      t: 0,
-      theta: _frozen!.theta0,
-      thetaDot: _frozen!.thetaDot0,
-    );
+    if (_equilibriumMode) {
+      _frozen = null;
+      final th = _params.stableEquilibriumTheta;
+      _phase = RingBeadPhase(t: 0, theta: th, thetaDot: 0);
+    } else {
+      _frozen = _params;
+      _phase = RingBeadPhase(
+        t: 0,
+        theta: _frozen!.theta0,
+        thetaDot: _frozen!.thetaDot0,
+      );
+    }
     simTime.value = 0;
     _loop.start();
   }
@@ -411,8 +491,17 @@ class BeadOnRotatingRing3DSimulation extends PhysicsSimulation {
   void resetMotion() {
     _loop.reset();
     _frozen = null;
-    final p = _params;
-    _phase = RingBeadPhase(t: 0, theta: p.theta0, thetaDot: p.thetaDot0);
+    if (_equilibriumMode) {
+      _applyEquilibriumIcs();
+      _phase = RingBeadPhase(
+        t: 0,
+        theta: _params.stableEquilibriumTheta,
+        thetaDot: 0,
+      );
+    } else {
+      final p = _params;
+      _phase = RingBeadPhase(t: 0, theta: p.theta0, thetaDot: p.thetaDot0);
+    }
     simTime.value = 0;
   }
 
@@ -434,19 +523,46 @@ class BeadOnRotatingRing3DSimulation extends PhysicsSimulation {
       };
 
   @override
+  Widget? buildFormulaOverlay(Map<String, double> parameters) {
+    _rememberParams(parameters);
+    if (_equilibriumMode) {
+      final p = _params;
+      return SizedBox(
+        height: 52,
+        child: Center(
+          child: FormulaDisplay(
+            p.hasObliqueEquilibrium
+                ? r'\displaystyle \cos\theta=\frac{g}{\omega^{2}R}\ \text{（釣り合い）}'
+                : r'\displaystyle \theta=0\ \text{（底が安定）}',
+          ),
+        ),
+      );
+    }
+    return const SizedBox(
+      height: 52,
+      child: Center(
+        child: FormulaDisplay(
+          r'\displaystyle \ddot{\theta}=\sin\theta\Bigl(\omega^{2}\cos\theta-\frac{g}{R}\Bigr)',
+        ),
+      ),
+    );
+  }
+
+  @override
   Widget? buildExtraControls(
     BuildContext context,
     Set<String> activeIds,
     void Function(Set<String> ids) updateActiveIds,
   ) {
-    return ValueListenableBuilder<bool>(
-      valueListenable: running,
-      builder: (context, isRunning, _) {
+    return AnimatedBuilder(
+      animation: Listenable.merge([running, _uiTick]),
+      builder: (context, _) {
+        final isRunning = running.value;
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              ringBeadCaption(_params),
+              ringBeadCaption(_params, equilibriumMode: _equilibriumMode),
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 12,
@@ -455,10 +571,52 @@ class BeadOnRotatingRing3DSimulation extends PhysicsSimulation {
               ),
             ),
             const SizedBox(height: 8),
-            PlayPauseResetButtons(
-              playing: isRunning,
-              onPlayPause: isRunning ? pause : start,
-              onReset: resetMotion,
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                FilterChip(
+                  label: const Text('釣り合い'),
+                  selected: _equilibriumMode,
+                  onSelected: setEquilibriumMode,
+                ),
+                FilterChip(
+                  avatar: Icon(
+                    Icons.vertical_align_top,
+                    size: 16,
+                    color: activeIds.contains('showWavefrontTopView')
+                        ? const Color(0xFF1565C0)
+                        : Colors.black54,
+                  ),
+                  label: const Text('真上から見る', style: TextStyle(fontSize: 12)),
+                  selected: activeIds.contains('showWavefrontTopView'),
+                  onSelected: (on) {
+                    final next = Set<String>.from(activeIds);
+                    if (on) {
+                      next.add('showWavefrontTopView');
+                    } else {
+                      next.remove('showWavefrontTopView');
+                    }
+                    updateActiveIds(next);
+                  },
+                  selectedColor: const Color(0xFFBBDEFB),
+                  checkmarkColor: const Color(0xFF1565C0),
+                  visualDensity: VisualDensity.compact,
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              height: 44,
+              child: Center(
+                child: PlayPauseResetButtons(
+                  playing: isRunning,
+                  onPlayPause: isRunning ? pause : start,
+                  onReset: resetMotion,
+                ),
+              ),
             ),
           ],
         );
@@ -472,69 +630,108 @@ class BeadOnRotatingRing3DSimulation extends PhysicsSimulation {
     Map<String, double> parameters,
     void Function(String key, double value) updateParam,
   ) {
+    _updateParam = updateParam;
     _rememberParams(parameters);
     final p = _params;
+    if (_equilibriumMode) {
+      final th = p.stableEquilibriumTheta;
+      if ((p.theta0 - th).abs() > 1e-6 || p.thetaDot0.abs() > 1e-9) {
+        // ω・R 変更に合わせて釣り合い位置を追従させる。
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!_equilibriumMode) return;
+          _updateParam?.call('th0', th);
+          _updateParam?.call('thd0', 0.0);
+        });
+      }
+    }
     if (!running.value) _syncPhaseToIcs(p);
-    final eq = p.equilibriumTheta;
     return [
-      const Text(
-        '滑らかな円環・鉛直直径まわりに一定 ω',
-        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-      ),
-      _RingSlider(
-        label: 'R',
-        value: p.r,
-        min: kRingMinR,
-        max: kRingMaxR,
-        onChanged: (v) => updateParam('r', v),
-        semanticLabel: '半径 R',
-      ),
-      _RingSlider(
-        label: 'ω',
-        value: p.omega,
-        min: kRingMinOmega,
-        max: kRingMaxOmega,
-        onChanged: (v) => updateParam('W', v),
-        semanticLabel: '角速度 ω',
-      ),
-      _RingSlider(
-        label: 'm',
-        value: p.mass,
-        min: kRingMinM,
-        max: kRingMaxM,
-        onChanged: (v) => updateParam('m', v),
-        semanticLabel: '質量 m',
-      ),
-      _RingSlider(
-        label: 'θ₀',
-        value: p.theta0,
-        min: kRingMinTheta0,
-        max: kRingMaxTheta0,
-        onChanged: (v) => updateParam('th0', v),
-        semanticLabel: '初期角 θ0',
-      ),
-      _RingSlider(
-        label: 'θ̇₀',
-        value: p.thetaDot0,
-        min: kRingMinThetaDot0,
-        max: kRingMaxThetaDot0,
-        onChanged: (v) => updateParam('thd0', v),
-        semanticLabel: '初期角速度 θドット0',
-      ),
-      Padding(
-        padding: const EdgeInsets.only(top: 4),
-        child: Text(
-          eq == null
-              ? 'g/R = ${(kRingG / p.r).toStringAsFixed(2)}    '
-                  'ω² = ${(p.omega * p.omega).toStringAsFixed(2)}  → 底が安定'
-              : 'つり合い θ = ${eq.toStringAsFixed(2)} rad    '
-                  'ω²R/g = ${(p.omega * p.omega * p.r / kRingG).toStringAsFixed(2)}',
-          style: const TextStyle(
-            fontSize: 12,
-            fontFamily: 'Courier',
-            color: Color(0xFF37474F),
-          ),
-        ),
+      AnimatedBuilder(
+        animation: _uiTick,
+        builder: (context, _) {
+          final live = _params;
+          final eq = live.equilibriumTheta;
+          final eqLocked = _equilibriumMode;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text(
+                '滑らかな円環・鉛直直径まわりに一定 ω',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              ),
+              _RingSlider(
+                label: 'R',
+                value: live.r,
+                min: kRingMinR,
+                max: kRingMaxR,
+                onChanged: (v) => updateParam('r', v),
+                semanticLabel: '半径 R',
+              ),
+              _RingSlider(
+                label: 'ω',
+                value: live.omega,
+                min: kRingMinOmega,
+                max: kRingMaxOmega,
+                onChanged: (v) => updateParam('W', v),
+                semanticLabel: '角速度 ω',
+              ),
+              _RingSlider(
+                label: 'm',
+                value: live.mass,
+                min: kRingMinM,
+                max: kRingMaxM,
+                onChanged: (v) => updateParam('m', v),
+                semanticLabel: '質量 m',
+              ),
+              IgnorePointer(
+                ignoring: eqLocked,
+                child: Opacity(
+                  opacity: eqLocked ? 0.45 : 1,
+                  child: _RingSlider(
+                    label: 'θ₀',
+                    value: live.theta0,
+                    min: kRingMinTheta0,
+                    max: kRingMaxTheta0,
+                    onChanged: (v) => updateParam('th0', v),
+                    semanticLabel: '初期角 θ0',
+                  ),
+                ),
+              ),
+              IgnorePointer(
+                ignoring: eqLocked,
+                child: Opacity(
+                  opacity: eqLocked ? 0.45 : 1,
+                  child: _RingSlider(
+                    label: 'θ̇₀',
+                    value: live.thetaDot0,
+                    min: kRingMinThetaDot0,
+                    max: kRingMaxThetaDot0,
+                    onChanged: (v) => updateParam('thd0', v),
+                    semanticLabel: '初期角速度 θドット0',
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: SizedBox(
+                  height: 32,
+                  child: Text(
+                    eq == null
+                        ? 'g/R = ${(kRingG / live.r).toStringAsFixed(2)}    '
+                            'ω² = ${(live.omega * live.omega).toStringAsFixed(2)}  → 底が安定'
+                        : 'つり合い θ = ${eq.toStringAsFixed(2)} rad    '
+                            'ω²R/g = ${(live.omega * live.omega * live.r / kRingG).toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontFamily: 'Courier',
+                      color: Color(0xFF37474F),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     ];
   }
@@ -552,13 +749,21 @@ class BeadOnRotatingRing3DSimulation extends PhysicsSimulation {
     _rememberParams(parameters);
     _ensureAutoStart();
     return AnimatedBuilder(
-      animation: Listenable.merge([running, simTime]),
+      animation: Listenable.merge([running, simTime, _uiTick]),
       builder: (context, _) {
-        final p = _frozen ?? RingBeadParams.fromMap(parameters);
+        final p = _equilibriumMode
+            ? RingBeadParams.fromMap(parameters)
+            : (_frozen ?? RingBeadParams.fromMap(parameters));
         final sample = ringBeadSampleAt(p, _phase);
         return CustomPaint(
           size: Size.infinite,
-          painter: _RingBeadPainter(params: p, sample: sample),
+          painter: _RingBeadPainter(
+            params: p,
+            sample: sample,
+            azimuth: azimuth,
+            tilt: tilt,
+            scale: scale,
+          ),
         );
       },
     );
@@ -620,10 +825,16 @@ class _RingBeadPainter extends CustomPainter {
   _RingBeadPainter({
     required this.params,
     required this.sample,
+    required this.azimuth,
+    required this.tilt,
+    required this.scale,
   });
 
   final RingBeadParams params;
   final RingBeadSample sample;
+  final double azimuth;
+  final double tilt;
+  final double scale;
 
   static const _bg = Color(0xFFF4F7FA);
   static const _ink = Color(0xFF37474F);
@@ -641,9 +852,8 @@ class _RingBeadPainter extends CustomPainter {
   static const _floorB = Color(0xFFD4C6B4);
   static const _eq = Color(0xFF00897B);
 
-  // 固定カメラ。クルクル感が出る斜め上からの視点。
-  static const double _az = 0.55;
-  static const double _tilt = 0.62;
+  /// 波動の平面波と同じ操作系。初期は見やすい斜め上へ少しずらす。
+  static const double _az0 = 0.55;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -672,12 +882,15 @@ class _RingBeadPainter extends CustomPainter {
       panel.right - 10,
       panel.bottom - 30,
     );
-    final unit = math.min(plot.width, plot.height) / (2.9 * kRingMaxR);
+    final unit =
+        math.min(plot.width, plot.height) / (3.5 * kRingMaxR) * scale;
+    final az = azimuth + _az0;
+    final t = tilt.clamp(0.05, math.pi / 2);
     Offset proj(double x, double y, double z) {
-      final cA = math.cos(_az);
-      final sA = math.sin(_az);
-      final cT = math.cos(_tilt);
-      final sT = math.sin(_tilt);
+      final cA = math.cos(az);
+      final sA = math.sin(az);
+      final cT = math.cos(t);
+      final sT = math.sin(t);
       final xr = x * cA - y * sA;
       final yr = x * sA + y * cA;
       final px = plot.center.dx + (yr - xr) * 0.72 * unit;
@@ -733,7 +946,7 @@ class _RingBeadPainter extends CustomPainter {
     );
 
     // 円環（縞模様で回転が分かる）
-    _drawHoop(canvas, proj, r, phi, unit);
+    _drawHoop(canvas, proj, r, phi, unit, azimuth + _az0);
 
     // 安定つり合いの目印（回転系のみ・存在するとき）
     final eq = params.equilibriumTheta;
@@ -822,6 +1035,7 @@ class _RingBeadPainter extends CustomPainter {
     double r,
     double phi,
     double unit,
+    double az,
   ) {
     const n = 72;
     final pts = <({Offset o, double depth, int i})>[];
@@ -829,8 +1043,8 @@ class _RingBeadPainter extends CustomPainter {
       final th = 2 * math.pi * i / n;
       final w = _beadWorld(r, th, phi);
       // depth: カメラ前方ほど大きい（簡易）
-      final cA = math.cos(_az);
-      final sA = math.sin(_az);
+      final cA = math.cos(az);
+      final sA = math.sin(az);
       final depth = w.$1 * sA + w.$2 * cA;
       pts.add((o: proj(w.$1, w.$2, w.$3), depth: depth, i: i));
     }
@@ -934,7 +1148,7 @@ class _RingBeadPainter extends CustomPainter {
       final niy = f.nx * sp + f.ny * cp;
       final niz = f.nz;
       drawVec(f.gx, f.gy, f.gz, beadO, _gravity, '重力');
-      drawVec(nix, niy, niz, beadO + const Offset(10, 0), _constraint, '拘束力');
+      drawVec(nix, niy, niz, beadO, _constraint, '拘束力');
     } else {
       // 回転系: 重力・遠心力・コリオリ・拘束力。
       drawVec(f.gx, f.gy, f.gz, beadO, _gravity, '重力');
@@ -956,14 +1170,7 @@ class _RingBeadPainter extends CustomPainter {
         'コリオリ',
         dashed: true,
       );
-      drawVec(
-        f.nx,
-        f.ny,
-        f.nz,
-        beadO + const Offset(10, 0),
-        _constraint,
-        '拘束力',
-      );
+      drawVec(f.nx, f.ny, f.nz, beadO, _constraint, '拘束力');
     }
   }
 
@@ -974,8 +1181,9 @@ class _RingBeadPainter extends CustomPainter {
     double unit, {
     required bool ground,
   }) {
-    const n = 7;
-    const half = 1.55;
+    // 広めに敷いてドラッグで視点を回しやすいドラッグ面にする。
+    const n = 11;
+    const half = 2.85 / 1.5;
     final step = (2 * half) / n;
     final z = -params.r * 1.05;
     final angle = ground ? 0.0 : sample.phi;
@@ -1095,6 +1303,9 @@ class _RingBeadPainter extends CustomPainter {
         oldDelegate.sample.theta != sample.theta ||
         oldDelegate.params.r != params.r ||
         oldDelegate.params.omega != params.omega ||
-        oldDelegate.params.mass != params.mass;
+        oldDelegate.params.mass != params.mass ||
+        oldDelegate.azimuth != azimuth ||
+        oldDelegate.tilt != tilt ||
+        oldDelegate.scale != scale;
   }
 }

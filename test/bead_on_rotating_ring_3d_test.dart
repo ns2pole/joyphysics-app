@@ -27,8 +27,33 @@ void main() {
       thetaDot0: 0,
     );
     expect(p.equilibriumTheta, isNull);
+    expect(p.stableEquilibriumTheta, closeTo(0, 1e-12));
+    expect(p.hasObliqueEquilibrium, isFalse);
     expect(ringBeadAccel(p, 0), closeTo(0, 1e-12));
     expect(ringBeadAccel(p, 0.3) < 0, isTrue);
+  });
+
+  test('安定つり合いは ω²>g/R で斜め、それ以下で底', () {
+    const slow = RingBeadParams(
+      r: 0.8,
+      omega: 2,
+      mass: 1,
+      theta0: 0.4,
+      thetaDot0: 0,
+    );
+    expect(slow.hasObliqueEquilibrium, isFalse);
+    expect(slow.stableEquilibriumTheta, 0);
+
+    const fast = RingBeadParams(
+      r: 0.8,
+      omega: 5,
+      mass: 1,
+      theta0: 0.4,
+      thetaDot0: 0,
+    );
+    expect(fast.hasObliqueEquilibrium, isTrue);
+    expect(fast.stableEquilibriumTheta, closeTo(fast.equilibriumTheta!, 1e-12));
+    expect(ringBeadAccel(fast, fast.stableEquilibriumTheta), closeTo(0, 1e-10));
   });
 
   test('回転系の接線力の和が mR θ̈ と一致する', () {
