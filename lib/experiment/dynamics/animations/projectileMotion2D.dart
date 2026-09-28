@@ -19,13 +19,6 @@ const double kProjectileMinH = 2.0;
 const double kProjectileMaxH = 12.0;
 const double kProjectileDefaultH = 6.0;
 const double kProjectileStrobeDt = 0.10;
-/// 表示範囲（m）。飛距離・最高点に合わせてズームしない（g が小さいと画面外）。
-const double kProjectileViewX =
-    kProjectileMaxV0 * kProjectileMaxV0 / kProjectileG + kProjectileMaxH + 0.7;
-const double kProjectileViewY =
-    kProjectileMaxH +
-    kProjectileMaxV0 * kProjectileMaxV0 / (2 * kProjectileG) +
-    0.45;
 
 class ProjectileParams {
   const ProjectileParams({
@@ -476,10 +469,12 @@ class _ProjectilePainter extends CustomPainter {
   }
 
   _Map _mapper(Size size, double cardBottom) {
-    const xMin = -2.2;
-    const xMax = kProjectileViewX;
+    final range = math.max(projectileRange(params), 1.0);
+    final apex = math.max(projectileApexHeight(params), params.h);
+    final xMin = -math.max(2.2, range * 0.1);
+    final xMax = range + 0.7;
     const yMin = -0.25;
-    const yMax = kProjectileViewY;
+    final yMax = apex + 0.45;
     const margin = 16.0;
     final top = math.max(margin + 100.0, cardBottom + 12);
     final sx = (size.width - margin * 2) / (xMax - xMin);
@@ -490,7 +485,7 @@ class _ProjectilePainter extends CustomPainter {
         (size.height - top - margin - (yMax - yMin) * s) / 2;
     return _Map(
       of: (x, y) => Offset(ox + x * s, oy - y * s),
-      pxPerSpeed: 70 / kProjectileMaxV0,
+      pxPerSpeed: math.min(5.5, 70 / math.max(params.v0, 1)),
     );
   }
 
