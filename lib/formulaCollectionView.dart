@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class FormulaCollectionView extends StatefulWidget {
   const FormulaCollectionView({super.key});
@@ -127,21 +128,6 @@ class _FormulaCollectionViewState extends State<FormulaCollectionView> {
                     scrolledUnderElevation: 0,
                     surfaceTintColor: Colors.transparent,
                     title: const Text('物理公式集'),
-                    actions: isPortrait
-                        ? null
-                        : [
-                            Padding(
-                              padding: const EdgeInsets.only(right: 12),
-                              child: Center(
-                                child: _BeginnerToggle(
-                                  beginnerMode: _beginnerMode,
-                                  onChanged: _setBeginnerMode,
-                                  compact: true,
-                                  onDarkBackground: false,
-                                ),
-                              ),
-                            ),
-                          ],
                   ),
                 ),
                 Expanded(
@@ -177,19 +163,23 @@ class _FormulaCollectionViewState extends State<FormulaCollectionView> {
                           );
                         },
                       ),
-                      if (isPortrait)
-                        Positioned(
-                          top: 12,
-                          left: 0,
-                          right: 0,
-                          child: Center(
-                            child: _BeginnerToggle(
+                      Positioned(
+                        top: 8,
+                        left: 12,
+                        right: 12,
+                        child: Row(
+                          children: [
+                            _BeginnerToggle(
                               beginnerMode: _beginnerMode,
                               onChanged: _setBeginnerMode,
+                              compact: !isPortrait,
                               onDarkBackground: false,
                             ),
-                          ),
+                            const Spacer(),
+                            if (_beginnerMode) const _MercariSaleLink(),
+                          ],
                         ),
+                      ),
                       Positioned(
                         right: 16,
                         bottom: 16,
@@ -338,6 +328,98 @@ class _BeginnerModeButton extends StatelessWidget {
               fontWeight: FontWeight.w700,
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// ビギナー公式のラミネート版（メルカリ）。タップで商品ページを開く。
+class _MercariSaleLink extends StatelessWidget {
+  const _MercariSaleLink();
+
+  static final Uri _itemUri = Uri.parse(
+    'https://jp.mercari.com/item/m45610927606',
+  );
+
+  Future<void> _open() async {
+    await launchUrl(
+      _itemUri,
+      mode: LaunchMode.externalApplication,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white,
+      elevation: 2,
+      borderRadius: BorderRadius.circular(20),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: _open,
+        child: const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _MercariMark(),
+              SizedBox(width: 6),
+              Text(
+                '販売中',
+                style: TextStyle(
+                  color: Color(0xFFFF0211),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 赤地に白の m と水色の点。メルカリの目印に寄せた印。
+class _MercariMark extends StatelessWidget {
+  const _MercariMark();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 18,
+      height: 18,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: const Color(0xFFFF0211),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: const Stack(
+          children: [
+            Center(
+              child: Text(
+                'm',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                  height: 1,
+                ),
+              ),
+            ),
+            Positioned(
+              top: 2,
+              right: 2,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: Color(0xFF35C4F0),
+                  shape: BoxShape.circle,
+                ),
+                child: SizedBox(width: 5, height: 5),
+              ),
+            ),
+          ],
         ),
       ),
     );
