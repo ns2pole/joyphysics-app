@@ -39,21 +39,11 @@ workflows:
         # App Store: 実験で学ぶ高校物理 ー joy-physics (bundle com.joyphysics)
         APP_STORE_APPLE_ID: "6748957698"
         RELEASE_NOTES_JA: |
-          メジャーアップデート（8.0.0）です。
-          ・単振り子／円錐振り子、2次元分散（屈折）を追加
-          ・台ばね・立てかけ棒・押す直方体など力学アニメを拡充
-          ・3D慣性力（回転円環・地上の人）の表示を改善
-          ・波動・電磁気・熱力学の数式表示を整理
-          ・ホームにカテゴリ別・全体の記事数を表示
-          ・その他の不具合修正と改善
+          軽微な修正です。
+          ・ビギナー公式集からラミネート版の販売ページへアクセスできるようにしました
         RELEASE_NOTES_EN: |
-          Major update (8.0.0).
-          - Added simple / conical pendulum and 2D dispersion (refraction)
-          - Expanded mechanics animations (spring cart, leaning rod, pushed block)
-          - Improved 3D inertial-force displays
-          - Cleaned up wave / EM / thermodynamics formulas
-          - Category and total article counts on the home screen
-          - Bug fixes and improvements
+          Minor update.
+          - Added a link from the beginner formula collection to the laminated edition sales page
 
       xcode: latest
       flutter: stable
