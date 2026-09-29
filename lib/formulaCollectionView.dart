@@ -168,6 +168,7 @@ class _FormulaCollectionViewState extends State<FormulaCollectionView> {
                         left: 12,
                         right: 12,
                         child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             _BeginnerToggle(
                               beginnerMode: _beginnerMode,
@@ -175,8 +176,10 @@ class _FormulaCollectionViewState extends State<FormulaCollectionView> {
                               compact: !isPortrait,
                               onDarkBackground: false,
                             ),
-                            const Spacer(),
-                            if (_beginnerMode) const _MercariSaleLink(),
+                            if (_beginnerMode) ...[
+                              const SizedBox(width: 8),
+                              const _MercariSaleLink(),
+                            ],
                           ],
                         ),
                       ),
