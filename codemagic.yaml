@@ -40,10 +40,8 @@ workflows:
         APP_STORE_APPLE_ID: "6748957698"
         RELEASE_NOTES_JA: |
           軽微な修正です。
-          ・ビギナー公式集からラミネート版の販売ページへアクセスできるようにしました
         RELEASE_NOTES_EN: |
-          Minor update.
-          - Added a link from the beginner formula collection to the laminated edition sales page
+          Minor fixes.
 
       xcode: latest
       flutter: stable
