@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -13,8 +12,6 @@ const _calculusGachaIconAsset = 'assets/icon/calculus_gacha_icon.png';
 const _unitGachaIosStoreId = '6756411322';
 const _unitGachaAndroidPackageId = 'com.joyphysics.unitgacha';
 const _unitGachaIconAsset = 'assets/icon/unit_gacha_icon_removebg.png';
-const _appStoreBadgeAsset = 'assets/app_badge/app_store_badge_blk.svg';
-const _googlePlayBadgeAsset = 'assets/app_badge/google_play_badge.png';
 
 final _calculusGachaIosStoreUri =
     Uri.parse('https://apps.apple.com/app/id$_calculusGachaIosStoreId');
@@ -312,7 +309,6 @@ class _UnitGachaPromoLinkState extends State<UnitGachaPromoLink>
     final sectionFontSize = isCompact ? 16.0 : 19.0;
     final titleFontSize = isCompact ? 24.0 : 28.0;
     final iconHeight = isCompact ? 30.0 : 36.0;
-    final badgeHeight = isCompact ? 34.0 : 40.0;
     final commentFontSize = isCompact ? 13.0 : 15.0;
     final commentStyle = TextStyle(
       fontSize: commentFontSize,
@@ -373,7 +369,6 @@ class _UnitGachaPromoLinkState extends State<UnitGachaPromoLink>
                 ),
                 titleColor: titleColor,
                 titleFontSize: titleFontSize,
-                badgeHeight: badgeHeight,
                 icon: Image.asset(
                   _calculusGachaIconAsset,
                   height: iconHeight,
@@ -399,7 +394,6 @@ class _UnitGachaPromoLinkState extends State<UnitGachaPromoLink>
                 ),
                 titleColor: titleColor,
                 titleFontSize: titleFontSize,
-                badgeHeight: badgeHeight,
                 icon: Image.asset(
                   _unitGachaIconAsset,
                   height: iconHeight,
@@ -428,7 +422,6 @@ class _AppStorePromoRow extends StatelessWidget {
     required this.title,
     required this.titleColor,
     required this.titleFontSize,
-    required this.badgeHeight,
     required this.icon,
     required this.iosStoreUrl,
     required this.androidStoreUrl,
@@ -439,7 +432,6 @@ class _AppStorePromoRow extends StatelessWidget {
   final Widget? comment;
   final Color titleColor;
   final double titleFontSize;
-  final double badgeHeight;
   final Widget icon;
   final String iosStoreUrl;
   final String androidStoreUrl;
@@ -453,75 +445,45 @@ class _AppStorePromoRow extends StatelessWidget {
           ),
         );
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: onTitleTap,
-            borderRadius: BorderRadius.circular(12),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        icon,
-                        const SizedBox(width: 6),
-                        Text(
-                          title,
-                          style: TextStyle(
-                            fontSize: titleFontSize,
-                            fontWeight: FontWeight.bold,
-                            color: titleColor,
-                            height: 1.1,
-                          ),
-                          softWrap: false,
-                          maxLines: 1,
-                        ),
-                      ],
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTitleTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    icon,
+                    const SizedBox(width: 6),
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: titleFontSize,
+                        fontWeight: FontWeight.bold,
+                        color: titleColor,
+                        height: 1.1,
+                      ),
+                      softWrap: false,
+                      maxLines: 1,
                     ),
-                  ),
-                  if (comment != null) ...[
-                    const SizedBox(height: 6),
-                    comment!,
                   ],
-                ],
+                ),
               ),
-            ),
+              if (comment != null) ...[
+                const SizedBox(height: 6),
+                comment!,
+              ],
+            ],
           ),
         ),
-        const SizedBox(height: 12),
-        Wrap(
-          alignment: WrapAlignment.center,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          spacing: 10,
-          runSpacing: 8,
-          children: [
-            _StoreBadgeButton(
-              onTap: () => _openExternalUrl(iosStoreUrl),
-              child: SvgPicture.asset(
-                _appStoreBadgeAsset,
-                height: badgeHeight,
-                fit: BoxFit.contain,
-              ),
-            ),
-            _StoreBadgeButton(
-              onTap: () => _openExternalUrl(androidStoreUrl),
-              child: Image.asset(
-                _googlePlayBadgeAsset,
-                height: badgeHeight,
-                fit: BoxFit.contain,
-              ),
-            ),
-          ],
-        ),
-      ],
+      ),
     );
   }
 }
@@ -632,27 +594,5 @@ class _CalculusGachaComment extends StatelessWidget {
           textAlign: TextAlign.center,
         );
     }
-  }
-}
-
-class _StoreBadgeButton extends StatelessWidget {
-  const _StoreBadgeButton({
-    required this.onTap,
-    required this.child,
-  });
-
-  final VoidCallback onTap;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
-        child: child,
-      ),
-    );
   }
 }
