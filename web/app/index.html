@@ -3,12 +3,27 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Joy Physics — App Store</title>
-  <meta http-equiv="refresh" content="0;url=https://apps.apple.com/app/id6748957698">
-  <link rel="canonical" href="https://apps.apple.com/app/id6748957698">
-  <script>location.replace('https://apps.apple.com/app/id6748957698');</script>
+  <title>Joy Physics — Store</title>
+  <script>
+    (function () {
+      var ios = 'https://apps.apple.com/app/id6748957698';
+      var play = 'https://play.google.com/store/apps/details?id=com.joyphysics';
+      var ua = navigator.userAgent || '';
+      var isIOS = /iPad|iPhone|iPod/i.test(ua) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      var isAndroid = /Android/i.test(ua);
+      if (isIOS) {
+        location.replace(ios);
+      } else if (isAndroid) {
+        location.replace(play);
+      }
+      // Desktop / other: show both links below.
+    })();
+  </script>
 </head>
 <body>
-  <p><a href="https://apps.apple.com/app/id6748957698">App Store へ移動</a></p>
+  <p>Joy Physics</p>
+  <p><a href="https://apps.apple.com/app/id6748957698">App Store (iOS)</a></p>
+  <p><a href="https://play.google.com/store/apps/details?id=com.joyphysics">Google Play (Android)</a></p>
 </body>
 </html>
