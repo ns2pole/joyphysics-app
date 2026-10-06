@@ -39,9 +39,9 @@ workflows:
         # App Store: 実験で学ぶ高校物理 ー joy-physics (bundle com.joyphysics)
         APP_STORE_APPLE_ID: "6748957698"
         RELEASE_NOTES_JA: |
-          軽微な修正です。
+          アプリの英語版対応を行いました。
         RELEASE_NOTES_EN: |
-          Minor fixes.
+          Added English language support for the app.
 
       xcode: latest
       flutter: stable
