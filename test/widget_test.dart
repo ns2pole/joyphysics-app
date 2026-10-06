@@ -34,6 +34,6 @@ void main() {
 
     expect(find.text('高校物理'), findsOneWidget);
     expect(find.text('ver 9.0.0'), findsOneWidget);
-    expect(find.text('update 2026-10-05'), findsOneWidget);
+    expect(find.text('update 2026-10-06'), findsOneWidget);
   });
 }
