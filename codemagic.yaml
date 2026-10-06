@@ -1,4 +1,5 @@
-# Codemagic: iOS をクラウド Mac でビルドし App Store Connect へ提出
+# Codemagic: iOS をクラウド Mac でビルドし App Store Connect へアップロード
+# （既定は審査提出なし。スクショ等は App Store Connect で手動提出）
 #
 # Developer Portal 連携（UI）が FORBIDDEN でも動くよう、API Key は環境変数で渡す。
 #
@@ -101,7 +102,7 @@ workflows:
             --build-name="$VERSION_NAME" \
             --build-number="$VERSION_CODE" \
             --export-options-plist=/Users/builder/export_options.plist
-      - name: Publish to App Store Connect
+      - name: Upload IPA to App Store Connect (no review submit)
         script: |
           set -euo pipefail
 
@@ -190,19 +191,11 @@ workflows:
           # 正規化済みファイルを env に載せ直し、Codemagic 標準の @env: 形式で渡す。
           export APP_STORE_CONNECT_PRIVATE_KEY="$(cat "$KEY_FILE")"
 
-          # App Store 審査提出には default locale (ja) の What's New が必須
-          WHATS_NEW_JA="${RELEASE_NOTES_JA:-メジャーアップデートです。バグ修正と改善を行いました。}"
-
+          # バイナリを App Store Connect へアップロードのみ（審査提出は手動）
           app-store-connect publish \
             --path "$IPA_PATH" \
             --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
             --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
-            --private-key @env:APP_STORE_CONNECT_PRIVATE_KEY \
-            --app-store \
-            --locale ja \
-            --whats-new "$WHATS_NEW_JA" \
-            --release-type AFTER_APPROVAL \
-            --cancel-previous-submissions \
-            --copyright "2026 Shunsuke Nakamura"
+            --private-key @env:APP_STORE_CONNECT_PRIVATE_KEY
     artifacts:
       - build/ios/ipa/*.ipa
