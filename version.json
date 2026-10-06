@@ -1,1 +1,6 @@
-{"app_name": "joyphysics", "version": "8.0.1", "build_number": "109", "package_name": "joyphysics"}
+{
+  "app_name": "joyphysics",
+  "version": "9.0.0",
+  "build_number": "111",
+  "package_name": "joyphysics"
+}
