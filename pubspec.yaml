@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 8.0.1+110
+version: 9.0.0+111
 
 environment:
   sdk: ^3.8.1
@@ -30,6 +30,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: any
   webview_flutter: ^4.2.0
   flutter_html: ^3.0.0
   url_launcher: ^6.1.7
@@ -81,6 +84,7 @@ flutter_launcher_icons:
 
 # The following section is specific to Flutter packages.
 flutter:
+  generate: true
   fonts:
     - family: KeiFont
       fonts:
@@ -117,8 +121,11 @@ flutter:
     - assets/electroMagnetismTheory/
     - assets/electroMagnetismDetail/
     - assets/mindMap/
+    - assets/mindMap/en/
     - assets/mindMap/forTopics/
     - assets/mindMap/ocr/
+    - assets/mindMap/ocr/en/
+    - lib/mindMap/orig_en_text_map.json
     - assets/icon/
     - assets/fonts/
     - assets/others/

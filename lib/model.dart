@@ -7,8 +7,12 @@ class Video {
   final String category;
   final String iconName;
   final String title;
+  final String? titleEn;
   final String videoURL;
+  /// English YouTube ID/URL when the JP experiment video has a translated counterpart.
+  final String? videoURLEn;
   final List<String> equipment;
+  final List<String>? equipmentEn;
   final String costRating;
   final bool? isSmartPhoneOnly;
   final bool? isSimulation; // シミュレーション・アニメーションかどうか
@@ -16,6 +20,7 @@ class Video {
   final bool playsSound;
   final bool warnsHighPitchSound;
   final String? latex;
+  final String? latexEn;
   final List<Widget>? experimentWidgets; // 複数のWidgetを許可
   /// 全体像 OCR マッチ用。原則は [title] から自動照合するので不要。
   /// タイトルと全体像の文言が違うときだけ上書きする（例: `'2体問題'`）。
@@ -27,15 +32,19 @@ class Video {
     required this.category,
     required this.iconName,
     required this.title,
+    this.titleEn,
     required this.videoURL,
+    this.videoURLEn,
     required this.equipment,
-    required     this.costRating,
+    this.equipmentEn,
+    required this.costRating,
     this.isSmartPhoneOnly,
     this.isSimulation,
     this.isExperiment,
     this.playsSound = false,
     this.warnsHighPitchSound = false,
     this.latex,
+    this.latexEn,
     this.experimentWidgets, // ← optional, default null
     this.mindMapQuery,
   });
@@ -43,24 +52,113 @@ class Video {
   String get assetPath => 'assets/$category/$iconName.png';
 
   Image getImage() => Image.asset(assetPath);
+
+  bool get hasEnglishTitle => titleEn != null && titleEn!.trim().isNotEmpty;
+
+  bool get hasEnglishLatex => latexEn != null && latexEn!.trim().isNotEmpty;
+
+  bool get hasEnglishEquipment =>
+      equipmentEn != null && equipmentEn!.length == equipment.length;
+
+  bool get hasEnglishVideoURL =>
+      videoURLEn != null && videoURLEn!.trim().isNotEmpty;
+
+  String localizedTitle(String languageCode) {
+    if (languageCode == 'en' && hasEnglishTitle) return titleEn!;
+    return title;
+  }
+
+  String? localizedLatex(String languageCode) {
+    if (languageCode == 'en' && hasEnglishLatex) return latexEn;
+    return latex;
+  }
+
+  List<String> localizedEquipment(String languageCode) {
+    if (languageCode == 'en' && hasEnglishEquipment) return equipmentEn!;
+    return equipment;
+  }
+
+  String localizedVideoURL(String languageCode) {
+    if (languageCode == 'en' && hasEnglishVideoURL) return videoURLEn!;
+    return videoURL;
+  }
+
+  /// True when [videoURL] looks like a real YouTube id/URL (not empty/placeholder).
+  bool get hasPlayableJapaneseVideo {
+    final raw = videoURL.trim();
+    if (raw.isEmpty || raw == '（動画URLをここに）' || raw.contains('（動画URL')) {
+      return false;
+    }
+    final id = extractVideoId(raw);
+    return RegExp(r'^[a-zA-Z0-9_-]{11}$').hasMatch(id);
+  }
+
+  /// English locale hides JP-only YouTube articles; simulations (no video) stay.
+  bool isAvailableForLanguage(String languageCode) {
+    if (languageCode != 'en') return true;
+    if (hasPlayableJapaneseVideo && !hasEnglishVideoURL) return false;
+    return true;
+  }
 }
 
 class TheoryTopic {
   final String title;
+  final String? titleEn;
   final String latexContent;
+  final String? latexContentEn;
   final String? videoURL;
+  final String? videoURLEn;
   final bool? inPreparation;
   final bool isNew;
   final String? imageAsset; // ここを追加
 
   TheoryTopic({
     required this.title,
+    this.titleEn,
     required this.latexContent,
+    this.latexContentEn,
     this.videoURL,
+    this.videoURLEn,
     this.isNew = false,
     this.inPreparation = false,
     this.imageAsset, // コンストラクタにも追加
   });
+
+  bool get hasEnglishTitle => titleEn != null && titleEn!.trim().isNotEmpty;
+
+  bool get hasEnglishLatex =>
+      latexContentEn != null && latexContentEn!.trim().isNotEmpty;
+
+  bool get hasEnglishVideoURL =>
+      videoURLEn != null && videoURLEn!.trim().isNotEmpty;
+
+  String localizedTitle(String languageCode) {
+    if (languageCode == 'en' && hasEnglishTitle) return titleEn!;
+    return title;
+  }
+
+  String localizedLatexContent(String languageCode) {
+    if (languageCode == 'en' && hasEnglishLatex) return latexContentEn!;
+    return latexContent;
+  }
+
+  String? localizedVideoURL(String languageCode) {
+    if (languageCode == 'en' && hasEnglishVideoURL) return videoURLEn;
+    return videoURL;
+  }
+
+  bool get hasPlayableJapaneseVideo {
+    final raw = (videoURL ?? '').trim();
+    if (raw.isEmpty) return false;
+    final id = extractVideoId(raw);
+    return RegExp(r'^[a-zA-Z0-9_-]{11}$').hasMatch(id);
+  }
+
+  bool isAvailableForLanguage(String languageCode) {
+    if (languageCode != 'en') return true;
+    if (hasPlayableJapaneseVideo && !hasEnglishVideoURL) return false;
+    return true;
+  }
 }
 
 class TheorySubcategory {
@@ -94,20 +192,27 @@ class Category {
   final List<Subcategory> subcategories;
   Category({required this.name, required this.gifUrl, required this.subcategories});
 
-  String? getMindMapAsset() => Category.getMindMapAssetByName(name);
+  String? getMindMapAsset({String languageCode = 'ja'}) =>
+      Category.getMindMapAssetByName(name, languageCode: languageCode);
 
   String getMindMapLabel() => Category.getMindMapLabelByName(name);
 
-  static String? getMindMapAssetByName(String name) {
-    if (name == '力学' || name == '力学理論') {
-      return 'assets/mindMap/dynamicsLandScope.jpeg';
-    } else if (name == '電磁気学' || name == '電磁気学理論') {
-      return 'assets/mindMap/emTheoryLandScope.jpeg';
-    } else if (name == '熱力学' || name == '熱力学理論') {
-      return 'assets/mindMap/thermoDynamicsLandScope.jpeg';
-    } else if (name == '波動') {
-      return 'assets/mindMap/waveLandScope.jpeg';
-    }
+  /// 単元 home 上部の全体像。`en` は orig_en の英語版、それ以外は日本語版。
+  static String? getMindMapAssetByName(
+    String name, {
+    String languageCode = 'ja',
+  }) {
+    final stem = _mindMapStem(name);
+    if (stem == null) return null;
+    final dir = languageCode == 'en' ? 'assets/mindMap/en' : 'assets/mindMap';
+    return '$dir/$stem.jpeg';
+  }
+
+  static String? _mindMapStem(String name) {
+    if (name == '力学' || name == '力学理論') return 'dynamicsLandScope';
+    if (name == '電磁気学' || name == '電磁気学理論') return 'emTheoryLandScope';
+    if (name == '熱力学' || name == '熱力学理論') return 'thermoDynamicsLandScope';
+    if (name == '波動') return 'waveLandScope';
     return null;
   }
 
