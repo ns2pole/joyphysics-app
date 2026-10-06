@@ -6,12 +6,19 @@ final ideal_gas_eqation_and_weight_of_air = Video(
   // inPreparation: true,
   iconName: "",
   title: "理想気体の状態方程式と空気の重さ",
+  titleEn: "Ideal gas law and the weight of air",
   videoURL: "",
   equipment: [
     "円筒容器（半径7.5 cm, 高さ13 cm）",
     "真空ポンプ",
     "圧力計（絶対圧）",
     "温度計"
+  ],
+  equipmentEn: [
+    "cylindrical vessel (radius 7.5 cm, height 13 cm)",
+    "vacuum pump",
+    "pressure gauge (absolute)",
+    "thermometer"
   ],
   costRating: "★★☆",
   latex: r"""
@@ -61,5 +68,53 @@ $$
 <div class="common-box">答え</div>
 <p>抜けた量（質量）：$$\boxed{m \fallingdotseq 1.09\ \mathrm{g}}$$</p>
 <p style="font-size:0.95em;">参考：密度近似（乾燥空気 $1.184\ \mathrm{kg/m^3}$ @25℃,1 atm）でも $0.9184\ \mathrm{L}\times1.184\ \mathrm{g/L}\fallingdotseq 1.09\ \mathrm{g}$ と整合。</p>
+""",
+  latexEn: r"""
+<div class="common-box">Key points</div>
+<p>In an isothermal, isochoric process the ideal gas law $pV=nRT$ implies $n \propto p$ ($V,T$ fixed). So the amount of gas in the vessel is proportional to pressure.</p>
+
+<div class="common-box">Setup</div>
+<p>Air in a cylindrical vessel of radius $R=7.5\ \mathrm{cm}$ and height $H=13\ \mathrm{cm}$ is reduced isothermally ($25^\circ\mathrm{C}$) to $\displaystyle \frac{3}{5}$ of atmospheric pressure. Find how much air left the vessel as a <b>mass [g]</b>.
+(Assumptions: dry air, $T=25^\circ\mathrm{C}=298.15\ \mathrm{K}$, $p_0=1.013\times10^5\ \mathrm{Pa}$, molar mass $M=28.97\ \mathrm{g/mol}$)</p>
+
+<div class="common-box">Theory</div>
+<p>Vessel volume:
+$$
+\begin{aligned}
+V_0 &= \pi R^2 H
+= \pi (0.075)^2 \times 0.13 \\
+&= 7.3125\times10^{-4}\pi \ \mathrm{m^3}
+\fallingdotseq 2.296\times10^{-3}\ \mathrm{m^3}\ (\fallingdotseq 2.296\ \mathrm{L})
+\end{aligned}
+$$
+Isothermal and isochoric: $\displaystyle \frac{n_1}{n_0}=\frac{p_1}{p_0}=\frac{3}{5}$.
+Fraction removed:
+$$
+\frac{n_0-n_1}{n_0}=1-\frac{3}{5}=\frac{2}{5}=0.4\ (40\%).
+$$
+As an equivalent volume at 1 atm,
+$$
+V_{\text{removed @1atm}}=\frac{2}{5}V_0 = 0.4\times 2.296\ \mathrm{L}
+= 0.9184\ \mathrm{L}
+= 9.184\times10^{-4}\ \mathrm{m^3}.
+$$
+Moles removed from the ideal gas law ($T=298.15\ \mathrm{K}$):
+$$
+n_{\text{removed}}
+=\frac{p_0\,V_{\text{removed}}}{RT}
+=\frac{(1.013\times10^5)\times(9.184\times10^{-4})}{8.3145\times 298.15}
+\fallingdotseq 3.753\times10^{-2}\ \mathrm{mol}.
+$$
+Mass (dry air $M=28.97\ \mathrm{g/mol}$):
+$$
+m_{\text{removed}} = n_{\text{removed}}\,M
+\fallingdotseq 0.03753\times 28.97
+\fallingdotseq 1.09\ \mathrm{g}.
+$$
+</p>
+
+<div class="common-box">Answer</div>
+<p>Mass removed: $$\boxed{m \fallingdotseq 1.09\ \mathrm{g}}$$</p>
+<p style="font-size:0.95em;">Check: a density estimate (dry air $1.184\ \mathrm{kg/m^3}$ at 25℃, 1 atm) also gives $0.9184\ \mathrm{L}\times1.184\ \mathrm{g/L}\fallingdotseq 1.09\ \mathrm{g}$.</p>
 """
 );

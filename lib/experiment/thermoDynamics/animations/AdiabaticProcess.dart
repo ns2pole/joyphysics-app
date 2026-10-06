@@ -4,10 +4,12 @@ import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import 'package:joyphysics/experiment/waves/animations/widgets/wave_slider.dart';
 import './common.dart';
 import './thermo_process_auto.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 /// 断熱変化（断熱過程）のシミュレーション
 final adiabaticProcess = createWaveVideo(
   title: "断熱変化",
+  titleEn: 'Adiabatic process',
   category: 'thermoDynamics',
   iconName: 'boyleLaw',
   latex: r"""
@@ -19,6 +21,15 @@ final adiabaticProcess = createWaveVideo(
   <p>$$TV^{\frac{2}{3}} = \text{一定}$$</p>
   <p>熱力学第一法則 $Q = \Delta U + W$ において、$Q = 0$ となるため、気体が外部へ仕事 $W$ を行うと内部エネルギーがその分だけ減少し（温度低下）、逆に外部から仕事をされると内部エネルギーが増加します（断熱圧縮による温度上昇）。</p>
   """,
+  latexEn: r"""
+  <div class="common-box">Adiabatic process (no heat exchange)</div>
+  <p>An adiabatic process is a change of state with no heat exchange with the surroundings.</p>
+  <p>Even with thin heat-conducting walls, covering the sides and bottom with insulation cuts off heat exchange with the ambient air, so the process is adiabatic.</p>
+  <p>For a monatomic ideal gas, Poisson's relations hold:</p>
+  <p>$$PV^{\frac{5}{3}} = \text{constant}$$</p>
+  <p>$$TV^{\frac{2}{3}} = \text{constant}$$</p>
+  <p>In the first law of thermodynamics $Q = \Delta U + W$, we have $Q = 0$, so when the gas does work $W$ on the surroundings its internal energy decreases by the same amount (temperature drops); conversely, work done on the gas increases the internal energy (temperature rise under adiabatic compression).</p>
+  """,
   simulation: AdiabaticSimulation(),
   height: 974,
 );
@@ -26,7 +37,7 @@ final adiabaticProcess = createWaveVideo(
 class AdiabaticSimulation extends PhysicsSimulation {
   AdiabaticSimulation()
       : super(
-          title: "断熱変化",
+          title: animL("断熱変化", "Adiabatic process"),
           formula: const FormulaDisplay(r'Q = 0, \quad PV^{\gamma} = \text{const.} \ (\gamma=\frac{5}{3})'),
           aspectRatio: 0.66,
         );
@@ -91,7 +102,7 @@ class AdiabaticSimulation extends PhysicsSimulation {
   List<Widget> buildControls(context, params, updateParam) {
     _updateParam = updateParam;
     return [
-      const Text("操作", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+      Text(animL("操作", "Controls"), style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
       ValueListenableBuilder<bool>(
         valueListenable: autoCycle,
         builder: (context, autoOn, _) {
@@ -101,7 +112,7 @@ class AdiabaticSimulation extends PhysicsSimulation {
             maintainAnimation: true,
             maintainState: true,
             child: WaveParameterSlider(
-              label: "ピストンの押し引き\n(体積 V [L])",
+              label: animL("ピストンの押し引き\n(体積 V [L])", "Push/pull the piston\n(volume V [L])"),
               maxLines: 2,
               labelAlign: TextAlign.center,
               labelAbove: true,
@@ -113,13 +124,10 @@ class AdiabaticSimulation extends PhysicsSimulation {
           );
         },
       ),
-      const Padding(
+      Padding(
         padding: EdgeInsets.symmetric(vertical: 4.0),
         child: Text(
-          "容器本体は薄い伝熱壁ですが、側面・底面を断熱材で覆っているため外気と熱のやり取りがありません（断熱過程）。"
-          "スライダーでピストンを押し引きしてください。"
-          "初期状態は単原子分子理想気体・1.0 L・300 K・1013 hPa です。"
-          "Auto ではスライダー最小（0.30 L）⇄ 1.8 L の往復（端で約2秒停止）を繰り返します。",
+          animL("容器本体は薄い伝熱壁ですが、側面・底面を断熱材で覆っているため外気と熱のやり取りがありません（断熱過程）。スライダーでピストンを押し引きしてください。初期状態は単原子分子理想気体・1.0 L・300 K・1013 hPa です。Auto ではスライダー最小（0.30 L）⇄ 1.8 L の往復（端で約2秒停止）を繰り返します。", "The vessel body is a thin conducting wall, but the sides and bottom are insulated, so there is no heat exchange with the outside (adiabatic process). Use the slider to push and pull the piston. Initial state: monatomic ideal gas, 1.0 L, 300 K, 1013 hPa. In Auto, the slider cycles between the minimum (0.30 L) and 1.8 L (about 2 s pause at ends)."),
         ),
       ),
     ];

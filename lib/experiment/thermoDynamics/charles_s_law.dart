@@ -5,6 +5,7 @@ final charles_s_law = Video(
   // inPreparation: true,
   iconName: "",
   title: "シャルルの法則",
+  titleEn: "Charles's law",
   videoURL: "",
   equipment: [
     "ガラス管（半径1.1 cm, 高さ8 cm）",
@@ -14,6 +15,15 @@ final charles_s_law = Video(
     "温水/ヒーター",
     "温度計",
     "ものさし"
+  ],
+  equipmentEn: [
+    "glass tube (radius 1.1 cm, height 8 cm)",
+    "thin pipe (radius 2 mm)",
+    "rubber stopper",
+    "water (thin film plug)",
+    "warm water / heater",
+    "thermometer",
+    "ruler"
   ],
   costRating: "★★☆",
   latex: r"""
@@ -55,6 +65,47 @@ $$
 </p>
 
 <div class="common-box">答え</div>
+<p>$$\boxed{h \fallingdotseq 9.8\ \mathrm{cm}}$$</p>
+""",
+  latexEn: r"""
+<div class="common-box">Key points</div>
+<p>If the water plug is a very thin film, the pressure rise from its weight is negligible, so the process is nearly <b>isobaric</b> (constant atmospheric pressure). Charles's law
+$$\displaystyle \frac{V}{T}=\text{constant}\ \Rightarrow\ \Delta V = V_0\frac{\Delta T}{T_0}$$
+applies directly.</p>
+<p>The volume increase $\Delta V$ divided by the pipe cross section $A=\pi r^2$ gives the rise height $h$ ($\Delta V=Ah$).</p>
+
+<div class="common-box">Setup</div>
+<p>Air is trapped in a glass tube of radius $R=1.1\ \mathrm{cm}$ and height $H=8.0\ \mathrm{cm}$, sealed at the tip of a thin pipe of radius $r=2.0\ \mathrm{mm}$ by a <b>thin water film</b>. When the temperature rises from $24^\circ\mathrm{C}$ to $36^\circ\mathrm{C}$ (a 12°C increase), how far does the water plug rise? (ideal gas; thermal expansion of glass and water neglected)</p>
+
+<div class="common-box">Theory</div>
+<p>Initial volume (cylinder):
+$$
+\begin{aligned}
+V_0 &= \pi R^2 H = \pi (0.011)^2 \times 0.080 \\
+&= 3.041\times10^{-5}\ \mathrm{m}^3 \quad (\fallingdotseq 30.41\ \mathrm{cm}^3)
+\end{aligned}
+$$
+With initial temperature $T_0=24^\circ\mathrm{C}=297.15\ \mathrm{K}$ and rise $\Delta T=12\ \mathrm{K}$,
+$$
+\Delta V = V_0\frac{\Delta T}{T_0}
+= 3.041\times10^{-5}\times\frac{12}{297.15}
+\fallingdotseq 1.228\times10^{-6}\ \mathrm{m}^3
+\quad (\fallingdotseq 1.228\ \mathrm{cm}^3).
+$$
+Pipe cross section:
+$$
+A=\pi r^2=\pi(0.002)^2=1.257\times10^{-5}\ \mathrm{m}^2.
+$$
+Rise height (isobaric):
+$$
+h=\frac{\Delta V}{A}
+=\frac{1.228\times10^{-6}}{1.257\times10^{-5}}
+\fallingdotseq 9.77\times10^{-2}\ \mathrm{m}
+= 9.77\ \mathrm{cm}.
+$$
+</p>
+
+<div class="common-box">Answer</div>
 <p>$$\boxed{h \fallingdotseq 9.8\ \mathrm{cm}}$$</p>
 """
 );

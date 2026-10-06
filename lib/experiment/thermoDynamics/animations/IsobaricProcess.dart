@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import './common.dart';
 import './thermo_process_auto.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 /// 定圧変化（等圧変化）のシミュレーション
 final isobaricProcess = createWaveVideo(
   title: "定圧変化",
+  titleEn: 'Isobaric process',
   category: 'thermoDynamics',
   iconName: 'boyleLaw',
   latex: r"""
@@ -17,6 +19,14 @@ final isobaricProcess = createWaveVideo(
   <p>$$\frac{V}{T} = \text{一定}$$</p>
   <p>熱力学第一法則 $Q = \Delta U + W$ において、熱を加えると温度が上がって内部エネルギーが増加するとともに、気体が膨張して外部に仕事 $W = P\Delta V$ を行います。</p>
   """,
+  latexEn: r"""
+  <div class="common-box">Isobaric process (constant pressure)</div>
+  <p>An isobaric process is a change of state with the gas pressure held constant.</p>
+  <p>By Charles's law, at constant pressure the gas volume $V$ is proportional to the absolute temperature $T$.</p>
+  <p>$$V \propto T$$</p>
+  <p>$$\frac{V}{T} = \text{constant}$$</p>
+  <p>In the first law of thermodynamics $Q = \Delta U + W$, adding heat raises the temperature and thus the internal energy, while the gas expands and does work $W = P\Delta V$ on the surroundings.</p>
+  """,
   simulation: IsobaricSimulation(),
   height: 974,
 );
@@ -24,7 +34,7 @@ final isobaricProcess = createWaveVideo(
 class IsobaricSimulation extends PhysicsSimulation {
   IsobaricSimulation()
       : super(
-          title: "定圧変化",
+          title: animL("定圧変化", "Isobaric process"),
           formula: const FormulaDisplay(r'P = \text{const.}, \quad \frac{V}{T} = \text{const.}'),
           aspectRatio: 0.66,
         );
@@ -123,15 +133,11 @@ class IsobaricSimulation extends PhysicsSimulation {
   @override
   List<Widget> buildControls(context, params, updateParam) {
     return [
-      const Text("設定", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-      const Padding(
+      Text(animL("設定", "Settings"), style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+      Padding(
         padding: EdgeInsets.symmetric(vertical: 8.0),
         child: Text(
-          "内容器は薄い伝熱壁で、側面・底の断熱材ごと薄い外容器にスッポリ入っています。"
-          "「断熱」をオンにすると外容器内に断熱材が付き、加熱で温度を上げられます。"
-          "断熱を外したときだけ「冷却」ができ、外容器に 0℃ の水が満ちます。"
-          "断熱なし・冷却なしでは外気温へゆっくり戻ります。"
-          "Auto では加熱→上限→冷却→外気温付近、の往復を繰り返します。",
+          animL("内容器は薄い伝熱壁で、側面・底の断熱材ごと薄い外容器にスッポリ入っています。「断熱」をオンにすると外容器内に断熱材が付き、加熱で温度を上げられます。断熱を外したときだけ「冷却」ができ、外容器に 0℃ の水が満ちます。断熱なし・冷却なしでは外気温へゆっくり戻ります。Auto では加熱→上限→冷却→外気温付近、の往復を繰り返します。", "The inner vessel is a thin conducting wall, nested with side/bottom insulation inside a thin outer vessel. Turning “Insulate” on adds insulation inside the outer vessel so you can raise temperature by heating. “Cool” is available only with insulation off; the outer vessel then fills with 0°C water. With neither insulation nor cooling, it slowly returns toward outside temperature. Auto repeats heat → upper limit → cool → near outside temperature."),
         ),
       ),
     ];
@@ -398,8 +404,8 @@ class _IsobaricAnimationWidgetState extends State<IsobaricAnimationWidget> {
                                 color: const Color(0xFF0277BD), width: 1.2),
                             borderRadius: BorderRadius.circular(4),
                           ),
-                          child: const Text(
-                            '氷水冷却中',
+                          child: Text(
+                            animL('氷水冷却中', 'Ice-water cooling'),
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.bold,

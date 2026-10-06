@@ -4,9 +4,11 @@ import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import './common.dart';
 import './heat_cycle_auto.dart';
 import './heat_cycle_energy.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 final heatCycleProcess = createWaveVideo(
   title: "熱機関と熱サイクル",
+  titleEn: 'Heat engine and heat cycle',
   category: 'thermoDynamics',
   iconName: 'boyleLaw',
   latex: r"""
@@ -25,6 +27,22 @@ final heatCycleProcess = createWaveVideo(
     <li><b>下端で荷物を載せる</b>：初期状態へ閉じ、次の一周に入れます。</li>
   </ol>
   """,
+  latexEn: r"""
+  <div class="common-box">Heat engine and heat cycle</div>
+  <p>Under the ideal gas law \(\displaystyle \frac{PV}{T}=\text{constant}\), load the piston with a mass equivalent to \(+300\,\mathrm{hPa}\) and observe a cycle that lifts it by heating.</p>
+  <p>First the pressure rises isochorically; once it balances at \(1313\,\mathrm{hPa}\), the piston rises isobarically. Heating stops automatically when the volume reaches the top. Removing the load lets heat leak through the thick walls so the volume returns; reload at the bottom to close the cycle.</p>
+  <p>Over one cycle the change in internal energy is \(0\), so the work \(W\) done by the gas equals the difference between heat added \(Q\) and heat rejected \(Q'\).</p>
+  <p>$$W = Q - Q'$$</p>
+  <p>Thermal efficiency is the fraction of the heat added that becomes work.</p>
+  <p>$$\eta = \frac{W}{Q} = 1 - \frac{Q'}{Q}$$</p>
+  <ol>
+    <li><b>Insulation ON, load on, heat</b>: pressure rises isochorically to \(1313\,\mathrm{hPa}\), then the piston lifts isobarically to the top stopper.</li>
+    <li><b>Stop heating at the top</b>: turn heating off once the volume stops increasing.</li>
+    <li><b>Unload</b>: the load returns to ambient-pressure equivalent.</li>
+    <li><b>Insulation OFF</b>: heat slowly leaks to the ambient through the thick walls until the volume reaches the bottom stopper.</li>
+    <li><b>Reload at the bottom</b>: return to the initial state and start the next cycle.</li>
+  </ol>
+  """,
   simulation: HeatCycleSimulation(),
   height: 974,
 );
@@ -32,7 +50,7 @@ final heatCycleProcess = createWaveVideo(
 class HeatCycleSimulation extends PhysicsSimulation {
   HeatCycleSimulation()
       : super(
-          title: "熱機関と熱サイクル",
+          title: animL("熱機関と熱サイクル", "Heat engine and heat cycle"),
           formula: const FormulaDisplay(r'\frac{PV}{T} = \text{const.}'),
           aspectRatio: 0.66,
         );
@@ -185,15 +203,11 @@ class HeatCycleSimulation extends PhysicsSimulation {
   @override
   List<Widget> buildControls(context, params, updateParam) {
     return [
-      const Text("操作説明", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-      const Padding(
+      Text(animL("操作説明", "How to operate"), style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+      Padding(
         padding: EdgeInsets.symmetric(vertical: 4.0),
         child: Text(
-          "1. 荷物（+300 hPa）あり・荷重 1313 hPa から開始。\n"
-          "2. 加熱すると定積で昇圧し、約 1313 hPa で定圧持ち上げ。\n"
-          "3. 体積が上端まで増えたら加熱は自動で止まり、加熱ボタンも外れます。\n"
-          "4. 荷物を取り、断熱をOFFにすると体積が戻り、下端で荷物を載せ直すと一周。\n"
-          "Auto は最初からオンで、自動循環します。右下の Reset で初期化できます。",
+          animL("1. 荷物（+300 hPa）あり・荷重 1313 hPa から開始。\n2. 加熱すると定積で昇圧し、約 1313 hPa で定圧持ち上げ。\n3. 体積が上端まで増えたら加熱は自動で止まり、加熱ボタンも外れます。\n4. 荷物を取り、断熱をOFFにすると体積が戻り、下端で荷物を載せ直すと一周。\nAuto は最初からオンで、自動循環します。右下の Reset で初期化できます。", "1. Start with the load (+300 hPa) on, load pressure 1313 hPa.\n2. Heating raises pressure at constant volume; around 1313 hPa it lifts at constant pressure.\n3. When volume reaches the top, heating stops automatically and the heat button turns off.\n4. Remove the load and turn insulation OFF to return volume; reload at the bottom to complete a cycle.\nAuto starts on and cycles automatically. Use Reset at bottom right to reinitialize."),
         ),
       ),
     ];
@@ -269,7 +283,7 @@ class HeatCycleSimulation extends PhysicsSimulation {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  hasCargo ? '荷物: あり' : '荷物: なし',
+                  hasCargo ? animL('荷物: あり', 'Load: on') : animL('荷物: なし', 'Load: off'),
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(width: 12),
@@ -279,7 +293,7 @@ class HeatCycleSimulation extends PhysicsSimulation {
                           cargoOn.value = true;
                         }
                       : null,
-                  child: const Text('荷物を載せる'),
+                  child: Text(animL('荷物を載せる', 'Place load')),
                 ),
                 const SizedBox(width: 8),
                 ElevatedButton(
@@ -288,7 +302,7 @@ class HeatCycleSimulation extends PhysicsSimulation {
                           cargoOn.value = false;
                         }
                       : null,
-                  child: const Text('荷物を取る'),
+                  child: Text(animL('荷物を取る', 'Remove load')),
                 ),
               ],
             ),
@@ -582,8 +596,8 @@ class _HeatCycleAnimationWidgetState extends State<HeatCycleAnimationWidget> {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       if (hasCargo) ...[
-                        const Text(
-                          "荷物 +300 hPa",
+                        Text(
+                          animL("荷物 +300 hPa", "Load +300 hPa"),
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
@@ -648,8 +662,12 @@ class _HeatCycleEnergyReadout extends StatelessWidget {
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
-        '一周  Q = ${j(q)}（与えた熱）   Q\' = ${j(qp)}（捨てた熱）\n'
-        'W = Q − Q\' = ${j(w)}    熱効率 η = W/Q = ${(eta * 100).toStringAsFixed(1)} %',
+        animL(
+          "一周  Q = ${j(q)}（与えた熱）   Q' = ${j(qp)}（捨てた熱）\n"
+          "W = Q − Q' = ${j(w)}    熱効率 η = W/Q = ${(eta * 100).toStringAsFixed(1)} %",
+          "One cycle  Q = ${j(q)} (heat in)   Q' = ${j(qp)} (heat out)\n"
+          "W = Q − Q' = ${j(w)}    Efficiency η = W/Q = ${(eta * 100).toStringAsFixed(1)} %",
+        ),
         style: const TextStyle(
           fontSize: 12,
           height: 1.35,

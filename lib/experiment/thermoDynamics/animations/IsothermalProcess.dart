@@ -4,10 +4,12 @@ import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import 'package:joyphysics/experiment/waves/animations/widgets/wave_slider.dart';
 import './common.dart';
 import './thermo_process_auto.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 /// 等温変化（等温過程）のシミュレーション
 final isothermalProcess = createWaveVideo(
   title: "等温変化",
+  titleEn: 'Isothermal process',
   category: 'thermoDynamics',
   iconName: 'boyleLaw',
   latex: r"""
@@ -19,6 +21,15 @@ final isothermalProcess = createWaveVideo(
   <p>$$P \propto \frac{1}{V}$$</p>
   <p>熱力学第一法則 $Q = \Delta U + W$ において、温度が変わらないため内部エネルギーの変化 $\Delta U = 0$ となり、外部から加えた熱 $Q$ はすべて気体が外部へ行う仕事 $W$ に等しくなります（あるいは外部から仕事を受けると、その分だけ熱を放出します）。</p>
   """,
+  latexEn: r"""
+  <div class="common-box">Isothermal process (constant temperature)</div>
+  <p>An isothermal process is a change of state with the gas temperature $T$ held constant.</p>
+  <p>If a vessel with thin heat-conducting walls is left in contact with the ambient air, the gas stays at the ambient temperature, so the process is isothermal.</p>
+  <p>By Boyle's law, at constant temperature the gas pressure $P$ is inversely proportional to the volume $V$.</p>
+  <p>$$PV = \text{constant}$$</p>
+  <p>$$P \propto \frac{1}{V}$$</p>
+  <p>In the first law of thermodynamics $Q = \Delta U + W$, the temperature does not change so $\Delta U = 0$, and the heat $Q$ added equals the work $W$ done by the gas on the surroundings (or, when work is done on the gas, an equal amount of heat is released).</p>
+  """,
   simulation: IsothermalSimulation(),
   height: 974,
 );
@@ -26,7 +37,7 @@ final isothermalProcess = createWaveVideo(
 class IsothermalSimulation extends PhysicsSimulation {
   IsothermalSimulation()
       : super(
-          title: "等温変化",
+          title: animL("等温変化", "Isothermal process"),
           formula: const FormulaDisplay(
               r'\displaystyle T = \text{const.},\quad PV = \text{const.}'),
           aspectRatio: 0.66,
@@ -90,7 +101,7 @@ class IsothermalSimulation extends PhysicsSimulation {
   List<Widget> buildControls(context, params, updateParam) {
     _updateParam = updateParam;
     return [
-      const Text("操作", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+      Text(animL("操作", "Controls"), style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
       ValueListenableBuilder<bool>(
         valueListenable: autoCycle,
         builder: (context, autoOn, _) {
@@ -100,7 +111,7 @@ class IsothermalSimulation extends PhysicsSimulation {
             maintainAnimation: true,
             maintainState: true,
             child: WaveParameterSlider(
-              label: "ピストンの押し引き\n(体積 V [L])",
+              label: animL("ピストンの押し引き\n(体積 V [L])", "Push/pull the piston\n(volume V [L])"),
               maxLines: 2,
               labelAlign: TextAlign.center,
               labelAbove: true,
@@ -122,13 +133,10 @@ class IsothermalSimulation extends PhysicsSimulation {
           );
         },
       ),
-      const Padding(
+      Padding(
         padding: EdgeInsets.symmetric(vertical: 4.0),
         child: Text(
-          "容器は薄い伝熱壁で、外気（300 K）に触れているため気体も常に同じ温度に保たれます（等温過程）。"
-          "一気に動かすと温度が変わってしまうので、ピストンはゆっくりしか動かせません。"
-          "初期状態は 1.0 L・300 K・1013 hPa です。"
-          "Auto では 1.0 L ⇄ 2.0 L のゆっくりした往復を繰り返します。",
+          animL("容器は薄い伝熱壁で、外気（300 K）に触れているため気体も常に同じ温度に保たれます（等温過程）。一気に動かすと温度が変わってしまうので、ピストンはゆっくりしか動かせません。初期状態は 1.0 L・300 K・1013 hPa です。Auto では 1.0 L ⇄ 2.0 L のゆっくりした往復を繰り返します。", "The vessel is a thin conducting wall in contact with outside air (300 K), so the gas stays at the same temperature (isothermal process). Moving too fast would change temperature, so the piston can only move slowly. Initial state is 1.0 L, 300 K, 1013 hPa. In Auto, slowly cycles between 1.0 L ⇄ 2.0 L."),
         ),
       ),
     ];

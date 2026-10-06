@@ -5,6 +5,8 @@
 /// 見える操作のあいだは [HeatCycleAutoSession.actionHoldSec]（既定 2s）待つ。
 library;
 
+import 'package:joyphysics/l10n/anim_ui.dart';
+
 class HeatCycleAutoSnapshot {
   const HeatCycleAutoSnapshot({
     required this.temperature,
@@ -99,35 +101,35 @@ HeatCycleAutoCommand? nextHeatCycleAutoCommand(HeatCycleAutoSnapshot s) {
 
 String heatCycleAutoStatusLabel(HeatCycleAutoSnapshot s) {
   if (s.atTopVolume) {
-    if (s.heating) return '加熱を止めています';
-    if (s.cargoOn) return '荷物を下ろしています';
-    if (s.insulated) return '壁（断熱）を外しています';
-    return '放熱により冷却中';
+    if (s.heating) return animL('加熱を止めています', 'Stopping heating');
+    if (s.cargoOn) return animL('荷物を下ろしています', 'Unloading cargo');
+    if (s.insulated) return animL('壁（断熱）を外しています', 'Removing adiabatic wall');
+    return animL('放熱により冷却中', 'Cooling by heat loss');
   }
 
   if (!s.cargoOn) {
-    if (s.atMin) return '荷物を載せています';
+    if (s.atMin) return animL('荷物を載せています', 'Loading cargo');
     if (!s.insulated) {
-      if (s.heating) return '加熱を止めています';
-      return '放熱により冷却中';
+      if (s.heating) return animL('加熱を止めています', 'Stopping heating');
+      return animL('放熱により冷却中', 'Cooling by heat loss');
     }
-    return '荷物を載せています';
+    return animL('荷物を載せています', 'Loading cargo');
   }
-  if (!s.insulated) return '断熱材を入れています';
-  if (!s.heating) return '加熱を始めています';
+  if (!s.insulated) return animL('断熱材を入れています', 'Inserting insulation');
+  if (!s.heating) return animL('加熱を始めています', 'Starting heating');
 
-  if (s.atBottomVolume) return '定積昇圧';
-  return '定圧膨張';
+  if (s.atBottomVolume) return animL('定積昇圧', 'Isochoric pressure rise');
+  return animL('定圧膨張', 'Isobaric expansion');
 }
 
 String heatCycleAutoCommandLabel(HeatCycleAutoCommand cmd) {
-  if (cmd.cargoOn == false) return '荷物を下ろしています';
-  if (cmd.cargoOn == true) return '荷物を載せています';
-  if (cmd.insulated == false) return '壁（断熱）を外しています';
-  if (cmd.insulated == true) return '断熱材を入れています';
-  if (cmd.heating == false) return '加熱を止めています';
-  if (cmd.heating == true) return '加熱を始めています';
-  return '自動サイクル中';
+  if (cmd.cargoOn == false) return animL('荷物を下ろしています', 'Unloading cargo');
+  if (cmd.cargoOn == true) return animL('荷物を載せています', 'Loading cargo');
+  if (cmd.insulated == false) return animL('壁（断熱）を外しています', 'Removing adiabatic wall');
+  if (cmd.insulated == true) return animL('断熱材を入れています', 'Inserting insulation');
+  if (cmd.heating == false) return animL('加熱を止めています', 'Stopping heating');
+  if (cmd.heating == true) return animL('加熱を始めています', 'Starting heating');
+  return animL('自動サイクル中', 'Auto cycle running');
 }
 
 class HeatCycleAutoSession {

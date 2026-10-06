@@ -5,6 +5,7 @@
 library;
 
 import 'dart:math' as math;
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 // ---------------------------------------------------------------------------
 // 定積・定圧: 温度往復（加熱 → 上限 → 壁外し → 冷却 → 外気温付近 → …）
@@ -130,43 +131,43 @@ String thermoTempAutoStatusLabel(ThermoTempAutoSnapshot s) {
   switch (s.phase) {
     case ThermoTempAutoPhase.heating:
       if (s.atMax) {
-        if (s.heating) return '加熱を止めています';
-        if (s.insulated) return '壁（断熱）を外しています';
-        return '冷却に切り替えます';
+        if (s.heating) return animL('加熱を止めています', 'Stopping heating');
+        if (s.insulated) return animL('壁（断熱）を外しています', 'Removing adiabatic wall');
+        return animL('冷却に切り替えます', 'Switching to cooling');
       }
-      if (s.cooling) return '冷却を止めています';
-      if (!s.insulated) return '断熱材を入れています';
-      if (!s.heating) return '加熱を始めています';
-      return '加熱中';
+      if (s.cooling) return animL('冷却を止めています', 'Stopping cooling');
+      if (!s.insulated) return animL('断熱材を入れています', 'Inserting insulation');
+      if (!s.heating) return animL('加熱を始めています', 'Starting heating');
+      return animL('加熱中', 'Heating');
     case ThermoTempAutoPhase.cooling:
       if (s.atAmbient) {
-        if (s.cooling) return '冷却を止めています';
-        if (!s.insulated) return '断熱材を入れています';
-        if (!s.heating) return '加熱を始めています';
-        return '加熱中';
+        if (s.cooling) return animL('冷却を止めています', 'Stopping cooling');
+        if (!s.insulated) return animL('断熱材を入れています', 'Inserting insulation');
+        if (!s.heating) return animL('加熱を始めています', 'Starting heating');
+        return animL('加熱中', 'Heating');
       }
-      if (s.heating) return '加熱を止めています';
-      if (s.insulated) return '壁（断熱）を外しています';
-      if (!s.cooling) return '冷却を開始しています';
-      return '冷却中';
+      if (s.heating) return animL('加熱を止めています', 'Stopping heating');
+      if (s.insulated) return animL('壁（断熱）を外しています', 'Removing adiabatic wall');
+      if (!s.cooling) return animL('冷却を開始しています', 'Starting cooling');
+      return animL('冷却中', 'Cooling');
   }
 }
 
 String thermoTempAutoCommandLabel(ThermoTempAutoCommand cmd) {
-  if (cmd.cooling == true) return '冷却を開始しています';
+  if (cmd.cooling == true) return animL('冷却を開始しています', 'Starting cooling');
   if (cmd.cooling == false &&
       cmd.insulated == null &&
       cmd.heating == null &&
       cmd.phase == null) {
-    return '冷却を止めています';
+    return animL('冷却を止めています', 'Stopping cooling');
   }
   if (cmd.heating == false && cmd.insulated == null && cmd.cooling != true) {
-    return '加熱を止めています';
+    return animL('加熱を止めています', 'Stopping heating');
   }
-  if (cmd.insulated == false) return '壁（断熱）を外しています';
-  if (cmd.insulated == true) return '断熱材を入れています';
-  if (cmd.heating == true) return '加熱を始めています';
-  return '自動サイクル中';
+  if (cmd.insulated == false) return animL('壁（断熱）を外しています', 'Removing adiabatic wall');
+  if (cmd.insulated == true) return animL('断熱材を入れています', 'Inserting insulation');
+  if (cmd.heating == true) return animL('加熱を始めています', 'Starting heating');
+  return animL('自動サイクル中', 'Auto cycle running');
 }
 
 class ThermoTempAutoSession {
@@ -316,11 +317,11 @@ ThermoVolumeAutoCommand nextThermoVolumeAutoCommand(ThermoVolumeAutoSnapshot s) 
 String thermoVolumeAutoStatusLabel(ThermoVolumeAutoSnapshot s) {
   switch (s.phase) {
     case ThermoVolumeAutoPhase.expanding:
-      if (s.atFar) return '上端で待機中';
-      return '膨張中';
+      if (s.atFar) return animL('上端で待機中', 'Waiting at top');
+      return animL('膨張中', 'Expanding');
     case ThermoVolumeAutoPhase.compressing:
-      if (s.atHome) return '下端で待機中';
-      return '圧縮中';
+      if (s.atHome) return animL('下端で待機中', 'Waiting at bottom');
+      return animL('圧縮中', 'Compressing');
   }
 }
 
@@ -393,7 +394,7 @@ class ThermoVolumeAutoSession {
       if (actionHoldSec > 0) {
         holdRemainingSec = actionHoldSec;
         _holdAtVolume = volume;
-        holdStatusLabel = '上端で待機中';
+        holdStatusLabel = animL('上端で待機中', 'Waiting at top');
       }
     } else if (phase == ThermoVolumeAutoPhase.compressing &&
         volume <= homeVolume + 0.02) {
@@ -402,7 +403,7 @@ class ThermoVolumeAutoSession {
       if (actionHoldSec > 0) {
         holdRemainingSec = actionHoldSec;
         _holdAtVolume = volume;
-        holdStatusLabel = '下端で待機中';
+        holdStatusLabel = animL('下端で待機中', 'Waiting at bottom');
       }
     } else {
       _holdAtVolume = null;

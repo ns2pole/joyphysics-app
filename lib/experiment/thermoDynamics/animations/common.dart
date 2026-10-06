@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 /// 熱力学シミュレーションで共通して使用される粒子クラス
 class ThermodynamicParticle {
@@ -895,9 +896,9 @@ Widget buildGasStateHud({
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        block('体積', '${volumeL.toStringAsFixed(2)} L'),
-        block('気圧', '${pressureHPa.toStringAsFixed(0)} hPa'),
-        block('温度', '${temperatureK.toStringAsFixed(0)} K'),
+        block(animL('体積', 'Volume'), '${volumeL.toStringAsFixed(2)} L'),
+        block(animL('気圧', 'Pressure'), '${pressureHPa.toStringAsFixed(0)} hPa'),
+        block(animL('温度', 'Temperature'), '${temperatureK.toStringAsFixed(0)} K'),
       ],
     ),
   );
@@ -912,8 +913,8 @@ Widget buildAmbientInsulationBadge() {
       border: Border.all(color: Colors.black87, width: 1.2),
       borderRadius: BorderRadius.circular(4),
     ),
-    child: const Text(
-      '外気と断熱中',
+    child: Text(
+      animL('外気と断熱中', 'Adiabatic from ambient'),
       style: TextStyle(
         fontSize: 13,
         fontWeight: FontWeight.bold,
@@ -959,8 +960,8 @@ Widget buildAmbientTpLabels({
   return Column(
     crossAxisAlignment: CrossAxisAlignment.end,
     children: [
-      block('外気温', '${temperatureK.toStringAsFixed(0)} K'),
-      block('外気圧', '${pressureHPa.toStringAsFixed(0)} hPa'),
+      block(animL('外気温', 'Ambient temperature'), '${temperatureK.toStringAsFixed(0)} K'),
+      block(animL('外気圧', 'Ambient pressure'), '${pressureHPa.toStringAsFixed(0)} hPa'),
     ],
   );
 }
@@ -1311,7 +1312,7 @@ Widget buildThermoAutoToggle({
       mainAxisSize: MainAxisSize.min,
       children: [
         buildThermoAutoStatusBox(
-          autoOn ? (statusLabel ?? '自動サイクル中') : null,
+          autoOn ? (statusLabel ?? animL('自動サイクル中', 'Auto cycle running')) : null,
         ),
         const SizedBox(height: 4),
         Center(
@@ -1387,7 +1388,7 @@ Widget buildThermoInsulationHeatControls({
 
   final chips = <Widget>[
     chip(
-      label: '断熱',
+      label: animL('断熱', 'Adiabatic'),
       color: Colors.brown,
       selected: insulated,
       enabled: insulationEnabled,
@@ -1411,7 +1412,7 @@ Widget buildThermoInsulationHeatControls({
     ),
     if (showCooling)
       chip(
-        label: '冷却',
+        label: animL('冷却', 'Cooling'),
         color: Colors.blue,
         selected: activeIds.contains('cooling'),
         enabled: coolingEnabled,
@@ -1430,7 +1431,7 @@ Widget buildThermoInsulationHeatControls({
         },
       ),
     chip(
-      label: '加熱',
+      label: animL('加熱', 'Heating'),
       color: Colors.orange,
       selected: activeIds.contains('heating'),
       enabled: heatingEnabled,
@@ -1489,7 +1490,7 @@ Widget buildThermoInsulationHeatControls({
       mainAxisSize: MainAxisSize.min,
       children: [
         buildThermoAutoStatusBox(
-          autoOn == true ? (statusLabel ?? '自動サイクル中') : null,
+          autoOn == true ? (statusLabel ?? animL('自動サイクル中', 'Auto cycle running')) : null,
         ),
         const SizedBox(height: 4),
         Center(child: row),

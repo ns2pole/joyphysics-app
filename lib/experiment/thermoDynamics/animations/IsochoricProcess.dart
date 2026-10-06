@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import './common.dart';
 import './thermo_process_auto.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 /// 定積変化（等積変化）のシミュレーション
 final isochoricProcess = createWaveVideo(
   title: "定積変化",
+  titleEn: 'Isochoric process',
   category: 'thermoDynamics',
   iconName: 'boyleLaw',
   latex: r"""
@@ -17,6 +19,14 @@ final isochoricProcess = createWaveVideo(
   <p>$$\frac{P}{T} = \text{一定}$$</p>
   <p>熱力学第一法則 $Q = \Delta U + W$ において、体積が変化しないため仕事 $W = P\Delta V = 0$ となり、加えた熱 $Q$ はすべて内部エネルギーの増加（温度上昇）に使われます。</p>
   """,
+  latexEn: r"""
+  <div class="common-box">Isochoric process (constant volume)</div>
+  <p>An isochoric process is a change of state with the gas volume $V$ held constant.</p>
+  <p>From the combined gas law $\displaystyle \frac{PV}{T} = \text{constant}$, when $V$ is fixed the pressure $P$ is proportional to the absolute temperature $T$.</p>
+  <p>$$P \propto T$$</p>
+  <p>$$\frac{P}{T} = \text{constant}$$</p>
+  <p>In the first law of thermodynamics $Q = \Delta U + W$, the volume does not change so the work is $W = P\Delta V = 0$, and the heat $Q$ added all goes into increasing the internal energy (raising the temperature).</p>
+  """,
   simulation: IsochoricSimulation(),
   height: 974,
 );
@@ -24,7 +34,7 @@ final isochoricProcess = createWaveVideo(
 class IsochoricSimulation extends PhysicsSimulation {
   IsochoricSimulation()
       : super(
-          title: "定積変化",
+          title: animL("定積変化", "Isochoric process"),
           formula: const FormulaDisplay(r'V = \text{const.}, \quad \frac{P}{T} = \text{const.}'),
           aspectRatio: 0.66,
         );
@@ -123,15 +133,11 @@ class IsochoricSimulation extends PhysicsSimulation {
   @override
   List<Widget> buildControls(context, params, updateParam) {
     return [
-      const Text("設定", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-      const Padding(
+      Text(animL("設定", "Settings"), style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+      Padding(
         padding: EdgeInsets.symmetric(vertical: 8.0),
         child: Text(
-          "内容器は薄い伝熱壁で、側面・底の断熱材ごと薄い外容器にスッポリ入っています。"
-          "「断熱」をオンにすると外容器内に断熱材が付き、加熱で温度を上げられます。"
-          "断熱を外したときだけ「冷却」ができ、外容器に 0℃ の水が満ちます。"
-          "断熱なし・冷却なしでは外気温へゆっくり戻ります。"
-          "Auto では加熱→上限→冷却→外気温付近、の往復を繰り返します。",
+          animL("内容器は薄い伝熱壁で、側面・底の断熱材ごと薄い外容器にスッポリ入っています。「断熱」をオンにすると外容器内に断熱材が付き、加熱で温度を上げられます。断熱を外したときだけ「冷却」ができ、外容器に 0℃ の水が満ちます。断熱なし・冷却なしでは外気温へゆっくり戻ります。Auto では加熱→上限→冷却→外気温付近、の往復を繰り返します。", "The inner vessel is a thin conducting wall, nested with side/bottom insulation inside a thin outer vessel. Turning “Insulate” on adds insulation inside the outer vessel so you can raise temperature by heating. “Cool” is available only with insulation off; the outer vessel then fills with 0°C water. With neither insulation nor cooling, it slowly returns toward outside temperature. Auto repeats heat → upper limit → cool → near outside temperature."),
         ),
       ),
     ];
@@ -406,8 +412,8 @@ class _IsochoricAnimationWidgetState extends State<IsochoricAnimationWidget> {
                                 color: const Color(0xFF0277BD), width: 1.2),
                             borderRadius: BorderRadius.circular(4),
                           ),
-                          child: const Text(
-                            '氷水冷却中',
+                          child: Text(
+                            animL('氷水冷却中', 'Ice-water cooling'),
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.bold,
