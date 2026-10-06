@@ -5,6 +5,7 @@ import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import 'package:joyphysics/experiment/dynamics/animations/energy_gauge.dart';
 import 'package:joyphysics/experiment/playback_controls.dart';
 import 'package:joyphysics/model.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 /// 左のおもりの下向きを正。滑車は軽く、摩擦も軸の慣性もない。$g=9.8\,\mathrm{m/s^2}$。
 const double kAtwoodG = 9.8;
@@ -144,7 +145,7 @@ List<AtwoodSample> atwoodStrobe(
   double t, {
   double dt = kAtwoodStrobeDt,
 }) {
-  if (t <= 1e-9 || dt <= 0) return const [];
+  if (t <= 1e-9 || dt <= 0) return [];
   final samples = <AtwoodSample>[];
   for (double ti = dt; ti < t - 1e-9; ti += dt) {
     final s = atwoodAt(params, ti);
@@ -154,11 +155,8 @@ List<AtwoodSample> atwoodStrobe(
   return samples;
 }
 
-const String kAtwoodCaption =
-    '定滑車の両端を、伸びない糸でつなぐ。滑車は軽く、摩擦もない。\n'
-    '重いほうが下り、軽いほうが同じだけ上がる。加速度の大きさは同じ。\n'
-    '張力は両側で同じ。質量が等しいと加速度は 0 で、動かない。\n'
-    '床に着いたところで止める。着地のあとの糸のたるみは扱わない。';
+String kAtwoodCaption =
+    animL('定滑車の両端を、伸びない糸でつなぐ。滑車は軽く、摩擦もない。\n重いほうが下り、軽いほうが同じだけ上がる。加速度の大きさは同じ。\n張力は両側で同じ。質量が等しいと加速度は 0 で、動かない。\n床に着いたところで止める。着地のあとの糸のたるみは扱わない。', 'Connect both ends of the fixed pulley with an inextensible string. The pulley is light and frictionless.\nThe heavier side descends and the lighter side rises by the same amount. The magnitudes of the accelerations are equal.\nTension is the same on both sides. If the masses are equal, the acceleration is 0 and nothing moves.\nStop when it reaches the floor. Slack in the string after landing is not treated.');
 
 final atwoodMachine1D = Video(
   isNew: false,
@@ -166,6 +164,7 @@ final atwoodMachine1D = Video(
   category: 'dynamics',
   iconName: 'dynamics',
   title: '定滑車(アトウッドの器械)',
+  titleEn: 'Fixed pulley (Atwood machine)',
   videoURL: '',
   equipment: [],
   costRating: '★',
@@ -182,6 +181,19 @@ final atwoodMachine1D = Video(
   <p>下りる側が距離 $h$ の床に着くまでの時間と速さは</p>
   <p>$$t=\sqrt{\frac{2h}{|a|}},\quad |v|=\sqrt{2|a|h}$$</p>
 """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>Assume the fixed pulley is light, with no axle friction or inertia. The string is inextensible and massless. Let the left mass be $m_1$ and the right mass $m_2$.</p>
+  <p>Because the string does not stretch, if the left mass descends by $s$, the right mass rises by $s$. The magnitude of the acceleration is the same on both sides. Taking downward on the left as positive,</p>
+  <p>$$a=\frac{(m_1-m_2)g}{m_1+m_2}$$</p>
+  <p>The tension is the same on both sides:</p>
+  <p>$$T=\frac{2m_1 m_2 g}{m_1+m_2}$$</p>
+  <p>Released from rest, until one mass hits the floor,</p>
+  <p>$$s=\frac{1}{2}at^{2},\quad v=at$$</p>
+  <p>If $m_1>m_2$, the left side descends; if $m_1<m_2$, the right side descends. If $m_1=m_2$, then $a=0$ and $T=m_1 g$, so nothing moves when released.</p>
+  <p>The time and speed until the descending side travels distance $h$ to the floor are</p>
+  <p>$$t=\sqrt{\frac{2h}{|a|}},\quad |v|=\sqrt{2|a|h}$$</p>
+""",
   experimentWidgets: [
     PhysicsSimulationView(
       simulation: AtwoodMachine1DSimulation(),
@@ -193,7 +205,7 @@ final atwoodMachine1D = Video(
 class AtwoodMachine1DSimulation extends PhysicsSimulation {
   AtwoodMachine1DSimulation()
       : super(
-          title: '定滑車(アトウッドの器械)',
+          title: animL('定滑車(アトウッドの器械)', 'Fixed pulley (Atwood machine)'),
           formula: const FormulaDisplay(
             r'\displaystyle a=\frac{(m_1-m_2)g}{m_1+m_2},\quad T=\frac{2m_1 m_2 g}{m_1+m_2}',
           ),
@@ -286,7 +298,7 @@ class AtwoodMachine1DSimulation extends PhysicsSimulation {
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
+            Text(
               kAtwoodCaption,
               textAlign: TextAlign.center,
               style: TextStyle(
@@ -318,11 +330,11 @@ class AtwoodMachine1DSimulation extends PhysicsSimulation {
     final hit = atwoodHitTime(p);
     final speed = atwoodHitSpeed(p);
     final summary = hit == null
-        ? '加速度 0    張力 ${p.tension.toStringAsFixed(2)} N'
-        : '着地まで ${hit.toStringAsFixed(2)} s    着地の速さ ${speed!.toStringAsFixed(2)} m/s';
+        ? animL('加速度 0    張力 ${p.tension.toStringAsFixed(2)} N', 'Acceleration 0    Tension ${p.tension.toStringAsFixed(2)} N')
+        : animL('着地まで ${hit.toStringAsFixed(2)} s    着地の速さ ${speed!.toStringAsFixed(2)} m/s', 'Time to landing ${hit.toStringAsFixed(2)} s    Landing speed ${speed!.toStringAsFixed(2)} m/s');
     return [
-      const Text(
-        '初期条件（g = 9.8 m/s²、静かに放す）',
+      Text(
+        animL('初期条件（g = 9.8 m/s²、静かに放す）', 'Initial conditions (g = 9.8 m/s², released from rest)'),
         style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
       ),
       _AtwoodSlider(
@@ -331,7 +343,7 @@ class AtwoodMachine1DSimulation extends PhysicsSimulation {
         min: kAtwoodMinM,
         max: kAtwoodMaxM,
         onChanged: (v) => updateParam('m1', v),
-        semanticLabel: '左の質量 m1',
+        semanticLabel: animL('左の質量 m1', 'Left mass m1'),
       ),
       _AtwoodSlider(
         label: 'm2',
@@ -339,7 +351,7 @@ class AtwoodMachine1DSimulation extends PhysicsSimulation {
         min: kAtwoodMinM,
         max: kAtwoodMaxM,
         onChanged: (v) => updateParam('m2', v),
-        semanticLabel: '右の質量 m2',
+        semanticLabel: animL('右の質量 m2', 'Right mass m2'),
       ),
       _AtwoodSlider(
         label: 'h',
@@ -347,7 +359,7 @@ class AtwoodMachine1DSimulation extends PhysicsSimulation {
         min: kAtwoodMinH,
         max: kAtwoodMaxH,
         onChanged: (v) => updateParam('h', v),
-        semanticLabel: '床までの距離 h',
+        semanticLabel: animL('床までの距離 h', 'Distance to floor h'),
       ),
       Padding(
         padding: const EdgeInsets.only(top: 4),
@@ -545,7 +557,7 @@ class _AtwoodPainter extends CustomPainter {
         ..color = _floor
         ..strokeWidth = 3,
     );
-    _label(canvas, Offset(28, layout.floorY - 16), '床', _floor);
+    _label(canvas, Offset(28, layout.floorY - 16), animL('床', 'Floor'), _floor);
   }
 
   void _drawString(Canvas canvas, _AtwoodLayout layout) {
@@ -691,10 +703,10 @@ class _AtwoodPainter extends CustomPainter {
   String _hudLines() {
     final hit = atwoodHitTime(params);
     final tail = hit == null
-        ? '動かない'
+        ? animL('動かない', 'Not moving')
         : sample.stopped
-            ? '床に着いた'
-            : '着地まで ${hit.toStringAsFixed(2)} s';
+            ? animL('床に着いた', 'Reached the floor')
+            : animL('着地まで ${hit.toStringAsFixed(2)} s', 'Time to landing ${hit.toStringAsFixed(2)} s');
     return 't = ${sample.t.toStringAsFixed(2)} s\n'
         's = ${sample.s.toStringAsFixed(2)} m\n'
         'v = ${sample.v.toStringAsFixed(2)} m/s\n'

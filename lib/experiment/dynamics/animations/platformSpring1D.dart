@@ -6,6 +6,7 @@ import 'package:joyphysics/experiment/dynamics/animations/energy_gauge.dart';
 import 'package:joyphysics/experiment/dynamics/animations/springOscillator1D.dart';
 import 'package:joyphysics/experiment/playback_controls.dart';
 import 'package:joyphysics/model.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 /// 床に立てた鉛直ばねの上の台 $M$ と、その上に載せたおもり $m$。
 /// 下向き正。$y$ は自然長の位置から測った台（接触中はおもりも）の変位。
@@ -189,17 +190,17 @@ EnergyLedger platformSpringEnergy(
     kineticPortions: [
       EnergyPortion(
         value: 0.5 * params.bigM * sample.vPlatform * sample.vPlatform,
-        label: '台の運動エネルギー',
+        label: animL('台の運動エネルギー', 'Platform kinetic energy'),
         color: const Color(0xFF5E35B1),
       ),
       EnergyPortion(
         value: 0.5 * params.m * sample.vMass * sample.vMass,
-        label: 'おもりの運動エネルギー',
+        label: animL('おもりの運動エネルギー', 'Mass kinetic energy'),
         color: kEnergyKinetic,
       ),
     ],
     legendHeat: sample.dissipated > 1e-9,
-    potentialLabel: '弾性＋重力',
+    potentialLabel: animL('弾性＋重力', 'Elastic + gravity'),
   );
 }
 
@@ -207,15 +208,12 @@ String platformSpringCaption(PlatformSpringParams params) {
   final d = params.delta;
   final thr = 2 * d;
   final eNote = params.e > 1e-6
-      ? '再接触の反発係数 e = ${params.e.toStringAsFixed(2)} です。\n'
+      ? animL('再接触の反発係数 e = ${params.e.toStringAsFixed(2)} です。\n', 'Coefficient of restitution on recontact e = ${params.e.toStringAsFixed(2)}.\n')
       : '';
   if (params.willSeparate) {
-    return '${eNote}初期圧縮 y0 が 2δ = ${thr.toStringAsFixed(3)} m 以上なので、'
-        '自然長で垂直抗力が 0 になりおもりが離れます。\n'
-        'δ = ${d.toStringAsFixed(3)} m。離れたあとは台だけが振動し、おもりは放物運動します。';
+    return animL('${eNote}初期圧縮 y0 が 2δ = ${thr.toStringAsFixed(3)} m 以上なので、自然長で垂直抗力が 0 になりおもりが離れます。\nδ = ${d.toStringAsFixed(3)} m。離れたあとは台だけが振動し、おもりは放物運動します。', '${eNote}Initial compression y0 is at least 2δ = ${thr.toStringAsFixed(3)} m, so at natural length the normal force becomes 0 and the mass leaves.\nδ = ${d.toStringAsFixed(3)} m. After leaving, only the platform oscillates; the mass follows a parabola.');
   }
-  return '${eNote}初期圧縮は 2δ = ${thr.toStringAsFixed(3)} m 未満なので、おもりは台から離れません。\n'
-      '一体の質量 M+m、つりあい δ = ${d.toStringAsFixed(3)} m のまわりで単振動します。';
+  return animL('${eNote}初期圧縮は 2δ = ${thr.toStringAsFixed(3)} m 未満なので、おもりは台から離れません。\n一体の質量 M+m、つりあい δ = ${d.toStringAsFixed(3)} m のまわりで単振動します。', '${eNote}Initial compression is less than 2δ = ${thr.toStringAsFixed(3)} m, so the mass does not leave the platform.\nCombined mass M+m oscillates about equilibrium δ = ${d.toStringAsFixed(3)} m.');
 }
 
 /// 接触中の単振動。$\displaystyle y=y_{\mathrm{eq}}+(y_c-y_{\mathrm{eq}})\cos\omega\tau+\frac{v_c}{\omega}\sin\omega\tau$。
@@ -454,10 +452,10 @@ PlatformSpringSample platformSpringAt(PlatformSpringParams params, double t) {
   );
 }
 
-const String kPlatformSpringFormula =
+String kPlatformSpringFormula =
     r'\displaystyle (M+m)\ddot y=(M+m)g-ky';
 
-const String kPlatformSpringSeparatedFormula =
+String kPlatformSpringSeparatedFormula =
     r'\displaystyle \ddot y_m=g,\quad M\ddot y_M=Mg-ky_M';
 
 final platformSpring1D = Video(
@@ -466,6 +464,7 @@ final platformSpring1D = Video(
   category: 'dynamics',
   iconName: 'dynamics',
   title: 'ばね上の台とおもり',
+  titleEn: 'Platform and mass on a spring',
   videoURL: '',
   equipment: [],
   costRating: '★',
@@ -482,6 +481,19 @@ final platformSpring1D = Video(
   <p>$$\displaystyle v_m'-v_M'=-e(v_m-v_M)$$</p>
   <p>から衝突後の速度が決まり、$e>0$ なら弾んでまた離れます。</p>
 """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>A flat platform of mass $M$ sits on a vertical spring fixed to the floor, with a mass $m$ on the platform. Let the spring constant be $k$, take downward as positive, and set the natural length at $y=0$. While the mass stays on the platform they move as one:</p>
+  <p>$$\displaystyle (M+m)\ddot y=(M+m)g-ky$$</p>
+  <p>With displacement $x=y-\delta$ from equilibrium $\displaystyle \delta=\frac{(M+m)g}{k}$,</p>
+  <p>$$\displaystyle \ddot x=-\omega^{2}x,\quad \omega=\sqrt{\frac{k}{M+m}},\quad T=2\pi\sqrt{\frac{M+m}{k}}$$</p>
+  <p>From the mass equation $\displaystyle mg-N=ma$, the normal force is</p>
+  <p>$$\displaystyle N=m(g-a)=\frac{mky}{M+m}$$</p>
+  <p>At the natural length $y=0$, $N=0$. Released gently from compression, the opposite turning point is $2\delta-y_0$, so if $y_0\ge 2\delta$ the mass leaves the platform along the way. After separation the mass is in free fall and the platform undergoes simple harmonic motion with mass $M$ alone.</p>
+  <p>Let $e$ be the coefficient of restitution on recontact ($e=0$ sticks as one body, $e=1$ is perfectly elastic). Momentum conservation and</p>
+  <p>$$\displaystyle v_m'-v_M'=-e(v_m-v_M)$$</p>
+  <p>determine the post-collision velocities; if $e>0$ they bounce and separate again.</p>
+""",
   experimentWidgets: [
     PhysicsSimulationView(
       simulation: PlatformSpring1DSimulation(),
@@ -493,8 +505,8 @@ final platformSpring1D = Video(
 class PlatformSpring1DSimulation extends PhysicsSimulation {
   PlatformSpring1DSimulation()
       : super(
-          title: 'ばね上の台とおもり',
-          formula: const FormulaDisplay(kPlatformSpringFormula),
+          title: animL('ばね上の台とおもり', 'Platform and mass on a spring'),
+          formula: FormulaDisplay(kPlatformSpringFormula),
           // 鉛直バネと同じ縦長キャンバス。
           aspectRatio: 4 / 5,
           enableTime: false,
@@ -556,9 +568,9 @@ class PlatformSpring1DSimulation extends PhysicsSimulation {
   Widget? buildFormulaOverlay(Map<String, double> parameters) {
     _rememberParams(parameters);
     if (!_params.willSeparate) {
-      return const FormulaDisplay(kPlatformSpringFormula);
+      return FormulaDisplay(kPlatformSpringFormula);
     }
-    return const Column(
+    return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         FormulaDisplay(kPlatformSpringFormula),
@@ -609,8 +621,8 @@ class PlatformSpring1DSimulation extends PhysicsSimulation {
     _rememberParams(parameters);
     final p = _params;
     return [
-      const Text(
-        '台 M・おもり m・ばね k・重力 g・初期圧縮 y0・反発係数 e',
+      Text(
+        animL('台 M・おもり m・ばね k・重力 g・初期圧縮 y0・反発係数 e', 'Platform M, mass m, spring k, gravity g, initial compression y0, restitution e'),
         style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
       ),
       _PlatformSlider(
@@ -622,7 +634,7 @@ class PlatformSpring1DSimulation extends PhysicsSimulation {
           updateParam('M', v);
           resetMotion();
         },
-        semanticLabel: '台の質量 M',
+        semanticLabel: animL('台の質量 M', 'Wedge mass M'),
       ),
       _PlatformSlider(
         label: 'm',
@@ -633,7 +645,7 @@ class PlatformSpring1DSimulation extends PhysicsSimulation {
           updateParam('m', v);
           resetMotion();
         },
-        semanticLabel: 'おもりの質量 m',
+        semanticLabel: animL('おもりの質量 m', 'Mass m'),
       ),
       _PlatformSlider(
         label: 'k',
@@ -644,7 +656,7 @@ class PlatformSpring1DSimulation extends PhysicsSimulation {
           updateParam('k', v);
           resetMotion();
         },
-        semanticLabel: 'ばね定数 k',
+        semanticLabel: animL('ばね定数 k', 'Spring constant k'),
       ),
       _PlatformSlider(
         label: 'g',
@@ -655,7 +667,7 @@ class PlatformSpring1DSimulation extends PhysicsSimulation {
           updateParam('g', v);
           resetMotion();
         },
-        semanticLabel: '重力加速度 g',
+        semanticLabel: animL('重力加速度 g', 'Gravitational acceleration g'),
       ),
       _PlatformSlider(
         label: 'y0',
@@ -666,7 +678,7 @@ class PlatformSpring1DSimulation extends PhysicsSimulation {
           updateParam('y0', v);
           resetMotion();
         },
-        semanticLabel: '初期圧縮 自然長から下',
+        semanticLabel: animL('初期圧縮 自然長から下', 'Initial compression down from natural length'),
       ),
       _PlatformSlider(
         label: 'e',
@@ -677,14 +689,14 @@ class PlatformSpring1DSimulation extends PhysicsSimulation {
           updateParam('e', v);
           resetMotion();
         },
-        semanticLabel: 'おもりと台の反発係数 e（0 がくっつく、1 が完全弾性）',
+        semanticLabel: animL('おもりと台の反発係数 e（0 がくっつく、1 が完全弾性）', 'Mass–platform restitution e (0 sticks, 1 perfectly elastic)'),
       ),
       Padding(
         padding: const EdgeInsets.only(top: 4),
         child: Text(
           'δ = ${p.delta.toStringAsFixed(3)} m    '
-          '2δ = ${(2 * p.delta).toStringAsFixed(3)} m    '
-          '接触の T = ${p.period.toStringAsFixed(2)} s',
+          '2δ = ${(2 * p.delta).toStringAsFixed(3)} m    ' +
+          animL('接触の T = ${p.period.toStringAsFixed(2)} s', 'Contact T = ${p.period.toStringAsFixed(2)} s'),
           style: const TextStyle(
             fontSize: 12,
             fontFamily: 'Courier',
@@ -799,10 +811,10 @@ class _PlatformSpringPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     canvas.drawRect(Offset.zero & size, Paint()..color = _bg);
-    final contactLabel = sample.contact ? '接触' : '離れている';
+    final contactLabel = sample.contact ? animL('接触', 'Contact') : animL('離れている', 'Separated');
     final periodLabel = sample.contact
         ? 'T = ${params.period.toStringAsFixed(2)} s'
-        : '台の T = ${(2 * math.pi / params.omegaPlatform).toStringAsFixed(2)} s';
+        : animL('台の T = ${(2 * math.pi / params.omegaPlatform).toStringAsFixed(2)} s', 'Platform T = ${(2 * math.pi / params.omegaPlatform).toStringAsFixed(2)} s');
     final hud = 't = ${sample.t.toStringAsFixed(2)} s\n'
         'y = ${sample.yPlatform.toStringAsFixed(3)} m\n'
         'v = ${springVelocityReadout(sample.vPlatform, downwardPositive: true)} m/s\n'
@@ -845,10 +857,10 @@ class _PlatformSpringPainter extends CustomPainter {
     );
 
     _dashedH(canvas, 24, size.width - 24, naturalScreen, _natural);
-    _label(canvas, '自然長', 28, naturalScreen - 16, _natural);
+    _label(canvas, animL('自然長', 'Natural length'), 28, naturalScreen - 16, _natural);
     if (params.delta > 1e-4) {
       _dashedH(canvas, 24, size.width - 24, sy(params.delta), _eq);
-      _label(canvas, 'つりあい δ', size.width - 92, sy(params.delta) - 16, _eq);
+      _label(canvas, animL('つりあい δ', 'Equilibrium δ'), size.width - 92, sy(params.delta) - 16, _eq);
     }
 
     final platformCenterY = sy(sample.yPlatform);

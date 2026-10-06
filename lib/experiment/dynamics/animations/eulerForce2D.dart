@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import 'package:joyphysics/experiment/playback_controls.dart';
 import 'package:joyphysics/model.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 /// 台上の距離 $R$ に固定された物体。台は角速度 0 から角加速度 $\alpha$ で回り始める。
 const double kEulerMinR = 0.60;
@@ -91,9 +92,7 @@ EulerSample eulerAt(EulerParams params, double t) {
 }
 
 String eulerCaption() {
-  return '台上の物体は、台といっしょに角速度 0 から回り始める。\n'
-      '地上では静止摩擦が、中心向きと接線方向に働く。\n'
-      '台上では物体は静止し、オイラー力と遠心力を足すとつり合う。';
+  return animL('台上の物体は、台といっしょに角速度 0 から回り始める。\n地上では静止摩擦が、中心向きと接線方向に働く。\n台上では物体は静止し、オイラー力と遠心力を足すとつり合う。', 'The object on the platform starts rotating with the platform from angular velocity 0.\nOn the ground, static friction acts toward the center and tangentially.\nOn the platform the object is at rest; adding the Euler force and centrifugal force restores equilibrium.');
 }
 
 final eulerForce2D = Video(
@@ -102,6 +101,7 @@ final eulerForce2D = Video(
   category: 'dynamics',
   iconName: 'dynamics',
   title: 'オイラー力',
+  titleEn: 'Euler force',
   videoURL: '',
   equipment: [],
   costRating: '★',
@@ -111,6 +111,13 @@ final eulerForce2D = Video(
   <p>$$ \omega=\alpha t,\quad \theta=\frac{1}{2}\alpha t^{2} $$</p>
   <p>物体は台の上に置いてあるだけで、働く力は静止摩擦です。地上から見ると、物体は円周上を速さを増しながら動きます。静止摩擦は、中心向きの $\displaystyle m\omega^{2}R$ と、回転が速くなる向きの $\displaystyle m\alpha R$ に分かれます。</p>
   <p>台といっしょに回る人から見ると、物体は止まっています。この座標系での速度は $0$ なので、コリオリ力は出ません。外向きの遠心力 $\displaystyle m\omega^{2}R$ が中心向きの摩擦と、接線の逆向きのオイラー力 $\displaystyle m\alpha R$ が接線方向の摩擦と、それぞれつり合います。$t=0$ では遠心力はまだ $0$ で、慣性力はオイラー力だけです。</p>
+""",
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>On a horizontal platform, an object at distance $R$ from the center is fixed to the platform. Starting from rest, the platform begins to rotate with constant angular acceleration $\alpha$. On a wide screen the views are side by side; on a narrow screen they are stacked. Top or left is the lab frame; bottom or right is the platform frame.</p>
+  <p>$$ \omega=\alpha t,\quad \theta=\frac{1}{2}\alpha t^{2} $$</p>
+  <p>The object rests on the platform, so the force acting is static friction. In the lab frame the object moves on a circle with increasing speed. Static friction splits into a centripetal part $\displaystyle m\omega^{2}R$ and a tangential part $\displaystyle m\alpha R$ in the sense of speeding up.</p>
+  <p>Relative to a person rotating with the platform, the object is at rest. The velocity in this frame is $0$, so there is no Coriolis force. The outward centrifugal force $\displaystyle m\omega^{2}R$ balances the inward friction, and the Euler force $\displaystyle m\alpha R$ opposite to the tangential direction balances the tangential friction. At $t=0$ the centrifugal force is still $0$, so the only inertial force is the Euler force.</p>
 """,
   experimentWidgets: [
     PhysicsSimulationView(
@@ -123,7 +130,7 @@ final eulerForce2D = Video(
 class EulerForce2DSimulation extends PhysicsSimulation {
   EulerForce2DSimulation()
       : super(
-          title: 'オイラー力',
+          title: animL('オイラー力', 'Euler force'),
           formula: const FormulaDisplay(
             r'\displaystyle F_{\mathrm{E}}=m\alpha R',
           ),
@@ -142,7 +149,7 @@ class EulerForce2DSimulation extends PhysicsSimulation {
 
   @override
   String? get situation =>
-      '慣性系で見ると、回転速度が上昇する台の上に滑らず乗っている物体';
+      animL('慣性系で見ると、回転速度が上昇する台の上に滑らず乗っている物体', 'In the inertial frame: an object riding without slipping on a platform whose rotation rate is increasing');
 
   ValueNotifier<bool> get running => _loop.running;
   Map<String, double> _latestParams = {};
@@ -222,8 +229,8 @@ class EulerForce2DSimulation extends PhysicsSimulation {
     final p = _params;
     final s = eulerAt(p, simTime.value);
     return [
-      const Text(
-        '台上に固定。角速度 0 から角加速度 α で回る',
+      Text(
+        animL('台上に固定。角速度 0 から角加速度 α で回る', 'Fixed on the platform. Rotates from angular velocity 0 with angular acceleration α'),
         style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
       ),
       _EulerSlider(
@@ -232,7 +239,7 @@ class EulerForce2DSimulation extends PhysicsSimulation {
         min: kEulerMinR,
         max: kEulerMaxR,
         onChanged: (v) => updateParam('r', v),
-        semanticLabel: '中心からの距離 R',
+        semanticLabel: animL('中心からの距離 R', 'Distance from center R'),
       ),
       _EulerSlider(
         label: 'α',
@@ -240,7 +247,7 @@ class EulerForce2DSimulation extends PhysicsSimulation {
         min: kEulerMinA,
         max: kEulerMaxA,
         onChanged: (v) => updateParam('A', v),
-        semanticLabel: '角加速度 α',
+        semanticLabel: animL('角加速度 α', 'Angular acceleration α'),
       ),
       _EulerSlider(
         label: 'm',
@@ -248,16 +255,13 @@ class EulerForce2DSimulation extends PhysicsSimulation {
         min: kEulerMinM,
         max: kEulerMaxM,
         onChanged: (v) => updateParam('m', v),
-        semanticLabel: '質量 m',
+        semanticLabel: animL('質量 m', 'Mass m'),
       ),
       Padding(
         padding: const EdgeInsets.only(top: 4),
         child: Text(
-          'ω = ${s.omega.toStringAsFixed(2)} rad/s\n'
-          '摩擦（中心） ${(-s.realRadial).toStringAsFixed(2)} N    '
-          '摩擦（接線） ${s.realTangential.toStringAsFixed(2)} N\n'
-          '遠心力 ${s.centrifugal.toStringAsFixed(2)} N    '
-          'オイラー力 ${(-s.euler).toStringAsFixed(2)} N',
+          'ω = ${s.omega.toStringAsFixed(2)} rad/s\n' +
+          animL('摩擦（中心） ${(-s.realRadial).toStringAsFixed(2)} N    摩擦（接線） ${s.realTangential.toStringAsFixed(2)} N\n遠心力 ${s.centrifugal.toStringAsFixed(2)} N    オイラー力 ${(-s.euler).toStringAsFixed(2)} N', 'Friction (radial) ${(-s.realRadial).toStringAsFixed(2)} N    Friction (tangential) ${s.realTangential.toStringAsFixed(2)} N\nCentrifugal force ${s.centrifugal.toStringAsFixed(2)} N    Euler force ${(-s.euler).toStringAsFixed(2)} N'),
           style: const TextStyle(fontSize: 12, fontFamily: 'Courier', color: Color(0xFF37474F)),
         ),
       ),
@@ -391,7 +395,7 @@ class _EulerPainter extends CustomPainter {
     _text(
       canvas,
       Offset(panel.left + 8, panel.top + 6),
-      ground ? '地上（慣性系）' : '台上（非慣性系）',
+      ground ? animL('地上（慣性系）', 'Ground (inertial frame)') : animL('台上（非慣性系）', 'On platform (non-inertial)'),
       _ink,
       alignLeft: true,
     );
@@ -399,7 +403,7 @@ class _EulerPainter extends CustomPainter {
     _text(
       canvas,
       Offset(panel.center.dx, panel.bottom - 18),
-      ground ? '速さを増しながら円を描く。' : '物体は静止し、力はつり合う。',
+      ground ? animL('速さを増しながら円を描く。', 'Traces a circle while speeding up.') : animL('物体は静止し、力はつり合う。', 'The object is at rest; forces balance.'),
       const Color(0xFF546E7A),
     );
     canvas.restore();
@@ -425,7 +429,7 @@ class _EulerPainter extends CustomPainter {
         ..color = _person
         ..strokeWidth = 2,
     );
-    _text(canvas, pin + const Offset(0, 10), '人', _person);
+    _text(canvas, pin + Offset(0, 10), animL('人', 'Person'), _person);
     canvas.drawCircle(ball.translate(1.2, 1.4), 9, Paint()..color = Colors.black12);
     canvas.drawCircle(ball, 8, Paint()..color = _ball);
     _forces(canvas, pin, ball, of, ground: ground);
@@ -443,8 +447,8 @@ class _EulerPainter extends CustomPainter {
     if (inwardLen <= 8) return;
     final inDir = inward / inwardLen;
     final side = Offset(-inDir.dy, inDir.dx);
-    _arrow(canvas, ball, inDir, _px(sample.realRadial.abs()), _real, '摩擦');
-    _arrow(canvas, ball, side, _px(sample.realTangential), _real, '摩擦');
+    _arrow(canvas, ball, inDir, _px(sample.realRadial.abs()), _real, animL('摩擦', 'Friction'));
+    _arrow(canvas, ball, side, _px(sample.realTangential), _real, animL('摩擦', 'Friction'));
     if (!ground) {
       _arrow(
         canvas,
@@ -452,7 +456,7 @@ class _EulerPainter extends CustomPainter {
         -inDir,
         _px(sample.centrifugal),
         _centrifugal,
-        '遠心力',
+        animL('遠心力', 'Centrifugal force'),
         dashed: true,
         labelDir: side,
       );
@@ -462,7 +466,7 @@ class _EulerPainter extends CustomPainter {
         -side,
         _px(sample.euler.abs()),
         _euler,
-        'オイラー',
+        animL('オイラー', 'Euler'),
         dashed: true,
         labelDir: inDir,
       );

@@ -8,6 +8,10 @@ import 'package:joyphysics/experiment/HasHeight.dart';
 import 'package:joyphysics/experiment/sensor_availability.dart';
 import 'package:joyphysics/experiment/sensor_availability_types.dart';
 import 'package:joyphysics/experiment/sensor_app_store_dialog.dart';
+import 'package:joyphysics/experiment/sensor_gadget_l10n.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
+import 'package:joyphysics/l10n/app_localizations.dart';
+import 'package:joyphysics/l10n/catalog_name_localizations.dart';
 import 'package:joyphysics/shared_components.dart';
 
 class AccelerometerExperimentWidget extends StatefulWidget with HasHeight {
@@ -103,7 +107,11 @@ class _AccelerometerExperimentWidgetState extends State<AccelerometerExperimentW
     final magnitude = sqrt(x * x + y * y + z * z);
 
     final content = SensorDisplayCard(
-      title: '加速度センサーの値',
+      title: animUi(
+        context,
+        ja: '加速度センサーの値',
+        en: 'Accelerometer readings',
+      ),
       height: widget.height,
       children: (isAvailable || webStaticReadings)
           ? [
@@ -117,9 +125,13 @@ class _AccelerometerExperimentWidgetState extends State<AccelerometerExperimentW
                   style:
                       GoogleFonts.robotoMono(fontSize: 22, color: Colors.black)),
               const SizedBox(height: 24),
-              const Text(
-                "合成加速度",
-                style: TextStyle(
+              Text(
+                animUi(
+                  context,
+                  ja: '合成加速度',
+                  en: 'Resultant acceleration',
+                ),
+                style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: Colors.black,
@@ -138,14 +150,14 @@ class _AccelerometerExperimentWidgetState extends State<AccelerometerExperimentW
             ]
           : [
               Text(
-                _availability.message,
+                sensorAvailabilityMessage(context, _availability),
                 style: const TextStyle(fontSize: 18, color: Colors.grey),
               ),
               const SizedBox(height: 12),
               if (needsPermission)
                 ElevatedButton(
                   onPressed: _requestPermission,
-                  child: const Text('センサー利用を許可'),
+                  child: Text(AppLocalizations.of(context)!.allowSensorAccess),
                 ),
             ],
     );
@@ -157,7 +169,7 @@ class _AccelerometerExperimentWidgetState extends State<AccelerometerExperimentW
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('加速度センサー'),
+        title: Text(localizeCatalogName(context, '加速度センサー')),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,

@@ -4,8 +4,10 @@ final freeFall = Video(
         iconName: "freefall",
         category: 'dynamics', // ← 追加
         title: "自由落下",
+        titleEn: "Free fall",
     videoURL: "wfd5doLXUSg",
     equipment: ["スマホ", "球", "巻尺"],
+    equipmentEn: ["smartphone", "ball", "measuring tape"],
     costRating: "★☆☆", latex: r"""
         <div class="common-box">ポイント</div>
         <p>$\displaystyle x(t)=\frac12 gt^2$（$x$: 変位, $g$: 重力加速度, $t$: 時間）</p>
@@ -28,5 +30,28 @@ final freeFall = Video(
         <div class="common-box">答え</div>
         <p>・高さ 0.60 m の場合：$t \fallingdotseq 0.350$ s、$v \fallingdotseq 3.43$ m/s</p>
         <p>・高さ 1.00 m の場合：$t \fallingdotseq 0.452$ s、$v \fallingdotseq 4.43$ m/s</p>
+        """,
+    latexEn: r"""
+        <div class="common-box">Key points</div>
+        <p>$\displaystyle x(t)=\frac12 gt^2$（$x$: displacement, $g$: gravitational acceleration, $t$: time）</p>
+        <p>$\displaystyle t=\sqrt{\frac{2x}{g}}$（$t$: time, $x$: displacement, $g$: gravitational acceleration）</p>
+                <div class="common-box">Setup</div>
+        <p>An object is released from rest at height $h$. Ignoring air resistance, find the <strong>time</strong> to reach the ground and the <strong>velocity</strong> on impact for $h = 0.60$ m and $h = 1.00$ m.</p>
+        
+        <div class="common-box">Theory</div>
+        <p>In free fall with initial velocity $v_0 = 0$, $\displaystyle t = \sqrt{\frac{2h}{g}}$, &nbsp; $v = \sqrt{2gh}$</p>
+        <p>Take $g = 9.8 \, [m/s^2]$.</p>
+                                            <p></p><p></p>
+        <p>(1) Height $h = 0.60$ m:</p>
+        <p>Time to reach the ground: $\displaystyle t = \sqrt{\frac{2 \times 0.60}{9.8}} \fallingdotseq 0.350$ s</p>
+        <p>Impact velocity: $v = \sqrt{2 \times 9.8 \times 0.60} \fallingdotseq 3.43$ m/s</p>
+        
+        <p>(2) Height $h = 1.00$ m:</p>
+        <p>Time to reach the ground: $\displaystyle t = \sqrt{\frac{2 \times 1.00}{9.8}} \fallingdotseq 0.452$ s</p>
+        <p>Impact velocity: $v = \sqrt{2 \times 9.8 \times 1.00} \fallingdotseq 4.43$ m/s</p>
+        
+        <div class="common-box">Answer</div>
+        <p>・For height 0.60 m: $t \fallingdotseq 0.350$ s, $v \fallingdotseq 3.43$ m/s</p>
+        <p>・For height 1.00 m: $t \fallingdotseq 0.452$ s, $v \fallingdotseq 4.43$ m/s</p>
         """
 );

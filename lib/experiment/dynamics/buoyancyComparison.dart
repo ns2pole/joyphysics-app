@@ -4,8 +4,10 @@ final buoyancyComparison = Video(
   category: 'dynamics', // ← 追加
     iconName: "buoyancyComparison",
     title: "浮力(食塩水・普通の水・油での比較)",
+    titleEn: "Buoyancy (salt water, fresh water, and oil)",
     videoURL: "44vPx_0XeO0",
     equipment: ["ガラス容器", "木", "塩", "油"],
+    equipmentEn: ["glass container", "wood", "salt", "oil"],
     costRating: "★☆☆", latex: r"""
         <div class="common-box">ポイント</div>
             <p>アルキメデスの原理:「流体中の物体は、その物体が押しのけた流体の重さに等しい浮力を受ける」</p>
@@ -32,6 +34,43 @@ final buoyancyComparison = Video(
         </p>
         <p>ここで木材の密度 $\rho = \frac{m}{\pi r^2 L}=0.509\,[\mathrm{g/cm^3}]$。</p>
         <p>よって、</p>
+        <p>
+        $$ l_{salt} = 20 \times \frac{0.509}{1.20} \fallingdotseq 8.48\,[\mathrm{cm}] $$
+        </p>
+        <p>
+        $$ l_{water} = 20 \times \frac{0.509}{0.998} \fallingdotseq 10.20\,[\mathrm{cm}] $$
+        </p>
+        <p>
+        $$ l_{oil} = 20 \times \frac{0.509}{0.90} \fallingdotseq 11.31\,[\mathrm{cm}] $$
+        </p>
+    
+    """,
+    latexEn: r"""
+        <div class="common-box">Key points</div>
+            <p>Archimedes' principle: "An object in a fluid experiences a buoyancy equal to the weight of the fluid it displaces."</p>
+            <p>The magnitude of the buoyancy is$\  F = \rho V g $</p>
+            <p>Here, $F$ is the buoyancy [N], $\rho$ is the fluid density [kg/m³], $V$ is the object's volume [m³], and $g$ is the gravitational acceleration [m/s²].</p>
+        <div class="common-box">Setup</div>
+        <p>A wooden rod of radius $r=0.5\,\mathrm{cm}$, length $L=20\,\mathrm{cm}$, and mass $m=8\,\mathrm{g}$ has volume $\displaystyle V=\pi r^{2}L=5\pi\,[\mathrm{cm^3}]$.</p>
+        <p>When it floats in fluids of density</p>
+        <ul>
+          <li>saturated salt water: $\rho_{salt}=1.20\,[\mathrm{g/cm^3}]$</li>
+          <li>fresh water: $\rho_{water}=0.998\,[\mathrm{g/cm^3}]$</li>
+          <li>oil: $\rho_{oil}=0.90\,[\mathrm{g/cm^3}]$</li>
+        </ul>
+        <p>what is the submerged length in each case?</p>
+
+        <div class="common-box">Theory</div>
+        <p>From force balance and Archimedes' principle,</p>
+        <p>
+            $$\begin{aligned}
+
+            m g &= \rho_{fluid}\,\pi r^2\,l_{fluid}\,g \\ \ \\
+            \Leftrightarrow \ l_{fluid} &= L\frac{\rho}{\rho_{fluid}}
+                \end{aligned}$$
+        </p>
+        <p>Here the wood density is $\displaystyle \rho = \frac{m}{\pi r^2 L}=0.509\,[\mathrm{g/cm^3}]$.</p>
+        <p>Therefore,</p>
         <p>
         $$ l_{salt} = 20 \times \frac{0.509}{1.20} \fallingdotseq 8.48\,[\mathrm{cm}] $$
         </p>

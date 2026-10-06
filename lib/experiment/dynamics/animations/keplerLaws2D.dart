@@ -5,6 +5,7 @@ import 'package:joyphysics/experiment/dynamics/animations/energy_gauge.dart';
 import 'package:joyphysics/experiment/playback_controls.dart';
 import 'package:joyphysics/experiment/dynamics/animations/kepler_ellipse.dart';
 import 'package:joyphysics/model.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 export 'package:joyphysics/experiment/dynamics/animations/kepler_ellipse.dart';
 
@@ -14,6 +15,7 @@ final keplerLaws2D = Video(
   category: 'dynamics',
   iconName: 'dynamics',
   title: 'ケプラーの3法則',
+  titleEn: 'Kepler\'s three laws',
   videoURL: '',
   equipment: [],
   costRating: '★',
@@ -38,6 +40,27 @@ final keplerLaws2D = Video(
   <p>$a=1$ は1天文単位で、$\displaystyle T=365.25$ 日です。$a$ を変えると $\displaystyle T\propto a^{3/2}$ で、半長軸を2倍にすると周期は $\displaystyle 2\sqrt{2}$ 倍です。</p>
   <p>エネルギーゲージは真の力学的エネルギー $\displaystyle E=K-\frac{GMm}{r}$（楕円なら負）ではなく、近日点を位置エネルギーの基準にした相対量を描く。緑帯は $\displaystyle U'=GMm\left(\frac{1}{r_{\min}}-\frac{1}{r}\right)$ で、近日点から現在位置まで質量を運ぶのに外力がする仕事に等しい。枠の長さは近日点の運動エネルギーで、軌道上では $K+U'$ が一定である。</p>
   """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>When the central star is heavy enough, a bound orbit about a mass fixed at the origin is an ellipse. Starting at periapsis with velocity perpendicular to the radius, semi-major axis $a$ and eccentricity $e$ are in one-to-one correspondence with periapsis $r,v$.</p>
+  <p>For an ellipse ($e&lt;1$), periapsis distance and periapsis speed are</p>
+  <p>$$r_{\min}=a(1-e),\quad v_{\mathrm{peri}}=\sqrt{\frac{GM(1+e)}{a(1-e)}}$$</p>
+  <p>Orbit shape (first law)</p>
+  <p>$$r=\frac{a(1-e^{2})}{1+e\cos\theta}$$</p>
+  <p>Closed orbits follow this. Time is closed by the change of variable to eccentric anomaly $u$, $\displaystyle r=a(1-e\cos u)$, yielding Kepler’s equation.</p>
+  <p>$$nt=u-e\sin u,\quad n=\sqrt{\frac{GM}{a^{3}}}$$</p>
+  <p>Position is $\displaystyle x=a(\cos u-e),\; y=a\sqrt{1-e^{2}}\sin u$.</p>
+  <p>$e=1$ is a parabola. The slider’s $a$ is the periapsis distance, with</p>
+  <p>$$r_{\min}=a,\quad r=\frac{2a}{1+\cos\theta},\quad v_{\mathrm{peri}}=\sqrt{\frac{2GM}{a}}$$</p>
+  <p>$e&gt;1$ is a hyperbola. There is no period, and</p>
+  <p>$$r_{\min}=a(e-1),\quad r=\frac{a(e^{2}-1)}{1+e\cos\theta}$$</p>
+  <p>$$T=2\pi\sqrt{\frac{a^{3}}{GM}}$$</p>
+  <p>hence the third law</p>
+  <p>$$\frac{T^{2}}{a^{3}}=\frac{4\pi^{2}}{GM}$$</p>
+  <p>Areal velocity is constant at $\displaystyle \frac{h}{2}$ (second law). For a central force this holds for ellipses, parabolas, and hyperbolas.</p>
+  <p>$a=1$ is one astronomical unit, with $\displaystyle T=365.25$ days. Changing $a$ gives $\displaystyle T\propto a^{3/2}$; doubling the semi-major axis multiplies the period by $\displaystyle 2\sqrt{2}$.</p>
+  <p>The energy gauge does not plot the true mechanical energy $\displaystyle E=K-\frac{GMm}{r}$ (negative for ellipses); it uses a relative potential with zero at periapsis. The green band is $\displaystyle U'=GMm\left(\frac{1}{r_{\min}}-\frac{1}{r}\right)$, equal to the work an external agent does carrying the mass from periapsis to the present position. The frame length is the kinetic energy at periapsis; along the orbit $K+U'$ is constant.</p>
+""",
   experimentWidgets: [
     PhysicsSimulationView(
       simulation: KeplerLaws2DSimulation(),
@@ -50,10 +73,10 @@ const double kKeplerMinA = 0.5;
 const double kKeplerMaxA = 2.0;
 const double kKeplerMaxE = 2.5;
 
-const String kKeplerFirstLawNote =
-    '第1法則は e < 1 の楕円です。e = 1 は放物線、e > 1 は双曲線で、閉じた軌道にはなりません。';
-const String kKeplerSecondLawNote =
-    '30日ごとに面積を塗っています。中心力なら放物線・双曲線でも同じです。';
+String kKeplerFirstLawNote =
+    animL('第1法則は e < 1 の楕円です。e = 1 は放物線、e > 1 は双曲線で、閉じた軌道にはなりません。', 'The first law is an ellipse with e < 1. e = 1 is a parabola, e > 1 a hyperbola; those are not closed orbits.');
+String kKeplerSecondLawNote =
+    animL('30日ごとに面積を塗っています。中心力なら放物線・双曲線でも同じです。', 'Areas are filled every 30 days. With a central force this also holds for parabolas and hyperbolas.');
 const double kKeplerDefaultA = 1.0;
 const double kKeplerDefaultE = 0.65;
 const double kKeplerSemiMajorRatio = 2.0;
@@ -106,7 +129,7 @@ String formatMksFixed(double value) {
 
 String formatKeplerDays(double days) {
   final digits = days.abs() >= 1 ? 2 : 3;
-  return '${days.toStringAsFixed(digits)} 日';
+  return animL('${days.toStringAsFixed(digits)} 日', '${days.toStringAsFixed(digits)} days');
 }
 
 const double kKeplerAreaSliceDt = 30.0;
@@ -161,7 +184,7 @@ List<KeplerAreaSlice> keplerEqualTimeSlices(
 class KeplerLaws2DSimulation extends PhysicsSimulation {
   KeplerLaws2DSimulation()
       : super(
-          title: 'ケプラーの3法則',
+          title: animL("ケプラーの3法則", "Kepler's three laws"),
           formula: const FormulaDisplay(
             r'\displaystyle nt=u-e\sin u,\quad \frac{T^{2}}{a^{3}}=\frac{4\pi^{2}}{GM}',
           ),
@@ -189,8 +212,8 @@ class KeplerLaws2DSimulation extends PhysicsSimulation {
   void Function(Set<String> ids)? _updateActiveIds;
   void Function(String key, double value)? _updateParam;
 
-  static const String idEqualArea = 'equalArea';
-  static const String idCompareOrbit = 'compareOrbit';
+  static String idEqualArea = 'equalArea';
+  static String idCompareOrbit = 'compareOrbit';
 
   @override
   bool get showZoomButtons => true;
@@ -270,7 +293,7 @@ class KeplerLaws2DSimulation extends PhysicsSimulation {
           ),
           const SizedBox(height: 4),
           Text(
-            '${keplerOrbitKindLabel(p.e)}。周期はありません。',
+            animL('${keplerOrbitKindLabel(p.e)}。周期はありません。', '${keplerOrbitKindLabel(p.e)}. No period.'),
             style: const TextStyle(fontSize: 13, fontFamily: 'Courier'),
           ),
         ],
@@ -308,7 +331,7 @@ class KeplerLaws2DSimulation extends PhysicsSimulation {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (_selectedLaw == KeplerLawsPreset.first) ...[
-              const Text(
+              Text(
                 kKeplerFirstLawNote,
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 12, height: 1.4, color: Color(0xFF546E7A)),
@@ -316,7 +339,7 @@ class KeplerLaws2DSimulation extends PhysicsSimulation {
               const SizedBox(height: 8),
             ],
             if (_selectedLaw == KeplerLawsPreset.second) ...[
-              const Text(
+              Text(
                 kKeplerSecondLawNote,
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 12, height: 1.4, color: Color(0xFF546E7A)),
@@ -324,8 +347,8 @@ class KeplerLaws2DSimulation extends PhysicsSimulation {
               const SizedBox(height: 8),
             ],
             if (_selectedLaw == KeplerLawsPreset.third) ...[
-              const Text(
-                '外側は a を2倍。周期は 2√2 倍なので、内側が3周いかないうちに外側が1周します。',
+              Text(
+                animL('外側は a を2倍。周期は 2√2 倍なので、内側が3周いかないうちに外側が1周します。', 'Outer orbit has a twice as large. Period is 2√2 times, so the outer completes 1 revolution before the inner finishes 3.'),
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 12, height: 1.4, color: Color(0xFF546E7A)),
               ),
@@ -342,9 +365,9 @@ class KeplerLaws2DSimulation extends PhysicsSimulation {
               spacing: 8,
               runSpacing: 8,
               children: [
-                _lawButton('第1法則', KeplerLawsPreset.first),
-                _lawButton('第2法則', KeplerLawsPreset.second),
-                _lawButton('第3法則', KeplerLawsPreset.third),
+                _lawButton(animL('第1法則', 'First law'), KeplerLawsPreset.first),
+                _lawButton(animL('第2法則', 'Second law'), KeplerLawsPreset.second),
+                _lawButton(animL('第3法則', 'Third law'), KeplerLawsPreset.third),
               ],
             ),
           ],
@@ -376,8 +399,8 @@ class KeplerLaws2DSimulation extends PhysicsSimulation {
     final vPeri = keplerPeriapsisSpeed(p.a, p.e);
     final days = keplerLawsPeriodDays(p.a);
     return [
-      const Text(
-        '軌道要素',
+      Text(
+        animL('軌道要素', 'Orbital elements'),
         style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
       ),
       _KeplerSlider(
@@ -386,7 +409,7 @@ class KeplerLaws2DSimulation extends PhysicsSimulation {
         min: kKeplerMinA,
         max: kKeplerMaxA,
         onChanged: (v) => updateParam('a', v),
-        semanticLabel: '半長軸 a',
+        semanticLabel: animL('半長軸 a', 'Semi-major axis a'),
       ),
       _KeplerSlider(
         label: 'e',
@@ -394,7 +417,7 @@ class KeplerLaws2DSimulation extends PhysicsSimulation {
         min: 0.0,
         max: kKeplerMaxE,
         onChanged: (v) => updateParam('e', v),
-        semanticLabel: '離心率 e',
+        semanticLabel: animL('離心率 e', 'Eccentricity e'),
       ),
       const SizedBox(height: 6),
       DecoratedBox(
@@ -414,8 +437,8 @@ class KeplerLaws2DSimulation extends PhysicsSimulation {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  '近点の初期条件（a, e と一対一）',
+                Text(
+                  animL('近点の初期条件（a, e と一対一）', 'Periapsis initial conditions (1-to-1 with a, e)'),
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontFamily: null,
@@ -427,7 +450,7 @@ class KeplerLaws2DSimulation extends PhysicsSimulation {
                 Text(
                   keplerIsEllipse(p.e)
                       ? 'T = ${formatKeplerDays(days)}'
-                      : '${keplerOrbitKindLabel(p.e)}（周期なし）',
+                      : animL('${keplerOrbitKindLabel(p.e)}（周期なし）', '${keplerOrbitKindLabel(p.e)} (no period)'),
                 ),
               ],
             ),
@@ -575,7 +598,7 @@ class _KeplerLaws2DPainter extends CustomPainter {
       _drawOrbit(canvas, toScreen, compare!, _compareColor, 1.6);
     }
 
-    _drawFocus(canvas, toScreen(0, 0), _sun, filled: true, label: '太陽');
+    _drawFocus(canvas, toScreen(0, 0), _sun, filled: true, label: animL('太陽', 'Sun'));
     final empty = main.emptyFocusX;
     if (empty != null) {
       _drawFocus(
@@ -583,7 +606,7 @@ class _KeplerLaws2DPainter extends CustomPainter {
         toScreen(empty, 0),
         const Color(0xFF546E7A),
         filled: false,
-        label: '空の焦点',
+        label: animL('空の焦点', 'Empty focus'),
       );
     }
 
@@ -591,7 +614,7 @@ class _KeplerLaws2DPainter extends CustomPainter {
     if (compare != null) {
       _drawPlanet(canvas, toScreen, compare!, _compareColor, '2a');
     }
-    _drawPlanet(canvas, toScreen, main, _planet, '惑星');
+    _drawPlanet(canvas, toScreen, main, _planet, animL('惑星', 'Planet'));
     _drawHud(canvas, size);
   }
 
@@ -746,10 +769,10 @@ class _KeplerLaws2DPainter extends CustomPainter {
     Offset Function(double, double) toScreen,
   ) {
     final peri = toScreen(main.periapsisX, 0);
-    _label(canvas, peri.translate(0, 22), '近日点', const Color(0xFF1565C0));
+    _label(canvas, peri.translate(0, 22), animL('近日点', 'Perihelion'), Color(0xFF1565C0));
     if (keplerIsEllipse(main.e)) {
       final apo = toScreen(main.apoapsisX, 0);
-      _label(canvas, apo.translate(0, 22), '遠日点', const Color(0xFFEF6C00));
+      _label(canvas, apo.translate(0, 22), animL('遠日点', 'Aphelion'), Color(0xFFEF6C00));
     }
   }
 
@@ -836,7 +859,7 @@ class _KeplerLaws2DPainter extends CustomPainter {
       )
       ..close();
     canvas.drawPath(head, Paint()..color = _force);
-    _label(canvas, end + n * 12, '重力', _force);
+    _label(canvas, end + n * 12, animL('重力', 'Gravity'), _force);
   }
 
   void _drawVelocityArrow(
@@ -927,14 +950,14 @@ class _KeplerLaws2DPainter extends CustomPainter {
           ? 't = ${formatKeplerDays(tDays)}    T = ${formatKeplerDays(periodDays)}'
           : 't = ${formatKeplerDays(tDays)}    ${keplerOrbitKindLabel(main.e)}',
       'r = ${main.r.toStringAsFixed(2)}    v = ${main.speed.toStringAsFixed(2)}',
-      '掃いた面積 = ${area.toStringAsFixed(2)}    (∝ t)',
+      animL('掃いた面積 = ${area.toStringAsFixed(2)}    (∝ t)', 'Swept area = ${area.toStringAsFixed(2)}    (∝ t)'),
     ];
     if (compare != null) {
       rows.add(
-        '比較軌道 T₂ = ${formatKeplerDays(keplerLawsPeriodDays(compare!.a))}  (= 2√2 T)',
+        animL('比較軌道 T₂ = ${formatKeplerDays(keplerLawsPeriodDays(compare!.a))}  (= 2√2 T)', 'Compare orbit T₂ = ${formatKeplerDays(keplerLawsPeriodDays(compare!.a))}  (= 2√2 T)'),
       );
     }
-    if (running) rows.add('運動中');
+    if (running) rows.add(animL('運動中', 'In motion'));
     return rows.join('\n');
   }
 

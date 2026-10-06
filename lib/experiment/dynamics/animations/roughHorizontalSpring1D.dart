@@ -6,6 +6,7 @@ import 'package:joyphysics/experiment/dynamics/animations/energy_gauge.dart';
 import 'package:joyphysics/experiment/dynamics/animations/springOscillator1D.dart';
 import 'package:joyphysics/experiment/playback_controls.dart';
 import 'package:joyphysics/model.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 /// 粗い水平面。$g=9.8\,\mathrm{m/s^2}$。右が正。
 const double kRoughSpringG = 9.8;
@@ -244,11 +245,8 @@ RoughHorizontalSpringSample roughHorizontalSpringAt(
   return _sampleOf(params, cache, time);
 }
 
-const String kRoughHorizontalSpringCaption =
-    '初期位置はつりあい（自然長）から。右が正、左が負。初速度も右が正。\n'
-    '動いているあいだは動摩擦力 μ′mg が速度と逆向き。\n'
-    '速度が 0 で、ばねの力の大きさが静止摩擦力 μmg 以下なら、そこで止まる。\n'
-    '床の色が付いた範囲が、止まれる位置。静止摩擦係数は動摩擦以上。';
+String kRoughHorizontalSpringCaption =
+    animL('初期位置はつりあい（自然長）から。右が正、左が負。初速度も右が正。\n動いているあいだは動摩擦力 μ′mg が速度と逆向き。\n速度が 0 で、ばねの力の大きさが静止摩擦力 μmg 以下なら、そこで止まる。\n床の色が付いた範囲が、止まれる位置。静止摩擦係数は動摩擦以上。', 'Initial position is from equilibrium (natural length). Right is positive, left is negative. Initial velocity is also positive to the right.\nWhile moving, kinetic friction μ′mg opposes velocity.\nIf velocity is 0 and the spring force magnitude is at most static friction μmg, it stops there.\nThe colored range on the floor is where it can rest. Static friction coefficient is at least kinetic.');
 
 final roughHorizontalSpring1D = Video(
   isNew: false,
@@ -256,6 +254,7 @@ final roughHorizontalSpring1D = Video(
   category: 'dynamics',
   iconName: 'dynamics',
   title: '水平バネ(粗い床)',
+  titleEn: 'Horizontal spring (rough floor)',
   videoURL: '',
   equipment: [],
   costRating: '★',
@@ -268,6 +267,15 @@ final roughHorizontalSpring1D = Video(
   <p>$$\displaystyle |x|\le \frac{\mu mg}{k}$$</p>
   <p>静止摩擦は速度が 0 のときだけ働き、仕事をしません。減った力学的エネルギーは熱になります。</p>
 """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>On a rough horizontal surface, the normal force is $N=mg$. While moving, taking rightward as positive,</p>
+  <p>$$\displaystyle m\ddot x=-kx-\mu' mg\,\mathrm{sgn}(v)$$</p>
+  <p>Kinetic friction opposes the velocity and has magnitude $\mu' mg$. The motion is simple harmonic motion about an equilibrium shifted by $\displaystyle \delta'=\frac{\mu' mg}{k}$. Each half-period, the amplitude decreases by $2\delta'$.</p>
+  <p>When the velocity becomes 0, if the spring force magnitude $|kx|$ is at most the static friction $\mu mg$, the mass stops there.</p>
+  <p>$$\displaystyle |x|\le \frac{\mu mg}{k}$$</p>
+  <p>Static friction acts only when the velocity is 0 and does no work. The lost mechanical energy becomes heat.</p>
+""",
   experimentWidgets: [
     PhysicsSimulationView(
       simulation: RoughHorizontalSpring1DSimulation(),
@@ -279,7 +287,7 @@ final roughHorizontalSpring1D = Video(
 class RoughHorizontalSpring1DSimulation extends PhysicsSimulation {
   RoughHorizontalSpring1DSimulation()
       : super(
-          title: '水平バネ(粗い床)',
+          title: animL('水平バネ(粗い床)', 'Horizontal spring (rough floor)'),
           formula: const FormulaDisplay(
             r"\displaystyle m\ddot x=-kx-\mu' mg\,\mathrm{sgn}(v)",
           ),
@@ -366,7 +374,7 @@ class RoughHorizontalSpring1DSimulation extends PhysicsSimulation {
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
+            Text(
               kRoughHorizontalSpringCaption,
               textAlign: TextAlign.center,
               style: TextStyle(
@@ -396,8 +404,8 @@ class RoughHorizontalSpring1DSimulation extends PhysicsSimulation {
     _rememberParams(parameters);
     final p = _params;
     return [
-      const Text(
-        '質量・ばね・摩擦・初期位置・初速度（右が正）',
+      Text(
+        animL('質量・ばね・摩擦・初期位置・初速度（右が正）', 'Mass, spring, friction, initial position, initial velocity (right positive)'),
         style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
       ),
       _RoughSlider(
@@ -406,7 +414,7 @@ class RoughHorizontalSpring1DSimulation extends PhysicsSimulation {
         min: kSpringMinM,
         max: kSpringMaxM,
         onChanged: (v) => updateParam('m', v),
-        semanticLabel: '質量 m',
+        semanticLabel: animL('質量 m', 'Mass m'),
       ),
       _RoughSlider(
         label: 'k',
@@ -414,7 +422,7 @@ class RoughHorizontalSpring1DSimulation extends PhysicsSimulation {
         min: kSpringMinK,
         max: kSpringMaxK,
         onChanged: (v) => updateParam('k', v),
-        semanticLabel: 'ばね定数 k',
+        semanticLabel: animL('ばね定数 k', 'Spring constant k'),
       ),
       _RoughSlider(
         label: 'μ′',
@@ -425,7 +433,7 @@ class RoughHorizontalSpring1DSimulation extends PhysicsSimulation {
           updateParam('muK', v);
           if (p.muS < v) updateParam('muS', v);
         },
-        semanticLabel: '動摩擦係数',
+        semanticLabel: animL('動摩擦係数', 'Kinetic friction coefficient'),
       ),
       _RoughSlider(
         label: 'μ',
@@ -436,7 +444,7 @@ class RoughHorizontalSpring1DSimulation extends PhysicsSimulation {
           updateParam('muS', v);
           if (v < p.muK) updateParam('muK', v);
         },
-        semanticLabel: '静止摩擦係数',
+        semanticLabel: animL('静止摩擦係数', 'Static friction coefficient'),
       ),
       _RoughSlider(
         label: 'x0',
@@ -444,7 +452,7 @@ class RoughHorizontalSpring1DSimulation extends PhysicsSimulation {
         min: kHorizontalSpringMinX0,
         max: kHorizontalSpringMaxX0,
         onChanged: (v) => updateParam('x0', v),
-        semanticLabel: '初期位置 右が正',
+        semanticLabel: animL('初期位置 右が正', 'Initial position, right positive'),
         readout: springVelocityReadout(p.x0, downwardPositive: false),
       ),
       _RoughSlider(
@@ -453,7 +461,7 @@ class RoughHorizontalSpring1DSimulation extends PhysicsSimulation {
         min: kSpringMinV0,
         max: kSpringMaxV0,
         onChanged: (v) => updateParam('v0', v),
-        semanticLabel: '初速度 右が正',
+        semanticLabel: animL('初速度 右が正', 'Initial velocity, right positive'),
         readout: springVelocityReadout(p.v0, downwardPositive: false),
       ),
       Padding(
@@ -575,7 +583,7 @@ class _RoughHorizontalSpringPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     canvas.drawRect(Offset.zero & size, Paint()..color = _bg);
-    final state = sample.stuck ? '静止' : '運動中';
+    final state = sample.stuck ? animL('静止', 'At rest') : animL('運動中', 'In motion');
     final hud = 't = ${sample.t.toStringAsFixed(2)} s\n'
         'x = ${sample.x.toStringAsFixed(3)} m\n'
         'v = ${springVelocityReadout(sample.v, downwardPositive: false)} m/s\n'
@@ -614,7 +622,7 @@ class _RoughHorizontalSpringPainter extends CustomPainter {
       canvas.drawRect(zone, Paint()..color = _stick);
       _label(
         canvas,
-        '止まれる範囲',
+        animL('止まれる範囲', 'Range where it can stop'),
         zone.center.dx,
         railY + 16,
         const Color(0xFFEF6C00),
@@ -637,7 +645,7 @@ class _RoughHorizontalSpringPainter extends CustomPainter {
     );
     _label(
       canvas,
-      'つりあい',
+      animL('つりあい', 'Equilibrium'),
       sx(kHorizontalSpringEll),
       railY - 92,
       const Color(0xFFEF6C00),

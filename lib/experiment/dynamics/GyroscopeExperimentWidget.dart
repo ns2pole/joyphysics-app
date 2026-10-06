@@ -8,6 +8,10 @@ import 'package:joyphysics/experiment/HasHeight.dart';
 import 'package:joyphysics/experiment/sensor_availability.dart';
 import 'package:joyphysics/experiment/sensor_availability_types.dart';
 import 'package:joyphysics/experiment/sensor_app_store_dialog.dart';
+import 'package:joyphysics/experiment/sensor_gadget_l10n.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
+import 'package:joyphysics/l10n/app_localizations.dart';
+import 'package:joyphysics/l10n/catalog_name_localizations.dart';
 import 'package:joyphysics/shared_components.dart';
 
 class GyroscopeExperimentWidget extends StatefulWidget with HasHeight {
@@ -109,7 +113,11 @@ class _GyroscopeExperimentWidgetState extends State<GyroscopeExperimentWidget> {
     final magnitude = sqrt(x * x + y * y + z * z);
 
     final content = SensorDisplayCard(
-      title: 'ジャイロセンサーの値',
+      title: animUi(
+        context,
+        ja: 'ジャイロセンサーの値',
+        en: 'Gyroscope readings',
+      ),
       height: widget.height,
       children: (isAvailable || webStaticReadings)
           ? [
@@ -123,9 +131,13 @@ class _GyroscopeExperimentWidgetState extends State<GyroscopeExperimentWidget> {
                   style:
                       GoogleFonts.robotoMono(fontSize: 22, color: Colors.black)),
               const SizedBox(height: 24),
-              const Text(
-                "合成角速度",
-                style: TextStyle(
+              Text(
+                animUi(
+                  context,
+                  ja: '合成角速度',
+                  en: 'Resultant angular velocity',
+                ),
+                style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: Colors.black,
@@ -144,14 +156,14 @@ class _GyroscopeExperimentWidgetState extends State<GyroscopeExperimentWidget> {
             ]
           : [
               Text(
-                _availability.message,
+                sensorAvailabilityMessage(context, _availability),
                 style: const TextStyle(fontSize: 18, color: Colors.grey),
               ),
               const SizedBox(height: 12),
               if (needsPermission)
                 ElevatedButton(
                   onPressed: _requestPermission,
-                  child: const Text('センサー利用を許可'),
+                  child: Text(AppLocalizations.of(context)!.allowSensorAccess),
                 ),
             ],
     );
@@ -163,7 +175,7 @@ class _GyroscopeExperimentWidgetState extends State<GyroscopeExperimentWidget> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('ジャイロセンサー'),
+        title: Text(localizeCatalogName(context, 'ジャイロセンサー')),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,

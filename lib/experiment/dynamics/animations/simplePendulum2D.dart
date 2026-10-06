@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import 'package:joyphysics/experiment/playback_controls.dart';
 import 'package:joyphysics/model.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 /// 鉛直下から測った角。画面のスライダーは度、式はラジアン。
 const double kPendulumG = 9.8;
@@ -209,7 +210,7 @@ PendulumBobPosition pendulumBob(double length, double theta) {
 
 enum PendulumArticleMode { approximate, exact, compare }
 
-const String kPendulumApproximateLatex = r'''
+String kPendulumApproximateLatex = r'''
   <div class="common-box">ポイント</div>
   <p>糸の長さを $l$、振れ角 $\theta$ を鉛直の下向きから測ります。$\theta$ はラジアンです。接線方向の運動方程式は $\displaystyle \ddot{\theta}=-\frac{g}{l}\sin\theta$ です。振れ角が小さいとき $\sin\theta$ を $\theta$ で置き換えると、次の微分方程式になります。</p>
   <p>$$\ddot{\theta}=-\frac{g}{l}\theta$$</p>
@@ -224,7 +225,7 @@ const String kPendulumApproximateLatex = r'''
   <p>大きい角でこの式がずれることは、「厳密」と「比較」に切り替えると見えます。</p>
 ''';
 
-const String kPendulumExactLatex = r'''
+String kPendulumExactLatex = r'''
   <div class="common-box">ポイント</div>
   <p>振れ角を小さく近似しない運動方程式は次です。$\theta$ はラジアンで、鉛直の下向きから測ります。</p>
   <p>$$\ddot{\theta}=-\frac{g}{l}\sin\theta$$</p>
@@ -239,7 +240,7 @@ const String kPendulumExactLatex = r'''
   <p>小さい角の式は「近似」、二つの運動を重ねた画面は「比較」です。</p>
 ''';
 
-const String kPendulumCompareLatex = r'''
+String kPendulumCompareLatex = r'''
   <div class="common-box">ポイント</div>
   <p>同じ長さ $l$、同じ初期角 $\theta_{0}$ から静かに放した二つの運動を重ねています。橙色は $\displaystyle \ddot{\theta}=-\frac{g}{l}\theta$ の解 $\displaystyle \theta=\theta_{0}\cos\left(\sqrt{\frac{g}{l}}\,t\right)$、青は $\displaystyle \ddot{\theta}=-\frac{g}{l}\sin\theta$ の解です。</p>
   <p>近似の周期は振れ角によりません。</p>
@@ -269,6 +270,7 @@ final simplePendulum2D = Video(
   category: 'dynamics',
   iconName: 'dynamics',
   title: '単振り子の近似と厳密',
+  titleEn: 'Simple pendulum: approximation and exact',
   videoURL: '',
   equipment: [],
   costRating: '★',
@@ -329,7 +331,7 @@ class _PendulumParams {
 class _PendulumSimulation extends PhysicsSimulation {
   _PendulumSimulation()
     : super(
-        title: '単振り子の近似と厳密',
+        title: animL('単振り子の近似と厳密', 'Simple pendulum: approximation and exact'),
         aspectRatio: 1.35,
         enableTime: false,
         showTimeOverlay: false,
@@ -382,11 +384,11 @@ class _PendulumSimulation extends PhysicsSimulation {
   String? get situation {
     switch (_mode) {
       case PendulumArticleMode.approximate:
-        return '振れ角が小さいときの単振り子。周期は長さと g だけで決まる';
+        return animL('振れ角が小さいときの単振り子。周期は長さと g だけで決まる', 'Simple pendulum for small angles. Period depends only on length and g');
       case PendulumArticleMode.exact:
-        return '厳密な周期は楕円積分。振れ角が大きいほど長くなる';
+        return animL('厳密な周期は楕円積分。振れ角が大きいほど長くなる', 'Exact period uses an elliptic integral. Larger angles make the period longer');
       case PendulumArticleMode.compare:
-        return '同じ初期条件。青が厳密、橙が近似';
+        return animL('同じ初期条件。青が厳密、橙が近似', 'Same initial conditions. Blue is exact, orange is approximate');
     }
   }
 
@@ -409,11 +411,11 @@ class _PendulumSimulation extends PhysicsSimulation {
   String _caption() {
     switch (_mode) {
       case PendulumArticleMode.approximate:
-        return '小さい角の微分方程式の解で動かしています。\nθ = θ₀ cos(√(g/l) t) です。\n振れ角を変えても、周期の数字は変わりません。\n橙の矢印が重力、青の矢印が張力です。';
+        return animL('小さい角の微分方程式の解で動かしています。\nθ = θ₀ cos(√(g/l) t) です。\n振れ角を変えても、周期の数字は変わりません。\n橙の矢印が重力、青の矢印が張力です。', 'Driven by the small-angle differential equation solution.\nθ = θ₀ cos(√(g/l) t).\nChanging the amplitude does not change the period value shown.\nOrange arrow is gravity; blue arrow is tension.');
       case PendulumArticleMode.exact:
-        return '楕円積分の周期で動かしています。\n振れ角を大きくすると、周期が伸びます。\n橙の矢印が重力、青の矢印が張力です。';
+        return animL('楕円積分の周期で動かしています。\n振れ角を大きくすると、周期が伸びます。\n橙の矢印が重力、青の矢印が張力です。', 'Driven with the elliptic-integral period.\nLarger amplitudes stretch the period.\nOrange arrow is gravity; blue arrow is tension.');
       case PendulumArticleMode.compare:
-        return '青が厳密、橙が小さい角の近似です。\n角を大きくすると青が遅れます。\n矢印は青に働く重力と張力です。';
+        return animL('青が厳密、橙が小さい角の近似です。\n角を大きくすると青が遅れます。\n矢印は青に働く重力と張力です。', 'Blue is exact; orange is the small-angle approximation.\nAt large angles blue lags.\nArrows are gravity and tension on the blue bob.');
     }
   }
 
@@ -422,7 +424,7 @@ class _PendulumSimulation extends PhysicsSimulation {
     final approx = p.periodSmall.toStringAsFixed(2);
     switch (_mode) {
       case PendulumArticleMode.approximate:
-        return 'T₀ = $approx s（振れ角によらない）';
+        return animL('T₀ = $approx s（振れ角によらない）', 'T₀ = $approx s (independent of amplitude)');
       case PendulumArticleMode.exact:
         return 'T = $exact s';
       case PendulumArticleMode.compare:
@@ -438,11 +440,11 @@ class _PendulumSimulation extends PhysicsSimulation {
     final approx = p.periodSmall.toStringAsFixed(2);
     switch (_mode) {
       case PendulumArticleMode.approximate:
-        return '近似 T₀ = $approx s';
+        return animL('近似 T₀ = $approx s', 'Approx. T₀ = $approx s');
       case PendulumArticleMode.exact:
-        return '厳密 T = $exact s';
+        return animL('厳密 T = $exact s', 'Exact T = $exact s');
       case PendulumArticleMode.compare:
-        return '厳密 $exact s    近似 $approx s';
+        return animL('厳密 $exact s    近似 $approx s', 'Exact $exact s    Approx. $approx s');
     }
   }
 
@@ -556,12 +558,12 @@ class _PendulumSimulation extends PhysicsSimulation {
               spacing: 8,
               children: [
                 _modeButton(
-                  '近似',
+                  animL('近似', 'Approx.'),
                   PendulumArticleMode.approximate,
                   updateActiveIds,
                 ),
-                _modeButton('厳密', PendulumArticleMode.exact, updateActiveIds),
-                _modeButton('比較', PendulumArticleMode.compare, updateActiveIds),
+                _modeButton(animL('厳密', 'Exact'), PendulumArticleMode.exact, updateActiveIds),
+                _modeButton(animL('比較', 'Compare'), PendulumArticleMode.compare, updateActiveIds),
               ],
             ),
           ],
@@ -590,8 +592,8 @@ class _PendulumSimulation extends PhysicsSimulation {
     _remember(parameters);
     final p = _params;
     return [
-      const Text(
-        '糸の長さ l（g = 9.8 m/s²）',
+      Text(
+        animL('糸の長さ l（g = 9.8 m/s²）', 'String length l (g = 9.8 m/s²)'),
         style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
       ),
       _PendulumSlider(
@@ -600,10 +602,10 @@ class _PendulumSimulation extends PhysicsSimulation {
         min: kPendulumMinL,
         max: kPendulumMaxL,
         onChanged: (v) => updateParam('l', v),
-        semanticLabel: '糸の長さ l',
+        semanticLabel: animL('糸の長さ l', 'String length l'),
       ),
-      const Text(
-        '最初の振れ角 θ₀（度）',
+      Text(
+        animL('最初の振れ角 θ₀（度）', 'Initial amplitude θ₀ (degrees)'),
         style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
       ),
       _PendulumSlider(
@@ -612,7 +614,7 @@ class _PendulumSimulation extends PhysicsSimulation {
         min: kEllipticMinDeg,
         max: kEllipticMaxDeg,
         onChanged: (v) => updateParam('amp', v),
-        semanticLabel: '最初の振れ角',
+        semanticLabel: animL('最初の振れ角', 'Initial amplitude'),
       ),
       Padding(
         padding: const EdgeInsets.only(top: 4),
@@ -972,7 +974,7 @@ class _PendulumPainter extends CustomPainter {
       const Offset(0, 1),
       weightPx,
       _gravity,
-      '重力',
+      animL('重力', 'Gravity'),
     );
     if (tensionPx < 12) return;
     final towardPivot = Offset(-math.sin(bob.theta), -math.cos(bob.theta));
@@ -982,7 +984,7 @@ class _PendulumPainter extends CustomPainter {
       towardPivot,
       tensionPx,
       _tension,
-      '張力',
+      animL('張力', 'Tension'),
     );
   }
 

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import 'package:joyphysics/experiment/playback_controls.dart';
 import 'package:joyphysics/model.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 /// 下向き正。水面を 0、物体の底の深さを y。物体の密度は固定。
 const double kFloatG = 9.8;
@@ -103,24 +104,15 @@ String floatCaption(FloatRegime regime, FloatParams params) {
   final h = params.draft;
   switch (regime) {
     case FloatRegime.harmonic:
-      return '一部だけ水中。つりあいの喫水 h = ρ₀H/ρ = ${h.toStringAsFixed(3)} m の上下に単振動します。\n'
-          '周期は液体の密度 ρ を含み、ρ が大きいほど短くなります。\n'
-          '水面から出ず、全部も沈みません。';
+      return animL('一部だけ水中。つりあいの喫水 h = ρ₀H/ρ = ${h.toStringAsFixed(3)} m の上下に単振動します。\n周期は液体の密度 ρ を含み、ρ が大きいほど短くなります。\n水面から出ず、全部も沈みません。', 'Partly submerged. Simple harmonic motion about the equilibrium draft h = ρ₀H/ρ = ${h.toStringAsFixed(3)} m.\nThe period depends on the liquid density ρ; larger ρ means a shorter period.\nIt neither leaves the water nor fully submerges.');
     case FloatRegime.rises:
-      return '全部沈んだ状態から浮かび上がります。\n'
-          '全没のあいだ加速度は一定で、上面が水面に出てから復元力のある領域に入ります。\n'
-          'この初期深さでは、水面から飛び出すまでのエネルギーはありません。';
+      return animL('全部沈んだ状態から浮かび上がります。\n全没のあいだ加速度は一定で、上面が水面に出てから復元力のある領域に入ります。\nこの初期深さでは、水面から飛び出すまでのエネルギーはありません。', 'It rises from a fully submerged state.\nWhile fully submerged the acceleration is constant; after the top reaches the surface it enters the restoring-force region.\nAt this initial depth there is not enough energy to leap out of the water.');
     case FloatRegime.jumps:
-      return '水面に着いたとき上向きの速度が残るので、空中へ出ます。\n'
-          '空中では重力だけ。落ちて再び水に入ります。\n'
-          '物体が液体の半分より軽いと、ちょうど全没から離しただけでも飛びます。';
+      return animL('水面に着いたとき上向きの速度が残るので、空中へ出ます。\n空中では重力だけ。落ちて再び水に入ります。\n物体が液体の半分より軽いと、ちょうど全没から離しただけでも飛びます。', 'When it reaches the surface an upward velocity remains, so it leaves the water.\nIn air only gravity acts. It falls and re-enters the water.\nIf the object is lighter than half the liquid, it leaps even when released from exact full submersion.');
     case FloatRegime.sinks:
-      return '物体のほうが重いので、つりあいの喫水は物体の高さより深く、実在しません。\n'
-          '全没のあと下向きの加速度が残り、水底で止まります。';
+      return animL("物体のほうが重いので、つりあいの喫水は物体の高さより深く、実在しません。\n全没のあと下向きの加速度が残り、水底で止まります。", "The object is heavier, so the equilibrium draft is deeper than the object's height and does not exist.\nAfter full submersion a downward acceleration remains, and it stops at the bottom.");
     case FloatRegime.neutral:
-      return '密度が等しいと、全部沈んでいるあいだは合力がゼロです。\n'
-          'ちょうど全没で静かに置くと、止まったままです。\n'
-          '一部だけ水中から離すと、全没に入った時点で下向きの速度が残るので、水底まで進みます。';
+      return animL('密度が等しいと、全部沈んでいるあいだは合力がゼロです。\nちょうど全没で静かに置くと、止まったままです。\n一部だけ水中から離すと、全没に入った時点で下向きの速度が残るので、水底まで進みます。', 'When densities are equal, the net force is zero while fully submerged.\nIf placed gently at exact full submersion, it stays still.\nIf released from partial submersion, a downward velocity remains when it becomes fully submerged, so it goes to the bottom.');
   }
 }
 
@@ -301,6 +293,7 @@ final floatingOscillation1D = Video(
   category: 'dynamics',
   iconName: 'dynamics',
   title: '浮力による単振動',
+  titleEn: 'Buoyancy SHM',
   videoURL: '',
   equipment: [],
   costRating: '★',
@@ -314,6 +307,16 @@ final floatingOscillation1D = Video(
   <p>断面積 $S$ は消えます。液体の密度 $\rho$ は周期に残ります。$\rho$ を大きくすると $h$ は浅くなり、同じ周期は $\displaystyle T=2\pi\sqrt{\frac{h}{g}}$ とも書けます。</p>
   <p>全部沈むと浮力は $\rho SHg$ で一定になり、加速度は $\displaystyle a=g\left(1-\frac{\rho}{\rho_0}\right)$ です。空中では重力だけです。</p>
 """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>Consider an object of constant horizontal cross section. Let the object density be $\rho_0$, height $H$, cross-sectional area $S$, and liquid density $\rho$. The mass is $m=\rho_0 S H$.</p>
+  <p>Take downward as positive, the water surface as $0$, and the depth of the object's bottom as $y$. When only partly submerged, the submerged length is $y$, so the buoyancy is $\rho S y g$.</p>
+  <p>$$my''=mg-\rho Syg$$</p>
+  <p>The bottom depth at which weight and buoyancy balance (the draft) is $\displaystyle h=\frac{\rho_0}{\rho}H$. With displacement $x=y-h$ from there, while the object neither leaves the water nor fully submerges,</p>
+  <p>$$\displaystyle x''=-\frac{\rho g}{\rho_0 H}x,\quad T=2\pi\sqrt{\frac{\rho_0 H}{\rho g}}$$</p>
+  <p>The area $S$ cancels. The liquid density $\rho$ remains in the period. Increasing $\rho$ makes $h$ shallower, and the same period can be written $\displaystyle T=2\pi\sqrt{\frac{h}{g}}$.</p>
+  <p>When fully submerged, the buoyancy is the constant $\rho SHg$, and the acceleration is $\displaystyle a=g\left(1-\frac{\rho}{\rho_0}\right)$. In air, only gravity acts.</p>
+""",
   experimentWidgets: [
     PhysicsSimulationView(
       simulation: FloatingOscillation1DSimulation(),
@@ -325,7 +328,7 @@ final floatingOscillation1D = Video(
 class FloatingOscillation1DSimulation extends PhysicsSimulation {
   FloatingOscillation1DSimulation()
       : super(
-          title: '浮力による単振動',
+          title: animL('浮力による単振動', 'Buoyancy SHM'),
           formula: const Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -450,11 +453,11 @@ class FloatingOscillation1DSimulation extends PhysicsSimulation {
     final p = _params;
     final regime = floatRegime(p);
     final periodText = regime == FloatRegime.harmonic
-        ? '周期 ${floatPeriod(p.rho).toStringAsFixed(2)} s'
-        : '単振動の範囲の外';
+        ? animL('周期 ${floatPeriod(p.rho).toStringAsFixed(2)} s', 'Period ${floatPeriod(p.rho).toStringAsFixed(2)} s')
+        : animL('単振動の範囲の外', 'Outside the SHM range');
     return [
-      const Text(
-        '物体の密度 ρ₀ = 500 kg/m³、高さ H = 0.20 m。静かに離す。',
+      Text(
+        animL('物体の密度 ρ₀ = 500 kg/m³、高さ H = 0.20 m。静かに離す。', 'Object density ρ₀ = 500 kg/m³, height H = 0.20 m. Release gently.'),
         style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
       ),
       _FloatSlider(
@@ -463,7 +466,7 @@ class FloatingOscillation1DSimulation extends PhysicsSimulation {
         min: kFloatMinRho,
         max: kFloatMaxRho,
         onChanged: (v) => updateParam('rho', v),
-        semanticLabel: '液体の密度',
+        semanticLabel: animL('液体の密度', 'Liquid density'),
         digits: 0,
       ),
       _FloatSlider(
@@ -472,12 +475,12 @@ class FloatingOscillation1DSimulation extends PhysicsSimulation {
         min: kFloatMinY0,
         max: kFloatMaxY0,
         onChanged: (v) => updateParam('y0', v),
-        semanticLabel: '初期の底の深さ',
+        semanticLabel: animL('初期の底の深さ', 'Initial bottom depth'),
       ),
       Padding(
         padding: const EdgeInsets.only(top: 4),
         child: Text(
-          '喫水 ${p.draft.toStringAsFixed(3)} m    $periodText',
+          animL('喫水 ${p.draft.toStringAsFixed(3)} m    $periodText', 'Draft ${p.draft.toStringAsFixed(3)} m    $periodText'),
           style: const TextStyle(
             fontSize: 12,
             fontFamily: 'Courier',
@@ -620,8 +623,8 @@ class _FloatPainter extends CustomPainter {
     );
 
     final label = TextPainter(
-      text: const TextSpan(
-        text: '水面',
+      text: TextSpan(
+        text: animL('水面', 'Water surface'),
         style: TextStyle(color: Color(0xFF01579B), fontSize: 11),
       ),
       textDirection: TextDirection.ltr,
@@ -645,8 +648,8 @@ void _paintEquilibriumNote(
   bool hasEquilibrium,
 ) {
   final text = hasEquilibrium
-      ? '点線：つりあい\n底の深さ h = ${params.draft.toStringAsFixed(3)} m'
-      : 'つりあいは水中にない\n物体のほうが重い';
+      ? animL('点線：つりあい\n底の深さ h = ${params.draft.toStringAsFixed(3)} m', 'Dotted: equilibrium\nBottom depth h = ${params.draft.toStringAsFixed(3)} m')
+      : animL('つりあいは水中にない\n物体のほうが重い', 'No underwater equilibrium\nObject is heavier');
   final tp = TextPainter(
     text: TextSpan(
       text: text,

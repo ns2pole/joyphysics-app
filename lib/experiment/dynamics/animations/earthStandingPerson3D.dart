@@ -4,6 +4,7 @@ import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import 'package:joyphysics/experiment/dynamics/animations/arrow_screen.dart';
 import 'package:joyphysics/experiment/playback_controls.dart';
 import 'package:joyphysics/model.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 /// 球対称の地球上に直立する人を、宇宙（慣性系）と地球共回転系で比較する。
 /// 緯度 $\lambda$（$-90^\circ\sim 90^\circ$）、軸距離 $\rho=R\cos\lambda$。
@@ -218,13 +219,12 @@ double earthStandingRotatingResidual(EarthStandingForces f) {
 String earthStandingCaption(EarthStandingParams params) {
   final f = earthStandingForces(params);
   if (params.latDeg.abs() < 1) {
-    return '赤道: 抗力∥重力。慣性系 R+Fg=ma、共回転系は遠心力込みで合力0。';
+    return animL('赤道: 抗力∥重力。慣性系 R+Fg=ma、共回転系は遠心力込みで合力0。', 'Equator: reaction ∥ gravity. Inertial: R+Fg=ma; co-rotating frame includes centrifugal force and net force is 0.');
   }
   if (params.latDeg.abs() > 89) {
-    return '極: ρ=0 で遠心力なし。抗力と重力がつり合う。';
+    return animL('極: ρ=0 で遠心力なし。抗力と重力がつり合う。', 'Pole: ρ=0 so no centrifugal force. Reaction balances gravity.');
   }
-  return '中緯度: 抗力に摩擦成分 ${f.friction.toStringAsFixed(2)}。'
-      '共回転系は遠心力込みで合力0。';
+  return animL('中緯度: 抗力に摩擦成分 ${f.friction.toStringAsFixed(2)}。共回転系は遠心力込みで合力0。', 'Mid-latitude: reaction includes friction component ${f.friction.toStringAsFixed(2)}.In the co-rotating frame, including centrifugal force, the net force is 0.');
 }
 
 final earthStandingPerson3D = Video(
@@ -233,6 +233,7 @@ final earthStandingPerson3D = Video(
   category: 'dynamics',
   iconName: 'dynamics',
   title: '地上に立つ人と遠心力',
+  titleEn: 'Person standing on Earth and centrifugal force',
   videoURL: '',
   equipment: [],
   costRating: '★',
@@ -247,6 +248,17 @@ final earthStandingPerson3D = Video(
   <p>$$\vec{R}+\vec{F}_g+\vec{F}_{\mathrm{遠}}=\vec{0}$$</p>
   <p>赤道では $\displaystyle N=mg-m\omega^{2}R$ です。実地球は扁球なので、局所鉛直が有効重力に揃うと接線成分はほぼ要りませんが、ここでは球＋摩擦で一貫させています。</p>
 """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>Compare a person standing on a spherically symmetric Earth in space (inertial frame) and in the frame rotating with Earth. On a wide screen the views are side by side; on a narrow screen they stack. The person already rotates with Earth’s angular speed $\omega$. $\omega$ is exaggerated for visibility, and force arrows are emphasized further.</p>
+  <p>With latitude $\lambda$ and radius $R$, the distance from the rotation axis is $\displaystyle\rho=R\cos\lambda$. In the inertial frame the person moves in uniform circular motion about the axis, with acceleration toward the axis $\displaystyle\vec{a}=-\omega^{2}\vec{\rho}$. Speed is constant, but direction changes, so there is acceleration.</p>
+  <p>The true forces are gravity $\vec{F}_g$ (toward Earth’s center) and the contact force $\vec{R}$ from Earth. In the inertial frame their resultant provides the centripetal acceleration. On the left (or top) panel, this resultant $\vec{R}+\vec{F}_g=m\vec{a}$ is shown as an axis-directed arrow.</p>
+  <p>$$\vec{R}+\vec{F}_g=m\vec{a}$$</p>
+  <p>At mid-latitudes the needed $\vec{a}$ is not toward Earth’s center, so $\vec{R}$ is not parallel to gravity. In the spherical model, that tangential component is called static friction. At the equator and poles the tangential component is $0$. The animation also draws the plane of the circular motion (radius $\rho$) perpendicular to the axis.</p>
+  <p>In the frame rotating with Earth the person appears at rest and there is no Coriolis force. Adding the outward centrifugal force $\displaystyle m\omega^{2}\rho$ gives equilibrium; the resultant is $0$ (the right/bottom panel draws the centrifugal force and omits a resultant arrow).</p>
+  <p>$$\vec{R}+\vec{F}_g+\vec{F}_{\mathrm{cf}}=\vec{0}$$</p>
+  <p>At the equator, $\displaystyle N=mg-m\omega^{2}R$. A real Earth is an oblate spheroid, so local vertical nearly aligns with effective gravity and little tangential force is needed; here we keep a consistent sphere-plus-friction model.</p>
+""",
   experimentWidgets: [
     PhysicsSimulationView(
       simulation: EarthStandingPerson3DSimulation(),
@@ -258,11 +270,10 @@ final earthStandingPerson3D = Video(
 class EarthStandingPerson3DSimulation extends PhysicsSimulation {
   EarthStandingPerson3DSimulation()
     : super(
-        title: '地上に立つ人と遠心力',
-        formula: const FormulaDisplay(
-          r'\displaystyle \rho=R\cos\lambda,\quad'
-          r' \vec{R}+\vec{F}_{g}=m\vec{a}\ \text{(慣性)},\ '
-          r'\vec{R}+\vec{F}_{g}+\vec{F}_{\mathrm{cen}}=\vec{0}\ \text{(共回転)}',
+        title: animL('地上に立つ人と遠心力', 'Person standing on Earth and centrifugal force'),
+        formula: FormulaDisplay(
+          r'\displaystyle \rho=R\cos\lambda,\quad' +
+          animL(' \\vec{R}+\\vec{F}_{g}=m\\vec{a}\\ \\text{(慣性)},\\ \\vec{R}+\\vec{F}_{g}+\\vec{F}_{\\mathrm{cen}}=\\vec{0}\\ \\text{(共回転)}', ' \\vec{R}+\\vec{F}_{g}=m\\vec{a}\\ \\text{(inertial)},\\ \\vec{R}+\\vec{F}_{g}+\\vec{F}_{\\mathrm{cen}}=\\vec{0}\\ \\text{(co-rotating)}'),
         ),
         aspectRatio: 0.72,
         enableTime: false,
@@ -293,7 +304,7 @@ class EarthStandingPerson3DSimulation extends PhysicsSimulation {
   }
 
   @override
-  String? get situation => '球対称の地球上に直立し、最初から地球と同じ角速度で共回転する人';
+  String? get situation => animL("球対称の地球上に直立し、最初から地球と同じ角速度で共回転する人", "Person standing upright on a spherically symmetric Earth, co-rotating from the start at Earth's angular velocity");
 
   ValueNotifier<bool> get running => _loop.running;
 
@@ -368,7 +379,7 @@ class EarthStandingPerson3DSimulation extends PhysicsSimulation {
                     ? const Color(0xFF1565C0)
                     : Colors.black54,
               ),
-              label: const Text('真上から見る', style: TextStyle(fontSize: 12)),
+              label: Text(animL('真上から見る', 'Top view'), style: TextStyle(fontSize: 12)),
               selected: activeIds.contains('showWavefrontTopView'),
               onSelected: (on) {
                 final next = Set<String>.from(activeIds);
@@ -406,8 +417,8 @@ class EarthStandingPerson3DSimulation extends PhysicsSimulation {
     final p = _params;
     final f = earthStandingForces(p);
     return [
-      const Text(
-        '球・最初から同じ ω で共回転（ω は誇張）',
+      Text(
+        animL('球・最初から同じ ω で共回転（ω は誇張）', 'Sphere · co-rotating from the start at the same ω (ω exaggerated)'),
         style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
       ),
       _EarthSlider(
@@ -416,7 +427,7 @@ class EarthStandingPerson3DSimulation extends PhysicsSimulation {
         min: kEarthMinLatDeg,
         max: kEarthMaxLatDeg,
         onChanged: (v) => updateParam('lat', v),
-        semanticLabel: '緯度',
+        semanticLabel: animL('緯度', 'Latitude'),
         digits: 0,
         suffix: '°',
       ),
@@ -426,7 +437,7 @@ class EarthStandingPerson3DSimulation extends PhysicsSimulation {
         min: kEarthMinOmega,
         max: kEarthMaxOmega,
         onChanged: (v) => updateParam('W', v),
-        semanticLabel: '角速度 ω',
+        semanticLabel: animL('角速度 ω', 'Angular velocity ω'),
       ),
       _EarthSlider(
         label: 'm',
@@ -434,7 +445,7 @@ class EarthStandingPerson3DSimulation extends PhysicsSimulation {
         min: kEarthMinM,
         max: kEarthMaxM,
         onChanged: (v) => updateParam('m', v),
-        semanticLabel: '質量 m',
+        semanticLabel: animL('質量 m', 'Mass m'),
       ),
       Padding(
         padding: const EdgeInsets.only(top: 4),
@@ -640,7 +651,7 @@ class _EarthStandingPainter extends CustomPainter {
     _text(
       canvas,
       Offset(panel.left + 8, panel.top + 6),
-      ground ? '宇宙（慣性系）' : '地球と一緒に回る系',
+      ground ? animL('宇宙（慣性系）', 'Space (inertial frame)') : animL('地球と一緒に回る系', 'Frame rotating with Earth'),
       _ink,
       alignLeft: true,
     );
@@ -654,7 +665,7 @@ class _EarthStandingPainter extends CustomPainter {
     _text(
       canvas,
       Offset(panel.center.dx, panel.bottom - 16),
-      ground ? '真の力の合力 R+Fg = ma（軸向き）' : 'R+Fg+遠心力 = 0（人は静止）',
+      ground ? animL('真の力の合力 R+Fg = ma（軸向き）', 'Net true force R+Fg = ma (axial)') : animL('R+Fg+遠心力 = 0（人は静止）', 'R+Fg+centrifugal force = 0 (person at rest)'),
       _muted,
     );
     canvas.restore();
@@ -860,7 +871,7 @@ class _EarthStandingPainter extends CustomPainter {
     _text(
       canvas,
       axisHit + const Offset(14, -10),
-      ground ? '円運動の断面' : '遠心力の面',
+      ground ? animL('円運動の断面', 'Cross section of circular motion') : animL('遠心力の面', 'Centrifugal-force plane'),
       _orbitPlane,
       alignLeft: true,
     );
@@ -970,7 +981,7 @@ class _EarthStandingPainter extends CustomPainter {
       projectUnit(-px / kEarthR, -py / kEarthR, -pz / kEarthR),
       f.gMag,
       _gravity,
-      '重力',
+      animL('重力', 'Gravity'),
     );
 
     // 抗力：φ 回転した 3D（概ね外向き＝重力と逆）
@@ -981,7 +992,7 @@ class _EarthStandingPainter extends CustomPainter {
     final rho = math.sqrt(px * px + py * py);
     final outward = rho > 1e-6 ? projectUnit(px / rho, py / rho, 0) : null;
 
-    drawArrow(reaction, f.rMag, _reaction, '抗力');
+    drawArrow(reaction, f.rMag, _reaction, animL('抗力', 'Reaction'));
 
     if (outward != null) {
       if (!ground) {
@@ -989,7 +1000,7 @@ class _EarthStandingPainter extends CustomPainter {
           outward,
           f.cenMag,
           _centrifugal,
-          '遠心力',
+          animL('遠心力', 'Centrifugal force'),
           dashed: true,
           labelSide: -1,
         );
@@ -999,7 +1010,7 @@ class _EarthStandingPainter extends CustomPainter {
           (dir: -outward.dir, foreshorten: outward.foreshorten),
           f.sumTrueMag,
           _resultant,
-          '合力(=ma)',
+          animL('合力(=ma)', 'Net force (=ma)'),
         );
       }
     }

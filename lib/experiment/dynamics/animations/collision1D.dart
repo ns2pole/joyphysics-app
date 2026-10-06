@@ -5,6 +5,7 @@ import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import 'package:joyphysics/experiment/dynamics/animations/energy_gauge.dart';
 import 'package:joyphysics/experiment/playback_controls.dart';
 import 'package:joyphysics/model.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 /// 右向き正。原点の $M$ は静止。左の $m$ が速さ $v$ で衝突する。
 /// 画面の軸は止まっている。物体だけが動く。
@@ -125,10 +126,10 @@ EnergyLedger collision1DEnergy(
     legendPotential: false,
     legendHeat: heat > 1e-4,
     kineticPortions: [
-      EnergyPortion(value: k1, label: 'mの運動エネルギー', color: kCollisionMass),
+      EnergyPortion(value: k1, label: animL('mの運動エネルギー', 'Kinetic energy of m'), color: kCollisionMass),
       EnergyPortion(
         value: k2,
-        label: 'Mの運動エネルギー',
+        label: animL('Mの運動エネルギー', 'Kinetic energy of M'),
         color: kCollisionTarget,
       ),
     ],
@@ -200,7 +201,7 @@ List<Collision1DSample> collision1DStrobe(
   double t, {
   double dt = kCollisionStrobeDt,
 }) {
-  if (t <= 1e-9 || dt <= 0) return const [];
+  if (t <= 1e-9 || dt <= 0) return [];
   final samples = <Collision1DSample>[];
   for (var ti = dt; ti < t - 1e-9; ti += dt) {
     samples.add(collision1DAt(params, ti));
@@ -208,12 +209,8 @@ List<Collision1DSample> collision1DStrobe(
   return samples;
 }
 
-const String kCollisionCaption =
-    '1次元の衝突。原点の M は止まっている。\n'
-    '左の m が速さ v で右へ進み、正面からぶつかる。\n'
-    '軸は止めたまま。動くのは物体のほう。\n'
-    '摩擦はないので、衝突の前後はどちらも等速。\n'
-    'e = 1 で m = M なら速度が入れ替わる。e = 0 なら同じ速度で進む。';
+String kCollisionCaption =
+    animL('1次元の衝突。原点の M は止まっている。\n左の m が速さ v で右へ進み、正面からぶつかる。\n軸は止めたまま。動くのは物体のほう。\n摩擦はないので、衝突の前後はどちらも等速。\ne = 1 で m = M なら速度が入れ替わる。e = 0 なら同じ速度で進む。', '1D collision. M at the origin is at rest.\nm on the left approaches to the right at speed v and collides head-on.\nThe axis stays fixed. Only the objects move.\nNo friction, so both move at constant speed before and after the collision.\nIf e = 1 and m = M, the velocities swap. If e = 0, they move at the same velocity.');
 
 final collision1D = Video(
   isNew: false,
@@ -221,6 +218,7 @@ final collision1D = Video(
   category: 'dynamics',
   iconName: 'dynamics',
   title: '1次元の衝突',
+  titleEn: '1D collision',
   videoURL: '',
   equipment: [],
   costRating: '★',
@@ -235,6 +233,17 @@ final collision1D = Video(
   <p>$$v_{m}'=\frac{m-eM}{m+M}v,\quad v_{M}'=\frac{(1+e)m}{m+M}v$$</p>
   <p>$e=1$ で $m=M$ なら、ぶつかった側は止まり、止まっていた側が速さ $v$ で進みます。$e=0$ なら二つは同じ速度 $\displaystyle \frac{m}{m+M}v$ で進みます。$e<1$ では力学的エネルギーの一部が熱になります。</p>
 """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>This is a one-dimensional collision. A mass $M$ sits at rest at the origin, and a mass $m$ approaches from the left with speed $v$. There is no friction, so before and after the collision both move in uniform straight-line motion. Rightward is positive. The axis stays fixed.</p>
+  <p>Momentum is conserved.</p>
+  <p>$$mv=mv_{m}'+Mv_{M}'$$</p>
+  <p>The coefficient of restitution $e$ means the relative speed of separation is $e$ times the relative speed of approach.</p>
+  <p>$$e=\frac{v_{M}'-v_{m}'}{v}$$</p>
+  <p>From these two relations, the velocities after the collision are</p>
+  <p>$$v_{m}'=\frac{m-eM}{m+M}v,\quad v_{M}'=\frac{(1+e)m}{m+M}v$$</p>
+  <p>If $e=1$ and $m=M$, the incoming mass stops and the one that was at rest moves on with speed $v$. If $e=0$, both continue with the same velocity $\displaystyle \frac{m}{m+M}v$. When $e<1$, part of the mechanical energy becomes heat.</p>
+""",
   experimentWidgets: [
     PhysicsSimulationView(
       simulation: Collision1DSimulation(),
@@ -246,7 +255,7 @@ final collision1D = Video(
 class Collision1DSimulation extends PhysicsSimulation {
   Collision1DSimulation()
       : super(
-          title: '1次元の衝突',
+          title: animL('1次元の衝突', '1D collision'),
           formula: const FormulaDisplay(
             r"\displaystyle v_{m}'=\frac{m-eM}{m+M}v,\quad v_{M}'=\frac{(1+e)m}{m+M}v",
           ),
@@ -345,7 +354,7 @@ class Collision1DSimulation extends PhysicsSimulation {
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
+            Text(
               kCollisionCaption,
               textAlign: TextAlign.center,
               style: TextStyle(
@@ -377,8 +386,8 @@ class Collision1DSimulation extends PhysicsSimulation {
     final vm = collisionVmPrime(p);
     final vM = collisionVMPrime(p);
     return [
-      const Text(
-        '初期条件（右向き正）',
+      Text(
+        animL('初期条件（右向き正）', 'Initial conditions (rightward positive)'),
         style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
       ),
       _CollisionSlider(
@@ -387,7 +396,7 @@ class Collision1DSimulation extends PhysicsSimulation {
         min: kCollisionMinMass,
         max: kCollisionMaxMass,
         onChanged: (v) => updateParam('m', v),
-        semanticLabel: '質量 m',
+        semanticLabel: animL('質量 m', 'Mass m'),
       ),
       _CollisionSlider(
         label: 'M',
@@ -395,7 +404,7 @@ class Collision1DSimulation extends PhysicsSimulation {
         min: kCollisionMinMass,
         max: kCollisionMaxMass,
         onChanged: (v) => updateParam('M', v),
-        semanticLabel: '質量 M',
+        semanticLabel: animL('質量 M', 'Mass M'),
       ),
       Padding(
         padding: const EdgeInsets.only(top: 2, bottom: 2),
@@ -405,7 +414,7 @@ class Collision1DSimulation extends PhysicsSimulation {
               child: Align(
                 alignment: Alignment.centerRight,
                 child: ChoiceChip(
-                  label: const Text('完全非弾性', style: TextStyle(fontSize: 12)),
+                  label: Text(animL('完全非弾性', 'Perfectly inelastic'), style: TextStyle(fontSize: 12)),
                   selected: p.e <= kCollisionMinE + 1e-9,
                   onSelected: (_) => updateParam('e', kCollisionMinE),
                   selectedColor: const Color(0xFF6A1B9A).withOpacity(0.22),
@@ -417,7 +426,7 @@ class Collision1DSimulation extends PhysicsSimulation {
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: ChoiceChip(
-                  label: const Text('完全弾性', style: TextStyle(fontSize: 12)),
+                  label: Text(animL('完全弾性', 'Perfectly elastic'), style: TextStyle(fontSize: 12)),
                   selected: p.e >= kCollisionMaxE - 1e-9,
                   onSelected: (_) => updateParam('e', kCollisionMaxE),
                   selectedColor: const Color(0xFF1565C0).withOpacity(0.22),
@@ -433,7 +442,7 @@ class Collision1DSimulation extends PhysicsSimulation {
         min: kCollisionMinE,
         max: kCollisionMaxE,
         onChanged: (v) => updateParam('e', v),
-        semanticLabel: '反発係数 e（0 が完全非弾性、1 が完全弾性）',
+        semanticLabel: animL('反発係数 e（0 が完全非弾性、1 が完全弾性）', 'Coefficient of restitution e (0 = perfectly inelastic, 1 = perfectly elastic)'),
       ),
       _CollisionSlider(
         label: 'v',
@@ -441,12 +450,12 @@ class Collision1DSimulation extends PhysicsSimulation {
         min: kCollisionMinV,
         max: kCollisionMaxV,
         onChanged: (v) => updateParam('v', v),
-        semanticLabel: '衝突前の速さ v',
+        semanticLabel: animL('衝突前の速さ v', 'Pre-collision speed v'),
       ),
       Padding(
         padding: const EdgeInsets.only(top: 4),
         child: Text(
-          "衝突後  vm' = ${vm.toStringAsFixed(2)} m/s    vM' = ${vM.toStringAsFixed(2)} m/s",
+          animL("衝突後  vm' = ${vm.toStringAsFixed(2)} m/s    vM' = ${vM.toStringAsFixed(2)} m/s", "After collision  vm' = ${vm.toStringAsFixed(2)} m/s    vM' = ${vM.toStringAsFixed(2)} m/s"),
           style: const TextStyle(
             fontSize: 12,
             fontFamily: 'Courier',
@@ -645,7 +654,7 @@ class _CollisionPainter extends CustomPainter {
       canvas.drawLine(Offset(px, y), Offset(px, math.min(y + 6, railY)), paint);
       y += 10;
     }
-    _label(canvas, Offset(px, railY - 122), '原点', _origin);
+    _label(canvas, Offset(px, railY - 122), animL('原点', 'Origin'), _origin);
   }
 
   void _drawTrail(Canvas canvas, double railY, _XMap map) {
@@ -737,7 +746,7 @@ class _CollisionPainter extends CustomPainter {
   }
 
   String _hudLines() {
-    final phase = sample.collided ? '衝突後' : '衝突前';
+    final phase = sample.collided ? animL('衝突後', 'After collision') : animL('衝突前', 'Before collision');
     return 't = ${sample.t.toStringAsFixed(2)} s  $phase\n'
         'xm = ${sample.xm.toStringAsFixed(2)} m\n'
         'vm = ${sample.vm.toStringAsFixed(2)} m/s\n'

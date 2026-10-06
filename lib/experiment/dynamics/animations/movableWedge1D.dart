@@ -4,6 +4,7 @@ import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import 'package:joyphysics/experiment/dynamics/animations/energy_gauge.dart';
 import 'package:joyphysics/experiment/playback_controls.dart';
 import 'package:joyphysics/model.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 /// 右向き正、上向き正。斜面は左下がり。至るところ摩擦なし。$g=9.8\,\mathrm{m/s^2}$。
 const double kWedgeG = 9.8;
@@ -89,12 +90,12 @@ EnergyLedger movableWedgeEnergy(
     kineticPortions: [
       EnergyPortion(
         value: blockKinetic,
-        label: 'm の運動エネルギー',
+        label: animL('m の運動エネルギー', 'm kinetic energy'),
         color: _kWedgeBlockEnergy,
       ),
       EnergyPortion(
         value: cartKinetic,
-        label: 'M の運動エネルギー',
+        label: animL('M の運動エネルギー', 'M kinetic energy'),
         color: _kWedgeCartEnergy,
       ),
     ],
@@ -157,6 +158,7 @@ final movableWedge1D = Video(
   category: 'dynamics',
   iconName: 'dynamics',
   title: '動く斜面と慣性力',
+  titleEn: 'Moving wedge and inertial force',
   videoURL: '',
   equipment: [],
   costRating: '★',
@@ -172,6 +174,18 @@ final movableWedge1D = Video(
   <p>台とともに動く系では、左向きの慣性力 $mA$ を加えて小物体の運動を見ます。働く力の一覧は違いますが、$A$、$t$、台の移動距離 $L$ は同じです。水平方向の外力がないので重心は水平に動かず、</p>
   <p>$$L=\frac{ml\cos\theta}{M+m}$$</p>
 """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>On a smooth horizontal surface sits a cart of mass $M$ with incline angle $\theta$. The incline is also smooth and has length $l$. Place a small block of mass $m$ gently at the top; the cart does not rotate and accelerates to the right with acceleration $A$.</p>
+  <p>In the lab frame, the only horizontal force on the block is a component of the normal force. The cart feels the reaction.</p>
+  <p>$$m\ddot x=-N\sin\theta,\quad MA=N\sin\theta$$</p>
+  <p>Together with the condition that the block stays on the incline,</p>
+  <p>$$A=\frac{mg\sin\theta\cos\theta}{M+m\sin^{2}\theta}$$</p>
+  <p>The relative acceleration along the incline is $a=g\sin\theta+A\cos\theta$, and the time to slide off is</p>
+  <p>$$t=\sqrt{\frac{2l}{a}}$$</p>
+  <p>In the frame moving with the cart, add a leftward inertial force $mA$ to analyze the block. The list of forces differs, but $A$, $t$, and the cart displacement $L$ are the same. With no external horizontal force the center of mass does not move horizontally, and</p>
+  <p>$$L=\frac{ml\cos\theta}{M+m}$$</p>
+""",
   experimentWidgets: [
     PhysicsSimulationView(
       simulation: MovableWedgeSimulation(),
@@ -183,7 +197,7 @@ final movableWedge1D = Video(
 class MovableWedgeSimulation extends PhysicsSimulation {
   MovableWedgeSimulation()
       : super(
-          title: '動く斜面と慣性力',
+          title: animL('動く斜面と慣性力', 'Moving wedge and inertial force'),
           formula: const FormulaDisplay(
             r'\displaystyle A=\frac{mg\sin\theta\cos\theta}{M+m\sin^{2}\theta},\quad L=\frac{ml\cos\theta}{M+m}',
           ),
@@ -203,7 +217,7 @@ class MovableWedgeSimulation extends PhysicsSimulation {
 
   @override
   String? get situation =>
-      '慣性系で見ると、水平な床の上を動ける斜面の上端に静かに置かれた物体';
+      animL('慣性系で見ると、水平な床の上を動ける斜面の上端に静かに置かれた物体', 'In an inertial frame: an object gently placed at the top of a wedge that can move on a horizontal floor');
 
   ValueNotifier<bool> get running => _loop.running;
 
@@ -285,8 +299,8 @@ class MovableWedgeSimulation extends PhysicsSimulation {
     final duration = wedgeSlideDuration(p);
     final distance = wedgeCartDistance(p);
     return [
-      const Text(
-        '初期条件（g = 9.8 m/s²、摩擦なし）',
+      Text(
+        animL('初期条件（g = 9.8 m/s²、摩擦なし）', 'Initial conditions (g = 9.8 m/s², no friction)'),
         style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
       ),
       _WedgeSlider(
@@ -296,7 +310,7 @@ class MovableWedgeSimulation extends PhysicsSimulation {
         max: kWedgeMaxTheta,
         digits: 0,
         onChanged: (v) => updateParam('theta', v),
-        semanticLabel: '傾角 θ',
+        semanticLabel: animL('傾角 θ', 'Incline angle θ'),
       ),
       _WedgeSlider(
         label: 'M',
@@ -304,7 +318,7 @@ class MovableWedgeSimulation extends PhysicsSimulation {
         min: kWedgeMinM,
         max: kWedgeMaxM,
         onChanged: (v) => updateParam('M', v),
-        semanticLabel: '台の質量 M',
+        semanticLabel: animL('台の質量 M', 'Wedge mass M'),
       ),
       _WedgeSlider(
         label: 'm',
@@ -312,7 +326,7 @@ class MovableWedgeSimulation extends PhysicsSimulation {
         min: kWedgeMinBlock,
         max: kWedgeMaxBlock,
         onChanged: (v) => updateParam('m', v),
-        semanticLabel: '小物体の質量 m',
+        semanticLabel: animL('小物体の質量 m', 'Small mass m'),
       ),
       _WedgeSlider(
         label: 'l',
@@ -320,7 +334,7 @@ class MovableWedgeSimulation extends PhysicsSimulation {
         min: kWedgeMinLength,
         max: kWedgeMaxLength,
         onChanged: (v) => updateParam('l', v),
-        semanticLabel: '斜面の長さ l',
+        semanticLabel: animL('斜面の長さ l', 'Incline length l'),
       ),
       Padding(
         padding: const EdgeInsets.only(top: 4),
@@ -488,7 +502,7 @@ class _WedgePainter extends CustomPainter {
     _label(
       canvas,
       Offset(panel.left + 8, panel.top + 6),
-      ground ? '地上（慣性系）' : '台と共に動く系（非慣性系）',
+      ground ? animL('地上（慣性系）', 'Ground (inertial frame)') : animL('台と共に動く系（非慣性系）', 'Frame moving with the wedge (non-inertial)'),
       _ink,
       alignLeft: true,
     );
@@ -582,13 +596,13 @@ class _WedgePainter extends CustomPainter {
       cartInertialMag,
     ].fold<double>(0, math.max);
     final unit = biggest > 1e-9 ? 68.0 / biggest : 1.0;
-    _arrow(canvas, center, const Offset(0, 1), mg * unit, _gravity, '重力', dashed: false);
+    _arrow(canvas, center, Offset(0, 1), mg * unit, _gravity, animL('重力', 'Gravity'), dashed: false);
     final nDir = Offset(normal.dx, -normal.dy);
     _arrow(canvas, center, nDir, normalForce * unit, _normal, 'N', dashed: false);
     if (!ground && blockInertial > 1e-6) {
       final inertialLen = blockInertial * unit;
       _arrow(canvas, center, const Offset(-1, 0), inertialLen, _inertial, '', dashed: true);
-      _label(canvas, center + Offset(-inertialLen - 22, -8), '慣性力', _inertial);
+      _label(canvas, center + Offset(-inertialLen - 22, -8), animL('慣性力', 'Inertial force'), _inertial);
     }
     _drawWedgeForces(
       canvas,
@@ -621,8 +635,8 @@ class _WedgePainter extends CustomPainter {
       length * math.sin(th) / 3,
     );
     canvas.drawCircle(cm, 2.4, Paint()..color = _ink);
-    _arrow(canvas, cm, const Offset(0, 1), weight * unit, _gravity, '重力', dashed: false);
-    _arrow(canvas, cm, const Offset(0, -1), floorNormal * unit, _normal, '垂直抗力', dashed: false);
+    _arrow(canvas, cm, Offset(0, 1), weight * unit, _gravity, animL('重力', 'Gravity'), dashed: false);
+    _arrow(canvas, cm, Offset(0, -1), floorNormal * unit, _normal, animL('垂直抗力', 'Normal force'), dashed: false);
     _arrow(
       canvas,
       cm,
@@ -633,7 +647,7 @@ class _WedgePainter extends CustomPainter {
       dashed: false,
     );
     if (!ground && inertial > 1e-6) {
-      _arrow(canvas, cm, const Offset(-1, 0), inertial * unit, _inertial, '慣性力', dashed: true);
+      _arrow(canvas, cm, Offset(-1, 0), inertial * unit, _inertial, animL('慣性力', 'Inertial force'), dashed: true);
     }
   }
 
@@ -670,7 +684,7 @@ class _WedgePainter extends CustomPainter {
     _label(
       canvas,
       top + Offset(before ? -14 : 8, -18),
-      before ? '前' : '後',
+      before ? animL('前', 'Before') : animL('後', 'After'),
       const Color(0xFF546E7A),
       alignLeft: !before,
       size: 10,

@@ -4,6 +4,7 @@ import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import 'package:joyphysics/experiment/dynamics/animations/arrow_screen.dart';
 import 'package:joyphysics/experiment/playback_controls.dart';
 import 'package:joyphysics/model.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 /// 一定の開き角 $\theta$ で水平円運動する円錐振り子。
 /// 支点を原点、鉛直上向きを正の $z$ とする。
@@ -206,9 +207,7 @@ double conicalRotatingResidual(ConicalPendulumForces f) {
 }
 
 String conicalPendulumCaption(ConicalPendulumParams params) {
-  return 'θ=${params.thetaDeg.toStringAsFixed(0)}° で水平円運動。'
-      '慣性系は張力の水平成分が向心力。'
-      '一緒に回る系では遠心力とつり合い、合力は 0。';
+  return animL('θ=${params.thetaDeg.toStringAsFixed(0)}° で水平円運動。慣性系は張力の水平成分が向心力。一緒に回る系では遠心力とつり合い、合力は 0。', 'Horizontal circular motion at θ=${params.thetaDeg.toStringAsFixed(0)}°. In the inertial frame, the horizontal component of tension is the centripetal force. In the co-rotating frame it balances the centrifugal force, and the net force is 0.');
 }
 
 final conicalPendulum3D = Video(
@@ -217,6 +216,7 @@ final conicalPendulum3D = Video(
   category: 'dynamics',
   iconName: 'dynamics',
   title: '円錐振り子',
+  titleEn: 'Conical pendulum',
   videoURL: '',
   equipment: [],
   costRating: '★',
@@ -235,6 +235,21 @@ final conicalPendulum3D = Video(
   <p>$$S:mg:m\omega^{2}r=l:h:r$$</p>
   <p>アニメでは両系に力を描きます。遠心力は破線です。軌道の点は時間等間隔です。$g=9.8\,\mathrm{m/s^{2}}$ です。</p>
 """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>A bob on a string of length $l$ moves horizontally about a vertical axis at constant angular velocity $\omega$. The string keeps a fixed angle $\theta$ from the vertical and sweeps out a cone. On a wide screen the views are side by side; on a narrow screen they are stacked. Top or left is the lab (inertial) frame; bottom or right is the frame rotating with the pendulum.</p>
+  <p>With the support as the origin and upward as positive $z$, the horizontal radius and the vertical distance from the support to the orbit plane are</p>
+  <p>$$r=l\sin\theta,\qquad h=l\cos\theta$$</p>
+  <p>The true forces are gravity and the string tension $\vec{S}$. In the inertial frame the bob moves in uniform horizontal circular motion with acceleration toward the axis $\displaystyle\vec{a}=-\omega^{2}\vec{r}$. Vertically the forces balance; horizontally a component of tension supplies the centripetal force.</p>
+  <p>$$S\cos\theta=mg,\qquad S\sin\theta=m\omega^{2}r$$</p>
+  <p>When $\theta$ is not zero, the angular velocity and tension are fixed by the following. The period is independent of mass and depends only on the vertical distance $h$.</p>
+  <p>$$\omega^{2}=\frac{g}{l\cos\theta},\qquad S=\frac{mg}{\cos\theta}$$</p>
+  <p>$$T=2\pi\sqrt{\frac{l\cos\theta}{g}}=2\pi\sqrt{\frac{h}{g}}$$</p>
+  <p>In the frame rotating with the pendulum the bob appears at rest. Adding an outward centrifugal force $\displaystyle m\omega^{2}r$ from the axis, the net of gravity, tension, and centrifugal force is $0$. Because the bob is at rest there is no Coriolis force. The magnitude ratios of the three forces match the right triangle in a cross section of the cone.</p>
+  <p>$$\vec{S}+\vec{F}_{g}+\vec{F}_{\mathrm{cen}}=\vec{0}$$</p>
+  <p>$$S:mg:m\omega^{2}r=l:h:r$$</p>
+  <p>The animation draws forces in both frames. Centrifugal force is dashed. Orbit points are equally spaced in time. $g=9.8\,\mathrm{m/s^{2}}$.</p>
+""",
   experimentWidgets: [
     PhysicsSimulationView(
       simulation: ConicalPendulum3DSimulation(),
@@ -246,7 +261,7 @@ final conicalPendulum3D = Video(
 class ConicalPendulum3DSimulation extends PhysicsSimulation {
   ConicalPendulum3DSimulation()
     : super(
-        title: '円錐振り子',
+        title: animL('円錐振り子', 'Conical pendulum'),
         formula: const FormulaDisplay(
           r'\displaystyle \omega^{2}=\frac{g}{l\cos\theta},\quad'
           r' S=\frac{mg}{\cos\theta},\quad'
@@ -281,7 +296,7 @@ class ConicalPendulum3DSimulation extends PhysicsSimulation {
   }
 
   @override
-  String? get situation => '糸が鉛直から一定角を保ったまま、おもりが水平な等速円運動をする';
+  String? get situation => animL('糸が鉛直から一定角を保ったまま、おもりが水平な等速円運動をする', 'The string keeps a constant angle from the vertical while the bob moves in uniform horizontal circular motion');
 
   ValueNotifier<bool> get running => _loop.running;
 
@@ -356,7 +371,7 @@ class ConicalPendulum3DSimulation extends PhysicsSimulation {
                     ? const Color(0xFF1565C0)
                     : Colors.black54,
               ),
-              label: const Text('真上から見る', style: TextStyle(fontSize: 12)),
+              label: Text(animL('真上から見る', 'Top view'), style: TextStyle(fontSize: 12)),
               selected: activeIds.contains('showWavefrontTopView'),
               onSelected: (on) {
                 final next = Set<String>.from(activeIds);
@@ -393,8 +408,8 @@ class ConicalPendulum3DSimulation extends PhysicsSimulation {
     _rememberParams(parameters);
     final p = _params;
     return [
-      const Text(
-        '一定の θ で回る円錐振り子（g = 9.8 m/s²）',
+      Text(
+        animL('一定の θ で回る円錐振り子（g = 9.8 m/s²）', 'Conical pendulum rotating at constant θ (g = 9.8 m/s²)'),
         style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
       ),
       _ConeSlider(
@@ -403,7 +418,7 @@ class ConicalPendulum3DSimulation extends PhysicsSimulation {
         min: kConeMinThetaDeg,
         max: kConeMaxThetaDeg,
         onChanged: (v) => updateParam('th', v),
-        semanticLabel: '開き角 θ',
+        semanticLabel: animL('開き角 θ', 'Opening angle θ'),
         digits: 0,
         suffix: '°',
       ),
@@ -413,7 +428,7 @@ class ConicalPendulum3DSimulation extends PhysicsSimulation {
         min: kConeMinL,
         max: kConeMaxL,
         onChanged: (v) => updateParam('l', v),
-        semanticLabel: '糸の長さ l',
+        semanticLabel: animL('糸の長さ l', 'String length l'),
       ),
       _ConeSlider(
         label: 'm',
@@ -421,7 +436,7 @@ class ConicalPendulum3DSimulation extends PhysicsSimulation {
         min: kConeMinM,
         max: kConeMaxM,
         onChanged: (v) => updateParam('m', v),
-        semanticLabel: '質量 m',
+        semanticLabel: animL('質量 m', 'Mass m'),
       ),
       Padding(
         padding: const EdgeInsets.only(top: 4),
@@ -628,7 +643,7 @@ class _ConicalPendulumPainter extends CustomPainter {
     _text(
       canvas,
       Offset(panel.left + 8, panel.top + 6),
-      ground ? '地上（慣性系）' : '振り子と一緒に回る系',
+      ground ? animL('地上（慣性系）', 'Ground (inertial frame)') : animL('振り子と一緒に回る系', 'Frame rotating with the pendulum'),
       _ink,
       alignLeft: true,
     );
@@ -636,7 +651,7 @@ class _ConicalPendulumPainter extends CustomPainter {
     _text(
       canvas,
       Offset(panel.center.dx, panel.bottom - 18),
-      ground ? '張力＋重力 = ma（水平・軸向き）' : '張力＋重力＋遠心力 = 0',
+      ground ? animL('張力＋重力 = ma（水平・軸向き）', 'Tension + gravity = ma (horizontal and axial)') : animL('張力＋重力＋遠心力 = 0', 'Tension + gravity + centrifugal force = 0'),
       _muted,
     );
     canvas.restore();
@@ -961,14 +976,14 @@ class _ConicalPendulumPainter extends CustomPainter {
 
     if (ground) {
       final resultant = prepare(f.sumTrueX * cp, f.sumTrueX * sp, f.sumTrueZ);
-      draw(gravity, _gravity, '重力');
-      draw(tension, _tension, '張力');
-      draw(resultant, _resultant, '合力', labelSide: -1);
+      draw(gravity, _gravity, animL('重力', 'Gravity'));
+      draw(tension, _tension, animL('張力', 'Tension'));
+      draw(resultant, _resultant, animL('合力', 'Net force'), labelSide: -1);
     } else {
       final cen = prepare(f.cenX, 0, 0);
-      draw(gravity, _gravity, '重力', labelSide: -1);
-      draw(tension, _tension, '張力');
-      draw(cen, _centrifugal, '遠心力', dashed: true, labelSide: -1);
+      draw(gravity, _gravity, animL('重力', 'Gravity'), labelSide: -1);
+      draw(tension, _tension, animL('張力', 'Tension'));
+      draw(cen, _centrifugal, animL('遠心力', 'Centrifugal force'), dashed: true, labelSide: -1);
     }
   }
 

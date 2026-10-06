@@ -5,6 +5,7 @@ import 'package:joyphysics/experiment/dynamics/animations/energy_gauge.dart';
 import 'package:joyphysics/experiment/playback_controls.dart';
 import 'package:joyphysics/experiment/dynamics/animations/kepler_ellipse.dart';
 import 'package:joyphysics/model.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 final twoBodyKepler2D = Video(
   isNew: false,
@@ -12,6 +13,7 @@ final twoBodyKepler2D = Video(
   category: 'dynamics',
   iconName: 'dynamics',
   title: '2体問題(重力・連星)',
+  titleEn: 'Two-body problem (gravity / binary)',
   videoURL: '',
   equipment: [],
   costRating: '★',
@@ -25,6 +27,16 @@ final twoBodyKepler2D = Video(
   <p>質量比が近いと重心は主星の外に出ます。地球と月、太陽と地球では重心は主星の中にあります。</p>
   <p>エネルギーゲージは相対運動の換算質量について、近日点を位置エネルギーの基準にする（真の $E&lt;0$ は出さない）。緑帯は近日点から現在の距離まで運ぶ仕事 $\displaystyle U'=G\mu M\left(\frac{1}{r_{\min}}-\frac{1}{r}\right)$ に相当する。</p>
   """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>Two masses with no external force orbit a common center of mass. With the origin at the CM, the relative vector $\mathbf{r}=\mathbf{r}_2-\mathbf{r}_1$ is a fixed-center Kepler problem of mass $M=m_1+m_2$; if bound, the orbit is an ellipse. Each star’s orbit is similar, with semi-major axes $a_1,a_2$ fixed by the lever rule.</p>
+  <p>$$\displaystyle a=a_1+a_2,\quad \frac{m_1}{m_2}=\frac{a_2}{a_1}$$</p>
+  <p>$$\displaystyle \mathbf{r}_1=-\frac{a_1}{a}\mathbf{r},\quad \mathbf{r}_2=\frac{a_2}{a}\mathbf{r}$$</p>
+  <p>If velocity at periapsis is perpendicular to the radius, $(a_i,e)$ and $(r_i,v_i)$ are in one-to-one correspondence. Kepler’s third law for the relative semi-major axis is</p>
+  <p>$$\displaystyle \frac{T^{2}}{a^{3}}=\frac{4\pi^{2}}{G(m_1+m_2)}$$</p>
+  <p>When the mass ratio is near one, the CM lies outside the primary. For Earth–Moon and Sun–Earth, the CM lies inside the primary.</p>
+  <p>The energy gauge uses the reduced mass of the relative motion and takes periapsis as the zero of potential energy (it does not show the true $E&lt;0$). The green band corresponds to the work $\displaystyle U'=G\mu M\left(\frac{1}{r_{\min}}-\frac{1}{r}\right)$ to carry the mass from periapsis to the current distance.</p>
+""",
   experimentWidgets: [
     PhysicsSimulationView(
       simulation: TwoBodyKepler2DSimulation(),
@@ -95,7 +107,7 @@ String formatBinaryStarTime(double years, TwoBodyKeplerPreset preset) {
           : abs >= 1
               ? 3
               : 4;
-  return '${days.toStringAsFixed(digits)} 日';
+  return animL('${days.toStringAsFixed(digits)} 日', '${days.toStringAsFixed(digits)} days');
 }
 
 String formatBinaryStarYears(double years) {
@@ -109,7 +121,7 @@ String formatBinaryStarYears(double years) {
               : abs >= 0.1
                   ? 3
                   : 4;
-  return '${years.toStringAsFixed(digits)} 年';
+  return animL('${years.toStringAsFixed(digits)} 年', '${years.toStringAsFixed(digits)} yr');
 }
 
 double twoBodyKeplerMass1(double a1, double a2) => a2 / (a1 + a2);
@@ -257,7 +269,7 @@ Map<String, double> applyTwoBodyKeplerPreset(TwoBodyKeplerPreset preset) {
 class TwoBodyKepler2DSimulation extends PhysicsSimulation {
   TwoBodyKepler2DSimulation()
       : super(
-          title: '2体問題(重力・連星)',
+          title: animL('2体問題(重力・連星)', 'Two-body problem (gravity / binary)'),
           formula: const FormulaDisplay(
             r'\displaystyle a=a_1+a_2,\quad \frac{m_1}{m_2}=\frac{a_2}{a_1}',
           ),
@@ -379,11 +391,11 @@ class TwoBodyKepler2DSimulation extends PhysicsSimulation {
               spacing: 8,
               runSpacing: 8,
               children: [
-                _presetButton('等質量', TwoBodyKeplerPreset.equalCircle),
-                _presetButton('冥王星-カロン', TwoBodyKeplerPreset.charon),
-                _presetButton('地球-月', TwoBodyKeplerPreset.earthMoon),
-                _presetButton('太陽-地球', TwoBodyKeplerPreset.sunEarth),
-                _presetButton('楕円交差', TwoBodyKeplerPreset.equalEllipse),
+                _presetButton(animL('等質量', 'Equal masses'), TwoBodyKeplerPreset.equalCircle),
+                _presetButton(animL('冥王星-カロン', 'Pluto–Charon'), TwoBodyKeplerPreset.charon),
+                _presetButton(animL('地球-月', 'Earth–Moon'), TwoBodyKeplerPreset.earthMoon),
+                _presetButton(animL('太陽-地球', 'Sun–Earth'), TwoBodyKeplerPreset.sunEarth),
+                _presetButton(animL('楕円交差', 'Crossing ellipses'), TwoBodyKeplerPreset.equalEllipse),
               ],
             ),
           ],
@@ -412,8 +424,8 @@ class TwoBodyKepler2DSimulation extends PhysicsSimulation {
     _updateParam = updateParam;
     final p = TwoBodyKeplerParams.fromMap(parameters);
     return [
-      const Text(
-        '軌道要素',
+      Text(
+        animL('軌道要素', 'Orbital elements'),
         style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
       ),
       _BinarySlider(
@@ -422,7 +434,7 @@ class TwoBodyKepler2DSimulation extends PhysicsSimulation {
         min: kTwoBodyKeplerMinA,
         max: kTwoBodyKeplerMaxA,
         onChanged: (v) => updateParam('a1', v),
-        semanticLabel: '半長軸 a1',
+        semanticLabel: animL('半長軸 a1', 'Semi-major axis a1'),
       ),
       _BinarySlider(
         label: 'a₂',
@@ -430,7 +442,7 @@ class TwoBodyKepler2DSimulation extends PhysicsSimulation {
         min: kTwoBodyKeplerMinA,
         max: kTwoBodyKeplerMaxA,
         onChanged: (v) => updateParam('a2', v),
-        semanticLabel: '半長軸 a2',
+        semanticLabel: animL('半長軸 a2', 'Semi-major axis a2'),
       ),
       _BinarySlider(
         label: 'e',
@@ -438,7 +450,7 @@ class TwoBodyKepler2DSimulation extends PhysicsSimulation {
         min: 0.0,
         max: kTwoBodyKeplerMaxE,
         onChanged: (v) => updateParam('e', v),
-        semanticLabel: '離心率 e',
+        semanticLabel: animL('離心率 e', 'Eccentricity e'),
       ),
       const SizedBox(height: 6),
       DecoratedBox(
@@ -458,8 +470,8 @@ class TwoBodyKepler2DSimulation extends PhysicsSimulation {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  '近点（aᵢ, e と一対一）',
+                Text(
+                  animL('近点（aᵢ, e と一対一）', 'Periapsis (one-to-one with aᵢ, e)'),
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontFamily: null,

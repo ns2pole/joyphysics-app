@@ -4,8 +4,10 @@ final verticalSpringOscillation = Video(
   category: 'dynamics', // ← 追加
     iconName: "verticalSpringOscillation",
     title: "鉛直バネ",
+    titleEn: "Vertical spring",
     videoURL: "W6dxv-MvDxo",
     equipment: ["バネ", "おもり", "スマホ"],
+    equipmentEn: ["spring", "weight", "smartphone"],
     costRating: "★★☆", latex: r"""
         <div class="common-box">ポイント</div>
         <p>鉛直バネ振り子の周期は、重力の影響にかかわらず <strong>質量</strong> と <strong>ばね定数</strong> のみで決まる。</p>
@@ -21,6 +23,23 @@ final verticalSpringOscillation = Video(
         <p>与えられた値を代入すると、</p>
         <p>$$T = 2\pi \sqrt{\frac{0.1}{4.0}} = 2\pi \sqrt{0.025} \fallingdotseq 0.99\,\mathrm{s}$$</p>
         <div class="common-box">答え</div>
+        $$\boxed{T \fallingdotseq 0.99\,\mathrm{s}}$$
+    """,
+    latexEn: r"""
+        <div class="common-box">Key points</div>
+        <p>The period of a vertical spring oscillator depends only on the <strong>mass</strong> and the <strong>spring constant</strong>, regardless of gravity.</p>
+        <p>$$T = 2\pi \sqrt{\frac{m}{k}}$$</p>
+        <p>Here, $T$: period [s], $m$: mass [kg], $k$: spring constant [N/m]</p>
+
+        <div class="common-box">Setup</div>
+        <p>A mass $m = 0.1\,\mathrm{kg}$ is attached to a spring of spring constant $k = 4.0\,\mathrm{N/m}$ and hung vertically. Find the period $T$ when it undergoes simple harmonic motion along the vertical direction.</p>
+
+        <div class="common-box">Theory</div>
+        <p>The period of simple harmonic motion is</p>
+        <p>$$T = 2\pi \sqrt{\frac{m}{k}}$$</p>
+        <p>Substituting the given values,</p>
+        <p>$$T = 2\pi \sqrt{\frac{0.1}{4.0}} = 2\pi \sqrt{0.025} \fallingdotseq 0.99\,\mathrm{s}$$</p>
+        <div class="common-box">Answer</div>
         $$\boxed{T \fallingdotseq 0.99\,\mathrm{s}}$$
     """
 );

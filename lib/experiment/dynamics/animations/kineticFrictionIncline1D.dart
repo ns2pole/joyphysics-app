@@ -4,6 +4,7 @@ import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import 'package:joyphysics/experiment/dynamics/animations/energy_gauge.dart';
 import 'package:joyphysics/experiment/playback_controls.dart';
 import 'package:joyphysics/model.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 /// 斜面下向き正。傾角 $\theta$ は水平から。$g=9.8\,\mathrm{m/s^2}$。再生だけ遅くしている。
 const double kInclineFrictionG = 9.8;
@@ -224,9 +225,8 @@ EnergyLedger kineticFrictionInclineEnergy(
   );
 }
 
-const String kKineticFrictionInclineCaption =
-    '斜面下向きが正。滑っているあいだ加速度は g(sinθ − μ cosθ)。\n'
-    '止まっているとき μs ≥ tanθ なら滑らない。';
+String kKineticFrictionInclineCaption =
+    animL('斜面下向きが正。滑っているあいだ加速度は g(sinθ − μ cosθ)。\n止まっているとき μs ≥ tanθ なら滑らない。', 'Down the incline is positive. While sliding, acceleration is g(sinθ − μ cosθ).\nWhen at rest, if μs ≥ tanθ it does not slide.');
 
 final kineticFrictionIncline1D = Video(
   isNew: false,
@@ -234,6 +234,7 @@ final kineticFrictionIncline1D = Video(
   category: 'dynamics',
   iconName: 'dynamics',
   title: '斜面上の動摩擦力',
+  titleEn: 'Kinetic friction on an incline',
   videoURL: '',
   equipment: [],
   costRating: '★',
@@ -249,6 +250,18 @@ final kineticFrictionIncline1D = Video(
   <p>$$t=\frac{v_0}{g(\mu\cos\theta-\sin\theta)},\quad s=\frac{v_0^{2}}{2g(\mu\cos\theta-\sin\theta)}$$</p>
   <p>止まったあとは速度 0 のままです。戻ることはありません。このとき $\displaystyle \mu_s\ge\mu+0.15$ なので、$\mu>\tan\theta$ なら止まったあと滑り出すこともありません。$\mu<\tan\theta$ なら加速し続け、$\mu=\tan\theta$ なら等速です。$\theta=0$ では水平面の $a=-\mu g$ に戻ります。</p>
 """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>This is an incline of angle $\theta$. Take the downhill direction as positive. The normal force is $N=mg\cos\theta$.</p>
+  <p>When at rest, the downhill component of weight is $mg\sin\theta$. With coefficient of static friction $\mu_s$, if $\displaystyle \mu_s\ge\tan\theta$ static friction cancels this component and the block does not start sliding. If $\displaystyle \mu_s<\tan\theta$, static friction cannot hold it and it starts to slide.</p>
+  <p>While sliding, the magnitude of kinetic friction is $\mu mg\cos\theta$ uphill. The acceleration is</p>
+  <p>$$a=g(\sin\theta-\mu\cos\theta)$$</p>
+  <p>While moving,</p>
+  <p>$$s=v_0 t+\frac{1}{2}at^{2},\quad v=v_0+at$$</p>
+  <p>If $\mu>\tan\theta$, the block decelerates and stops. The stopping time and distance are</p>
+  <p>$$t=\frac{v_0}{g(\mu\cos\theta-\sin\theta)},\quad s=\frac{v_0^{2}}{2g(\mu\cos\theta-\sin\theta)}$$</p>
+  <p>After stopping, the velocity stays 0; it does not reverse. Here $\displaystyle \mu_s\ge\mu+0.15$, so if $\mu>\tan\theta$ it also will not start sliding again after stopping. If $\mu<\tan\theta$ it keeps accelerating; if $\mu=\tan\theta$ the speed is constant. When $\theta=0$ the result reduces to the horizontal case $a=-\mu g$.</p>
+""",
   experimentWidgets: [
     PhysicsSimulationView(
       simulation: KineticFrictionIncline1DSimulation(),
@@ -260,9 +273,9 @@ final kineticFrictionIncline1D = Video(
 class KineticFrictionIncline1DSimulation extends PhysicsSimulation {
   KineticFrictionIncline1DSimulation()
       : super(
-          title: '斜面上の動摩擦力',
-          formula: const FormulaDisplay(
-            r'\displaystyle a=g(\sin\theta-\mu\cos\theta),\quad \mu_s\ge\tan\theta\text{ なら滑らない}',
+          title: animL('斜面上の動摩擦力', 'Kinetic friction on an incline'),
+          formula: FormulaDisplay(
+            animL('\\displaystyle a=g(\\sin\\theta-\\mu\\cos\\theta),\\quad \\mu_s\\ge\\tan\\theta\\text{ なら滑らない}', '\\displaystyle a=g(\\sin\\theta-\\mu\\cos\\theta),\\quad \\mu_s\\ge\\tan\\theta\\text{ then no slip}'),
           ),
           aspectRatio: (16 / 9) / 2.25,
           enableTime: false,
@@ -332,8 +345,8 @@ class KineticFrictionIncline1DSimulation extends PhysicsSimulation {
   @override
   Widget? buildFormulaOverlay(Map<String, double> parameters) {
     _rememberParams(parameters);
-    return const FormulaDisplay(
-      r'\displaystyle a=g(\sin\theta-\mu\cos\theta),\quad \mu_s\ge\tan\theta\text{ なら滑らない}',
+    return FormulaDisplay(
+      animL('\\displaystyle a=g(\\sin\\theta-\\mu\\cos\\theta),\\quad \\mu_s\\ge\\tan\\theta\\text{ なら滑らない}', '\\displaystyle a=g(\\sin\\theta-\\mu\\cos\\theta),\\quad \\mu_s\\ge\\tan\\theta\\text{ then no slip}'),
     );
   }
 
@@ -349,7 +362,7 @@ class KineticFrictionIncline1DSimulation extends PhysicsSimulation {
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
+            Text(
               kKineticFrictionInclineCaption,
               textAlign: TextAlign.center,
               style: TextStyle(
@@ -384,20 +397,20 @@ class KineticFrictionIncline1DSimulation extends PhysicsSimulation {
     final stopS = kineticFrictionInclineStopDistance(p);
     final String summary;
     if (kineticFrictionInclineStaysPut(p)) {
-      summary = '滑らない（μs ≥ tanθ = ${tanTheta.toStringAsFixed(2)}）';
+      summary = animL('滑らない（μs ≥ tanθ = ${tanTheta.toStringAsFixed(2)}）', 'No slip (μs ≥ tanθ = ${tanTheta.toStringAsFixed(2)})');
     } else if (stopT == null) {
       summary = a.abs() < 1e-3
-          ? '等速（μ = tanθ = ${tanTheta.toStringAsFixed(2)}）'
-          : '加速する（止まらない）  tanθ = ${tanTheta.toStringAsFixed(2)}';
+          ? animL('等速（μ = tanθ = ${tanTheta.toStringAsFixed(2)}）', 'Constant speed (μ = tanθ = ${tanTheta.toStringAsFixed(2)})')
+          : animL('加速する（止まらない）  tanθ = ${tanTheta.toStringAsFixed(2)}', 'Accelerates (does not stop)  tanθ = ${tanTheta.toStringAsFixed(2)}');
     } else if (stopT <= 1e-9) {
-      summary = '初めから静止  tanθ = ${tanTheta.toStringAsFixed(2)}';
+      summary = animL('初めから静止  tanθ = ${tanTheta.toStringAsFixed(2)}', 'At rest from the start  tanθ = ${tanTheta.toStringAsFixed(2)}');
     } else {
       summary =
-          '停止まで ${stopT.toStringAsFixed(2)} s    距離 ${stopS!.toStringAsFixed(2)} m    tanθ = ${tanTheta.toStringAsFixed(2)}';
+          animL('停止まで ${stopT.toStringAsFixed(2)} s    距離 ${stopS!.toStringAsFixed(2)} m    tanθ = ${tanTheta.toStringAsFixed(2)}', 'Stops in ${stopT.toStringAsFixed(2)} s    Distance ${stopS!.toStringAsFixed(2)} m    tanθ = ${tanTheta.toStringAsFixed(2)}');
     }
     return [
-      const Text(
-        '初期条件（g = 9.8 m/s²、斜面下向き正）',
+      Text(
+        animL('初期条件（g = 9.8 m/s²、斜面下向き正）', 'Initial conditions (g = 9.8 m/s², down-incline positive)'),
         style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
       ),
       _InclineSlider(
@@ -408,7 +421,7 @@ class KineticFrictionIncline1DSimulation extends PhysicsSimulation {
         digits: 0,
         suffix: '°',
         onChanged: (v) => updateParam('theta', v),
-        semanticLabel: '傾角 θ',
+        semanticLabel: animL('傾角 θ', 'Incline angle θ'),
       ),
       _InclineSlider(
         label: 'μ',
@@ -420,7 +433,7 @@ class KineticFrictionIncline1DSimulation extends PhysicsSimulation {
           final need = v + kInclineFrictionMuGap;
           if (p.muS < need) updateParam('muS', need);
         },
-        semanticLabel: '動摩擦係数 μ',
+        semanticLabel: animL('動摩擦係数 μ', 'Kinetic friction coefficient μ'),
       ),
       _InclineSlider(
         label: 'μs',
@@ -432,7 +445,7 @@ class KineticFrictionIncline1DSimulation extends PhysicsSimulation {
           final maxKinetic = v - kInclineFrictionMuGap;
           if (p.mu > maxKinetic) updateParam('mu', maxKinetic);
         },
-        semanticLabel: '静止摩擦係数 μs',
+        semanticLabel: animL('静止摩擦係数 μs', 'Static friction coefficient μs'),
       ),
       _InclineSlider(
         label: 'v0',
@@ -440,7 +453,7 @@ class KineticFrictionIncline1DSimulation extends PhysicsSimulation {
         min: kInclineFrictionMinV0,
         max: kInclineFrictionMaxV0,
         onChanged: (v) => updateParam('v0', v),
-        semanticLabel: '初速度 v0',
+        semanticLabel: animL('初速度 v0', 'Initial speed v0'),
       ),
       Padding(
         padding: const EdgeInsets.only(top: 4),
@@ -765,11 +778,11 @@ class _InclineFrictionPainter extends CustomPainter {
 
     if (!sample.stopped && params.mu > 1e-12 && speed > 0.05) {
       final fLen = (16 + params.mu * math.cos(params.theta) * 52).clamp(16.0, 74.0);
-      _drawArrow(canvas, center, -map.down, fLen, _force, '摩擦');
+      _drawArrow(canvas, center, -map.down, fLen, _force, animL('摩擦', 'Friction'));
     } else if (sample.stopped && math.sin(params.theta) > 0.02) {
       final hold = math.sin(params.theta);
       final fLen = (16 + hold * 40).clamp(16.0, 60.0);
-      _drawArrow(canvas, center, -map.down, fLen, _force, '静止');
+      _drawArrow(canvas, center, -map.down, fLen, _force, animL('静止', 'At rest'));
     }
   }
 
@@ -818,13 +831,13 @@ class _InclineFrictionPainter extends CustomPainter {
     final stopS = kineticFrictionInclineStopDistance(params);
     final String tail;
     if (kineticFrictionInclineStaysPut(params)) {
-      tail = '滑らない';
+      tail = animL('滑らない', 'No slip');
     } else if (stopT == null) {
-      tail = sample.a.abs() < 1e-3 ? '等速' : '止まらない';
+      tail = sample.a.abs() < 1e-3 ? animL('等速', 'Constant speed') : animL('止まらない', 'Does not stop');
     } else if (stopT <= 1e-9) {
-      tail = '静止';
+      tail = animL('静止', 'At rest');
     } else {
-      tail = '停止 ${stopT.toStringAsFixed(2)} s, ${stopS!.toStringAsFixed(2)} m';
+      tail = animL('停止 ${stopT.toStringAsFixed(2)} s, ${stopS!.toStringAsFixed(2)} m', 'Stop ${stopT.toStringAsFixed(2)} s, ${stopS!.toStringAsFixed(2)} m');
     }
     return 'θ = ${params.thetaDeg.toStringAsFixed(0)}°\n'
         'μ = ${params.mu.toStringAsFixed(2)}    μs = ${params.muS.toStringAsFixed(2)}\n'

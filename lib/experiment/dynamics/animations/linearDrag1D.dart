@@ -4,6 +4,7 @@ import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import 'package:joyphysics/experiment/dynamics/animations/energy_gauge.dart';
 import 'package:joyphysics/experiment/playback_controls.dart';
 import 'package:joyphysics/model.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 /// 上向き正。抵抗は速度に比例。$g=9.8\,\mathrm{m/s^2}$。再生だけ遅くしている。
 const double kLinearDragG = 9.8;
@@ -214,19 +215,11 @@ List<LinearDragSample> linearDragStrobe(
 String linearDragCaption(LinearDragKind kind) {
   switch (kind) {
     case LinearDragKind.drop:
-      return '静かに放す。抵抗は速さに比例し、速度と逆向き。\n'
-          '終端速度に近づくほど、加速度は 0 に近づく。\n'
-          '速さは終端速度を超えない。\n'
-          '抵抗がないときは、同じ時刻でより下にいる。';
+      return animL('静かに放す。抵抗は速さに比例し、速度と逆向き。\n終端速度に近づくほど、加速度は 0 に近づく。\n速さは終端速度を超えない。\n抵抗がないときは、同じ時刻でより下にいる。', 'Release gently. Drag is proportional to speed and opposite to velocity.\nAs it approaches terminal velocity, acceleration approaches 0.\nSpeed never exceeds terminal velocity.\nWithout drag, it is lower at the same time.');
     case LinearDragKind.throwUp:
-      return '上向きに投げる。上昇中は重力も抵抗も下向き。\n'
-          '最高点では速度も抵抗も 0。重力は残る。\n'
-          '戻ったときの速さは、投げたときより小さい。\n'
-          '抵抗があると、最高点は低い。';
+      return animL('上向きに投げる。上昇中は重力も抵抗も下向き。\n最高点では速度も抵抗も 0。重力は残る。\n戻ったときの速さは、投げたときより小さい。\n抵抗があると、最高点は低い。', 'Throw upward. During ascent both gravity and drag point down.\nAt the apex, velocity and drag are 0. Gravity remains.\nSpeed on return is smaller than at launch.\nWith drag, the apex is lower.');
     case LinearDragKind.throwDown:
-      return '下向きに投げる。初速が終端速度より大きいと、抵抗が重力より大きく速さが減る。\n'
-          '終端速度より小さいと、重力のほうが大きく速さが増える。\n'
-          'どちらも終端速度へ近づく。';
+      return animL('下向きに投げる。初速が終端速度より大きいと、抵抗が重力より大きく速さが減る。\n終端速度より小さいと、重力のほうが大きく速さが増える。\nどちらも終端速度へ近づく。', 'Throw downward. If initial speed exceeds terminal velocity, drag exceeds gravity and speed decreases.\nIf below terminal velocity, gravity dominates and speed increases.\nBoth approach terminal velocity.');
   }
 }
 
@@ -236,6 +229,7 @@ final linearDrag1D = Video(
   category: 'dynamics',
   iconName: 'dynamics',
   title: '速度比例の空気抵抗',
+  titleEn: 'Linear air drag',
   videoURL: '',
   equipment: [],
   costRating: '★',
@@ -252,6 +246,19 @@ final linearDrag1D = Video(
   <p>$$y(t)=y_0-v_t t+\frac{v_0+v_t}{k}\left(1-e^{-kt}\right)$$</p>
   <p>静かに放すと $v_0=0$ で、速さは終端速度に近づきますが、有限の時間では到達しません。下向きに終端速度より速く投げると、抵抗が重力より大きく、速さは終端速度まで減ります。投げ上げで戻ったときの速さは、投げたときより小さくなります。</p>
 """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>When drag is proportional to velocity and upward is taken as positive, the equation of motion is</p>
+  <p>$$ma=-mg-bv$$</p>
+  <p>Writing $\displaystyle k=\frac{b}{m}$,</p>
+  <p>$$a=-g-kv$$</p>
+  <p>As the speed increases, so does the drag, and the downward acceleration becomes smaller. The speed at which the acceleration is zero is the terminal speed,</p>
+  <p>$$v_t=\frac{g}{k}=\frac{mg}{b}$$</p>
+  <p>For initial height $y_0$ and initial velocity $v_0$ (upward positive),</p>
+  <p>$$v(t)=-v_t+(v_0+v_t)e^{-kt}$$</p>
+  <p>$$y(t)=y_0-v_t t+\frac{v_0+v_t}{k}\left(1-e^{-kt}\right)$$</p>
+  <p>Released from rest ($v_0=0$), the speed approaches the terminal speed but never reaches it in finite time. Thrown downward faster than the terminal speed, the drag exceeds gravity and the speed decreases toward the terminal value. After a throw upward, the return speed is smaller than the launch speed.</p>
+""",
   experimentWidgets: [
     PhysicsSimulationView(
       simulation: LinearDrag1DSimulation(),
@@ -263,7 +270,7 @@ final linearDrag1D = Video(
 class LinearDrag1DSimulation extends PhysicsSimulation {
   LinearDrag1DSimulation()
       : super(
-          title: '速度比例の空気抵抗',
+          title: animL('速度比例の空気抵抗', 'Linear air drag'),
           formula: const FormulaDisplay(
             r'\displaystyle a=-g-kv,\quad v_t=\frac{g}{k}',
           ),
@@ -402,11 +409,11 @@ class LinearDrag1DSimulation extends PhysicsSimulation {
   String _kindLabel(LinearDragKind kind) {
     switch (kind) {
       case LinearDragKind.drop:
-        return '落下';
+        return animL('落下', 'Fall');
       case LinearDragKind.throwUp:
-        return '投げ上げ';
+        return animL('投げ上げ', 'Throw up');
       case LinearDragKind.throwDown:
-        return '投げ下げ';
+        return animL('投げ下げ', 'Throw down');
     }
   }
 
@@ -438,8 +445,8 @@ class LinearDrag1DSimulation extends PhysicsSimulation {
     final impact = linearDragAt(_kind, p, duration);
     final k = linearDragK(p.vt);
     final controls = <Widget>[
-      const Text(
-        '初期条件（g = 9.8 m/s²、上向き正）',
+      Text(
+        animL('初期条件（g = 9.8 m/s²、上向き正）', 'Initial conditions (g = 9.8 m/s², up positive)'),
         style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
       ),
     ];
@@ -451,7 +458,7 @@ class LinearDrag1DSimulation extends PhysicsSimulation {
           min: kLinearDragMinH,
           max: kLinearDragMaxH,
           onChanged: (v) => updateParam('h', v),
-          semanticLabel: '高さ h',
+          semanticLabel: animL('高さ h', 'Height h'),
         ),
       );
     }
@@ -463,7 +470,7 @@ class LinearDrag1DSimulation extends PhysicsSimulation {
           min: kLinearDragMinV0,
           max: kLinearDragMaxV0,
           onChanged: (v) => updateParam('v0', v),
-          semanticLabel: '初速度 v0',
+          semanticLabel: animL('初速度 v0', 'Initial speed v0'),
         ),
       );
     }
@@ -474,17 +481,17 @@ class LinearDrag1DSimulation extends PhysicsSimulation {
         min: kLinearDragMinVt,
         max: kLinearDragMaxVt,
         onChanged: (v) => updateParam('vt', v),
-        semanticLabel: '終端速度 vt',
+        semanticLabel: animL('終端速度 vt', 'Terminal velocity vt'),
       ),
     );
     final extra = _kind == LinearDragKind.throwUp
-        ? '    最高 ${linearDragApexHeight(p).toStringAsFixed(2)} m'
+        ? animL('    最高 ${linearDragApexHeight(p).toStringAsFixed(2)} m', '    Apex ${linearDragApexHeight(p).toStringAsFixed(2)} m')
         : '';
     controls.add(
       Padding(
         padding: const EdgeInsets.only(top: 4),
         child: Text(
-          'k = ${k.toStringAsFixed(2)} /s    着地 ${duration.toStringAsFixed(2)} s'
+          animL('k = ${k.toStringAsFixed(2)} /s    着地 ${duration.toStringAsFixed(2)} s', 'k = ${k.toStringAsFixed(2)} /s    Landing ${duration.toStringAsFixed(2)} s') +
           '    |v| = ${impact.v.abs().toStringAsFixed(2)} m/s$extra',
           style: const TextStyle(
             fontSize: 12,
@@ -633,9 +640,9 @@ class _LinearDragPainter extends CustomPainter {
   String _hudLines() {
     final nearTerminal = (sample.v + params.vt).abs() < 0.08 * params.vt;
     final note = sample.landed
-        ? '着地'
+        ? animL('着地', 'Landing')
         : nearTerminal
-            ? '終端速度に近い'
+            ? animL('終端速度に近い', 'Near terminal velocity')
             : '';
     return 't = ${sample.t.toStringAsFixed(2)} s\n'
         'y = ${sample.y.toStringAsFixed(2)} m\n'
@@ -666,7 +673,7 @@ class _LinearDragPainter extends CustomPainter {
         ..color = _ground
         ..strokeWidth = 3,
     );
-    _label(canvas, Offset(size.width - 36, y0 + 6), '地面', _ground);
+    _label(canvas, Offset(size.width - 36, y0 + 6), animL('地面', 'Ground'), _ground);
   }
 
   void _drawTrail(Canvas canvas, _YMap map) {
@@ -703,7 +710,7 @@ class _LinearDragPainter extends CustomPainter {
     final y = math.max(0.0, vacuum.y);
     final c = Offset(map.x - 36, map.yOf(y));
     canvas.drawCircle(c, 8, Paint()..color = _ghost.withValues(alpha: 0.85));
-    _label(canvas, c + const Offset(0, -18), '抵抗なし', _ghost);
+    _label(canvas, c + Offset(0, -18), animL('抵抗なし', 'No drag'), _ghost);
   }
 
   void _drawBall(Canvas canvas, _YMap map) {
@@ -718,7 +725,7 @@ class _LinearDragPainter extends CustomPainter {
       const Offset(0, 1),
       48,
       _gravity,
-      '重力',
+      animL('重力', 'Gravity'),
       labelSide: -1,
     );
 
@@ -732,11 +739,11 @@ class _LinearDragPainter extends CustomPainter {
         dir,
         (48 * dragRatio).clamp(12.0, 86.0),
         _drag,
-        '抵抗',
+        animL('抵抗', 'Drag'),
         labelSide: -1,
       );
     } else {
-      _label(canvas, c + const Offset(-58, -8), '抵抗 ≈ 0', _drag);
+      _label(canvas, c + Offset(-58, -8), animL('抵抗 ≈ 0', 'Drag ≈ 0'), _drag);
     }
 
     if (sample.v.abs() < 0.35) {

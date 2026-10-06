@@ -6,8 +6,10 @@ final jupiter = Video(
     category: 'dynamics', // ← 追加
     iconName: "jupiter",
     title: "木星のガリレオ衛星とケプラー第3法則",
+    titleEn: "Jupiter's Galilean moons and Kepler's third law",
     videoURL: "",
     equipment: ["なし"],
+    equipmentEn: ["none"],
     costRating: "★☆☆",
     latex: r"""
         <div class="common-box">データ</div>
@@ -26,5 +28,23 @@ final jupiter = Video(
         $$\frac{4\pi^2}{GM} = \frac{4 \times \pi^2}{1.27 \times 10^{17}} \fallingdotseq 3.11 \times 10^{-16} \ \mathrm{[s^2\cdot m^{-3}]}$$
 
         <p>表で計算した $\displaystyle \frac{T^{2}}{a^{3}}$ とよく一致していることが確認できた。</p>
+    """,
+    latexEn: r"""
+        <div class="common-box">Data</div>
+        <div style="text-align:center; margin:1em 0;">
+          <img src="assets/dynamicsDetail/jupiter.png"
+               alt="Galilean moon data"
+               style="max-width:98%; height:auto;" />
+        </div>
+                <div class="common-box">Key points</div>
+                <p>Let Jupiter's mass be $M$ and the gravitational constant be $G$. Under the approximation that Jupiter is much heavier than its moons, every moon's orbital period $T$ and semi-major axis $a$ satisfy $\displaystyle \frac{T^2}{a^3} =  \frac{4\pi^2}{GM}$ (Kepler's third law).</p>
+                <div class="common-box">Theory vs data</div>    
+        <p>With Jupiter's mass $M = 1.90 \times 10^{27}\,\mathrm{kg}$ and $G = 6.67 \times 10^{-11}\,\mathrm{m^3/(kg\cdot s^2)}$:</p>
+        $$GM = 6.67 \times 10^{-11} \times 1.90 \times 10^{27} = 1.27 \times 10^{17}$$
+
+        <p>The constant in Kepler's third law:</p>
+        $$\displaystyle \frac{4\pi^2}{GM} = \frac{4 \times \pi^2}{1.27 \times 10^{17}} \fallingdotseq 3.11 \times 10^{-16} \ \mathrm{[s^2\cdot m^{-3}]}$$
+
+        <p>This agrees well with the values of $\displaystyle \frac{T^{2}}{a^{3}}$ computed in the table.</p>
     """
 );

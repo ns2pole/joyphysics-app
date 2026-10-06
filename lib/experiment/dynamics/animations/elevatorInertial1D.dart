@@ -4,6 +4,7 @@ import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import 'package:joyphysics/experiment/dynamics/animations/energy_gauge.dart';
 import 'package:joyphysics/experiment/playback_controls.dart';
 import 'package:joyphysics/model.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 /// 上向き正。物体はエレベータ内で静止している。$g=9.8\,\mathrm{m/s^2}$。
 const double kElevatorG = 9.8;
@@ -76,13 +77,9 @@ ElevatorInertialSample elevatorInertialAt(
 String elevatorCaption(ElevatorMotionKind kind) {
   switch (kind) {
     case ElevatorMotionKind.up:
-      return '上昇しながら加速する。エレベータ内では物体は静止したまま。\n'
-          '地上では張力が重力より大きく、その差が ma。\n'
-          'エレベータ内では下向きの慣性力を足すと、つり合う。';
+      return animL('上昇しながら加速する。エレベータ内では物体は静止したまま。\n地上では張力が重力より大きく、その差が ma。\nエレベータ内では下向きの慣性力を足すと、つり合う。', 'Accelerating while ascending. Inside the elevator the object remains at rest.\nOn the ground, tension is greater than gravity, and the difference is ma.\nInside the elevator, adding a downward inertial force restores equilibrium.');
     case ElevatorMotionKind.down:
-      return '下降しながら加速する。エレベータ内では物体は静止したまま。\n'
-          '地上では張力が重力より小さく、差の大きさが ma。\n'
-          'エレベータ内では上向きの慣性力を足すと、つり合う。';
+      return animL('下降しながら加速する。エレベータ内では物体は静止したまま。\n地上では張力が重力より小さく、差の大きさが ma。\nエレベータ内では上向きの慣性力を足すと、つり合う。', 'Accelerating while descending. Inside the elevator the object remains at rest.\nOn the ground, tension is less than gravity, and the magnitude of the difference is ma.\nInside the elevator, adding an upward inertial force restores equilibrium.');
   }
 }
 
@@ -92,6 +89,7 @@ final elevatorInertial1D = Video(
   category: 'dynamics',
   iconName: 'dynamics',
   title: 'エレベータの上昇・下降',
+  titleEn: 'Elevator ascent and descent',
   videoURL: '',
   equipment: [],
   costRating: '★',
@@ -102,6 +100,14 @@ final elevatorInertial1D = Video(
   <p>上昇で加速するときは $a=+A$ で、張力は重力より大きくなります。下降で加速するときは $a=-A$ で、張力は</p>
   <p>$$T=m(g-A)$$</p>
   <p>エレベータとともに動く人から見ると、物体は静止しています。加速度と逆向きの慣性力 $ma$ を加えると、張力・重力・慣性力がつり合います。地上で出した $T$ と同じです。</p>
+""",
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>Hang an object from the elevator ceiling by a string. The object is at rest relative to the elevator, so in the lab frame it has the same acceleration $a$ as the elevator. Taking upward as positive,</p>
+  <p>$$T-mg=ma,\quad T=m(g+a)$$</p>
+  <p>When accelerating while ascending, $a=+A$ and the tension exceeds the weight. When accelerating while descending, $a=-A$ and the tension is</p>
+  <p>$$T=m(g-A)$$</p>
+  <p>To an observer moving with the elevator, the object is at rest. Adding an inertial force $ma$ opposite to the acceleration, tension, gravity, and the inertial force balance. The resulting $T$ matches the lab-frame value.</p>
 """,
   experimentWidgets: [
     PhysicsSimulationView(
@@ -114,7 +120,7 @@ final elevatorInertial1D = Video(
 class ElevatorInertialSimulation extends PhysicsSimulation {
   ElevatorInertialSimulation()
       : super(
-          title: 'エレベータの上昇・下降',
+          title: animL('エレベータの上昇・下降', 'Elevator ascent and descent'),
           formula: const FormulaDisplay(
             r'\displaystyle T=m(g+a)',
           ),
@@ -133,7 +139,7 @@ class ElevatorInertialSimulation extends PhysicsSimulation {
   });
 
   @override
-  String? get situation => '慣性系で見ると、エレベータと同じ加速度で動く物体';
+  String? get situation => animL('慣性系で見ると、エレベータと同じ加速度で動く物体', 'In the inertial frame: an object moving with the same acceleration as the elevator');
 
   ValueNotifier<bool> get running => _loop.running;
 
@@ -234,8 +240,8 @@ class ElevatorInertialSimulation extends PhysicsSimulation {
               alignment: WrapAlignment.center,
               spacing: 8,
               children: [
-                _kindButton('上昇', ElevatorMotionKind.up, updateActiveIds),
-                _kindButton('下降', ElevatorMotionKind.down, updateActiveIds),
+                _kindButton(animL('上昇', 'Ascent'), ElevatorMotionKind.up, updateActiveIds),
+                _kindButton(animL('下降', 'Descent'), ElevatorMotionKind.down, updateActiveIds),
               ],
             ),
           ],
@@ -271,8 +277,8 @@ class ElevatorInertialSimulation extends PhysicsSimulation {
     final a = elevatorSignedAccel(_kind, p);
     final tension = elevatorTension(_kind, p);
     return [
-      const Text(
-        '加速度の大きさ A（上向き正、g = 9.8 m/s²）',
+      Text(
+        animL('加速度の大きさ A（上向き正、g = 9.8 m/s²）', 'Acceleration magnitude A (upward positive, g = 9.8 m/s²)'),
         style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
       ),
       _ElevatorSlider(
@@ -281,7 +287,7 @@ class ElevatorInertialSimulation extends PhysicsSimulation {
         min: kElevatorMinA,
         max: kElevatorMaxA,
         onChanged: (v) => updateParam('A', v),
-        semanticLabel: '加速度の大きさ A',
+        semanticLabel: animL('加速度の大きさ A', 'Acceleration magnitude A'),
       ),
       _ElevatorSlider(
         label: 'm',
@@ -289,7 +295,7 @@ class ElevatorInertialSimulation extends PhysicsSimulation {
         min: kElevatorMinM,
         max: kElevatorMaxM,
         onChanged: (v) => updateParam('m', v),
-        semanticLabel: '物体の質量 m',
+        semanticLabel: animL('物体の質量 m', 'Object mass m'),
       ),
       Padding(
         padding: const EdgeInsets.only(top: 4),
@@ -434,7 +440,7 @@ class _ElevatorPainter extends CustomPainter {
     _text(
       canvas,
       Offset(panel.left + 8, panel.top + 6),
-      ground ? '地上（慣性系）' : 'エレベータ内（非慣性系）',
+      ground ? animL('地上（慣性系）', 'Ground (inertial frame)') : animL('エレベータ内（非慣性系）', 'Inside elevator (non-inertial frame)'),
       _ink,
       alignLeft: true,
     );
@@ -443,7 +449,7 @@ class _ElevatorPainter extends CustomPainter {
     _text(
       canvas,
       Offset(panel.center.dx, panel.bottom - 24),
-      ground ? '物体はエレベータと同じ加速度で動く。' : '人から見ると物体は静止している。',
+      ground ? animL('物体はエレベータと同じ加速度で動く。', 'The object moves with the same acceleration as the elevator.') : animL("人から見ると物体は静止している。", "From the person's view the object is at rest."),
       const Color(0xFF546E7A),
     );
     canvas.restore();
@@ -511,7 +517,7 @@ class _ElevatorPainter extends CustomPainter {
     final mg = 42.0;
     final tLen = mg * sample.tension / (params.mass * kElevatorG);
     _arrow(canvas, massCenter + const Offset(16, 0), const Offset(0, -1), tLen.clamp(10, 78), _tension, 'T');
-    _arrow(canvas, massCenter + const Offset(-18, 0), const Offset(0, 1), mg, _gravity, '重力');
+    _arrow(canvas, massCenter + Offset(-18, 0), Offset(0, 1), mg, _gravity, animL('重力', 'Gravity'));
     if (!ground && sample.a.abs() > 0.05) {
       final downward = sample.a > 0;
       final dir = downward ? const Offset(0, 1) : const Offset(0, -1);

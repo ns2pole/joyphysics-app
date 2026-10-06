@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:joyphysics/experiment/dynamics/animations/energy_gauge.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 const double kKeplerGM = 1.0;
 const double kKeplerVelocityArrowScale = 0.5;
@@ -58,9 +59,9 @@ double keplerSpecificAngularMomentum(double a, double e,
 }
 
 String keplerOrbitKindLabel(double e) {
-  if (keplerIsParabola(e)) return '放物線';
-  if (e > 1) return '双曲線';
-  return '楕円';
+  if (keplerIsParabola(e)) return animL('放物線', 'Parabola');
+  if (e > 1) return animL('双曲線', 'Hyperbola');
+  return animL('楕円', 'Ellipse');
 }
 
 double keplerPhaseToMeanAnomaly(double phase) {

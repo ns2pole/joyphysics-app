@@ -4,6 +4,7 @@ import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import 'package:joyphysics/experiment/dynamics/animations/energy_gauge.dart';
 import 'package:joyphysics/experiment/playback_controls.dart';
 import 'package:joyphysics/model.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 /// ジェットコースター。$g=9.8\,\mathrm{m/s^2}$、半径 $R=1\,\mathrm{m}$。レールは固定で、スライダーは出発高さだけ。
 const double kLoopG = 9.8;
@@ -428,24 +429,24 @@ class LoopSim {
   }
 
   String get status {
-    if (finished && roundTrips >= kLoopMaxTrips) return '100往復で停止';
+    if (finished && roundTrips >= kLoopMaxTrips) return animL('100往復で停止', 'Stop after 100 loops');
     if (finished && phase == LoopPhase.stopped && (landY ?? 1) < 0.03) {
-      return '最下点で停止';
+      return animL('最下点で停止', 'Stop at bottom');
     }
-    if (finished && phase == LoopPhase.flatRight) return '右の地面の先で停止';
+    if (finished && phase == LoopPhase.flatRight) return animL('右の地面の先で停止', 'Stop beyond the right ground');
     switch (phase) {
       case LoopPhase.ramp:
       case LoopPhase.flatLeft:
-        return vx < -0.05 || xiDot < 0 ? '斜面へ戻る' : '斜面を下る';
+        return vx < -0.05 || xiDot < 0 ? animL('斜面へ戻る', 'Return to incline') : animL('斜面を下る', 'Descend incline');
       case LoopPhase.circle:
-        if (speed < 0.05 && landT != null) return '着地して停止';
-        return theta > math.pi ? '円の左側を滑る' : '円レール上';
+        if (speed < 0.05 && landT != null) return animL('着地して停止', 'Land and stop');
+        return theta > math.pi ? animL('円の左側を滑る', 'Slide on left side of circle') : animL('円レール上', 'On circular rail');
       case LoopPhase.flight:
-        return '放物運動';
+        return animL('放物運動', 'Projectile motion');
       case LoopPhase.flatRight:
-        return '右の地面へ進む';
+        return animL('右の地面へ進む', 'Move onto right ground');
       case LoopPhase.stopped:
-        return '停止';
+        return animL('停止', 'Stop');
     }
   }
 }
@@ -453,12 +454,12 @@ class LoopSim {
 String loopCaption(double heightRatio) {
   final hText = heightRatio.toStringAsFixed(2);
   if (heightRatio <= 1) {
-    return 'H = $hText。下半分で止まり、来た道を戻る。';
+    return animL('H = $hText。下半分で止まり、来た道を戻る。', 'H = $hText. Stops on the lower half and returns the way it came.');
   }
   if (heightRatio < 2.5) {
-    return 'H = $hText。上半分で離れ、着地で速度は 0 になる。';
+    return animL('H = $hText。上半分で離れ、着地で速度は 0 になる。', 'H = $hText. Leaves on the upper half; velocity becomes 0 on landing.');
   }
-  return 'H = $hText。一周し、右の地面へ出る。';
+  return animL('H = $hText。一周し、右の地面へ出る。', 'H = $hText. Completes a loop and exits onto the right ground.');
 }
 
 final verticalLoop2D = Video(
@@ -467,6 +468,7 @@ final verticalLoop2D = Video(
   category: 'dynamics',
   iconName: 'dynamics',
   title: 'ジェットコースター',
+  titleEn: 'Roller coaster',
   videoURL: '',
   equipment: [],
   costRating: '★',
@@ -479,6 +481,15 @@ final verticalLoop2D = Video(
   <p>$\displaystyle h\le R$ なら戻る。$\displaystyle R&lt;h&lt;\frac{5}{2}R$ なら放物運動のあと着地する。$\displaystyle h\ge\frac{5}{2}R$ なら一周して右へ進む。</p>
   <p>着地は完全非弾性で、速度はいったん 0 になる。</p>
 """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>From height $h$ at point A, enter a smooth vertical circle of radius $R$. Angle $\theta$ is measured from the bottom.</p>
+  <p>$$\displaystyle \frac{N}{m}=\frac{v^{2}}{R}+g\cos\theta$$</p>
+  <p>Leaving the track occurs only in the upper half, at the angle</p>
+  <p>$$\displaystyle \cos\theta=\frac{2(R-h)}{3R}$$</p>
+  <p>If $\displaystyle h\le R$, it returns. If $\displaystyle R&lt;h&lt;\frac{5}{2}R$, it lands after projectile motion. If $\displaystyle h\ge\frac{5}{2}R$, it completes a loop and continues to the right.</p>
+  <p>Landing is perfectly inelastic; the velocity becomes zero momentarily.</p>
+""",
   experimentWidgets: [
     PhysicsSimulationView(
       simulation: VerticalLoopSimulation(),
@@ -490,7 +501,7 @@ final verticalLoop2D = Video(
 class VerticalLoopSimulation extends PhysicsSimulation {
   VerticalLoopSimulation()
       : super(
-          title: 'ジェットコースター',
+          title: animL('ジェットコースター', 'Roller coaster'),
           formula: const FormulaDisplay(
             r'\displaystyle \frac{N}{m}=\frac{v^{2}}{R}+g\cos\theta',
           ),
@@ -594,8 +605,8 @@ class VerticalLoopSimulation extends PhysicsSimulation {
         .toDouble();
     _syncHeight(hValue);
     return [
-      const Text(
-        '初期条件（R = 1 m、滑らか）',
+      Text(
+        animL('初期条件（R = 1 m、滑らか）', 'Initial conditions (R = 1 m, frictionless)'),
         style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
       ),
       Row(
@@ -606,14 +617,14 @@ class VerticalLoopSimulation extends PhysicsSimulation {
           ),
           Expanded(
             child: Semantics(
-              label: '高さ比 H',
+              label: animL('高さ比 H', 'Height ratio H'),
               child: Slider(
                 value: hValue,
                 min: kLoopMinH,
                 max: kLoopMaxH,
                 onChanged: (v) => updateParam('H', v),
                 semanticFormatterCallback: (v) =>
-                    '高さ比 H ${v.toStringAsFixed(2)}',
+                    animL('高さ比 H ${v.toStringAsFixed(2)}', 'Height ratio H ${v.toStringAsFixed(2)}'),
               ),
             ),
           ),
@@ -632,11 +643,11 @@ class VerticalLoopSimulation extends PhysicsSimulation {
         runSpacing: 4,
         alignment: WrapAlignment.center,
         children: [
-          _preset(context, '戻る', kLoopReturnH, hValue, updateParam),
-          _preset(context, 'Bに着地', kLoopBottomH, hValue, updateParam),
-          _preset(context, '中心を通る', kLoopCenterH, hValue, updateParam),
-          _preset(context, '一周の直前', kLoopAlmostH, hValue, updateParam),
-          _preset(context, '一周', kLoopFullH, hValue, updateParam),
+          _preset(context, animL('戻る', 'Return'), kLoopReturnH, hValue, updateParam),
+          _preset(context, animL('Bに着地', 'Land at B'), kLoopBottomH, hValue, updateParam),
+          _preset(context, animL('中心を通る', 'Through center'), kLoopCenterH, hValue, updateParam),
+          _preset(context, animL('一周の直前', 'Just before one loop'), kLoopAlmostH, hValue, updateParam),
+          _preset(context, animL('一周', 'One loop'), kLoopFullH, hValue, updateParam),
         ],
       ),
     ];
@@ -723,9 +734,9 @@ class _LoopPainter extends CustomPainter {
 
   /// 熱凡例付きの最大カード下端。アニメ中の文言変化では変えない。
   static double _fixedHudClearance(Size size) {
-    const lines = '円の左側を滑る\n'
+    final lines = animL('円の左側を滑る\n', 'Slide on left side of circle\n') +
         't = 00.00 s    v = 00.00 m/s';
-    const ledger = EnergyLedger(
+    final ledger = EnergyLedger(
       kinetic: 1,
       potential: 1,
       dissipated: 1,

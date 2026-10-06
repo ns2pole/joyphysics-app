@@ -5,6 +5,7 @@ import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import 'package:joyphysics/experiment/dynamics/animations/energy_gauge.dart';
 import 'package:joyphysics/experiment/playback_controls.dart';
 import 'package:joyphysics/model.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 /// 動滑車と、そこから下がる質量は一体で $m$。自由端のおもりは $M$。
 /// 動滑車の上向きを正にすると、おもり $M$ の下向き変位はその 2 倍。
@@ -278,6 +279,7 @@ final movablePulley1D = Video(
   category: 'dynamics',
   iconName: 'dynamics',
   title: '動滑車',
+  titleEn: 'Movable pulley',
   videoURL: '',
   equipment: [],
   costRating: '★',
@@ -291,6 +293,16 @@ final movablePulley1D = Video(
   <p>静かに放して、動滑車が距離 $\displaystyle \frac{h}{2}$（$h$ はおもり $M$ の変位の大きさ）だけ動いたときの、おもり $M$ の速さは</p>
   <p>$$v=2\sqrt{\frac{|2M-m|gh}{m+4M}}$$</p>
 """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>A string over a fixed pulley has mass $M$ on one end and a movable pulley on the other. The movable pulley together with the object hanging from it is treated as mass $m$. The pulleys have no inertia or friction, and the string does not stretch.</p>
+  <p>Two segments of string support the movable pulley, so if mass $M$ descends by $x$, the movable pulley rises by $\displaystyle \frac{x}{2}$. With upward acceleration $\alpha$ of the movable pulley and downward acceleration $\beta$ of mass $M$, one has $\beta=2\alpha$.</p>
+  <p>$$m\alpha=2T-mg,\quad M\beta=Mg-T$$</p>
+  <p>$$ \alpha=\frac{(2M-m)g}{m+4M},\quad \beta=\frac{2(2M-m)g}{m+4M},\quad T=\frac{3mMg}{m+4M} $$</p>
+  <p>If $2M>m$, the movable pulley rises and mass $M$ descends. If $m>2M$, the movable pulley descends. If $2M=m$, then $\alpha=0$ and the tension is $\displaystyle T=\frac{1}{2}mg$.</p>
+  <p>Released from rest, when the movable pulley has moved a distance $\displaystyle \frac{h}{2}$ ($h$ is the magnitude of the displacement of mass $M$), the speed of mass $M$ is</p>
+  <p>$$v=2\sqrt{\frac{|2M-m|gh}{m+4M}}$$</p>
+""",
   experimentWidgets: [
     PhysicsSimulationView(
       simulation: MovablePulley1DSimulation(),
@@ -302,7 +314,7 @@ final movablePulley1D = Video(
 class MovablePulley1DSimulation extends PhysicsSimulation {
   MovablePulley1DSimulation()
       : super(
-          title: '動滑車',
+          title: animL('動滑車', 'Movable pulley'),
           formula: const FormulaDisplay(
             r'\displaystyle \alpha=\frac{(2M-m)g}{m+4M},\quad \beta=2\alpha,\quad T=\frac{3mMg}{m+4M}',
           ),
@@ -409,19 +421,19 @@ class MovablePulley1DSimulation extends PhysicsSimulation {
     _rememberParams(parameters);
     final p = _params;
     final way = p.balanced
-        ? '釣り合い'
+        ? animL('釣り合い', 'Equilibrium')
         : p.pulleyRises
-            ? '動滑車は上へ、おもり M は下へ'
-            : '動滑車は下へ、おもり M は上へ';
+            ? animL('動滑車は上へ、おもり M は下へ', 'Pulley up, mass M down')
+            : animL('動滑車は下へ、おもり M は上へ', 'Pulley down, mass M up');
     return [
-      const Text(
-        '初期条件（g = 9.8 m/s²、静かに放す）',
+      Text(
+        animL('初期条件（g = 9.8 m/s²、静かに放す）', 'Initial conditions (g = 9.8 m/s², released from rest)'),
         style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
       ),
       _MassSlider(
         label: 'm',
         value: p.m,
-        semanticLabel: '動滑車側の質量 m',
+        semanticLabel: animL('動滑車側の質量 m', 'Pulley-side mass m'),
         onChanged: (v) {
           updateParam('m', v);
           resetMotion();
@@ -430,7 +442,7 @@ class MovablePulley1DSimulation extends PhysicsSimulation {
       _MassSlider(
         label: 'M',
         value: p.M,
-        semanticLabel: 'おもりの質量 M',
+        semanticLabel: animL('おもりの質量 M', 'Load mass M'),
         onChanged: (v) {
           updateParam('M', v);
           resetMotion();
@@ -581,16 +593,22 @@ class _MovablePulleyPainter extends CustomPainter {
   }
 
   String _hudLines() {
-    final pulleyWay = _way(sample.sPulleyUp, up: '上', down: '下');
-    final loadWay = _way(sample.sLoadDown, up: '下', down: '上');
+    final pulleyWay = _way(sample.sPulleyUp, up: animL('上', 'Up'), down: animL('下', 'Down'));
+    final loadWay = _way(sample.sLoadDown, up: animL('下', 'Down'), down: animL('上', 'Up'));
     final tail = params.balanced
-        ? '動かない'
+        ? animL('動かない', 'Not moving')
         : sample.stopped
-            ? '止めた'
-            : '動滑車は${params.pulleyRises ? '上' : '下'}へ';
-    return 't = ${sample.t.toStringAsFixed(2)} s\n'
-        '動滑車 $pulleyWay ${sample.sPulleyUp.abs().toStringAsFixed(2)} m\n'
-        'おもり $loadWay ${sample.sLoadDown.abs().toStringAsFixed(2)} m\n'
+            ? animL('止めた', 'Stopped')
+            : animL(
+                '動滑車は${params.pulleyRises ? "上" : "下"}へ',
+                'Pulley goes ${params.pulleyRises ? "up" : "down"}',
+              );
+    return 't = ${sample.t.toStringAsFixed(2)} s\n' +
+        animL(
+          '動滑車 $pulleyWay ${sample.sPulleyUp.abs().toStringAsFixed(2)} m\nおもり $loadWay ${sample.sLoadDown.abs().toStringAsFixed(2)} m\n',
+          'Pulley $pulleyWay ${sample.sPulleyUp.abs().toStringAsFixed(2)} m\n'
+          'Load $loadWay ${sample.sLoadDown.abs().toStringAsFixed(2)} m\n',
+        ) +
         'α = ${sample.aPulleyUp.toStringAsFixed(2)} m/s²\n'
         'β = ${params.beta.toStringAsFixed(2)} m/s²\n'
         'T = ${sample.tension.toStringAsFixed(2)} N\n'
@@ -622,7 +640,7 @@ class _MovablePulleyPainter extends CustomPainter {
       canvas.drawLine(Offset(x, groundY), Offset(x - 14, groundY + 16), hatch);
     }
     canvas.restore();
-    _label(canvas, Offset(right - 22, groundY - 14), '地面', _ground, size: 10);
+    _label(canvas, Offset(right - 22, groundY - 14), animL('地面', 'Ground'), _ground, size: 10);
   }
 
   void _drawBeforeLines(Canvas canvas, Size size, MovablePulleyLayout layout) {
@@ -633,7 +651,7 @@ class _MovablePulleyPainter extends CustomPainter {
       x1: layout.movableX + layout.movableR + 8,
       color: _bob,
       dotted: true,
-      tag: '前',
+      tag: animL('前', 'Before'),
       tagOnRight: false,
     );
     _levelLine(
@@ -643,7 +661,7 @@ class _MovablePulleyPainter extends CustomPainter {
       x1: size.width - 12,
       color: _load,
       dotted: true,
-      tag: '前',
+      tag: animL('前', 'Before'),
       tagOnRight: true,
     );
   }
@@ -656,7 +674,7 @@ class _MovablePulleyPainter extends CustomPainter {
       x1: layout.movableX + layout.movableR + 8,
       color: _bob,
       dotted: false,
-      tag: '後',
+      tag: animL('後', 'After'),
       tagOnRight: false,
     );
     _levelLine(
@@ -666,7 +684,7 @@ class _MovablePulleyPainter extends CustomPainter {
       x1: size.width - 12,
       color: _load,
       dotted: false,
-      tag: '後',
+      tag: animL('後', 'After'),
       tagOnRight: true,
     );
   }
@@ -679,7 +697,7 @@ class _MovablePulleyPainter extends CustomPainter {
       y0: layout.axleY0,
       y1: layout.axleY,
       color: _bob,
-      label: '${sample.sPulleyUp.abs().toStringAsFixed(2)} m\n${pulleyUp ? '上' : '下'}',
+      label: '${sample.sPulleyUp.abs().toStringAsFixed(2)} m\n${pulleyUp ? animL("上", "Up") : animL("下", "Down")}',
       labelRight: true,
     );
     final loadDown = sample.sLoadDown > 0;
@@ -689,7 +707,7 @@ class _MovablePulleyPainter extends CustomPainter {
       y0: layout.loadY0,
       y1: layout.loadY,
       color: _load,
-      label: '${sample.sLoadDown.abs().toStringAsFixed(2)} m\n${loadDown ? '下' : '上'}',
+      label: '${sample.sLoadDown.abs().toStringAsFixed(2)} m\n${loadDown ? animL("下", "Down") : animL("上", "Up")}',
       labelRight: false,
     );
   }

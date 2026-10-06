@@ -4,6 +4,7 @@ import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import 'package:joyphysics/experiment/dynamics/animations/energy_gauge.dart';
 import 'package:joyphysics/experiment/playback_controls.dart';
 import 'package:joyphysics/model.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 /// 上向き正。$g=9.8\,\mathrm{m/s^2}$。画面の再生だけ遅くしている。
 const double kVerticalG = 9.8;
@@ -125,18 +126,11 @@ double verticalApexHeight(VerticalMotionKind kind, VerticalMotionParams params) 
 String verticalMotionCaption(VerticalMotionKind kind) {
   switch (kind) {
     case VerticalMotionKind.freeFall:
-      return '静かに離す。初速度は 0。働く力は重力だけ。\n'
-          '重力は一定で下向き。速度だけが下向きに増える。\n'
-          '着地の速さは √(2gh)。点の間隔は下ほど広い。';
+      return animL('静かに離す。初速度は 0。働く力は重力だけ。\n重力は一定で下向き。速度だけが下向きに増える。\n着地の速さは √(2gh)。点の間隔は下ほど広い。', 'Release gently. Initial velocity is 0. The only force is gravity.\nGravity is constant and downward. Only velocity increases downward.\nLanding speed is √(2gh). Dot spacing is wider lower down.');
     case VerticalMotionKind.throwUp:
-      return '上向きに投げたとき、重力は下向きなので速さは減る。\n'
-          '最高点では速度は 0 でも、重力は消えない。\n'
-          '下降は、最高点から静かに放した自由落下と同じ。\n'
-          '元の高さに戻ったとき、速さは初速と同じで、向きだけ下。';
+      return animL('上向きに投げたとき、重力は下向きなので速さは減る。\n最高点では速度は 0 でも、重力は消えない。\n下降は、最高点から静かに放した自由落下と同じ。\n元の高さに戻ったとき、速さは初速と同じで、向きだけ下。', 'When thrown upward, gravity is downward so speed decreases.\nAt the top, velocity is 0 but gravity does not vanish.\nDescent is the same as free fall released gently from the top.\nBack at the original height, speed equals the launch speed, downward only.');
     case VerticalMotionKind.throwDown:
-      return '下向きに投げる。重力も下向きで、初めから速さがある。\n'
-          '加速度は自由落下と同じ g。点の間隔は初めから広い。\n'
-          '着地の速さは √(v₀²+2gh)。';
+      return animL('下向きに投げる。重力も下向きで、初めから速さがある。\n加速度は自由落下と同じ g。点の間隔は初めから広い。\n着地の速さは √(v₀²+2gh)。', 'Thrown downward. Gravity is also downward, so there is speed from the start.\nAcceleration is the same g as free fall. Dot spacing is wide from the start.\nLanding speed is √(v₀²+2gh).');
   }
 }
 
@@ -162,6 +156,7 @@ final freeFall1D = Video(
   category: 'dynamics',
   iconName: 'dynamics',
   title: '自由落下',
+  titleEn: 'Free fall',
   videoURL: '',
   equipment: [],
   costRating: '★',
@@ -171,6 +166,14 @@ final freeFall1D = Video(
   <p>上向きを正にし、高さ $h$ から静かに放すと</p>
   <p>$$\displaystyle y=h-\frac{1}{2}gt^{2},\quad v=-gt$$</p>
   <p>地面に着くまでの時間と速さは</p>
+  <p>$$\displaystyle t=\sqrt{\frac{2h}{g}},\quad |v|=\sqrt{2gh}$$</p>
+""",
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>Ignoring air resistance, the only force is gravity. The acceleration is always downward $g$ and does not depend on mass.</p>
+  <p>Taking upward as positive and releasing gently from height $h$,</p>
+  <p>$$\displaystyle y=h-\frac{1}{2}gt^{2},\quad v=-gt$$</p>
+  <p>The time and speed to reach the ground are</p>
   <p>$$\displaystyle t=\sqrt{\frac{2h}{g}},\quad |v|=\sqrt{2gh}$$</p>
 """,
   experimentWidgets: [
@@ -187,6 +190,7 @@ final verticalThrow1D = Video(
   category: 'dynamics',
   iconName: 'dynamics',
   title: '鉛直投げ上げ・投げ下げ',
+  titleEn: 'Vertical throw up / throw down',
   videoURL: '',
   equipment: [],
   costRating: '★',
@@ -200,6 +204,16 @@ final verticalThrow1D = Video(
   <p>鉛直投げ下げ（高さ $h$ から下向きの初速 $v_0$）</p>
   <p>$$\displaystyle y=h-v_0 t-\frac{1}{2}gt^{2},\quad v=-(v_0+gt)$$</p>
 """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>Ignoring air resistance, the only force is gravity. The acceleration is always downward $g$ and does not depend on the throw direction.</p>
+  <p>Take upward as positive. Vertical throw upward (initial speed $v_0$ from the ground):</p>
+  <p>$$\displaystyle y=v_0 t-\frac{1}{2}gt^{2},\quad v=v_0-gt$$</p>
+  <p>At the highest point $v=0$, but the force remains $mg$ downward.</p>
+  <p>$$\displaystyle H=\frac{v_0^{2}}{2g}$$</p>
+  <p>Vertical throw downward (downward initial speed $v_0$ from height $h$):</p>
+  <p>$$\displaystyle y=h-v_0 t-\frac{1}{2}gt^{2},\quad v=-(v_0+gt)$$</p>
+""",
   experimentWidgets: [
     PhysicsSimulationView(
       simulation: VerticalMotion1DSimulation.verticalThrow(),
@@ -211,14 +225,14 @@ final verticalThrow1D = Video(
 class VerticalMotion1DSimulation extends PhysicsSimulation {
   VerticalMotion1DSimulation.freeFall()
       : this._(
-          title: '自由落下',
-          kinds: const [VerticalMotionKind.freeFall],
+          title: animL('自由落下', 'Free fall'),
+          kinds: [VerticalMotionKind.freeFall],
           initialKind: VerticalMotionKind.freeFall,
         );
 
   VerticalMotion1DSimulation.verticalThrow()
       : this._(
-          title: '鉛直投げ上げ・投げ下げ',
+          title: animL('鉛直投げ上げ・投げ下げ', 'Vertical throw up / throw down'),
           kinds: const [
             VerticalMotionKind.throwUp,
             VerticalMotionKind.throwDown,
@@ -368,11 +382,11 @@ class VerticalMotion1DSimulation extends PhysicsSimulation {
   String _kindLabel(VerticalMotionKind kind) {
     switch (kind) {
       case VerticalMotionKind.freeFall:
-        return '自由落下';
+        return animL('自由落下', 'Free fall');
       case VerticalMotionKind.throwUp:
-        return '鉛直投げ上げ';
+        return animL('鉛直投げ上げ', 'Vertical throw upward');
       case VerticalMotionKind.throwDown:
-        return '鉛直投げ下げ';
+        return animL('鉛直投げ下げ', 'Vertical throw downward');
     }
   }
 
@@ -402,8 +416,8 @@ class VerticalMotion1DSimulation extends PhysicsSimulation {
     _rememberParams(parameters);
     final p = _params;
     final controls = <Widget>[
-      const Text(
-        '初期条件（g = 9.8 m/s²）',
+      Text(
+        animL('初期条件（g = 9.8 m/s²）', 'Initial conditions (g = 9.8 m/s²)'),
         style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
       ),
     ];
@@ -415,7 +429,7 @@ class VerticalMotion1DSimulation extends PhysicsSimulation {
           min: kVerticalMinH,
           max: kVerticalMaxH,
           onChanged: (v) => updateParam('h', v),
-          semanticLabel: '高さ h',
+          semanticLabel: animL('高さ h', 'Height h'),
         ),
       );
     }
@@ -427,7 +441,7 @@ class VerticalMotion1DSimulation extends PhysicsSimulation {
           min: kVerticalMinV0,
           max: kVerticalMaxV0,
           onChanged: (v) => updateParam('v0', v),
-          semanticLabel: '初速度 v0',
+          semanticLabel: animL('初速度 v0', 'Initial speed v0'),
         ),
       );
     }
@@ -437,7 +451,7 @@ class VerticalMotion1DSimulation extends PhysicsSimulation {
       Padding(
         padding: const EdgeInsets.only(top: 4),
         child: Text(
-          '最高の高さ ${apex.toStringAsFixed(2)} m    着地まで ${duration.toStringAsFixed(2)} s',
+          animL('最高の高さ ${apex.toStringAsFixed(2)} m    着地まで ${duration.toStringAsFixed(2)} s', 'Max height ${apex.toStringAsFixed(2)} m    Until landing ${duration.toStringAsFixed(2)} s'),
           style: const TextStyle(
             fontSize: 12,
             fontFamily: 'Courier',
@@ -611,7 +625,7 @@ class _VerticalMotionPainter extends CustomPainter {
         ..color = _ground
         ..strokeWidth = 3,
     );
-    _label(canvas, Offset(size.width - 36, y0 + 6), '地面', _ground);
+    _label(canvas, Offset(size.width - 36, y0 + 6), animL('地面', 'Ground'), _ground);
   }
 
   void _drawTrail(Canvas canvas, _YMap map) {
@@ -669,7 +683,7 @@ class _VerticalMotionPainter extends CustomPainter {
       const Offset(0, 1),
       52,
       _force,
-      '重力',
+      animL('重力', 'Gravity'),
       labelSide: -1,
     );
     if (sample.v.abs() < 0.4) {

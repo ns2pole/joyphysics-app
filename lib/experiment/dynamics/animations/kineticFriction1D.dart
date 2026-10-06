@@ -4,6 +4,7 @@ import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import 'package:joyphysics/experiment/dynamics/animations/energy_gauge.dart';
 import 'package:joyphysics/experiment/playback_controls.dart';
 import 'package:joyphysics/model.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 /// 右向き正。水平面。$g=9.8\,\mathrm{m/s^2}$。画面の再生だけ遅くしている。
 const double kFrictionG = 9.8;
@@ -116,7 +117,7 @@ List<KineticFrictionSample> kineticFrictionStrobe(
   double t, {
   double dt = kFrictionStrobeDt,
 }) {
-  if (t <= 1e-9 || dt <= 0) return const [];
+  if (t <= 1e-9 || dt <= 0) return [];
   final samples = <KineticFrictionSample>[];
   for (double ti = dt; ti < t - 1e-9; ti += dt) {
     final s = kineticFrictionAt(params, ti);
@@ -126,11 +127,8 @@ List<KineticFrictionSample> kineticFrictionStrobe(
   return samples;
 }
 
-const String kKineticFrictionCaption =
-    '水平な面を右向きの初速で滑らせる。働く力は動摩擦力だけ。\n'
-    '加速度は −μg で一定。速さは直線的に減る。\n'
-    '止まったあとは速度も摩擦力も 0 のまま。戻らない。\n'
-    'μ = 0 なら等速直線運動で、止まらない。';
+String kKineticFrictionCaption =
+    animL('水平な面を右向きの初速で滑らせる。働く力は動摩擦力だけ。\n加速度は −μg で一定。速さは直線的に減る。\n止まったあとは速度も摩擦力も 0 のまま。戻らない。\nμ = 0 なら等速直線運動で、止まらない。', 'Slide on a horizontal surface with rightward initial speed. Only kinetic friction acts.\nAcceleration is constant at −μg. Speed decreases linearly.\nAfter stopping, velocity and friction stay 0. It does not return.\nIf μ = 0, motion is uniform straight-line and it does not stop.');
 
 final kineticFriction1D = Video(
   isNew: false,
@@ -138,6 +136,7 @@ final kineticFriction1D = Video(
   category: 'dynamics',
   iconName: 'dynamics',
   title: '水平面上の動摩擦力',
+  titleEn: 'Kinetic friction on a horizontal surface',
   videoURL: '',
   equipment: [],
   costRating: '★',
@@ -151,6 +150,16 @@ final kineticFriction1D = Video(
   <p>$$t=\frac{v_0}{\mu g},\quad x=\frac{v_0^{2}}{2\mu g}$$</p>
   <p>止まったあとは速度も摩擦力も 0 です。向きが反転して戻ることはありません。$\mu=0$ なら $a=0$ で、等速直線運動のままです。</p>
 """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>On a horizontal surface the only horizontal force is kinetic friction. The normal force is $N=mg$, so the magnitude of kinetic friction is $\mu mg$. Taking rightward as positive, the acceleration is</p>
+  <p>$$a=-\mu g$$</p>
+  <p>Mass cancels and does not appear in the acceleration. After a slide with initial speed $v_0$ to the right, until the speed reaches 0,</p>
+  <p>$$x=v_0 t-\frac{1}{2}\mu g t^{2},\quad v=v_0-\mu g t$$</p>
+  <p>The stopping time and distance are</p>
+  <p>$$t=\frac{v_0}{\mu g},\quad x=\frac{v_0^{2}}{2\mu g}$$</p>
+  <p>After stopping, both velocity and friction are 0. The block does not reverse and come back. If $\mu=0$, then $a=0$ and the motion remains uniform rectilinear.</p>
+""",
   experimentWidgets: [
     PhysicsSimulationView(
       simulation: KineticFriction1DSimulation(),
@@ -162,7 +171,7 @@ final kineticFriction1D = Video(
 class KineticFriction1DSimulation extends PhysicsSimulation {
   KineticFriction1DSimulation()
       : super(
-          title: '水平面上の動摩擦力',
+          title: animL('水平面上の動摩擦力', 'Kinetic friction on a horizontal surface'),
           formula: const FormulaDisplay(
             r'\displaystyle x=v_0 t-\frac{1}{2}\mu g t^{2},\quad v=v_0-\mu g t',
           ),
@@ -254,7 +263,7 @@ class KineticFriction1DSimulation extends PhysicsSimulation {
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
+            Text(
               kKineticFrictionCaption,
               textAlign: TextAlign.center,
               style: TextStyle(
@@ -286,11 +295,11 @@ class KineticFriction1DSimulation extends PhysicsSimulation {
     final stopT = kineticFrictionStopTime(p);
     final stopX = kineticFrictionStopDistance(p);
     final summary = stopT == null
-        ? '止まらない（等速直線運動）'
-        : '停止まで ${stopT.toStringAsFixed(2)} s    停止距離 ${stopX!.toStringAsFixed(2)} m';
+        ? animL('止まらない（等速直線運動）', 'Does not stop (uniform straight-line motion)')
+        : animL('停止まで ${stopT.toStringAsFixed(2)} s    停止距離 ${stopX!.toStringAsFixed(2)} m', 'Stops in ${stopT.toStringAsFixed(2)} s    Stopping distance ${stopX!.toStringAsFixed(2)} m');
     return [
-      const Text(
-        '初期条件（g = 9.8 m/s²、右向き正）',
+      Text(
+        animL('初期条件（g = 9.8 m/s²、右向き正）', 'Initial conditions (g = 9.8 m/s², right positive)'),
         style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
       ),
       _FrictionSlider(
@@ -299,7 +308,7 @@ class KineticFriction1DSimulation extends PhysicsSimulation {
         min: kFrictionMinV0,
         max: kFrictionMaxV0,
         onChanged: (v) => updateParam('v0', v),
-        semanticLabel: '初速度 v0',
+        semanticLabel: animL('初速度 v0', 'Initial speed v0'),
       ),
       _FrictionSlider(
         label: 'μ',
@@ -307,7 +316,7 @@ class KineticFriction1DSimulation extends PhysicsSimulation {
         min: kFrictionMinMu,
         max: kFrictionMaxMu,
         onChanged: (v) => updateParam('mu', v),
-        semanticLabel: '動摩擦係数 μ',
+        semanticLabel: animL('動摩擦係数 μ', 'Kinetic friction coefficient μ'),
       ),
       Padding(
         padding: const EdgeInsets.only(top: 4),
@@ -527,7 +536,7 @@ class _KineticFrictionPainter extends CustomPainter {
     }
     if (!sample.stopped && params.mu > 1e-12) {
       final fLen = (22 + params.mu / kFrictionMaxMu * 48).clamp(22.0, 74.0);
-      _drawArrow(canvas, c + const Offset(-28, -28), const Offset(-1, 0), fLen, _force, '摩擦');
+      _drawArrow(canvas, c + Offset(-28, -28), Offset(-1, 0), fLen, _force, animL('摩擦', 'Friction'));
     }
   }
 
@@ -579,8 +588,8 @@ class _KineticFrictionPainter extends CustomPainter {
     final stopT = kineticFrictionStopTime(params);
     final stopX = kineticFrictionStopDistance(params);
     final tail = stopT == null
-        ? '止まらない'
-        : '停止 ${stopT.toStringAsFixed(2)} s, ${stopX!.toStringAsFixed(2)} m';
+        ? animL('止まらない', 'Does not stop')
+        : animL('停止 ${stopT.toStringAsFixed(2)} s, ${stopX!.toStringAsFixed(2)} m', 'Stop ${stopT.toStringAsFixed(2)} s, ${stopX!.toStringAsFixed(2)} m');
     return 't = ${sample.t.toStringAsFixed(2)} s\n'
         'x = ${sample.x.toStringAsFixed(2)} m\n'
         'v = ${sample.v.toStringAsFixed(2)} m/s\n'

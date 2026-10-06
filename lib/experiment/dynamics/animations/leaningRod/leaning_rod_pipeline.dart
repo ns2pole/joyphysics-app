@@ -4,6 +4,7 @@ import 'leaning_rod_after_leave.dart';
 import 'leaning_rod_params.dart';
 import 'leaning_rod_sliding_both.dart';
 import 'leaning_rod_statics.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 enum LeaningRodPhase { equilibrium, slidingBoth, afterLeave, flat }
 
@@ -43,13 +44,13 @@ class LeaningRodSample {
 String leaningRodPhaseLabel(LeaningRodPhase phase) {
   switch (phase) {
     case LeaningRodPhase.equilibrium:
-      return '静止';
+      return animL('静止', 'At rest');
     case LeaningRodPhase.slidingBoth:
-      return '両端接触';
+      return animL('両端接触', 'Both ends contact');
     case LeaningRodPhase.afterLeave:
-      return '壁離れ後';
+      return animL('壁離れ後', 'After leaving wall');
     case LeaningRodPhase.flat:
-      return '倒れた';
+      return animL('倒れた', 'Fallen');
   }
 }
 

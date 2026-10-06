@@ -4,6 +4,7 @@ import 'pushed_block_params.dart';
 import 'pushed_block_sliding.dart';
 import 'pushed_block_statics.dart';
 import 'pushed_block_tipping.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 enum PushedBlockPhase {
   equilibrium,
@@ -45,15 +46,15 @@ class PushedBlockSample {
 String pushedBlockPhaseLabel(PushedBlockPhase phase) {
   switch (phase) {
     case PushedBlockPhase.equilibrium:
-      return '静止';
+      return animL('静止', 'At rest');
     case PushedBlockPhase.sliding:
-      return '滑り';
+      return animL('滑り', 'Sliding');
     case PushedBlockPhase.tipping:
-      return '転倒';
+      return animL('転倒', 'Tipping');
     case PushedBlockPhase.freeTip:
-      return '指離れ後';
+      return animL('指離れ後', 'After finger leaves');
     case PushedBlockPhase.onSide:
-      return '側面着地';
+      return animL('側面着地', 'Landed on side');
   }
 }
 

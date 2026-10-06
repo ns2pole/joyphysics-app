@@ -4,8 +4,10 @@ final oneSideLift = Video(
   category: 'dynamics', // ← 追加
     iconName: "oneSideLift",
     title: "片側持ち上げ",
+    titleEn: "Lifting one side",
     videoURL: "wtxRRKArApU",
     equipment: ["板", "バネ秤"],
+    equipmentEn: ["board", "spring scale"],
     costRating: "★★★", latex: r"""
         <div class="common-box">ポイント</div>
             <p>物体に働く全ての力を $\vec{F_1}, \vec{F_2}, \cdots$</p>
@@ -26,5 +28,26 @@ final oneSideLift = Video(
         <p>よって持ち上げに必要な力は、$136.5\mathrm{g}$を持ち上げるのと同等の力。</p>
         <div class="common-box">答え</div>
         <p>バネ秤が指す値は $136.5 \mathrm{g} $</p>
+    """,
+    latexEn: r"""
+        <div class="common-box">Key points</div>
+            <p>Let all forces on the object be $\vec{F_1}, \vec{F_2}, \cdots$</p>
+            <p>and all moments about a chosen point be $\tau_1, \tau_2, \cdots$. Then</p>
+            <div class="common-box">Force and moment balance</div>
+            <p>$\displaystyle \vec{F_1} + \vec{F_2} + \cdots = \vec{0}$（force balance）</p>
+            <p>$\displaystyle \tau_1 + \tau_2 + \cdots = 0$（moment balance）</p>
+        <div class="common-box">Setup</div>
+        <p>Treat a wooden block of mass $m = 273\,\mathrm{g}$ as a rigid body. When one side is lifted, what reading does the scale show in grams?</p>
+        <div class="common-box">Theory</div>
+        <p>Use force and moment balance to find the force needed to lift one side.</p>
+        <div style="text-align:center; margin:1em 0;">
+          <img src="assets/dynamicsDetail/oneSideLift.png"
+               alt="Schematic of lifting one side"
+               style="max-width:100%; height:auto;" />
+        </div>
+        <p>The center of mass is at the midpoint, so lifting one end requires supporting half the total weight.</p>
+        <p>Thus the required force equals the weight of $136.5\mathrm{g}$.</p>
+        <div class="common-box">Answer</div>
+        <p>The spring scale reads $136.5 \mathrm{g}$.</p>
     """
 );

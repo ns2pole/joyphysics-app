@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 /// 運動エネルギー。速度や力の矢印の青・オレンジとは被せない。
 const Color kEnergyKinetic = Color(0xFF7B1FA2);
@@ -14,13 +15,13 @@ const Color kEnergyHeat = Color(0xFFBCAAA4);
 const double kEnergyGaugeWidth = 128;
 const double kEnergyGaugeBarHeight = 10;
 
-const String kLabelKinetic = '運動エネルギー';
-const String kLabelKinetic1 = 'm₁の運動エネルギー';
-const String kLabelKinetic2 = 'm₂の運動エネルギー';
-const String kLabelGravitation = '万有引力位置エネルギー';
-const String kLabelGravity = '重力による位置エネルギー';
-const String kLabelElastic = '弾性エネルギー';
-const String kLabelHeat = '熱エネルギー';
+String get kLabelKinetic => animL('運動エネルギー', 'Kinetic energy');
+String get kLabelKinetic1 => animL('m₁の運動エネルギー', 'Kinetic energy of m₁');
+String get kLabelKinetic2 => animL('m₂の運動エネルギー', 'Kinetic energy of m₂');
+String get kLabelGravitation => animL('万有引力位置エネルギー', 'Gravitational potential energy (universal)');
+String get kLabelGravity => animL('重力による位置エネルギー', 'Gravitational potential energy');
+String get kLabelElastic => animL('弾性エネルギー', 'Elastic energy');
+String get kLabelHeat => animL('熱エネルギー', 'Thermal energy');
 
 /// ゲージの1区画。2体の運動エネルギーを物体ごとに描くときに使う。
 class EnergyPortion {
@@ -49,7 +50,7 @@ class EnergyPortion {
 
 /// 力学的エネルギーの内訳。単位は J。枠の長さは [scale]。
 class EnergyLedger {
-  const EnergyLedger({
+  EnergyLedger({
     required this.kinetic,
     required this.potential,
     required this.dissipated,
@@ -58,8 +59,9 @@ class EnergyLedger {
     this.legendKinetic = true,
     this.legendPotential = true,
     this.legendHeat = false,
-    this.potentialLabel = '位置エネルギー',
-  });
+    String? potentialLabel,
+  }) : potentialLabel = potentialLabel ??
+            animL('位置エネルギー', 'Potential energy');
 
   final double kinetic;
   final double potential;

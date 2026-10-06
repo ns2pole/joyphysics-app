@@ -6,8 +6,10 @@ final accelerometer = Video(
   category: 'dynamics',
   iconName: "accelerometer",
   title: "加速度の測定",
+  titleEn: "Measuring acceleration",
   videoURL: "",
   equipment: ["スマホ（加速度センサー搭載）"],
+  equipmentEn: ["smartphone (with accelerometer)"],
   costRating: "★☆☆",
   latex: r"""
 <div class="common-box">加速度センサーとは？</div>
@@ -24,6 +26,23 @@ final accelerometer = Video(
 <div class="common-box">注意点</div>
 <ul>
   <li>自由落下や衝撃実験は機器破損のおそれがある。必ず安全対策をすること。</li>
+</ul>
+""",
+  latexEn: r"""
+<div class="common-box">What is an accelerometer?</div>
+<p>This sensor shows how an object is accelerating in space.</p>
+<div class="common-box">What to observe</div>
+<ul>
+  <li>Rest quietly on a desk → acceleration is $0\,\mathrm{m/s^2}$</li>
+  <li>Only tilt the phone in a fixed direction → acceleration is $0\,\mathrm{m/s^2}$ (a change of orientation alone is not a change of velocity)</li>
+  <li>Accelerate forward/back or up/down → a nonzero acceleration appears on the corresponding axis</li>
+  <li>In free fall → acceleration is about $9.8\,\mathrm{m/s^2}$ (gravitational acceleration)</li>
+  <li>At landing or impact → a large spike from an impulsive force (sign depends on direction)</li>
+  <li>The sign depends on axis orientation (which axis the app defines as upward).</li>
+</ul>
+<div class="common-box">Note</div>
+<ul>
+  <li>Free-fall and impact tests can damage the device. Always take safety precautions.</li>
 </ul>
 """,
   experimentWidgets: [AccelerometerExperimentWidget(useScaffold: false)],

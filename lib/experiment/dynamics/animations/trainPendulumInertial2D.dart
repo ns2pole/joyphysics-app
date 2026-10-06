@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import 'package:joyphysics/experiment/playback_controls.dart';
 import 'package:joyphysics/model.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 /// 右向き正。$g=9.8\,\mathrm{m/s^2}$。角 $\theta$ は鉛直下から加速度の向きを正。
 const double kTrainG = 9.8;
@@ -192,11 +193,9 @@ TrainPendulumSample _sample(
 String trainPendulumCaption(TrainPendulumKind kind) {
   switch (kind) {
     case TrainPendulumKind.rest:
-      return '電車に対して静止。地上では張力の水平成分が mA になり、物体は電車と同じ加速度で進む。\n'
-          '軌跡は高さが一定の直線。電車内では慣性力を足すとつり合い、軌跡は一点。';
+      return animL('電車に対して静止。地上では張力の水平成分が mA になり、物体は電車と同じ加速度で進む。\n軌跡は高さが一定の直線。電車内では慣性力を足すとつり合い、軌跡は一点。', 'At rest relative to the train. On the ground, the horizontal component of tension is mA and the mass accelerates with the train.\nThe trajectory is a horizontal straight line. In the train, adding the inertial force balances it and the path is a point.');
     case TrainPendulumKind.swing:
-      return 'つり合いの傾きのまわりに揺れる。地上の軌跡は進みながら上下する。\n'
-          '電車内では支点を中心にした円弧で、慣性力を足すと見かけの重力の方向を軸に振れる。';
+      return animL('つり合いの傾きのまわりに揺れる。地上の軌跡は進みながら上下する。\n電車内では支点を中心にした円弧で、慣性力を足すと見かけの重力の方向を軸に振れる。', 'Oscillates about the equilibrium lean. The ground-frame path goes forward while rising and falling.\nIn the train it is a circular arc about the support; with the inertial force it swings about the apparent gravity direction.');
   }
 }
 
@@ -206,6 +205,7 @@ final trainPendulumInertial2D = Video(
   category: 'dynamics',
   iconName: 'dynamics',
   title: '加速する電車の振り子',
+  titleEn: 'Pendulum in an accelerating train',
   videoURL: '',
   equipment: [],
   costRating: '★',
@@ -225,6 +225,22 @@ final trainPendulumInertial2D = Video(
   <p>$$x=l\sin\theta,\quad y=-l\cos\theta$$</p>
   <p>静止しているときは $\theta$ が一定なので、地上では高さが一定の直線、電車内では一点です。</p>
 """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>A train moves to the right with constant acceleration $A$. A mass $m$ hangs from the ceiling on a string of length $l$. The angle $\theta$ is measured from the downward vertical, positive in the direction of the acceleration.</p>
+  <p>When the mass is at rest relative to the train, in the lab frame it also has acceleration $A$. Only gravity and tension act, and the string tilts by an angle $a$ opposite to the acceleration.</p>
+  <p>$$T\sin a=mA,\quad T\cos a=mg,\quad \tan a=\frac{A}{g},\quad T=m\sqrt{g^{2}+A^{2}}$$</p>
+  <p>Inside the train the mass is at rest. Adding an inertial force $mA$ opposite to the acceleration gives the same $a$ and $T$ in equilibrium.</p>
+  <p>While swinging, the angular equation is the same in the lab frame and in the train.</p>
+  <p>$$l\ddot{\theta}=-g\sin\theta-A\cos\theta$$</p>
+  <p>The period of small oscillations about equilibrium is that of an ordinary pendulum with $g$ replaced by $\displaystyle g_{\mathrm{eff}}=\sqrt{g^{2}+A^{2}}$.</p>
+  <p>$$T_{\mathrm{period}}=2\pi\sqrt{\frac{l}{\sqrt{g^{2}+A^{2}}}}$$</p>
+  <p>Taking the support position as $\displaystyle \frac{1}{2}At^{2}$, the lab-frame trajectory is</p>
+  <p>$$x=\frac{1}{2}At^{2}+l\sin\theta,\quad y=-l\cos\theta$$</p>
+  <p>In the train, the trajectory is a circular arc about the support:</p>
+  <p>$$x=l\sin\theta,\quad y=-l\cos\theta$$</p>
+  <p>When at rest, $\theta$ is constant, so the lab path is a horizontal straight line and the train path is a single point.</p>
+""",
   experimentWidgets: [
     PhysicsSimulationView(
       simulation: TrainPendulumSimulation(),
@@ -236,7 +252,7 @@ final trainPendulumInertial2D = Video(
 class TrainPendulumSimulation extends PhysicsSimulation {
   TrainPendulumSimulation()
       : super(
-          title: '加速する電車の振り子',
+          title: animL('加速する電車の振り子', 'Pendulum in an accelerating train'),
           formula: const FormulaDisplay(
             r'\displaystyle \tan a=\frac{A}{g}',
           ),
@@ -277,7 +293,7 @@ class TrainPendulumSimulation extends PhysicsSimulation {
   bool get showZoomButtons => true;
 
   @override
-  String? get situation => '慣性系では重力と張力だけ。非慣性系では慣性力を足して見る';
+  String? get situation => animL('慣性系では重力と張力だけ。非慣性系では慣性力を足して見る', 'Inertial frame: gravity and tension only. Non-inertial frame: add the inertial force');
 
   @override
   double aspectRatioForWidth(double width) {
@@ -388,7 +404,7 @@ class TrainPendulumSimulation extends PhysicsSimulation {
       case TrainPendulumKind.rest:
         return r'\displaystyle \tan a=\frac{A}{g},\quad T=m\sqrt{g^{2}+A^{2}}';
       case TrainPendulumKind.swing:
-        return r'\displaystyle T_{\mathrm{周期}}=2\pi\sqrt{\frac{l}{\sqrt{g^{2}+A^{2}}}}';
+        return animL('\\displaystyle T_{\\mathrm{周期}}=2\\pi\\sqrt{\\frac{l}{\\sqrt{g^{2}+A^{2}}}}', '\\displaystyle T_{\\mathrm{period}}=2\\pi\\sqrt{\\frac{l}{\\sqrt{g^{2}+A^{2}}}}');
     }
   }
 
@@ -426,8 +442,8 @@ class TrainPendulumSimulation extends PhysicsSimulation {
               alignment: WrapAlignment.center,
               spacing: 8,
               children: [
-                _kindButton('静止', TrainPendulumKind.rest, updateActiveIds),
-                _kindButton('振り子', TrainPendulumKind.swing, updateActiveIds),
+                _kindButton(animL('静止', 'At rest'), TrainPendulumKind.rest, updateActiveIds),
+                _kindButton(animL('振り子', 'Pendulum'), TrainPendulumKind.swing, updateActiveIds),
               ],
             ),
           ],
@@ -462,8 +478,8 @@ class TrainPendulumSimulation extends PhysicsSimulation {
     final tension = trainEquilibriumTension(p.mass, p.accel);
     final period = trainPendulumPeriod(p.length, p.accel);
     return [
-      const Text(
-        '電車の加速度 A（右向き、g = 9.8 m/s²）',
+      Text(
+        animL('電車の加速度 A（右向き、g = 9.8 m/s²）', 'Train acceleration A (to the right, g = 9.8 m/s²)'),
         style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
       ),
       _TrainSlider(
@@ -472,7 +488,7 @@ class TrainPendulumSimulation extends PhysicsSimulation {
         min: kTrainMinA,
         max: kTrainMaxA,
         onChanged: (v) => updateParam('A', v),
-        semanticLabel: '電車の加速度 A',
+        semanticLabel: animL('電車の加速度 A', 'Train acceleration A'),
       ),
       _TrainSlider(
         label: 'l',
@@ -480,7 +496,7 @@ class TrainPendulumSimulation extends PhysicsSimulation {
         min: kTrainMinL,
         max: kTrainMaxL,
         onChanged: (v) => updateParam('l', v),
-        semanticLabel: '糸の長さ l',
+        semanticLabel: animL('糸の長さ l', 'String length l'),
       ),
       _TrainSlider(
         label: 'm',
@@ -488,23 +504,23 @@ class TrainPendulumSimulation extends PhysicsSimulation {
         min: kTrainMinM,
         max: kTrainMaxM,
         onChanged: (v) => updateParam('m', v),
-        semanticLabel: '物体の質量 m',
+        semanticLabel: animL('物体の質量 m', 'Object mass m'),
       ),
       if (_kind == TrainPendulumKind.swing)
         _TrainSlider(
-          label: '振れ',
+          label: animL('振れ', 'Swing'),
           value: p.amplitudeDeg,
           min: kTrainMinAmpDeg,
           max: kTrainMaxAmpDeg,
           onChanged: (v) => updateParam('amp', v),
-          semanticLabel: 'つり合いからの振れ角',
+          semanticLabel: animL('つり合いからの振れ角', 'Angle from equilibrium'),
         ),
       Padding(
         padding: const EdgeInsets.only(top: 4),
         child: Text(
           _kind == TrainPendulumKind.rest
               ? 'a = ${leanDeg.toStringAsFixed(1)} °    T = ${tension.toStringAsFixed(2)} N'
-              : 'a = ${leanDeg.toStringAsFixed(1)} °    周期 ≈ ${period.toStringAsFixed(2)} s',
+              : animL('a = ${leanDeg.toStringAsFixed(1)} °    周期 ≈ ${period.toStringAsFixed(2)} s', 'a = ${leanDeg.toStringAsFixed(1)} °    period ≈ ${period.toStringAsFixed(2)} s'),
           style: const TextStyle(fontSize: 12, fontFamily: 'Courier', color: Color(0xFF37474F)),
         ),
       ),
@@ -660,7 +676,7 @@ class _TrainPendulumPainter extends CustomPainter {
     _text(
       canvas,
       Offset(panel.left + 8, panel.top + 6),
-      ground ? '地上（慣性系）' : '電車内（非慣性系）',
+      ground ? animL('地上（慣性系）', 'Ground (inertial frame)') : animL('電車内（非慣性系）', 'Inside the train (non-inertial)'),
       _ink,
       alignLeft: true,
     );
@@ -669,7 +685,7 @@ class _TrainPendulumPainter extends CustomPainter {
     _text(
       canvas,
       Offset(panel.center.dx, panel.bottom - 20),
-      ground ? '力は重力と張力だけ。張力の水平成分が物体を加速する。' : '加速度と逆向きの慣性力 mA を足して見る。',
+      ground ? animL('力は重力と張力だけ。張力の水平成分が物体を加速する。', 'Forces are gravity and tension only. The horizontal tension component accelerates the mass.') : animL('加速度と逆向きの慣性力 mA を足して見る。', 'View with the inertial force mA opposite the acceleration.'),
       const Color(0xFF546E7A),
     );
     canvas.restore();
@@ -750,7 +766,7 @@ class _TrainPendulumPainter extends CustomPainter {
     final unit = biggest > 1e-9 ? 48.0 / biggest : 1.0;
     final toPivot = Offset(-math.sin(theta), -math.cos(theta));
     _arrow(canvas, bob, toPivot, tForce * unit, _tension, 'T');
-    _arrow(canvas, bob + const Offset(-16, 0), const Offset(0, 1), mgForce * unit, _gravity, '重力');
+    _arrow(canvas, bob + Offset(-16, 0), Offset(0, 1), mgForce * unit, _gravity, animL('重力', 'Gravity'));
     if (iForce > 1e-6) {
       _arrow(
         canvas,
@@ -758,7 +774,7 @@ class _TrainPendulumPainter extends CustomPainter {
         const Offset(-1, 0),
         iForce * unit,
         _inertial,
-        '慣性力',
+        animL('慣性力', 'Inertial force'),
         dashed: true,
       );
     }

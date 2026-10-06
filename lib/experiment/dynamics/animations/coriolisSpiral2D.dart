@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import 'package:joyphysics/experiment/playback_controls.dart';
 import 'package:joyphysics/model.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 /// $y$ 軸上の初期位置 $y_0$ から、速度 $v$ で等速直線運動する物体を、角速度 $\omega$ で回る座標系から見る。
 /// $v>0$ は原点から遠ざかる向き。$v<0$ は原点へ向かい、そのまま通り過ぎる。
@@ -22,9 +23,9 @@ const double kSpiralDefaultM = 1.00;
 const double kSpiralSideBySideWidth = 640.0;
 /// 静止モードで原点に潰さないための初期距離。
 const double kSpiralDefaultRestY0 = 2.00;
-const String kSpiralRestId = 'rest';
+String kSpiralRestId = 'rest';
 
-const String kSpiralMotionLatex = r"""
+String kSpiralMotionLatex = r"""
   <div class="common-box">ポイント</div>
   <p>慣性系から見て、物体は $y$ 軸上の $y=y_0$ から速度 $v$ で等速直線運動します。$v>0$ は原点から遠ざかる向き、$v<0$ は原点へ向かう向きです。向かうときは原点を通り過ぎて反対側へ出ます。働く力はありません。これを、角速度 $\omega$ で回転する座標系から見ます。広い画面では左右、狭い画面では上下です。上または左が地上、下または右がその人の座標系です。</p>
   <p>真の力は $\vec{0}$ なので、回転系の運動方程式は</p>
@@ -37,7 +38,7 @@ const String kSpiralMotionLatex = r"""
 """;
 
 /// 静止は等速直線運動の $v=0$ の特別な場合。距離は $R=\lvert y_0\rvert$。
-const String kSpiralRestLatex = r"""
+String kSpiralRestLatex = r"""
   <div class="common-box">ポイント</div>
   <p>水平な床の上で、物体は止まっています。働く力はありません。中心にいる人が角速度 $\omega$ で回ってこの物体を見ます。広い画面では左右、狭い画面では上下です。上または左が地上、下または右がその人の座標系です。これは等速直線運動で $v=0$ にした特別な場合で、中心からの距離は $R=\lvert y_0\rvert$ です。</p>
   <p>人から見ると、物体は半径 $R$ の円周上を速さ $\omega R$ で動きます。この見かけの円運動に必要な向心力は内向きの</p>
@@ -149,13 +150,9 @@ SpiralRotatingSample spiralRotatingAt(SpiralParams params, double t) {
 
 String spiralCaption({bool rest = false}) {
   if (rest) {
-    return '地上では物体は止まっていて、力は働いていない。\n'
-        '中心の人が回って見ると、物体は円を描く。\n'
-        '内向きのコリオリ力と外向きの遠心力の合力が、見かけの向心力。';
+    return animL('地上では物体は止まっていて、力は働いていない。\n中心の人が回って見ると、物体は円を描く。\n内向きのコリオリ力と外向きの遠心力の合力が、見かけの向心力。', 'On the ground the object is at rest and no force acts.\nWhen viewed by the rotating person at the center, the object traces a circle.\nThe net of the inward Coriolis force and the outward centrifugal force is the apparent centripetal force.');
   }
-  return '地上では y 軸上を等速直線運動する。力は働いていない。\n'
-      '+v は原点から遠ざかり、-v は原点へ向かって通り過ぎる。\n'
-      '回って見ると螺旋を描き、コリオリ力は進行方向の右向き。';
+  return animL('地上では y 軸上を等速直線運動する。力は働いていない。\n+v は原点から遠ざかり、-v は原点へ向かって通り過ぎる。\n回って見ると螺旋を描き、コリオリ力は進行方向の右向き。', 'On the ground it moves in uniform straight-line motion along the y axis. No force acts.\n+v moves away from the origin; −v approaches and passes through the origin.\nIn the rotating view it traces a spiral, and the Coriolis force points to the right of the direction of motion.');
 }
 
 final coriolisSpiral2D = Video(
@@ -164,6 +161,7 @@ final coriolisSpiral2D = Video(
   category: 'dynamics',
   iconName: 'dynamics',
   title: '遠心力とコリオリ力(等速直線運動)',
+  titleEn: 'Centrifugal and Coriolis forces (uniform straight-line motion)',
   videoURL: '',
   equipment: [],
   costRating: '★',
@@ -179,7 +177,7 @@ final coriolisSpiral2D = Video(
 class CoriolisSpiral2DSimulation extends PhysicsSimulation {
   CoriolisSpiral2DSimulation()
       : super(
-          title: '遠心力とコリオリ力(等速直線運動)',
+          title: animL('遠心力とコリオリ力(等速直線運動)', 'Centrifugal and Coriolis forces (uniform straight-line motion)'),
           formula: const FormulaDisplay(
             r'\displaystyle \tilde{x}=(y_{0}+vt)\sin\omega t',
           ),
@@ -203,8 +201,8 @@ class CoriolisSpiral2DSimulation extends PhysicsSimulation {
 
   @override
   String? get situation => _rest
-      ? '慣性系で見ると、止まっている物体'
-      : '慣性系で見ると、y 軸上を等速直線運動する物体';
+      ? animL('慣性系で見ると、止まっている物体', 'In the inertial frame: an object at rest')
+      : animL('慣性系で見ると、y 軸上を等速直線運動する物体', 'In the inertial frame: an object in uniform straight-line motion along the y axis');
 
   @override
   ValueListenable<String>? get explanationHtmlListenable => _explanationHtml;
@@ -268,7 +266,7 @@ class CoriolisSpiral2DSimulation extends PhysicsSimulation {
     return Align(
       alignment: Alignment.center,
       child: FilterChip(
-        label: const Text('静止 (v = 0)', style: TextStyle(fontSize: 13)),
+        label: Text(animL('静止 (v = 0)', 'At rest (v = 0)'), style: TextStyle(fontSize: 13)),
         selected: _rest,
         onSelected: _setRestMode,
         selectedColor: const Color(0xFF6A1B9A).withOpacity(0.25),
@@ -355,8 +353,8 @@ class CoriolisSpiral2DSimulation extends PhysicsSimulation {
       const SizedBox(height: 6),
       Text(
         rest
-            ? '物体は地上で静止。中心の人が角速度 ω で回る（R = |y0|）'
-            : '地上では y 軸上の等速直線運動。+v は原点から遠ざかる',
+            ? animL('物体は地上で静止。中心の人が角速度 ω で回る（R = |y0|）', 'Object at rest on the ground. Person at the center rotates with angular velocity ω (R = |y0|)')
+            : animL('地上では y 軸上の等速直線運動。+v は原点から遠ざかる', 'Uniform straight-line motion along the y axis on the ground. +v is away from the origin'),
         style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
       ),
       _SpiralSlider(
@@ -373,7 +371,7 @@ class CoriolisSpiral2DSimulation extends PhysicsSimulation {
                   updateParam('v', v);
                 }
               },
-        semanticLabel: '速度 v。正は原点から遠ざかる',
+        semanticLabel: animL('速度 v。正は原点から遠ざかる', 'Velocity v. Positive is away from the origin'),
       ),
       _SpiralSlider(
         label: rest ? 'R' : 'y0',
@@ -381,7 +379,7 @@ class CoriolisSpiral2DSimulation extends PhysicsSimulation {
         min: kSpiralMinY0,
         max: kSpiralMaxY0,
         onChanged: (v) => updateParam('y0', v),
-        semanticLabel: rest ? '中心からの距離 R（y0）' : '初期位置 y0',
+        semanticLabel: rest ? animL('中心からの距離 R（y0）', 'Distance from center R (y0)') : animL('初期位置 y0', 'Initial position y0'),
       ),
       _SpiralSlider(
         label: 'ω',
@@ -389,7 +387,7 @@ class CoriolisSpiral2DSimulation extends PhysicsSimulation {
         min: kSpiralMinOmega,
         max: kSpiralMaxOmega,
         onChanged: (v) => updateParam('W', v),
-        semanticLabel: '人の角速度 ω',
+        semanticLabel: animL("人の角速度 ω", "Person's angular velocity ω"),
       ),
       _SpiralSlider(
         label: 'm',
@@ -397,20 +395,17 @@ class CoriolisSpiral2DSimulation extends PhysicsSimulation {
         min: kSpiralMinM,
         max: kSpiralMaxM,
         onChanged: (v) => updateParam('m', v),
-        semanticLabel: '質量 m',
+        semanticLabel: animL('質量 m', 'Mass m'),
       ),
       Padding(
         padding: const EdgeInsets.only(top: 4),
         child: Text(
           rest
-              ? 'R = ${frame.radius.toStringAsFixed(2)} m    '
-                  '速さ ${frame.speed.toStringAsFixed(2)} m/s（人から見た値）\n'
-                  'コリオリ ${frame.coriolis.toStringAsFixed(2)} N    '
-                  '遠心力 ${frame.centrifugal.toStringAsFixed(2)} N'
+              ? 'R = ${frame.radius.toStringAsFixed(2)} m    ' +
+                  animL('速さ ${frame.speed.toStringAsFixed(2)} m/s（人から見た値）\nコリオリ ${frame.coriolis.toStringAsFixed(2)} N    遠心力 ${frame.centrifugal.toStringAsFixed(2)} N', 'Speed ${frame.speed.toStringAsFixed(2)} m/s (as seen by the person)\nCoriolis ${frame.coriolis.toStringAsFixed(2)} N    Centrifugal ${frame.centrifugal.toStringAsFixed(2)} N')
               : 'r = ${frame.radius.toStringAsFixed(2)} m    '
-                  'θ = ${(p.omega * simTime.value).toStringAsFixed(2)} rad\n'
-                  'コリオリ ${frame.coriolis.toStringAsFixed(2)} N    '
-                  '遠心力 ${frame.centrifugal.toStringAsFixed(2)} N',
+                  'θ = ${(p.omega * simTime.value).toStringAsFixed(2)} rad\n' +
+                  animL('コリオリ ${frame.coriolis.toStringAsFixed(2)} N    遠心力 ${frame.centrifugal.toStringAsFixed(2)} N', 'Coriolis ${frame.coriolis.toStringAsFixed(2)} N    Centrifugal ${frame.centrifugal.toStringAsFixed(2)} N'),
           style: const TextStyle(fontSize: 12, fontFamily: 'Courier', color: Color(0xFF37474F)),
         ),
       ),
@@ -552,7 +547,7 @@ class _SpiralPainter extends CustomPainter {
     _text(
       canvas,
       Offset(panel.left + 8, panel.top + 6),
-      ground ? '地上（慣性系）' : '人の座標系',
+      ground ? animL('地上（慣性系）', 'Ground (inertial frame)') : animL("人の座標系", "Person's frame"),
       _ink,
       alignLeft: true,
     );
@@ -562,8 +557,8 @@ class _SpiralPainter extends CustomPainter {
       canvas,
       Offset(panel.center.dx, panel.bottom - 18),
       ground
-          ? (rest ? '止まっている。' : 'y 軸上をまっすぐ進む。')
-          : (rest ? '半径 R の円を描く。' : 'アルキメデスの螺旋を描く。'),
+          ? (rest ? animL('止まっている。', 'At rest.') : animL('y 軸上をまっすぐ進む。', 'Moving straight along the y axis.'))
+          : (rest ? animL('半径 R の円を描く。', 'Tracing a circle of radius R.') : animL('アルキメデスの螺旋を描く。', 'Tracing an Archimedean spiral.')),
       const Color(0xFF546E7A),
     );
     canvas.restore();
@@ -589,7 +584,7 @@ class _SpiralPainter extends CustomPainter {
         rotating.coriolisX,
         rotating.coriolisY,
         _coriolis,
-        'コリオリ',
+        animL('コリオリ', 'Coriolis'),
         dashed: true,
         shift: -sep,
       );
@@ -600,11 +595,11 @@ class _SpiralPainter extends CustomPainter {
         rotating.centrifugalX,
         rotating.centrifugalY,
         _centrifugal,
-        '遠心力',
+        animL('遠心力', 'Centrifugal force'),
         dashed: true,
         shift: sep,
       );
-      _vectorArrow(canvas, of, ball, rotating.vxTilde, rotating.vyTilde, 14, _velocity, '速度');
+      _vectorArrow(canvas, of, ball, rotating.vxTilde, rotating.vyTilde, 14, _velocity, animL('速度', 'Velocity'));
     }
     final nose = ground ? params.omega * lab.t : 0.0;
     canvas.drawCircle(pin, 7, Paint()..color = _person);
@@ -615,7 +610,7 @@ class _SpiralPainter extends CustomPainter {
         ..color = _person
         ..strokeWidth = 2,
     );
-    _text(canvas, pin + const Offset(0, 10), '人', _person);
+    _text(canvas, pin + Offset(0, 10), animL('人', 'Person'), _person);
     canvas.drawCircle(ball.translate(1.2, 1.4), 9, Paint()..color = Colors.black12);
     canvas.drawCircle(ball, 8, Paint()..color = _ball);
   }

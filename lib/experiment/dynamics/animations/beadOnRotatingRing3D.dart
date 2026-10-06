@@ -4,6 +4,7 @@ import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import 'package:joyphysics/experiment/dynamics/animations/arrow_screen.dart';
 import 'package:joyphysics/experiment/playback_controls.dart';
 import 'package:joyphysics/model.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 /// 鉛直直径まわりに一定角速度で回る滑らかな円環上のビーズ。
 /// 底から測った角 $\theta$ の運動方程式は
@@ -321,18 +322,15 @@ String ringBeadCaption(RingBeadParams params, {bool equilibriumMode = false}) {
   if (equilibriumMode) {
     final th = params.stableEquilibriumTheta;
     if (!params.hasObliqueEquilibrium) {
-      return '釣り合いモード：底 θ=0 に固定。円環だけ回る。\n'
-          'ω を上げると斜めつり合いへ移る。';
+      return animL('釣り合いモード：底 θ=0 に固定。円環だけ回る。\nω を上げると斜めつり合いへ移る。', 'Equilibrium mode: fixed at bottom θ=0. Only the ring rotates.\nRaising ω shifts to an oblique equilibrium.');
     }
-    return '釣り合いモード：θ=${th.toStringAsFixed(2)} rad に固定。\n'
-        '円環と一緒に回り、回転系では止まって見える。';
+    return animL('釣り合いモード：θ=${th.toStringAsFixed(2)} rad に固定。\n円環と一緒に回り、回転系では止まって見える。', 'Equilibrium mode: fixed at θ=${th.toStringAsFixed(2)} rad.\nRotates with the ring and appears at rest in the rotating frame.');
   }
   final eq = params.equilibriumTheta;
   if (eq == null) {
-    return 'ω が小さいと底が安定。ビーズは底のまわりで揺れる。';
+    return animL('ω が小さいと底が安定。ビーズは底のまわりで揺れる。', 'When ω is small, the bottom is stable. The bead oscillates about the bottom.');
   }
-  return 'ω が大きいと θ≈${eq.toStringAsFixed(2)} rad が安定。\n'
-      'そこへ向かって円環上を動く。';
+  return animL('ω が大きいと θ≈${eq.toStringAsFixed(2)} rad が安定。\nそこへ向かって円環上を動く。', 'When ω is large, θ≈${eq.toStringAsFixed(2)} rad is stable.\nIt moves along the ring toward that position.');
 }
 
 final beadOnRotatingRing3D = Video(
@@ -341,6 +339,7 @@ final beadOnRotatingRing3D = Video(
   category: 'dynamics',
   iconName: 'dynamics',
   title: '回転する円環上のビーズ',
+  titleEn: 'Bead on a rotating ring',
   videoURL: '',
   equipment: [],
   costRating: '★',
@@ -351,6 +350,14 @@ final beadOnRotatingRing3D = Video(
   <p>$$\ddot{\theta}=\sin\theta\left(\omega^{2}\cos\theta-\frac{g}{R}\right)$$</p>
   <p>真の力は重力と円環からの拘束力です。円環と一緒に回る人から見ると、円環は止まっていて、遠心力と（ビーズが動いていれば）コリオリ力も加わります。接線方向に効くのは重力と遠心力だけで、コリオリ力は面に垂直なので拘束力が受け持ち、$\theta$ の式には入りません。アニメでは両系に力を全部描きます。重力ベクトルそのものは一定です。</p>
   <p>$\omega^{2}&gt;g/R$ のとき、$\displaystyle\cos\theta=\frac{g}{\omega^{2}R}$ の位置が安定なつり合いになります。$\omega$ が小さいときは底 $\theta=0$ が安定です。</p>
+""",
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>A vertical ring rotates at constant angular speed $\omega$ about its vertical diameter. The ring is smooth, so the bead can move only along the ring. On a wide screen the views are side by side; on a narrow screen they stack. Top or left is the ground (inertial frame); bottom or right is the frame rotating with the ring.</p>
+  <p>With angle $\theta$ measured from the bottom, the equation of motion is</p>
+  <p>$$\ddot{\theta}=\sin\theta\left(\omega^{2}\cos\theta-\frac{g}{R}\right)$$</p>
+  <p>The true forces are gravity and the constraint force from the ring. In the frame rotating with the ring, the ring appears fixed, and centrifugal force and (if the bead moves) Coriolis force appear as well. Only gravity and the centrifugal force have tangential components; the Coriolis force is normal to the surface, so the constraint force balances it and it does not enter the $\theta$ equation. The animation draws all forces in both frames. The gravity vector itself is constant.</p>
+  <p>When $\omega^{2}&gt;g/R$, the position $\displaystyle\cos\theta=\frac{g}{\omega^{2}R}$ is a stable equilibrium. For small $\omega$, the bottom $\theta=0$ is stable.</p>
 """,
   experimentWidgets: [
     PhysicsSimulationView(
@@ -363,7 +370,7 @@ final beadOnRotatingRing3D = Video(
 class BeadOnRotatingRing3DSimulation extends PhysicsSimulation {
   BeadOnRotatingRing3DSimulation()
     : super(
-        title: '回転する円環上のビーズ',
+        title: animL('回転する円環上のビーズ', 'Bead on a rotating ring'),
         formula: const FormulaDisplay(
           r'\displaystyle \ddot{\theta}=\sin\theta\Bigl(\omega^{2}\cos\theta-\frac{g}{R}\Bigr)',
         ),
@@ -437,7 +444,7 @@ class BeadOnRotatingRing3DSimulation extends PhysicsSimulation {
   }
 
   @override
-  String? get situation => '鉛直直径まわりに一定角速度で回る滑らかな円環に拘束されたビーズ';
+  String? get situation => animL('鉛直直径まわりに一定角速度で回る滑らかな円環に拘束されたビーズ', 'Bead constrained to a smooth ring rotating at constant angular velocity about a vertical diameter');
 
   ValueNotifier<bool> get running => _loop.running;
 
@@ -574,8 +581,8 @@ class BeadOnRotatingRing3DSimulation extends PhysicsSimulation {
         child: Center(
           child: FormulaDisplay(
             p.hasObliqueEquilibrium
-                ? r'\displaystyle \cos\theta=\frac{g}{\omega^{2}R}\ \text{（釣り合い）}'
-                : r'\displaystyle \theta=0\ \text{（底が安定）}',
+                ? animL('\\displaystyle \\cos\\theta=\\frac{g}{\\omega^{2}R}\\ \\text{（釣り合い）}', '\\displaystyle \\cos\\theta=\\frac{g}{\\omega^{2}R}\\ \\text{(equilibrium)}')
+                : animL('\\displaystyle \\theta=0\\ \\text{（底が安定）}', '\\displaystyle \\theta=0\\ \\text{(bottom stable)}'),
           ),
         ),
       );
@@ -619,7 +626,7 @@ class BeadOnRotatingRing3DSimulation extends PhysicsSimulation {
               runSpacing: 8,
               children: [
                 FilterChip(
-                  label: const Text('釣り合い'),
+                  label: Text(animL('釣り合い', 'Equilibrium')),
                   selected: _equilibriumMode,
                   onSelected: setEquilibriumMode,
                 ),
@@ -631,7 +638,7 @@ class BeadOnRotatingRing3DSimulation extends PhysicsSimulation {
                         ? const Color(0xFF1565C0)
                         : Colors.black54,
                   ),
-                  label: const Text('真上から見る', style: TextStyle(fontSize: 12)),
+                  label: Text(animL('真上から見る', 'Top view'), style: TextStyle(fontSize: 12)),
                   selected: activeIds.contains('showWavefrontTopView'),
                   onSelected: (on) {
                     final next = Set<String>.from(activeIds);
@@ -697,8 +704,8 @@ class BeadOnRotatingRing3DSimulation extends PhysicsSimulation {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
-                '滑らかな円環・鉛直直径まわりに一定 ω',
+              Text(
+                animL('滑らかな円環・鉛直直径まわりに一定 ω', 'Smooth ring · constant ω about vertical diameter'),
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
               ),
               _RingSlider(
@@ -710,7 +717,7 @@ class BeadOnRotatingRing3DSimulation extends PhysicsSimulation {
                   _clearTrail();
                   updateParam('r', v);
                 },
-                semanticLabel: '半径 R',
+                semanticLabel: animL('半径 R', 'Radius R'),
               ),
               _RingSlider(
                 label: 'ω',
@@ -721,7 +728,7 @@ class BeadOnRotatingRing3DSimulation extends PhysicsSimulation {
                   _clearTrail();
                   updateParam('W', v);
                 },
-                semanticLabel: '角速度 ω',
+                semanticLabel: animL('角速度 ω', 'Angular velocity ω'),
               ),
               _RingSlider(
                 label: 'm',
@@ -732,7 +739,7 @@ class BeadOnRotatingRing3DSimulation extends PhysicsSimulation {
                   _clearTrail();
                   updateParam('m', v);
                 },
-                semanticLabel: '質量 m',
+                semanticLabel: animL('質量 m', 'Mass m'),
               ),
               IgnorePointer(
                 ignoring: eqLocked,
@@ -747,7 +754,7 @@ class BeadOnRotatingRing3DSimulation extends PhysicsSimulation {
                       _clearTrail();
                       updateParam('th0', v);
                     },
-                    semanticLabel: '初期角 θ0',
+                    semanticLabel: animL('初期角 θ0', 'Initial angle θ0'),
                   ),
                 ),
               ),
@@ -764,7 +771,7 @@ class BeadOnRotatingRing3DSimulation extends PhysicsSimulation {
                       _clearTrail();
                       updateParam('thd0', v);
                     },
-                    semanticLabel: '初期角速度 θドット0',
+                    semanticLabel: animL('初期角速度 θドット0', 'Initial angular velocity θ̇0'),
                   ),
                 ),
               ),
@@ -774,9 +781,9 @@ class BeadOnRotatingRing3DSimulation extends PhysicsSimulation {
                   height: 32,
                   child: Text(
                     eq == null
-                        ? 'g/R = ${(kRingG / live.r).toStringAsFixed(2)}    '
-                              'ω² = ${(live.omega * live.omega).toStringAsFixed(2)}  → 底が安定'
-                        : 'つり合い θ = ${eq.toStringAsFixed(2)} rad    '
+                        ? 'g/R = ${(kRingG / live.r).toStringAsFixed(2)}    ' +
+                              animL('ω² = ${(live.omega * live.omega).toStringAsFixed(2)}  → 底が安定', 'ω² = ${(live.omega * live.omega).toStringAsFixed(2)}  → bottom stable')
+                        : animL('つり合い θ = ${eq.toStringAsFixed(2)} rad    ', 'Equilibrium θ = ${eq.toStringAsFixed(2)} rad    ') +
                               'ω²R/g = ${(live.omega * live.omega * live.r / kRingG).toStringAsFixed(2)}',
                     style: const TextStyle(
                       fontSize: 12,
@@ -938,7 +945,7 @@ class _RingBeadPainter extends CustomPainter {
       _text(
         canvas,
         Offset(size.width - 8, 6),
-        '緑○：安定な釣り合い位置（左右対称）',
+        animL('緑○：安定な釣り合い位置（左右対称）', 'Green ○: stable equilibrium positions (left–right symmetric)'),
         _eq,
         alignRight: true,
       );
@@ -992,7 +999,7 @@ class _RingBeadPainter extends CustomPainter {
     _text(
       canvas,
       Offset(panel.left + 8, panel.top + 6),
-      ground ? '地上（慣性系）' : '円環と一緒に回る系',
+      ground ? animL('地上（慣性系）', 'Ground (inertial frame)') : animL('円環と一緒に回る系', 'Frame rotating with the ring'),
       _ink,
       alignLeft: true,
     );
@@ -1000,7 +1007,7 @@ class _RingBeadPainter extends CustomPainter {
     _text(
       canvas,
       Offset(panel.center.dx, panel.bottom - 18),
-      ground ? '真の力の合力 = ma。軌道は時間等間隔の点。' : '遠心力・コリオリ込みの合力。',
+      ground ? animL('真の力の合力 = ma。軌道は時間等間隔の点。', 'Net true force = ma. Trajectory points are equally spaced in time.') : animL('遠心力・コリオリ込みの合力。', 'Net force including centrifugal and Coriolis.'),
       _muted,
     );
     canvas.restore();
@@ -1255,21 +1262,21 @@ class _RingBeadPainter extends CustomPainter {
       final nix = f.nx * cp - f.ny * sp;
       final niy = f.nx * sp + f.ny * cp;
       final niz = f.nz;
-      drawVec(f.gx, f.gy, f.gz, _gravity, '重力');
-      drawVec(nix, niy, niz, _constraint, '拘束力');
-      drawVec(f.gx + nix, f.gy + niy, f.gz + niz, _resultant, '合力(=ma)');
+      drawVec(f.gx, f.gy, f.gz, _gravity, animL('重力', 'Gravity'));
+      drawVec(nix, niy, niz, _constraint, animL('拘束力', 'Constraint force'));
+      drawVec(f.gx + nix, f.gy + niy, f.gz + niz, _resultant, animL('合力(=ma)', 'Net force (=ma)'));
     } else {
       // 回転系: 重力・遠心力・コリオリ・拘束力。
-      drawVec(f.gx, f.gy, f.gz, _gravity, '重力');
-      drawVec(f.cfx, f.cfy, f.cfz, _centrifugal, '遠心力', dashed: true);
-      drawVec(f.cox, f.coy, f.coz, _coriolis, 'コリオリ', dashed: true);
-      drawVec(f.nx, f.ny, f.nz, _constraint, '拘束力');
+      drawVec(f.gx, f.gy, f.gz, _gravity, animL('重力', 'Gravity'));
+      drawVec(f.cfx, f.cfy, f.cfz, _centrifugal, animL('遠心力', 'Centrifugal force'), dashed: true);
+      drawVec(f.cox, f.coy, f.coz, _coriolis, animL('コリオリ', 'Coriolis'), dashed: true);
+      drawVec(f.nx, f.ny, f.nz, _constraint, animL('拘束力', 'Constraint force'));
       drawVec(
         f.gx + f.nx + f.cfx + f.cox,
         f.gy + f.ny + f.cfy + f.coy,
         f.gz + f.nz + f.cfz + f.coz,
         _resultant,
-        '合力',
+        animL('合力', 'Net force'),
       );
     }
   }

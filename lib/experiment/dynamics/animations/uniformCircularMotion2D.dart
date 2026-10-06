@@ -4,6 +4,7 @@ import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import 'package:joyphysics/experiment/dynamics/animations/energy_gauge.dart';
 import 'package:joyphysics/experiment/playback_controls.dart';
 import 'package:joyphysics/model.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 /// 水平面上の等速円運動。質量は $1\,\mathrm{kg}$。再生だけ遅くする。
 const double kCircularMass = 1.0;
@@ -80,8 +81,7 @@ CircularSample circularAt(CircularParams params, double t) {
 }
 
 String circularCaption() {
-  return '水平面上、摩擦なし。働く力は紐の張力だけ。\n'
-      '速さは一定。速度は接線、張力は中心向き。';
+  return animL('水平面上、摩擦なし。働く力は紐の張力だけ。\n速さは一定。速度は接線、張力は中心向き。', 'Horizontal plane, no friction. The only force is string tension.\nSpeed is constant. Velocity is tangential; tension is toward the center.');
 }
 
 List<CircularSample> circularStrobe(
@@ -104,6 +104,7 @@ final uniformCircularMotion2D = Video(
   category: 'dynamics',
   iconName: 'dynamics',
   title: '等速円運動',
+  titleEn: 'Uniform circular motion',
   videoURL: '',
   equipment: [],
   costRating: '★',
@@ -116,6 +117,15 @@ final uniformCircularMotion2D = Video(
   <p>$$\displaystyle a=\frac{v^{2}}{R},\quad F=m\frac{v^{2}}{R}$$</p>
   <p>加速度の向きは中心向きで、速度は常に接線方向です。速さは一定のまま、向きだけが変わります。</p>
 """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>On a horizontal table, a ball on an inextensible string tied to a pin moves in uniform circular motion with no friction. The only force acting is tension.</p>
+  <p>$$\displaystyle x=R\cos\omega t,\quad y=R\sin\omega t$$</p>
+  <p>$$\displaystyle \omega=\frac{v}{R},\quad T=\frac{2\pi R}{v}$$</p>
+  <p>The magnitudes of the centripetal acceleration and tension are</p>
+  <p>$$\displaystyle a=\frac{v^{2}}{R},\quad F=m\frac{v^{2}}{R}$$</p>
+  <p>Acceleration points toward the center; velocity is always tangential. Speed stays constant; only the direction changes.</p>
+""",
   experimentWidgets: [
     PhysicsSimulationView(
       simulation: UniformCircularMotion2DSimulation(),
@@ -127,7 +137,7 @@ final uniformCircularMotion2D = Video(
 class UniformCircularMotion2DSimulation extends PhysicsSimulation {
   UniformCircularMotion2DSimulation()
       : super(
-          title: '等速円運動',
+          title: animL('等速円運動', 'Uniform circular motion'),
           formula: const FormulaDisplay(
             r'\displaystyle a=\frac{v^{2}}{R},\quad T=\frac{2\pi R}{v}',
           ),
@@ -225,8 +235,8 @@ class UniformCircularMotion2DSimulation extends PhysicsSimulation {
     _rememberParams(parameters);
     final p = _params;
     return [
-      const Text(
-        '初期条件（m = 1 kg、水平面、摩擦なし）',
+      Text(
+        animL('初期条件（m = 1 kg、水平面、摩擦なし）', 'Initial conditions (m = 1 kg, horizontal plane, no friction)'),
         style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
       ),
       _CircularSlider(
@@ -235,7 +245,7 @@ class UniformCircularMotion2DSimulation extends PhysicsSimulation {
         min: kCircularMinR,
         max: kCircularMaxR,
         onChanged: (v) => updateParam('r', v),
-        semanticLabel: '半径 R',
+        semanticLabel: animL('半径 R', 'Radius R'),
       ),
       _CircularSlider(
         label: 'v',
@@ -243,14 +253,12 @@ class UniformCircularMotion2DSimulation extends PhysicsSimulation {
         min: kCircularMinV,
         max: kCircularMaxV,
         onChanged: (v) => updateParam('v', v),
-        semanticLabel: '速さ v',
+        semanticLabel: animL('速さ v', 'Speed v'),
       ),
       Padding(
         padding: const EdgeInsets.only(top: 4),
         child: Text(
-          '周期 ${p.period.toStringAsFixed(2)} s    '
-          '加速度 ${p.centripetalAccel.toStringAsFixed(2)} m/s²    '
-          '張力(向心力) ${p.tension.toStringAsFixed(2)} N',
+          animL('周期 ${p.period.toStringAsFixed(2)} s    加速度 ${p.centripetalAccel.toStringAsFixed(2)} m/s²    張力(向心力) ${p.tension.toStringAsFixed(2)} N', 'Period ${p.period.toStringAsFixed(2)} s    Acceleration ${p.centripetalAccel.toStringAsFixed(2)} m/s²    Tension (centripetal) ${p.tension.toStringAsFixed(2)} N'),
           style: const TextStyle(
             fontSize: 12,
             fontFamily: 'Courier',
@@ -481,7 +489,7 @@ class _CircularPainter extends CustomPainter {
     if (pinLen > 8) {
       final tensionLen =
           (params.tension * map.pxPerForce).clamp(4.0, pinLen * 0.72);
-      _arrow(canvas, c, toPin / pinLen, tensionLen, _force, '張力(向心力)');
+      _arrow(canvas, c, toPin / pinLen, tensionLen, _force, animL('張力(向心力)', 'Tension (centripetal)'));
     }
     final ahead = map.of(
       sample.x + sample.vx * 0.05,

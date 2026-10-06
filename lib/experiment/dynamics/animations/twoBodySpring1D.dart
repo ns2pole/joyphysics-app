@@ -4,6 +4,7 @@ import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import 'package:joyphysics/experiment/dynamics/animations/energy_gauge.dart';
 import 'package:joyphysics/experiment/playback_controls.dart';
 import 'package:joyphysics/model.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 final twoBodySpring1D = Video(
   isNew: false,
@@ -11,6 +12,7 @@ final twoBodySpring1D = Video(
   category: 'dynamics',
   iconName: 'dynamics',
   title: '2体問題(ばね・1次元)',
+  titleEn: 'Two-body problem (spring, 1D)',
   videoURL: '',
   equipment: [],
   costRating: '★',
@@ -30,6 +32,22 @@ final twoBodySpring1D = Video(
   <p>$$x_2(t)=R_G(t)+\frac{m_1}{m_1+m_2}R(t)$$</p>
   <p>質点が交差しない条件は、振幅 $A=\sqrt{(R(0)-\ell)^2+\Biggl(\frac{\dot R(0)}{\omega}\Biggr)^2}$ に対して $A<\ell$（すなわち $R_{\min}=\ell-A>0$）である。</p>
   """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>Two masses linked by a spring with no external force: the center of mass moves at constant velocity, and the relative motion is simple harmonic motion of the reduced mass.</p>
+  <p>$$\mu = \frac{m_1 m_2}{m_1+m_2}$$</p>
+  <p>$$\mu\,\ddot R = -k(R-\ell)$$</p>
+  <p>$$\omega=\sqrt{\frac{k}{\mu}}$$</p>
+  <p>The exact solution for the relative coordinate $R=x_2-x_1$ is</p>
+  <p>$$\begin{aligned}
+  R(t)&=\ell+(R(0)-\ell)\cos\omega t\\
+  &\quad+\frac{\dot R(0)}{\omega}\sin\omega t
+  \end{aligned}$$</p>
+  <p>Each mass position follows from the center of mass $R_G(t)=R_G(0)+V_G t$:</p>
+  <p>$$x_1(t)=R_G(t)-\frac{m_2}{m_1+m_2}R(t)$$</p>
+  <p>$$x_2(t)=R_G(t)+\frac{m_1}{m_1+m_2}R(t)$$</p>
+  <p>The masses do not cross when the amplitude $A=\sqrt{(R(0)-\ell)^2+\Biggl(\frac{\dot R(0)}{\omega}\Biggr)^2}$ satisfies $A<\ell$ (that is, $R_{\min}=\ell-A>0$).</p>
+""",
   experimentWidgets: [
     PhysicsSimulationView(
       simulation: TwoBodySpring1DSimulation(),
@@ -306,7 +324,7 @@ TwoBodySpring1DSnapshot evolveTwoBodySpring1D(
 class TwoBodySpring1DSimulation extends PhysicsSimulation {
   TwoBodySpring1DSimulation()
       : super(
-          title: '2体問題(ばね・1次元)',
+          title: animL('2体問題(ばね・1次元)', 'Two-body problem (spring, 1D)'),
           formula: const FormulaDisplay(
             r'\displaystyle \mu\ddot{R}=-k(R-\ell),\quad R=x_2-x_1',
           ),
@@ -458,25 +476,25 @@ class TwoBodySpring1DSimulation extends PhysicsSimulation {
                   onPressed: isRunning
                       ? null
                       : () => applyPreset(TwoBodySpring1DPreset.far),
-                  child: const Text('遠ざけて配置'),
+                  child: Text(animL('遠ざけて配置', 'Place farther apart')),
                 ),
                 OutlinedButton(
                   onPressed: isRunning
                       ? null
                       : () => applyPreset(TwoBodySpring1DPreset.close),
-                  child: const Text('近づけて配置'),
+                  child: Text(animL('近づけて配置', 'Place closer together')),
                 ),
                 OutlinedButton(
                   onPressed: isRunning
                       ? null
                       : () => applyPreset(TwoBodySpring1DPreset.rightVelocity),
-                  child: const Text('右のみ初速あり'),
+                  child: Text(animL('右のみ初速あり', 'Initial velocity on right only')),
                 ),
                 OutlinedButton(
                   onPressed: isRunning
                       ? null
                       : () => applyPreset(TwoBodySpring1DPreset.leftVelocity),
-                  child: const Text('左のみ初速あり'),
+                  child: Text(animL('左のみ初速あり', 'Initial velocity on left only')),
                 ),
               ],
             ),
@@ -484,7 +502,7 @@ class TwoBodySpring1DSimulation extends PhysicsSimulation {
             OutlinedButton.icon(
               onPressed: resetAllParameters,
               icon: const Icon(Icons.restart_alt),
-              label: const Text('全パラメータ初期化'),
+              label: Text(animL('全パラメータ初期化', 'Reset all parameters')),
             ),
           ],
         );
@@ -509,8 +527,8 @@ class TwoBodySpring1DSimulation extends PhysicsSimulation {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
-                '初期条件',
+              Text(
+                animL('初期条件', 'Initial conditions'),
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
               ),
               _IcSlider(
@@ -546,8 +564,8 @@ class TwoBodySpring1DSimulation extends PhysicsSimulation {
                 semanticLabel: 'v2',
               ),
               const Divider(),
-              const Text(
-                '質量・ばね',
+              Text(
+                animL('質量・ばね', 'Masses and spring'),
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
               ),
               _IcSlider(
@@ -583,11 +601,11 @@ class TwoBodySpring1DSimulation extends PhysicsSimulation {
                 semanticLabel: 'ell',
               ),
               if (_frozen != null)
-                const Padding(
-                  padding: EdgeInsets.only(top: 6),
+                Padding(
+                  padding: const EdgeInsets.only(top: 6),
                   child: Text(
-                    '再生中と一時停止中は初期条件をロックしています。リセット後に変更できます。',
-                    style: TextStyle(fontSize: 11, color: Color(0xFF546E7A)),
+                    animL('再生中と一時停止中は初期条件をロックしています。リセット後に変更できます。', 'Initial conditions are locked while playing or paused. Change them after reset.'),
+                    style: const TextStyle(fontSize: 11, color: Color(0xFF546E7A)),
                   ),
                 ),
             ],
@@ -748,7 +766,7 @@ double twoBodySpringRailY(
       'x1 = ${snapshot.x1.toStringAsFixed(2)}   v1 = ${snapshot.v1.toStringAsFixed(2)}\n'
       'x2 = ${snapshot.x2.toStringAsFixed(2)}   v2 = ${snapshot.v2.toStringAsFixed(2)}\n'
       'R = ${snapshot.r.toStringAsFixed(2)}   RG = ${snapshot.rg.toStringAsFixed(2)}\n'
-      '${running ? '運動中' : '初期条件を設定して Start'}';
+      "${running ? animL('運動中', 'In motion') : animL('初期条件を設定して Start', 'Set initial conditions, then Start')}";
   final clear = dynamicsReadoutCard(
     readout,
     twoBodySpringEnergy(ics, snapshot),
@@ -859,8 +877,8 @@ class _TwoBodySpring1DPainter extends CustomPainter {
         ..strokeWidth = 1.4,
     );
     final tp = TextPainter(
-      text: const TextSpan(
-        text: '重心',
+      text: TextSpan(
+        text: animL('重心', 'Center of mass'),
         style: TextStyle(
           color: _cm,
           fontSize: 12,
@@ -974,7 +992,7 @@ class _TwoBodySpring1DPainter extends CustomPainter {
         'x1 = ${snapshot.x1.toStringAsFixed(2)}   v1 = ${snapshot.v1.toStringAsFixed(2)}\n'
         'x2 = ${snapshot.x2.toStringAsFixed(2)}   v2 = ${snapshot.v2.toStringAsFixed(2)}\n'
         'R = ${snapshot.r.toStringAsFixed(2)}   RG = ${snapshot.rg.toStringAsFixed(2)}\n'
-        '${running ? '運動中' : '初期条件を設定して Start'}';
+        "${running ? animL('運動中', 'In motion') : animL('初期条件を設定して Start', 'Set initial conditions, then Start')}";
     paintDynamicsReadout(
       canvas,
       readout,

@@ -5,6 +5,7 @@ import 'package:joyphysics/experiment/dynamics/animations/energy_gauge.dart';
 import 'package:joyphysics/experiment/playback_controls.dart';
 import 'package:joyphysics/model.dart';
 import 'projectileMotion2D.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 /// 上向き正。$g=9.8\,\mathrm{m/s^2}$ 固定。地面で $v'=-ev$。
 const double kBounceG = 9.8;
@@ -227,27 +228,16 @@ List<BounceLeg> bounce2DLegs(double deg, double v0, double e, {double h = 0}) {
 String bounce1DCaption(Bounce1DKind kind) {
   switch (kind) {
     case Bounce1DKind.freeFall:
-      return '高さ H から静かに放す。初速度は 0。\n'
-          '落ちているあいだの加速度は g。\n'
-          '跳ね返った直後の上向きの速さは、着く直前の e 倍。\n'
-          '次に上がる高さは e² 倍。e = 0 なら着いたら止まり、e = 1 なら高さが戻る。';
+      return animL('高さ H から静かに放す。初速度は 0。\n落ちているあいだの加速度は g。\n跳ね返った直後の上向きの速さは、着く直前の e 倍。\n次に上がる高さは e² 倍。e = 0 なら着いたら止まり、e = 1 なら高さが戻る。', 'Released from rest from height H. Initial speed is 0.\nWhile falling, the acceleration is g.\nJust after bounce, the upward speed is e times the speed just before impact.\nThe next height reached is e² times. If e = 0 it stops on impact; if e = 1 the height is restored.');
     case Bounce1DKind.throwUp:
-      return '上向きに投げる。最高点では速度は 0 でも、重力は残る。\n'
-          '下降中に地面に着くと、上向きの速さは着く直前の e 倍。\n'
-          '次に上がる高さは e² 倍。e = 0 なら着いたら止まり、e = 1 なら高さが戻る。';
+      return animL('上向きに投げる。最高点では速度は 0 でも、重力は残る。\n下降中に地面に着くと、上向きの速さは着く直前の e 倍。\n次に上がる高さは e² 倍。e = 0 なら着いたら止まり、e = 1 なら高さが戻る。', 'Thrown upward. At the highest point the velocity is 0, but gravity remains.\nOn hitting the ground while descending, the upward speed becomes e times the speed just before impact.\nThe next height reached is e² times. If e = 0 it stops on impact; if e = 1 the height is restored.');
     case Bounce1DKind.throwDown:
-      return '高さ H から下向きに投げる。\n'
-          '下向きの初速度があるぶん、着く直前の速さは大きい。\n'
-          '跳ね返った直後の上向きの速さは、着く直前の e 倍。\n'
-          '上がる高さは着く直前の速さで決まる。e = 1 でも出した高さより高くなる。';
+      return animL('高さ H から下向きに投げる。\n下向きの初速度があるぶん、着く直前の速さは大きい。\n跳ね返った直後の上向きの速さは、着く直前の e 倍。\n上がる高さは着く直前の速さで決まる。e = 1 でも出した高さより高くなる。', 'Thrown downward from height H.\nBecause of the downward initial speed, the speed just before impact is larger.\nJust after bounce, the upward speed is e times the speed just before impact.\nThe rebound height is set by the speed just before impact. Even with e = 1 it rises higher than the release height.');
   }
 }
 
 String bounce2DCaption() {
-  return '水平速度は一定。鉛直速度だけが重力で変わる。\n'
-      'θ は水平から。正は上向き、負は下向き。\n'
-      '着地すると vy だけが -e 倍になる。vx はそのまま。\n'
-      '上向き・水平では山の高さが e² 倍。下向きでは e = 1 でも出した高さより高く上がる。';
+  return animL('水平速度は一定。鉛直速度だけが重力で変わる。\nθ は水平から。正は上向き、負は下向き。\n着地すると vy だけが -e 倍になる。vx はそのまま。\n上向き・水平では山の高さが e² 倍。下向きでは e = 1 でも出した高さより高く上がる。', 'Horizontal velocity is constant. Only the vertical velocity changes due to gravity.\nθ is measured from the horizontal. Positive is upward, negative is downward.\nOn landing, only vy becomes −e times. vx stays the same.\nFor upward or horizontal launch, peak height scales by e². For downward launch, even with e = 1 it rises higher than the release height.');
 }
 
 final bounce1D = Video(
@@ -256,6 +246,7 @@ final bounce1D = Video(
   category: 'dynamics',
   iconName: 'dynamics',
   title: '跳ね返り1次元',
+  titleEn: 'Bounce 1D',
   videoURL: '',
   equipment: [],
   costRating: '★',
@@ -266,6 +257,14 @@ final bounce1D = Video(
   <p>自由落下で高さ $H$ から落とすと、次に上がる高さは</p>
   <p>$$\displaystyle H'=e^{2}H$$</p>
   <p>落ちているあいだの加速度は、投げ上げでも投げ下げでも下向きの $g$ のままです。</p>
+""",
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>Let the velocity just before hitting the ground be $v$, and just after be $v'$. With coefficient of restitution $e$ ($0\le e\le 1$),</p>
+  <p>$$\displaystyle v'=-ev$$</p>
+  <p>In free fall from height $H$, the next peak height is</p>
+  <p>$$\displaystyle H'=e^{2}H$$</p>
+  <p>While falling, the acceleration remains downward $g$, whether thrown upward or downward.</p>
 """,
   experimentWidgets: [
     PhysicsSimulationView(
@@ -281,6 +280,7 @@ final bounce2D = Video(
   category: 'dynamics',
   iconName: 'dynamics',
   title: '跳ね返り2次元',
+  titleEn: 'Bounce 2D',
   videoURL: '',
   equipment: [],
   costRating: '★',
@@ -289,6 +289,12 @@ final bounce2D = Video(
   <p>なめらかな水平な地面では、水平方向の速度は着地でも変わりません。鉛直方向だけが跳ね返り係数 $e$ で折り返します。</p>
   <p>$$\displaystyle v_x'=v_x,\quad v_y'=-ev_y$$</p>
   <p>高さ $h$ の高台から角度 $\theta$、速さ $v_0$ で投げます。$\theta$ は上向きが正、下向きが負です。地面に着く直前の鉛直方向の速さを $v_y$ とすると、跳ね返ったあとの山の高さは $\displaystyle H=\frac{(ev_y)^{2}}{2g}$ です。$\theta\ge 0$ なら、これは直前の山の $e^{2}$ 倍です。下向き（$\theta<0$）では着く直前の速さが大きいので、$e=1$ でも山は出した高さより高くなります。</p>
+""",
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>On a smooth horizontal ground, the horizontal velocity does not change on landing. Only the vertical component reverses with coefficient of restitution $e$.</p>
+  <p>$$\displaystyle v_x'=v_x,\quad v_y'=-ev_y$$</p>
+  <p>Launch from a platform of height $h$ at angle $\theta$ and speed $v_0$. $\theta$ is positive upward and negative downward. If the vertical speed just before impact is $v_y$, the peak height after the bounce is $\displaystyle H=\frac{(ev_y)^{2}}{2g}$. For $\theta\ge 0$, this is $e^{2}$ times the previous peak. For a downward launch ($\theta<0$), the speed just before impact is larger, so even with $e=1$ the next peak can exceed the launch height.</p>
 """,
   experimentWidgets: [
     PhysicsSimulationView(
@@ -301,7 +307,7 @@ final bounce2D = Video(
 class Bounce1DSimulation extends PhysicsSimulation {
   Bounce1DSimulation()
       : super(
-          title: '跳ね返り1次元',
+          title: animL('跳ね返り1次元', 'Bounce 1D'),
           formula: const FormulaDisplay(r'\displaystyle v^{\prime}=-ev'),
           aspectRatio: 4 / 5,
           enableTime: false,
@@ -403,9 +409,9 @@ class Bounce1DSimulation extends PhysicsSimulation {
 
   Widget _kindButton(Bounce1DKind kind, void Function(Set<String> ids) updateActiveIds) {
     final label = switch (kind) {
-      Bounce1DKind.freeFall => '自由落下',
-      Bounce1DKind.throwUp => '鉛直投げ上げ',
-      Bounce1DKind.throwDown => '鉛直投げ下げ',
+      Bounce1DKind.freeFall => animL('自由落下', 'Free fall'),
+      Bounce1DKind.throwUp => animL('鉛直投げ上げ', 'Vertical throw upward'),
+      Bounce1DKind.throwDown => animL('鉛直投げ下げ', 'Vertical throw downward'),
     };
     final selected = _kind == kind;
     final onPressed = () {
@@ -424,14 +430,14 @@ class Bounce1DSimulation extends PhysicsSimulation {
   ) {
     _remember(parameters);
     return [
-      const Text('初期条件（g = 9.8 m/s²）', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+      Text(animL('初期条件（g = 9.8 m/s²）', 'Initial conditions (g = 9.8 m/s²)'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
       _BounceSlider(
         label: 'H',
         value: _h,
         min: kBounceMinH,
         max: kBounceMaxH,
         onChanged: (v) => updateParam('h', v),
-        semanticLabel: '高さ H',
+        semanticLabel: animL('高さ H', 'Height H'),
       ),
       if (_kind != Bounce1DKind.freeFall)
         _BounceSlider(
@@ -440,7 +446,7 @@ class Bounce1DSimulation extends PhysicsSimulation {
           min: kBounceMinV,
           max: kBounceMaxV,
           onChanged: (v) => updateParam('v', v),
-          semanticLabel: '初速度 v',
+          semanticLabel: animL('初速度 v', 'Initial speed v'),
         ),
       _BounceSlider(
         label: 'e',
@@ -448,7 +454,7 @@ class Bounce1DSimulation extends PhysicsSimulation {
         min: kBounceMinE,
         max: kBounceMaxE,
         onChanged: (v) => updateParam('e', v),
-        semanticLabel: '跳ね返り係数 e',
+        semanticLabel: animL('跳ね返り係数 e', 'Coefficient of restitution e'),
       ),
     ];
   }
@@ -491,7 +497,7 @@ class Bounce1DSimulation extends PhysicsSimulation {
 class Bounce2DSimulation extends PhysicsSimulation {
   Bounce2DSimulation()
       : super(
-          title: '跳ね返り2次元',
+          title: animL('跳ね返り2次元', 'Bounce 2D'),
           formula: const FormulaDisplay(
             r'\displaystyle v_x^{\prime}=v_x,\quad v_y^{\prime}=-ev_y',
           ),
@@ -590,14 +596,14 @@ class Bounce2DSimulation extends PhysicsSimulation {
   ) {
     _remember(parameters);
     return [
-      const Text('初期条件（g = 9.8 m/s²）', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+      Text(animL('初期条件（g = 9.8 m/s²）', 'Initial conditions (g = 9.8 m/s²)'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
       _BounceSlider(
         label: 'v0',
         value: _v0,
         min: kProjectileMinV0,
         max: kProjectileMaxV0,
         onChanged: (v) => updateParam('v0', v),
-        semanticLabel: '初速度 v0',
+        semanticLabel: animL('初速度 v0', 'Initial speed v0'),
       ),
       _BounceSlider(
         label: 'h',
@@ -605,7 +611,7 @@ class Bounce2DSimulation extends PhysicsSimulation {
         min: kProjectileMinH,
         max: kProjectileMaxH,
         onChanged: (v) => updateParam('h', v),
-        semanticLabel: '高台の高さ h',
+        semanticLabel: animL('高台の高さ h', 'Platform height h'),
       ),
       _BounceSlider(
         label: 'θ',
@@ -613,7 +619,7 @@ class Bounce2DSimulation extends PhysicsSimulation {
         min: kProjectileMinDeg,
         max: kProjectileMaxDeg,
         onChanged: (v) => updateParam('deg', v),
-        semanticLabel: '投射角 θ',
+        semanticLabel: animL('投射角 θ', 'Launch angle θ'),
         fractionDigits: 0,
         suffix: '°',
       ),
@@ -623,7 +629,7 @@ class Bounce2DSimulation extends PhysicsSimulation {
         min: kBounceMinE,
         max: kBounceMaxE,
         onChanged: (v) => updateParam('e', v),
-        semanticLabel: '跳ね返り係数 e',
+        semanticLabel: animL('跳ね返り係数 e', 'Coefficient of restitution e'),
       ),
     ];
   }
@@ -774,7 +780,7 @@ class _Bounce1DPainter extends CustomPainter {
     }
     final c = Offset(x, yOf(sample.y));
     canvas.drawCircle(c, 11, Paint()..color = _ball);
-    _arrow(canvas, c + const Offset(-16, 0), const Offset(0, 1), 48, _force, '重力');
+    _arrow(canvas, c + Offset(-16, 0), Offset(0, 1), 48, _force, animL('重力', 'Gravity'));
     if (sample.vy.abs() > 0.35) {
       final dir = sample.vy >= 0 ? const Offset(0, -1) : const Offset(0, 1);
       _arrow(
@@ -874,8 +880,8 @@ class _Bounce2DPainter extends CustomPainter {
         ..strokeWidth = 3,
     );
     final platformLabel = TextPainter(
-      text: const TextSpan(
-        text: '高台',
+      text: TextSpan(
+        text: animL('高台', 'Platform'),
         style: TextStyle(color: _ground, fontSize: 11, fontWeight: FontWeight.w800),
       ),
       textDirection: TextDirection.ltr,

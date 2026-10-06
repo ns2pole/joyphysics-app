@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import 'package:joyphysics/experiment/playback_controls.dart';
 import 'package:joyphysics/model.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 /// 水平面上の等速円運動を、中心から一緒に回る座標系で見る。
 const double kCentrifugalMinR = 0.60;
@@ -109,9 +110,7 @@ CentrifugalRotatingSample centrifugalRotatingAt(CentrifugalParams params) {
 }
 
 String centrifugalCaption() {
-  return '中心の人はボールと同じ角速度で回る。\n'
-      '地上では張力が向心力。\n'
-      '人から見るとボールは静止し、張力と遠心力がつり合う。';
+  return animL("中心の人はボールと同じ角速度で回る。\n地上では張力が向心力。\n人から見るとボールは静止し、張力と遠心力がつり合う。", "The person at the center rotates at the same angular velocity as the ball.\nOn the ground, tension is the centripetal force.\nFrom the person's view the ball is at rest, and tension balances the centrifugal force.");
 }
 
 final centrifugalForce2D = Video(
@@ -120,6 +119,7 @@ final centrifugalForce2D = Video(
   category: 'dynamics',
   iconName: 'dynamics',
   title: '遠心力',
+  titleEn: 'Centrifugal force',
   videoURL: '',
   equipment: [],
   costRating: '★',
@@ -129,6 +129,13 @@ final centrifugalForce2D = Video(
   <p>地上から見ると働く力は張力だけで、</p>
   <p>$$T=m\frac{v^{2}}{R}=m\omega^{2}R$$</p>
   <p>人の角速度はボールと同じです。人から見るとボールは止まっていて、この座標系での速度は $0$ です。外向きの遠心力 $\displaystyle m\omega^{2}R$ と張力がつり合います。床の模様は地上に固定されているので、人の座標系では逆向きに回ります。</p>
+""",
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>On a horizontal table, a ball on an inextensible string tied to a pin moves in uniform circular motion without friction. On a wide screen the views are side by side; on a narrow screen they are stacked. Top or left is the lab frame; bottom or right is the frame of a person rotating with the ball about the center.</p>
+  <p>In the lab frame the only force is tension,</p>
+  <p>$$T=m\frac{v^{2}}{R}=m\omega^{2}R$$</p>
+  <p>The person's angular velocity matches the ball's. Relative to the person the ball is at rest, so the velocity in this frame is $0$. The outward centrifugal force $\displaystyle m\omega^{2}R$ balances the tension. Floor markings are fixed in the lab, so in the rotating frame they appear to turn the opposite way.</p>
 """,
   experimentWidgets: [
     PhysicsSimulationView(
@@ -141,7 +148,7 @@ final centrifugalForce2D = Video(
 class CentrifugalForce2DSimulation extends PhysicsSimulation {
   CentrifugalForce2DSimulation()
       : super(
-          title: '遠心力',
+          title: animL('遠心力', 'Centrifugal force'),
           formula: const FormulaDisplay(
             r'\displaystyle T=m\frac{v^{2}}{R}',
           ),
@@ -158,7 +165,7 @@ class CentrifugalForce2DSimulation extends PhysicsSimulation {
 
   @override
   String? get situation =>
-      '慣性系で見ると、水平な面上で紐につながれて等速円運動している物体';
+      animL('慣性系で見ると、水平な面上で紐につながれて等速円運動している物体', 'In the inertial frame: an object in uniform circular motion on a horizontal surface, connected by a string');
 
   ValueNotifier<bool> get running => _loop.running;
 
@@ -249,8 +256,8 @@ class CentrifugalForce2DSimulation extends PhysicsSimulation {
     _rememberParams(parameters);
     final p = _params;
     return [
-      const Text(
-        '水平面、摩擦なし。人はボールと同じ角速度',
+      Text(
+        animL('水平面、摩擦なし。人はボールと同じ角速度', 'Horizontal plane, no friction. Person has the same angular velocity as the ball'),
         style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
       ),
       _CentrifugalSlider(
@@ -259,7 +266,7 @@ class CentrifugalForce2DSimulation extends PhysicsSimulation {
         min: kCentrifugalMinR,
         max: kCentrifugalMaxR,
         onChanged: (v) => updateParam('r', v),
-        semanticLabel: '半径 R',
+        semanticLabel: animL('半径 R', 'Radius R'),
       ),
       _CentrifugalSlider(
         label: 'v',
@@ -267,7 +274,7 @@ class CentrifugalForce2DSimulation extends PhysicsSimulation {
         min: kCentrifugalMinV,
         max: kCentrifugalMaxV,
         onChanged: (v) => updateParam('v', v),
-        semanticLabel: '速さ v',
+        semanticLabel: animL('速さ v', 'Speed v'),
       ),
       _CentrifugalSlider(
         label: 'm',
@@ -275,13 +282,13 @@ class CentrifugalForce2DSimulation extends PhysicsSimulation {
         min: kCentrifugalMinM,
         max: kCentrifugalMaxM,
         onChanged: (v) => updateParam('m', v),
-        semanticLabel: '質量 m',
+        semanticLabel: animL('質量 m', 'Mass m'),
       ),
       Padding(
         padding: const EdgeInsets.only(top: 4),
         child: Text(
-          'ω = ${p.omega.toStringAsFixed(2)} rad/s    '
-          'T = 遠心力 = ${p.tension.toStringAsFixed(2)} N',
+          'ω = ${p.omega.toStringAsFixed(2)} rad/s    ' +
+          animL('T = 遠心力 = ${p.tension.toStringAsFixed(2)} N', 'T = centrifugal force = ${p.tension.toStringAsFixed(2)} N'),
           style: const TextStyle(
             fontSize: 12,
             fontFamily: 'Courier',
@@ -442,7 +449,7 @@ class _CentrifugalPainter extends CustomPainter {
     _text(
       canvas,
       Offset(panel.left + 8, panel.top + 6),
-      ground ? '地上（慣性系）' : '人の座標系',
+      ground ? animL('地上（慣性系）', 'Ground (inertial frame)') : animL("人の座標系", "Person's frame"),
       _ink,
       alignLeft: true,
     );
@@ -450,7 +457,7 @@ class _CentrifugalPainter extends CustomPainter {
     _text(
       canvas,
       Offset(panel.center.dx, panel.bottom - 18),
-      ground ? '張力が向心力になる。' : '張力と遠心力がつり合う。',
+      ground ? animL('張力が向心力になる。', 'Tension acts as the centripetal force.') : animL('張力と遠心力がつり合う。', 'Tension balances the centrifugal force.'),
       const Color(0xFF546E7A),
     );
     canvas.restore();
@@ -513,13 +520,13 @@ class _CentrifugalPainter extends CustomPainter {
         radialIndex++;
       }
 
-      radialArrow(inward, forcePx(params.tension), _tension, '張力');
+      radialArrow(inward, forcePx(params.tension), _tension, animL('張力', 'Tension'));
       if (!ground) {
         radialArrow(
           -inward,
           forcePx(params.centrifugal),
           _centrifugal,
-          '遠心力',
+          animL('遠心力', 'Centrifugal force'),
           dashed: true,
         );
       }
@@ -543,7 +550,7 @@ class _CentrifugalPainter extends CustomPainter {
     }
 
     canvas.drawCircle(pin, 7, Paint()..color = _person);
-    _text(canvas, pin + const Offset(0, 10), '人', _person);
+    _text(canvas, pin + Offset(0, 10), animL('人', 'Person'), _person);
     canvas.drawCircle(ball.translate(1.2, 1.4), 9, Paint()..color = Colors.black12);
     canvas.drawCircle(ball, 8, Paint()..color = _ball);
     canvas.drawCircle(pin, 4.5, Paint()..color = _pin);

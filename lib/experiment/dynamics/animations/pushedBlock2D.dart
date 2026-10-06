@@ -9,6 +9,7 @@ import 'package:joyphysics/experiment/dynamics/animations/pushedBlock/pushed_blo
 import 'package:joyphysics/experiment/dynamics/animations/pushedBlock/pushed_block_tipping.dart';
 import 'package:joyphysics/experiment/playback_controls.dart';
 import 'package:joyphysics/model.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 export 'pushedBlock/pushed_block_params.dart';
 export 'pushedBlock/pushed_block_statics.dart';
@@ -17,10 +18,8 @@ export 'pushedBlock/pushed_block_tipping.dart';
 export 'pushedBlock/pushed_block_pipeline.dart';
 export 'pushedBlock/pushed_block_runtime.dart';
 
-const String kPushedBlockCaption =
-    '粗い床の直方体を一定の水平力 F で押す。\n'
-    '押し高で滑り／転倒が分かれる。静止を外すと自動で動き出す。\n'
-    '転倒中、手が高さ h を外れると F=0。画面外・転倒完了では止まり、「最初から」で戻る。';
+String kPushedBlockCaption =
+    animL('粗い床の直方体を一定の水平力 F で押す。\n押し高で滑り／転倒が分かれる。静止を外すと自動で動き出す。\n転倒中、手が高さ h を外れると F=0。画面外・転倒完了では止まり、「最初から」で戻る。', 'Push a rectangular block on a rough floor with a constant horizontal force F.\nPush height decides sliding vs tipping. When equilibrium fails, it starts moving automatically.\nWhile tipping, if the hand leaves height h then F=0. Stops off-screen or when tipping finishes; use Restart to reset.');
 
 final pushedBlock2D = Video(
   isNew: true,
@@ -28,6 +27,7 @@ final pushedBlock2D = Video(
   category: 'dynamics',
   iconName: 'dynamics',
   title: '直方体を押す（滑りと転倒）',
+  titleEn: 'Pushing a block (sliding and tipping)',
   videoURL: '',
   equipment: [],
   costRating: '★',
@@ -46,6 +46,21 @@ final pushedBlock2D = Video(
   <p>$$\displaystyle I_P\ddot\theta=-mg\Bigl(\frac{w}{2}\cos\theta-\frac{H}{2}\sin\theta\Bigr)+Fh$$</p>
   <p>手が離れたあとは $Fh$ の項が消えます。</p>
 """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>Place a rectangular block of width $w$, height $H$, and mass $m$ on a rough floor, and apply a constant horizontal force $F$ at height $h$ above the floor. The floor has static friction coefficient $\mu_s$ and kinetic friction coefficient $\mu_k$.</p>
+  <div class="common-box">At rest</div>
+  <p>No sliding requires $F\le\mu_s mg$. No tipping, about the lower-right edge, requires</p>
+  <p>$$\displaystyle F\le mg\cdot\frac{w}{2h}$$</p>
+  <p>If both hold, it stays at rest. Raising $F$ slowly, tipping comes first if $\displaystyle h>\frac{w}{2\mu_s}$; if $h$ is smaller, sliding comes first.</p>
+  <div class="common-box">Sliding</div>
+  <p>After sliding starts, the acceleration is $\displaystyle a=\frac{F-\mu_k mg}{m}$.</p>
+  <div class="common-box">Tipping</div>
+  <p>It rotates about the lower-right edge. Hand height stays fixed at $h$; when the left face clears $y=h$, the hand loses contact and $F=0$ (roughly $\displaystyle\theta=\arcsin\frac{h}{w}$). Then it falls onto its side.</p>
+  <p>While the lower-right edge stays put, the floor’s horizontal force and normal force follow from the CM acceleration. While the hand is in contact,</p>
+  <p>$$\displaystyle I_P\ddot\theta=-mg\Bigl(\frac{w}{2}\cos\theta-\frac{H}{2}\sin\theta\Bigr)+Fh$$</p>
+  <p>After the hand leaves, the $Fh$ term vanishes.</p>
+""",
   experimentWidgets: [
     PhysicsSimulationView(
       simulation: PushedBlock2DSimulation(),
@@ -57,9 +72,9 @@ final pushedBlock2D = Video(
 class PushedBlock2DSimulation extends PhysicsSimulation {
   PushedBlock2DSimulation()
       : super(
-          title: '直方体を押す（滑りと転倒）',
-          formula: const FormulaDisplay(
-            r'\displaystyle F\le\mu_s mg,\ F\le mg\frac{w}{2h}\ \text{なら静止}',
+          title: animL('直方体を押す（滑りと転倒）', 'Pushing a block (sliding and tipping)'),
+          formula: FormulaDisplay(
+            animL('\\displaystyle F\\le\\mu_s mg,\\ F\\le mg\\frac{w}{2h}\\ \\text{なら静止}', '\\displaystyle F\\le\\mu_s mg,\\ F\\le mg\\frac{w}{2h}\\ \\text{ for equilibrium}'),
           ),
           aspectRatio: (16 / 9) / 1.5,
           enableTime: false,
@@ -103,9 +118,9 @@ class PushedBlock2DSimulation extends PhysicsSimulation {
   /// 転倒完了・画面外で停止。自動では戻さず「最初から」を出す。
   bool _awaitingRestart = false;
   static const double _playback = 0.55;
-  static const String _lockHint = '再生中は変更できません。リセットで戻ります。';
-  static const String _restartHint =
-      'ここで止まりました。「最初から」で初期状態に戻ります。';
+  static String _lockHint = animL('再生中は変更できません。リセットで戻ります。', 'Cannot change while playing. Reset to revert.');
+  static String _restartHint =
+      animL('ここで止まりました。「最初から」で初期状態に戻ります。', 'Stopped here. Use “Start over” to restore the initial state.');
 
   @override
   Set<String> get initialActiveIds => {};
@@ -248,12 +263,12 @@ class PushedBlock2DSimulation extends PhysicsSimulation {
     final st = pushedBlockStatics(_params);
     switch (st.onset) {
       case PushedBlockOnset.holds:
-        return const FormulaDisplay(
-          r'\displaystyle F\le\mu_s mg,\ F\le mg\frac{w}{2h}\ \text{（静止）}',
+        return FormulaDisplay(
+          animL('\\displaystyle F\\le\\mu_s mg,\\ F\\le mg\\frac{w}{2h}\\ \\text{（静止）}', '\\displaystyle F\\le\\mu_s mg,\\ F\\le mg\\frac{w}{2h}\\ \\text{ (equilibrium)}'),
         );
       case PushedBlockOnset.slide:
-        return const FormulaDisplay(
-          r'\displaystyle a=\frac{F-\mu_k mg}{m}\ \text{（滑り）}',
+        return FormulaDisplay(
+          animL('\\displaystyle a=\\frac{F-\\mu_k mg}{m}\\ \\text{（滑り）}', '\\displaystyle a=\\frac{F-\\mu_k mg}{m}\\ \\text{ (sliding)}'),
         );
       case PushedBlockOnset.tip:
         final phase = _runtime.phase;
@@ -282,7 +297,7 @@ class PushedBlock2DSimulation extends PhysicsSimulation {
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
+            Text(
               kPushedBlockCaption,
               textAlign: TextAlign.center,
               style: TextStyle(
@@ -299,11 +314,11 @@ class PushedBlock2DSimulation extends PhysicsSimulation {
               children: [
                 OutlinedButton(
                   onPressed: () => runDemo(PushedBlockDemo.slide),
-                  child: const Text('滑る Auto'),
+                  child: Text(animL('滑る Auto', 'Slide Auto')),
                 ),
                 OutlinedButton(
                   onPressed: () => runDemo(PushedBlockDemo.tip),
-                  child: const Text('転倒 Auto'),
+                  child: Text(animL('転倒 Auto', 'Tipping Auto')),
                 ),
               ],
             ),
@@ -325,8 +340,8 @@ class PushedBlock2DSimulation extends PhysicsSimulation {
                 onReset: resetMotion,
               )
             else
-              const Text(
-                '静止（F を上げる／h を変えると滑るまたは転ぶ）',
+              Text(
+                animL('静止（F を上げる／h を変えると滑るまたは転ぶ）', 'Equilibrium (raise F / change h to slide or tip)'),
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 12, color: Color(0xFF546E7A)),
               ),
@@ -362,12 +377,12 @@ class PushedBlock2DSimulation extends PhysicsSimulation {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Text(
-                    '初期条件（m = 1 kg、g = 9.8 m/s²）',
+                  Text(
+                    animL('初期条件（m = 1 kg、g = 9.8 m/s²）', 'Initial conditions (m = 1 kg, g = 9.8 m/s²)'),
                     style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                   ),
                   if (locked)
-                    const Padding(
+                    Padding(
                       padding: EdgeInsets.only(top: 2, bottom: 4),
                       child: Text(
                         _lockHint,
@@ -383,7 +398,7 @@ class PushedBlock2DSimulation extends PhysicsSimulation {
                       if (_icsLocked) return;
                       updateParam('w', v);
                     },
-                    semanticLabel: '幅 w',
+                    semanticLabel: animL('幅 w', 'Width w'),
                   ),
                   _SliderRow(
                     label: 'H',
@@ -395,7 +410,7 @@ class PushedBlock2DSimulation extends PhysicsSimulation {
                       updateParam('H', v);
                       if (p.pushHeight > v) updateParam('h', v);
                     },
-                    semanticLabel: '高さ H',
+                    semanticLabel: animL('高さ H', 'Height H'),
                   ),
                   _SliderRow(
                     label: 'h',
@@ -406,7 +421,7 @@ class PushedBlock2DSimulation extends PhysicsSimulation {
                       if (_icsLocked) return;
                       updateParam('h', v);
                     },
-                    semanticLabel: '押し高 h',
+                    semanticLabel: animL('押し高 h', 'Push height h'),
                   ),
                   _SliderRow(
                     label: 'F',
@@ -417,7 +432,7 @@ class PushedBlock2DSimulation extends PhysicsSimulation {
                       if (_icsLocked) return;
                       updateParam('F', v);
                     },
-                    semanticLabel: '力 F',
+                    semanticLabel: animL('力 F', 'Force F'),
                   ),
                   _SliderRow(
                     label: 'μ',
@@ -430,7 +445,7 @@ class PushedBlock2DSimulation extends PhysicsSimulation {
                       final need = v + kPushedBlockMuGap;
                       if (p.muS < need) updateParam('muS', need);
                     },
-                    semanticLabel: '動摩擦係数',
+                    semanticLabel: animL('動摩擦係数', 'Kinetic friction coefficient'),
                   ),
                   _SliderRow(
                     label: 'μs',
@@ -443,7 +458,7 @@ class PushedBlock2DSimulation extends PhysicsSimulation {
                       final maxK = v - kPushedBlockMuGap;
                       if (p.muK > maxK) updateParam('mu', maxK);
                     },
-                    semanticLabel: '静止摩擦係数',
+                    semanticLabel: animL('静止摩擦係数', 'Static friction coefficient'),
                   ),
                   Padding(
                     padding: const EdgeInsets.only(top: 4),
@@ -598,13 +613,13 @@ class _PushedBlockPainter extends CustomPainter {
       case PushedBlockPhase.equilibrium:
         return null;
       case PushedBlockPhase.sliding:
-        return '物体が滑り始めました';
+        return animL('物体が滑り始めました', 'Object started sliding');
       case PushedBlockPhase.tipping:
-        return '物体が転倒し始めました';
+        return animL('物体が転倒し始めました', 'The block started tipping');
       case PushedBlockPhase.freeTip:
-        return '手が離れました';
+        return animL('手が離れました', 'The hand left');
       case PushedBlockPhase.onSide:
-        return '側面に着地しました';
+        return animL('側面に着地しました', 'Landed on its side');
     }
   }
 
@@ -617,8 +632,8 @@ class _PushedBlockPainter extends CustomPainter {
   /// 最長メッセージ相当の高さを常に確保する。
   double _statusReservedBottom(Size size) {
     final tp = TextPainter(
-      text: const TextSpan(
-        text: '物体が転倒し始めました',
+      text: TextSpan(
+        text: animL('物体が転倒し始めました', 'The block started tipping'),
         style: _statusTextStyle,
       ),
       textDirection: TextDirection.ltr,
@@ -660,10 +675,10 @@ class _PushedBlockPainter extends CustomPainter {
 
   void _drawForceLegend(Canvas canvas, Size size) {
     final items = <(Color, String)>[
-      (_force, 'F 押し力'),
-      (_normal, 'N 垂直抗力'),
-      (_friction, 'f 摩擦'),
-      (_gravity, 'mg 重力'),
+      (_force, animL('F 押し力', 'F push force')),
+      (_normal, animL('N 垂直抗力', 'N normal force')),
+      (_friction, animL('f 摩擦', 'f friction')),
+      (_gravity, animL('mg 重力', 'mg gravity')),
     ];
     const rightPad = 12.0;
     const top = 16.0;
@@ -768,7 +783,7 @@ class _PushedBlockPainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.2,
     );
-    _label(canvas, hand + const Offset(-18, -14), '手', _hand);
+    _label(canvas, hand + Offset(-18, -14), animL('手', 'Hand'), _hand);
   }
 
   void _drawForces(Canvas canvas, _Map map) {

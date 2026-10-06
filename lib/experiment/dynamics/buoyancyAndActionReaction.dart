@@ -4,8 +4,11 @@ final buoyancyAndActionReaction = Video(
     category: 'dynamics', // ← 追加
     iconName: "buoyancyAndActionReaction",
     title: "浮力と作用反作用",
+    titleEn: "Buoyancy and action–reaction",
     videoURL: "N44Pevlnl00",
+    videoURLEn: "6ux5mqn8cKM",
     equipment: ["水槽", "おもり", "台秤", "ばねばかり", "糸"],
+    equipmentEn: ["tank", "weight", "platform scale", "spring scale", "string"],
     costRating: "★★☆", latex: r"""
     <div class="common-box">ポイント 1</div>
     <p>アルキメデスの原理:「流体中の物体は、その物体が押しのけた流体の重さに等しい浮力を受ける」</p>
@@ -24,5 +27,24 @@ final buoyancyAndActionReaction = Video(
     <p>$$\displaystyle N = Mg + \rho V g$$</p>
     <div class="common-box">答え</div>
     <p>秤の読みは錘を沈める前に比べて、浮力の大きさ$\rho V g$の分だけ増加する。</p>
+    """,
+    latexEn: r"""
+    <div class="common-box">Key points 1</div>
+    <p>Archimedes' principle: "An object in a fluid experiences a buoyancy equal to the weight of the fluid it displaces."</p>
+    <p>The magnitude of the buoyancy is $ F = \rho V g $:</p>
+    <p>Here, $F$ is the buoyancy [N], $\rho$ is the fluid density [kg/m³], $V$ is the object's volume [m³], and $g$ is the gravitational acceleration [m/s²].</p>
+    <div class="common-box">Key points 2</div>
+    <p>Action–reaction law: $\overrightarrow{F}_{1 \leftarrow 2} + \overrightarrow{F}_{2 \leftarrow 1} = \overrightarrow{0}$
+    <div class="common-box">Setup</div>
+    <p>A container of water sits on a scale. If a weight hung from a string is submerged in the water, how does the scale reading change?</p>
+
+    <div class="common-box">Theory</div>
+    Buoyancy is the upward force that water exerts on the object, so by the action–reaction law the water receives an equal downward force.
+    <p>The buoyancy on the weight is $F = \rho V g $</p>
+    <p>Therefore the water receives a downward force $\rho V g $ from the object.
+    <p>The scale supports this, so the normal force $N$ that the scale exerts on the water and container is the sum of the weight $Mg$ of the water and container and the reaction to the buoyancy $\rho V g$. The weight of the hanging mass itself is supported by the string and does not rest on the scale.</p>
+    <p>$$\displaystyle N = Mg + \rho V g$$</p>
+    <div class="common-box">Answer</div>
+    <p>Compared with before the weight was submerged, the scale reading increases by the buoyancy $\rho V g$.</p>
     """
 );

@@ -4,8 +4,11 @@ final kineticFriction = Video(
   category: 'dynamics', // ← 追加
     iconName: "kineticFriction",
     title: "動摩擦力と動摩擦係数",
+    titleEn: "Kinetic friction and the coefficient of kinetic friction",
     videoURL: "kAXShjUdJOU",
+    videoURLEn: "kAXShjUdJOU",
     equipment: ["糸", "ブロック", "ばねばかり"],
+    equipmentEn: ["string", "block", "spring scale"],
     costRating: "★★★",
     latex: r"""
     <div class="common-box">ポイント</div>
@@ -31,5 +34,30 @@ final kineticFriction = Video(
     <div class="common-box">答え</div>
     <p>動摩擦係数 $\mu_k$ は$\ \mu_k = \frac{T}{mg}$で表される。右辺はすべて測定可能なので、$\mu_k$ を実験により求めることができる。</p>
     <p>$m=151[g]$, $T=0.3[N]$ の数値を代入して計算すると、$\mu_k \fallingdotseq 0.20$</p>
+    """,
+    latexEn: r"""
+    <div class="common-box">Key points</div>
+    <ul>
+      <li><strong>Kinetic friction $F_k$</strong>: the friction force while the object is moving, opposite to the direction of motion.</li>
+      <li><strong>Coefficient of kinetic friction $\mu_k$</strong>: defined as the ratio of kinetic friction to the normal force.</li>
+      <li><strong>By definition,</strong> $\displaystyle \mu_k = \frac{F_k}{N}$.</li>
+      <li>On a horizontal surface, $N = mg$, so $\displaystyle \mu_k = \frac{F_k}{mg}$.</li>
+      <li>At constant speed, tension $T$ balances kinetic friction $F_k$: $F_k = T$.</li>
+    </ul>
+
+    <div class="common-box">Setup</div>
+    <p>(1) A string is attached to an object of mass ${m}$ on a table and pulled slowly at constant speed so that the tension $T$ can be measured. Find the coefficient of kinetic friction $\mu_k$.</p>
+    <p>(2) Substitute the measured values ${m=151[g]}$ and ${T=0.3[N]}$ to find ${\mu_k}$.</p>
+
+    <div class="common-box">Theory</div>
+    <p>When the object moves at constant speed, the acceleration $a$ is $0$, so the net force from $ma = F$ is $F = 0$.</p>
+    <p>Thus tension $T$ and kinetic friction $F_k$ are in balance: $F_k = T$</p>
+    <p>Kinetic friction is the product of the normal force $N$ and the coefficient of kinetic friction $\mu_k$: $F_k = \mu_k N$</p>
+    <p>On a horizontal surface, $N = mg$, so $F_k = \mu_k mg$</p>
+    <p>Therefore $\displaystyle \mu_k = \frac{F_k}{mg} = \frac{T}{mg}$:</p>
+    <p>Substituting $m = 151[g] = 0.151[kg]$, $T = 0.3[N]$ gives $\displaystyle \mu_k =\frac{0.3}{0.151 \cdot 9.8} \fallingdotseq 0.20$</p>
+    <div class="common-box">Answer</div>
+    <p>The coefficient of kinetic friction $\mu_k$ is $\displaystyle \mu_k = \frac{T}{mg}$. Every quantity on the right-hand side can be measured, so $\mu_k$ can be found experimentally.</p>
+    <p>With $m=151[g]$ and $T=0.3[N]$, $\mu_k \fallingdotseq 0.20$.</p>
     """
 );

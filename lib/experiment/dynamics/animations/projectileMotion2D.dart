@@ -4,6 +4,7 @@ import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import 'package:joyphysics/experiment/dynamics/animations/energy_gauge.dart';
 import 'package:joyphysics/experiment/playback_controls.dart';
 import 'package:joyphysics/model.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 /// 上向き正、水平右向き正。$g=9.8\,\mathrm{m/s^2}$。再生だけ遅くする。
 const double kProjectileG = 9.8;
@@ -111,10 +112,7 @@ double projectileApexHeight(ProjectileParams params) {
 }
 
 String projectileCaption() {
-  return '水平速度は一定。鉛直速度だけが重力で変わる。\n'
-      'θ は水平から。正は上向き、負は下向き。\n'
-      '上向きなら最高点で鉛直速度は 0。水平速度は残る。\n'
-      '下向きなら最高点は投げ出し。着地しても水平速度はそのまま。';
+  return animL('水平速度は一定。鉛直速度だけが重力で変わる。\nθ は水平から。正は上向き、負は下向き。\n上向きなら最高点で鉛直速度は 0。水平速度は残る。\n下向きなら最高点は投げ出し。着地しても水平速度はそのまま。', 'Horizontal velocity is constant. Only the vertical velocity changes due to gravity.\nθ is measured from the horizontal. Positive is upward, negative is downward.\nIf thrown upward, vertical velocity is 0 at the top. Horizontal velocity remains.\nIf thrown downward, the top is the launch point. Horizontal velocity stays the same on landing.');
 }
 
 List<ProjectileSample> projectileStrobe(
@@ -138,6 +136,7 @@ final projectileMotion2D = Video(
   category: 'dynamics',
   iconName: 'dynamics',
   title: '斜方投射',
+  titleEn: 'Projectile motion',
   videoURL: '',
   equipment: [],
   costRating: '★',
@@ -151,6 +150,16 @@ final projectileMotion2D = Video(
   <p>$$\displaystyle T=\frac{v_0\sin\theta+\sqrt{(v_0\sin\theta)^{2}+2gh}}{g}$$</p>
   <p>上向き（$\theta>0$）の最高点は $\displaystyle H=h+\frac{(v_0\sin\theta)^{2}}{2g}$ です。下向き（$\theta\le 0$）では投げ出しが最高点で、高さは $h$ のままです。</p>
   """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>From a platform of height $h$, launch with speed $v_0$ at angle $\theta$ from the horizontal. Upward $\theta$ is positive and downward is negative. Neglecting air resistance, the horizontal motion is uniform and the vertical motion is under gravity alone.</p>
+  <p>$$\displaystyle x=(v_0\cos\theta)\,t$$</p>
+  <p>$$\displaystyle y=h+(v_0\sin\theta)\,t-\frac{1}{2}gt^{2}$$</p>
+  <p>$$\displaystyle v_x=v_0\cos\theta,\quad v_y=v_0\sin\theta-gt$$</p>
+  <p>The time to reach the ground $y=0$ is</p>
+  <p>$$\displaystyle T=\frac{v_0\sin\theta+\sqrt{(v_0\sin\theta)^{2}+2gh}}{g}$$</p>
+  <p>For an upward launch ($\theta>0$), the apex is $\displaystyle H=h+\frac{(v_0\sin\theta)^{2}}{2g}$. For a downward launch ($\theta\le 0$), the launch point is the highest point and the height remains $h$.</p>
+  """,
   experimentWidgets: [
     PhysicsSimulationView(
       simulation: ProjectileMotion2DSimulation(),
@@ -162,7 +171,7 @@ final projectileMotion2D = Video(
 class ProjectileMotion2DSimulation extends PhysicsSimulation {
   ProjectileMotion2DSimulation()
       : super(
-          title: '斜方投射',
+          title: animL('斜方投射', 'Projectile motion'),
           formula: const FormulaDisplay(
             r'\displaystyle y=h+(v_0\sin\theta)t-\frac{1}{2}gt^{2},\quad v_x=v_0\cos\theta',
           ),
@@ -272,8 +281,8 @@ class ProjectileMotion2DSimulation extends PhysicsSimulation {
     final apex = projectileApexHeight(p);
     final duration = projectileFlightDuration(p);
     return [
-      const Text(
-        '初期条件',
+      Text(
+        animL('初期条件', 'Initial conditions'),
         style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
       ),
       _ProjectileSlider(
@@ -282,7 +291,7 @@ class ProjectileMotion2DSimulation extends PhysicsSimulation {
         min: kProjectileMinG,
         max: kProjectileMaxG,
         onChanged: (v) => updateParam('g', v),
-        semanticLabel: '重力加速度 g',
+        semanticLabel: animL('重力加速度 g', 'Gravitational acceleration g'),
       ),
       _ProjectileSlider(
         label: 'v0',
@@ -290,7 +299,7 @@ class ProjectileMotion2DSimulation extends PhysicsSimulation {
         min: kProjectileMinV0,
         max: kProjectileMaxV0,
         onChanged: (v) => updateParam('v0', v),
-        semanticLabel: '初速度 v0',
+        semanticLabel: animL('初速度 v0', 'Initial speed v0'),
       ),
       _ProjectileSlider(
         label: 'h',
@@ -298,7 +307,7 @@ class ProjectileMotion2DSimulation extends PhysicsSimulation {
         min: kProjectileMinH,
         max: kProjectileMaxH,
         onChanged: (v) => updateParam('h', v),
-        semanticLabel: '高台の高さ h',
+        semanticLabel: animL('高台の高さ h', 'Platform height h'),
       ),
       _ProjectileSlider(
         label: 'θ',
@@ -306,16 +315,14 @@ class ProjectileMotion2DSimulation extends PhysicsSimulation {
         min: kProjectileMinDeg,
         max: kProjectileMaxDeg,
         onChanged: (v) => updateParam('deg', v),
-        semanticLabel: '投射角 θ',
+        semanticLabel: animL('投射角 θ', 'Launch angle θ'),
         fractionDigits: 0,
         suffix: '°',
       ),
       Padding(
         padding: const EdgeInsets.only(top: 4),
         child: Text(
-          '到達 ${range.toStringAsFixed(2)} m    '
-          '最高 ${apex.toStringAsFixed(2)} m    '
-          '着地まで ${duration.toStringAsFixed(2)} s',
+          animL('到達 ${range.toStringAsFixed(2)} m    最高 ${apex.toStringAsFixed(2)} m    着地まで ${duration.toStringAsFixed(2)} s', 'Range ${range.toStringAsFixed(2)} m    Apex ${apex.toStringAsFixed(2)} m    Until landing ${duration.toStringAsFixed(2)} s'),
           style: const TextStyle(
             fontSize: 12,
             fontFamily: 'Courier',
@@ -518,7 +525,7 @@ class _ProjectilePainter extends CustomPainter {
         ..color = _ground
         ..strokeWidth = 3,
     );
-    _label(canvas, lip + const Offset(-18, -16), '高台', _ground);
+    _label(canvas, lip + Offset(-18, -16), animL('高台', 'Platform'), _ground);
   }
 
   void _drawTrail(Canvas canvas, _Map map) {
@@ -561,7 +568,7 @@ class _ProjectilePainter extends CustomPainter {
     canvas.drawCircle(c.translate(0, 2), 11, Paint()..color = Colors.black12);
     canvas.drawCircle(c, 10, Paint()..color = _ball);
     final gLen = (46 * params.g / kProjectileG).clamp(18.0, 92.0);
-    _arrow(canvas, c + const Offset(-14, 0), const Offset(0, 1), gLen, _force, '重力');
+    _arrow(canvas, c + Offset(-14, 0), Offset(0, 1), gLen, _force, animL('重力', 'Gravity'));
     final scale = map.pxPerSpeed;
     if (sample.vx.abs() > 0.2) {
       _arrow(

@@ -8,6 +8,7 @@ import 'package:joyphysics/experiment/dynamics/animations/leaningRod/leaning_rod
 import 'package:joyphysics/experiment/dynamics/animations/leaningRod/leaning_rod_statics.dart';
 import 'package:joyphysics/experiment/playback_controls.dart';
 import 'package:joyphysics/model.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 export 'leaningRod/leaning_rod_params.dart';
 export 'leaningRod/leaning_rod_statics.dart';
@@ -16,10 +17,8 @@ export 'leaningRod/leaning_rod_after_leave.dart';
 export 'leaningRod/leaning_rod_pipeline.dart';
 export 'leaningRod/leaning_rod_runtime.dart';
 
-const String kLeaningRodCaption =
-    '壁は滑らか、床は粗い。θ は棒と壁の角。\n'
-    '静止できなければ自動で滑り始め、Nw=0 で壁から離れ、倒れる。\n'
-    '倒れるか画面外に出たら止まり、「最初から」で戻る。';
+String kLeaningRodCaption =
+    animL('壁は滑らか、床は粗い。θ は棒と壁の角。\n静止できなければ自動で滑り始め、Nw=0 で壁から離れ、倒れる。\n倒れるか画面外に出たら止まり、「最初から」で戻る。', 'Wall is smooth, floor is rough. θ is the angle between rod and wall.\nIf it cannot stay at rest it starts sliding automatically, leaves the wall at Nw=0, and falls.\nStops when it falls or leaves the screen; use “Start over” to reset.');
 
 final leaningRodStatics2D = Video(
   isNew: true,
@@ -27,6 +26,7 @@ final leaningRodStatics2D = Video(
   category: 'dynamics',
   iconName: 'dynamics',
   title: '立て掛けた棒（壁滑らか）',
+  titleEn: 'Leaning rod (smooth wall)',
   videoURL: '',
   equipment: [],
   costRating: '★',
@@ -44,6 +44,20 @@ final leaningRodStatics2D = Video(
   <div class="common-box">壁から離れたあと</div>
   <p>足の位置 $x_A$ と角の 2 自由度で倒れます。</p>
 """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>Lean a uniform rod of length $L$ and mass $m$ against a wall at angle $\theta$ with the wall. The wall is smooth; the floor has static friction coefficient $\mu_s$ and kinetic friction coefficient $\mu_k$.</p>
+  <div class="common-box">At rest</div>
+  <p>Friction at the wall is zero, so</p>
+  <p>$$N_f=mg,\qquad f_f=N_w=\frac{1}{2}mg\tan\theta$$</p>
+  <p>The rest condition is $\displaystyle\mu_s\ge\frac{1}{2}\tan\theta$.</p>
+  <div class="common-box">Sliding while both ends stay in contact</div>
+  <p>When the condition fails, the foot slides outward. Kinetic friction $f=\mu_k N_f$ (toward the wall) acts at the floor. The only degree of freedom is the angle. When the wall normal $N_w$ reaches 0, the rod leaves the wall. For $\mu_k=0$, detachment occurs at</p>
+  <p>$$\cos\theta=\frac{2}{3}\cos\theta_0$$</p>
+  <p>($\theta_0$ is the initial angle with the wall).</p>
+  <div class="common-box">After leaving the wall</div>
+  <p>It falls with two degrees of freedom: foot position $x_A$ and angle.</p>
+""",
   experimentWidgets: [
     PhysicsSimulationView(
       simulation: LeaningRodStatics2DSimulation(),
@@ -55,9 +69,9 @@ final leaningRodStatics2D = Video(
 class LeaningRodStatics2DSimulation extends PhysicsSimulation {
   LeaningRodStatics2DSimulation()
       : super(
-          title: '立て掛けた棒（壁滑らか）',
-          formula: const FormulaDisplay(
-            r'\displaystyle \mu_s\ge\frac{1}{2}\tan\theta\text{ なら静止}',
+          title: animL('立て掛けた棒（壁滑らか）', 'Leaning rod (smooth wall)'),
+          formula: FormulaDisplay(
+            animL('\\displaystyle \\mu_s\\ge\\frac{1}{2}\\tan\\theta\\text{ なら静止}', '\\displaystyle \\mu_s\\ge\\frac{1}{2}\\tan\\theta\\text{ then at rest}'),
           ),
           aspectRatio: (16 / 9) / 1.45,
           enableTime: false,
@@ -101,9 +115,9 @@ class LeaningRodStatics2DSimulation extends PhysicsSimulation {
   /// 転倒・画面外で停止。自動では戻さず「最初から」を出す。
   bool _awaitingRestart = false;
   static const double _playback = 0.45;
-  static const String _lockHint = '再生中は変更できません。リセットで戻ります。';
-  static const String _restartHint =
-      'ここで止まりました。「最初から」で初期状態に戻ります。';
+  static String _lockHint = animL('再生中は変更できません。リセットで戻ります。', 'Cannot change while playing. Reset to revert.');
+  static String _restartHint =
+      animL('ここで止まりました。「最初から」で初期状態に戻ります。', 'Stopped here. Use “Start over” to restore the initial state.');
 
   @override
   Set<String> get initialActiveIds => {};
@@ -251,8 +265,8 @@ class LeaningRodStatics2DSimulation extends PhysicsSimulation {
     final holds = leaningRodHolds(_params);
     return FormulaDisplay(
       holds
-          ? r'\displaystyle \mu_s\ge\frac{1}{2}\tan\theta\text{（静止）}'
-          : r'\displaystyle N_w=0\text{ で壁から離れる}',
+          ? animL('\\displaystyle \\mu_s\\ge\\frac{1}{2}\\tan\\theta\\text{（静止）}', '\\displaystyle \\mu_s\\ge\\frac{1}{2}\\tan\\theta\\text{(at rest)}')
+          : animL('\\displaystyle N_w=0\\text{ で壁から離れる}', '\\displaystyle N_w=0\\text{ leaves the wall}'),
     );
   }
 
@@ -269,7 +283,7 @@ class LeaningRodStatics2DSimulation extends PhysicsSimulation {
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
+            Text(
               kLeaningRodCaption,
               textAlign: TextAlign.center,
               style: TextStyle(
@@ -286,7 +300,7 @@ class LeaningRodStatics2DSimulation extends PhysicsSimulation {
               children: [
                 OutlinedButton(
                   onPressed: () => runDemo(LeaningRodDemo.slip),
-                  child: const Text('滑る Auto'),
+                  child: Text(animL('滑る Auto', 'Slide Auto')),
                 ),
               ],
             ),
@@ -308,8 +322,8 @@ class LeaningRodStatics2DSimulation extends PhysicsSimulation {
                 onReset: resetMotion,
               )
             else
-              const Text(
-                '静止している（θ を上げるか μs を下げると滑る）',
+              Text(
+                animL('静止している（θ を上げるか μs を下げると滑る）', 'At rest (raise θ or lower μs to slide)'),
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 12, color: Color(0xFF546E7A)),
               ),
@@ -341,7 +355,7 @@ class LeaningRodStatics2DSimulation extends PhysicsSimulation {
           final String summary;
           if (leaningRodHolds(p)) {
             summary =
-                '必要 μs ≥ ${need.toStringAsFixed(2)}    '
+                animL('必要 μs ≥ ${need.toStringAsFixed(2)}    ', 'Need μs ≥ ${need.toStringAsFixed(2)}    ') +
                 'Nw=${sample.nw.toStringAsFixed(2)} N';
           } else {
             summary =
@@ -355,12 +369,12 @@ class LeaningRodStatics2DSimulation extends PhysicsSimulation {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Text(
-                    '初期条件（壁滑らか、m = 1 kg、L = 2 m、g = 9.8 m/s²）',
+                  Text(
+                    animL('初期条件（壁滑らか、m = 1 kg、L = 2 m、g = 9.8 m/s²）', 'Initial conditions (smooth wall, m = 1 kg, L = 2 m, g = 9.8 m/s²)'),
                     style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                   ),
                   if (locked)
-                    const Padding(
+                    Padding(
                       padding: EdgeInsets.only(top: 2, bottom: 4),
                       child: Text(
                         _lockHint,
@@ -378,7 +392,7 @@ class LeaningRodStatics2DSimulation extends PhysicsSimulation {
                       if (_icsLocked) return;
                       updateParam('theta', v);
                     },
-                    semanticLabel: '棒と壁の角 θ',
+                    semanticLabel: animL('棒と壁の角 θ', 'Rod–wall angle θ'),
                   ),
                   _RodSlider(
                     label: 'μ',
@@ -391,7 +405,7 @@ class LeaningRodStatics2DSimulation extends PhysicsSimulation {
                       final needS = v + kLeaningRodMuGap;
                       if (p.muS < needS) updateParam('muS', needS);
                     },
-                    semanticLabel: '床の動摩擦係数 μ',
+                    semanticLabel: animL('床の動摩擦係数 μ', 'Floor kinetic friction μ'),
                   ),
                   _RodSlider(
                     label: 'μs',
@@ -404,7 +418,7 @@ class LeaningRodStatics2DSimulation extends PhysicsSimulation {
                       final maxK = v - kLeaningRodMuGap;
                       if (p.muK > maxK) updateParam('mu', maxK);
                     },
-                    semanticLabel: '床の静止摩擦係数 μs',
+                    semanticLabel: animL('床の静止摩擦係数 μs', 'Floor static friction μs'),
                   ),
                   Padding(
                     padding: const EdgeInsets.only(top: 4),
@@ -566,11 +580,11 @@ class _LeaningRodPainter extends CustomPainter {
       case LeaningRodPhase.equilibrium:
         return null;
       case LeaningRodPhase.slidingBoth:
-        return '物体が滑り始めました';
+        return animL('物体が滑り始めました', 'Object started sliding');
       case LeaningRodPhase.afterLeave:
-        return '壁から離れました';
+        return animL('壁から離れました', 'Left the wall');
       case LeaningRodPhase.flat:
-        return '床に倒れました';
+        return animL('床に倒れました', 'Fell to the floor');
     }
   }
 
@@ -583,8 +597,8 @@ class _LeaningRodPainter extends CustomPainter {
   /// 最長メッセージ相当の高さを常に確保する。
   double _statusReservedBottom(Size size) {
     final tp = TextPainter(
-      text: const TextSpan(
-        text: '物体が滑り始めました',
+      text: TextSpan(
+        text: animL('物体が滑り始めました', 'Object started sliding'),
         style: _statusTextStyle,
       ),
       textDirection: TextDirection.ltr,
@@ -626,9 +640,9 @@ class _LeaningRodPainter extends CustomPainter {
 
   void _drawForceLegend(Canvas canvas, Size size) {
     final items = <(Color, String)>[
-      (_normal, 'N 垂直抗力'),
-      (_friction, 'f 摩擦'),
-      (_gravity, 'mg 重力'),
+      (_normal, animL('N 垂直抗力', 'N normal force')),
+      (_friction, animL('f 摩擦', 'f friction')),
+      (_gravity, animL('mg 重力', 'mg gravity')),
     ];
     const rightPad = 10.0;
     const topPad = 10.0;
@@ -680,7 +694,7 @@ class _LeaningRodPainter extends CustomPainter {
   Rect _drawHud(Canvas canvas, Size size, {double top = 8}) {
     final wallDeg = (math.pi / 2 - sample.theta) * 180 / math.pi;
     final lines = <String>[
-      'θ = ${wallDeg.toStringAsFixed(1)}°（壁との角）',
+      animL('θ = ${wallDeg.toStringAsFixed(1)}°（壁との角）', 'θ = ${wallDeg.toStringAsFixed(1)}° (angle with wall)'),
       'μ = ${params.muK.toStringAsFixed(2)}  μs = ${params.muS.toStringAsFixed(2)}',
       'Nw = ${sample.nw.toStringAsFixed(2)} N',
     ];
@@ -753,8 +767,8 @@ class _LeaningRodPainter extends CustomPainter {
         ..color = _wall
         ..strokeWidth = 2.2,
     );
-    _label(canvas, Offset(floorEnd.dx - 28, corner.dy + 22), '床', _ink);
-    _label(canvas, Offset(corner.dx - 40, wallTop.dy + 12), '壁(滑)', _ink);
+    _label(canvas, Offset(floorEnd.dx - 28, corner.dy + 22), animL('床', 'Floor'), _ink);
+    _label(canvas, Offset(corner.dx - 40, wallTop.dy + 12), animL('壁(滑)', 'Wall (smooth)'), _ink);
   }
 
   void _drawRod(Canvas canvas, _RodMap map) {

@@ -6,6 +6,10 @@ import 'package:joyphysics/experiment/HasHeight.dart';
 import 'package:joyphysics/experiment/sensor_availability.dart';
 import 'package:joyphysics/experiment/sensor_availability_types.dart';
 import 'package:joyphysics/experiment/sensor_app_store_dialog.dart';
+import 'package:joyphysics/experiment/sensor_gadget_l10n.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
+import 'package:joyphysics/l10n/app_localizations.dart';
+import 'package:joyphysics/l10n/catalog_name_localizations.dart';
 import 'package:joyphysics/shared_components.dart';
 
 class BarometerExperimentWidget extends StatefulWidget with HasHeight {
@@ -90,16 +94,24 @@ class _BarometerExperimentWidgetState extends State<BarometerExperimentWidget> {
     final webStatic = kIsWeb && !isAvailable && !needsPermission;
 
     final content = SensorDisplayCard(
-      title: "現在の大気圧",
+      title: animUi(
+        context,
+        ja: '現在の大気圧',
+        en: 'Current atmospheric pressure',
+      ),
       height: widget.height,
       children: isAvailable
           ? (_pressure == null
               ? [
                   const CircularProgressIndicator(),
                   const SizedBox(height: 16),
-                  const Text(
-                    "気圧データを取得中...",
-                    style: TextStyle(fontSize: 18, color: Colors.black),
+                  Text(
+                    animUi(
+                      context,
+                      ja: '気圧データを取得中...',
+                      en: 'Reading pressure…',
+                    ),
+                    style: const TextStyle(fontSize: 18, color: Colors.black),
                   ),
                 ]
               : [
@@ -123,14 +135,14 @@ class _BarometerExperimentWidgetState extends State<BarometerExperimentWidget> {
                 ]
               : [
                   Text(
-                    _availability.message,
+                    sensorAvailabilityMessage(context, _availability),
                     style: const TextStyle(fontSize: 18, color: Colors.grey),
                   ),
                   const SizedBox(height: 12),
                   if (needsPermission)
                     ElevatedButton(
                       onPressed: _requestPermission,
-                      child: const Text('センサー利用を許可'),
+                      child: Text(AppLocalizations.of(context)!.allowSensorAccess),
                     ),
                 ],
     );
@@ -142,7 +154,7 @@ class _BarometerExperimentWidgetState extends State<BarometerExperimentWidget> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('気圧センサー'),
+        title: Text(localizeCatalogName(context, '気圧センサー')),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,

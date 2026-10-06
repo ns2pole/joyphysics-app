@@ -4,6 +4,7 @@ import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import 'package:joyphysics/experiment/dynamics/animations/energy_gauge.dart';
 import 'package:joyphysics/experiment/playback_controls.dart';
 import 'package:joyphysics/model.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 /// 実験室のばねとおもり。自然長から右へずらして放す水平ばね。摩擦なし。
 const double kHorizontalSpringEll = 0.40;
@@ -235,17 +236,15 @@ VerticalSpringSample verticalSpringAt(VerticalSpringParams params, double t) {
 String springVelocityReadout(double v, {required bool downwardPositive}) {
   final n = v.toStringAsFixed(2);
   if (v.abs() < 0.005) return n;
-  final dir = downwardPositive ? (v > 0 ? '下' : '上') : (v > 0 ? '右' : '左');
+  final dir = downwardPositive ? (v > 0 ? animL('下', 'Down') : animL('上', 'Up')) : (v > 0 ? animL('右', 'Right') : animL('左', 'Left'));
   return '$n $dir';
 }
 
-const String kHorizontalSpringCaption =
-    '初期位置はつりあい（自然長）から。右が正、左が負。初速度も右が正。\n'
-    'どちらも 0 なら、つりあいで止めたまま。つりあいではばねの力は 0。';
+String kHorizontalSpringCaption =
+    animL('初期位置はつりあい（自然長）から。右が正、左が負。初速度も右が正。\nどちらも 0 なら、つりあいで止めたまま。つりあいではばねの力は 0。', 'Initial position is from equilibrium (natural length). Right is positive, left is negative. Initial velocity is also positive to the right.\nIf both are 0, it stays at equilibrium. At equilibrium the spring force is 0.');
 
-const String kVerticalSpringCaption =
-    '初期位置は天井からの距離。初速度は下が正。周期は m と k だけ。\n'
-    '自然長から静かに放すと、つりあい mg/k の上下に振れる。';
+String kVerticalSpringCaption =
+    animL('初期位置は天井からの距離。初速度は下が正。周期は m と k だけ。\n自然長から静かに放すと、つりあい mg/k の上下に振れる。', 'Initial position is distance from the ceiling. Initial velocity is positive downward. Period depends only on m and k.\nReleased gently from natural length, it oscillates about equilibrium mg/k.');
 
 final horizontalSpring1D = Video(
   isNew: false,
@@ -253,6 +252,7 @@ final horizontalSpring1D = Video(
   category: 'dynamics',
   iconName: 'dynamics',
   title: '水平バネ',
+  titleEn: 'Horizontal spring',
   videoURL: '',
   equipment: [],
   costRating: '★',
@@ -263,6 +263,15 @@ final horizontalSpring1D = Video(
   <p>つりあいから初期位置 $x_0$、初速度 $v_0$ で放すと、右向きを正にして</p>
   <p>$$\displaystyle x=x_0\cos\omega t+\frac{v_0}{\omega}\sin\omega t$$</p>
   <p>周期は初期位置にも初速度にもよりません。</p>
+  <p>$$\displaystyle T=2\pi\sqrt{\frac{m}{k}}$$</p>
+""",
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>On a smooth horizontal surface, the only force is the spring force. With displacement $x$ from equilibrium (natural length),</p>
+  <p>$$\displaystyle m\ddot x=-kx,\quad \omega=\sqrt{\frac{k}{m}}$$</p>
+  <p>Released from initial position $x_0$ and initial velocity $v_0$ relative to equilibrium, taking rightward as positive,</p>
+  <p>$$\displaystyle x=x_0\cos\omega t+\frac{v_0}{\omega}\sin\omega t$$</p>
+  <p>The period does not depend on the initial position or initial velocity.</p>
   <p>$$\displaystyle T=2\pi\sqrt{\frac{m}{k}}$$</p>
 """,
   experimentWidgets: [
@@ -279,6 +288,7 @@ final verticalSpring1D = Video(
   category: 'dynamics',
   iconName: 'dynamics',
   title: '鉛直バネ',
+  titleEn: 'Vertical spring',
   videoURL: '',
   equipment: [],
   costRating: '★',
@@ -292,6 +302,16 @@ final verticalSpring1D = Video(
   <p>$$\displaystyle y=y_{\mathrm{eq}}+(y_0-y_{\mathrm{eq}})\cos\omega t+\frac{v_0}{\omega}\sin\omega t$$</p>
   <p>自然長 $y_0=\ell$ から静かに放すと、振幅は $\delta$ そのものです。</p>
 """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>A vertically hanging spring equilibrates a distance $\displaystyle \delta=\frac{mg}{k}$ below its natural length. With displacement $x$ from equilibrium,</p>
+  <p>$$\displaystyle m\ddot x=-kx,\quad \omega=\sqrt{\frac{k}{m}}$$</p>
+  <p>Gravity only shifts the equilibrium position; it does not enter the period.</p>
+  <p>$$\displaystyle T=2\pi\sqrt{\frac{m}{k}}$$</p>
+  <p>From a distance $y_0$ below the ceiling with initial velocity $v_0$, taking downward positive from equilibrium $\displaystyle y_{\mathrm{eq}}=\ell+\delta$,</p>
+  <p>$$\displaystyle y=y_{\mathrm{eq}}+(y_0-y_{\mathrm{eq}})\cos\omega t+\frac{v_0}{\omega}\sin\omega t$$</p>
+  <p>Released gently from the natural length $y_0=\ell$, the amplitude is exactly $\delta$.</p>
+""",
   experimentWidgets: [
     PhysicsSimulationView(
       simulation: VerticalSpring1DSimulation(),
@@ -303,7 +323,7 @@ final verticalSpring1D = Video(
 class HorizontalSpring1DSimulation extends PhysicsSimulation {
   HorizontalSpring1DSimulation()
       : super(
-          title: '水平バネ',
+          title: animL('水平バネ', 'Horizontal spring'),
           formula: const FormulaDisplay(
             r'\displaystyle x=x_0\cos\omega t+\frac{v_0}{\omega}\sin\omega t',
           ),
@@ -381,7 +401,7 @@ class HorizontalSpring1DSimulation extends PhysicsSimulation {
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
+            Text(
               kHorizontalSpringCaption,
               textAlign: TextAlign.center,
               style: TextStyle(
@@ -411,8 +431,8 @@ class HorizontalSpring1DSimulation extends PhysicsSimulation {
     _rememberParams(parameters);
     final p = _params;
     return [
-      const Text(
-        '質量・ばね・初期位置・初速度（右が正）',
+      Text(
+        animL('質量・ばね・初期位置・初速度（右が正）', 'Mass, spring, initial position, initial velocity (right positive)'),
         style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
       ),
       _SpringSlider(
@@ -421,7 +441,7 @@ class HorizontalSpring1DSimulation extends PhysicsSimulation {
         min: kSpringMinM,
         max: kSpringMaxM,
         onChanged: (v) => updateParam('m', v),
-        semanticLabel: '質量 m',
+        semanticLabel: animL('質量 m', 'Mass m'),
       ),
       _SpringSlider(
         label: 'k',
@@ -429,7 +449,7 @@ class HorizontalSpring1DSimulation extends PhysicsSimulation {
         min: kSpringMinK,
         max: kSpringMaxK,
         onChanged: (v) => updateParam('k', v),
-        semanticLabel: 'ばね定数 k',
+        semanticLabel: animL('ばね定数 k', 'Spring constant k'),
       ),
       _SpringSlider(
         label: 'x0',
@@ -437,7 +457,7 @@ class HorizontalSpring1DSimulation extends PhysicsSimulation {
         min: kHorizontalSpringMinX0,
         max: kHorizontalSpringMaxX0,
         onChanged: (v) => updateParam('x0', v),
-        semanticLabel: '初期位置 右が正',
+        semanticLabel: animL('初期位置 右が正', 'Initial position, right positive'),
         readout: springVelocityReadout(p.x0, downwardPositive: false),
       ),
       _SpringSlider(
@@ -446,7 +466,7 @@ class HorizontalSpring1DSimulation extends PhysicsSimulation {
         min: kSpringMinV0,
         max: kSpringMaxV0,
         onChanged: (v) => updateParam('v0', v),
-        semanticLabel: '初速度 右が正',
+        semanticLabel: animL('初速度 右が正', 'Initial velocity, right positive'),
         readout: springVelocityReadout(p.v0, downwardPositive: false),
       ),
       Padding(
@@ -497,7 +517,7 @@ class HorizontalSpring1DSimulation extends PhysicsSimulation {
 class VerticalSpring1DSimulation extends PhysicsSimulation {
   VerticalSpring1DSimulation()
       : super(
-          title: '鉛直バネ',
+          title: animL('鉛直バネ', 'Vertical spring'),
           formula: const FormulaDisplay(
             r'\displaystyle y=y_{\mathrm{eq}}+(y_0-y_{\mathrm{eq}})\cos\omega t+\frac{v_0}{\omega}\sin\omega t',
           ),
@@ -576,7 +596,7 @@ class VerticalSpring1DSimulation extends PhysicsSimulation {
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
+            Text(
               kVerticalSpringCaption,
               textAlign: TextAlign.center,
               style: TextStyle(
@@ -606,8 +626,8 @@ class VerticalSpring1DSimulation extends PhysicsSimulation {
     _rememberParams(parameters);
     final p = _params;
     return [
-      const Text(
-        '質量・ばね・重力・初期位置・初速度（下が正）',
+      Text(
+        animL('質量・ばね・重力・初期位置・初速度（下が正）', 'Mass, spring, gravity, initial position, initial velocity (down positive)'),
         style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
       ),
       _SpringSlider(
@@ -616,7 +636,7 @@ class VerticalSpring1DSimulation extends PhysicsSimulation {
         min: kSpringMinM,
         max: kSpringMaxM,
         onChanged: (v) => updateParam('m', v),
-        semanticLabel: '質量 m',
+        semanticLabel: animL('質量 m', 'Mass m'),
       ),
       _SpringSlider(
         label: 'k',
@@ -624,7 +644,7 @@ class VerticalSpring1DSimulation extends PhysicsSimulation {
         min: kSpringMinK,
         max: kSpringMaxK,
         onChanged: (v) => updateParam('k', v),
-        semanticLabel: 'ばね定数 k',
+        semanticLabel: animL('ばね定数 k', 'Spring constant k'),
       ),
       _SpringSlider(
         label: 'g',
@@ -632,7 +652,7 @@ class VerticalSpring1DSimulation extends PhysicsSimulation {
         min: kVerticalSpringMinG,
         max: kVerticalSpringMaxG,
         onChanged: (v) => updateParam('g', v),
-        semanticLabel: '重力加速度 g',
+        semanticLabel: animL('重力加速度 g', 'Gravitational acceleration g'),
       ),
       _SpringSlider(
         label: 'y0',
@@ -640,7 +660,7 @@ class VerticalSpring1DSimulation extends PhysicsSimulation {
         min: kVerticalSpringMinY0,
         max: kVerticalSpringMaxY0,
         onChanged: (v) => updateParam('y0', v),
-        semanticLabel: '初期位置 天井から下',
+        semanticLabel: animL('初期位置 天井から下', 'Initial position, down from ceiling'),
       ),
       _SpringSlider(
         label: 'v0',
@@ -648,7 +668,7 @@ class VerticalSpring1DSimulation extends PhysicsSimulation {
         min: kSpringMinV0,
         max: kSpringMaxV0,
         onChanged: (v) => updateParam('v0', v),
-        semanticLabel: '初速度 下が正',
+        semanticLabel: animL('初速度 下が正', 'Initial velocity, down positive'),
         readout: springVelocityReadout(p.v0, downwardPositive: true),
       ),
       Padding(
@@ -856,7 +876,7 @@ class _HorizontalSpringPainter extends CustomPainter {
     _dashedV(canvas, sx(kHorizontalSpringEll), railY - 78, railY + 16, const Color(0xFFEF6C00));
     _label(
       canvas,
-      'つりあい(自然長)',
+      animL('つりあい(自然長)', 'Equilibrium (natural length)'),
       sx(kHorizontalSpringEll),
       railY - 92,
       const Color(0xFFEF6C00),
@@ -950,11 +970,11 @@ class _VerticalSpringPainter extends CustomPainter {
     );
 
     _dashedH(canvas, 24, size.width - 24, sy(kVerticalSpringEll), const Color(0xFF90A4AE));
-    _label(canvas, '自然長', 28, sy(kVerticalSpringEll) - 16, const Color(0xFF607D8B));
+    _label(canvas, animL('自然長', 'Natural length'), 28, sy(kVerticalSpringEll) - 16, Color(0xFF607D8B));
 
     final yEq = kVerticalSpringEll + params.delta;
     _dashedH(canvas, 24, size.width - 24, sy(yEq), _eq);
-    _label(canvas, 'つりあい', size.width - 78, sy(yEq) - 16, _eq);
+    _label(canvas, animL('つりあい', 'Equilibrium'), size.width - 78, sy(yEq) - 16, _eq);
 
     final r = springMassRadius(params.m);
     final mass = Offset(cx, sy(sample.y));
@@ -985,7 +1005,7 @@ class _VerticalSpringPainter extends CustomPainter {
     _label(canvas, 'mg', origin.dx - 8, origin.dy + gravLen + 4, _gravity);
     _label(
       canvas,
-      'ばね力',
+      animL('ばね力', 'Spring force'),
       origin.dx + 10,
       extension >= 0 ? origin.dy - springLen - 16 : origin.dy + springLen + 4,
       _springForce,
