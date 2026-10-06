@@ -2,6 +2,7 @@ import '../../model.dart';
 
 final nonUniformCircularMotion = TheoryTopic(
   title: '非等速円運動の運動方程式',
+  titleEn: 'Equation of motion for non-uniform circular motion',
   isNew: false,
   imageAsset: 'assets/mindMap/forTopics/nonUniformCircularMotion.png',
 
@@ -122,6 +123,129 @@ $$\begin{aligned}
 \ \ \ \ \ \ \ \ &= F_r \vec e_r(t) + F_\theta \vec e_\theta(t)
 \end{aligned}$$
 ここで、ベクトルの各成分を比較すると、命題3：$v(t)= R|\theta'(t)|$を用いて、
+$$\begin{aligned}
+\begin{cases}
+\displaystyle - m R (\theta'(t))^2 = -m \frac{v(t)^2}{R} = F_r\\[6pt]
+\displaystyle m R \theta''(t) = F_\theta
+\end{cases}
+\end{aligned}$$
+Q.E.D
+</p>
+""",
+  latexContentEn: r"""
+<p class="theory-common-box">Definition of symbols</p>
+  <p>
+  $\cdot \  \displaystyle F_r\cdots$ radial (centripetal) component of $\vec F$<br>
+  $\cdot \ \displaystyle F_\theta \cdots$ angular component of $\vec F$<br>
+  $\cdot \ \displaystyle \theta \cdots$ angle of the particle from the $x$-axis<br>
+  $\cdot \ \vec r(t) \cdots$ position vector<br>
+  $\cdot \ \vec v(t) \cdots$ velocity vector<br>
+  $\cdot \ \vec a(t) \cdots$ acceleration vector<br>
+  $\cdot \ v(t)=|\vec v(t)|\cdots$ speed
+  </p>
+
+<p class="theory-common-box">Definition (radial and angular unit vectors)</p>
+Define the radial and angular unit vectors for circular motion by
+$$\begin{aligned}
+\begin{cases}
+\vec e_r(t) = \cos\theta(t)\vec e_x + \sin\theta(t)\vec e_y\\[6pt]
+\vec e_{\theta}(t) = -\sin\theta(t)\vec e_x + \cos\theta(t)\vec e_y
+\end{cases}
+\end{aligned}$$
+
+<p class="theory-common-box">Proposition 1: The time derivatives of the radial and angular unit vectors are
+$$\begin{aligned}
+\begin{cases}
+\vec {e_r}'(t) = \theta'(t) \vec {e_{\theta}}(t)\\[6pt]
+\vec {e_\theta}'(t) = -\theta'(t) \vec {e_r}(t)
+\end{cases}
+\end{aligned}$$
+</p>
+<p>
+<div class="proof-box">Proof</div>
+From $\displaystyle \vec e_r(t)=\cos\theta(t)\,\vec e_x + \sin\theta(t)\,\vec e_y$, by the chain rule
+$$\begin{aligned}
+\vec e_r'(t) &= -\sin\theta(t)\,\theta'(t)\,\vec e_x + \cos\theta(t)\,\theta'(t)\,\vec e_y \\
+&= \theta'(t)\bigl(-\sin\theta(t)\vec e_x + \cos\theta(t)\vec e_y\bigr)\\
+&= \theta'(t)\,\vec e_{\theta}(t)
+\end{aligned}$$
+Similarly for $e_{\theta}(t) = -\sin\theta(t)\,\vec e_x + \cos\theta(t)\,\vec e_y$,
+$$\begin{aligned}
+\vec e_{\theta}'(t) &= -\cos\theta(t)\,\theta'(t)\,\vec e_x - \sin\theta(t)\,\theta'(t)\,\vec e_y \\
+&= -\theta'(t)\bigl(\cos\theta(t)\vec e_x + \sin\theta(t)\vec e_y\bigr)\\
+&= -\theta'(t)\,\vec e_r(t).
+\end{aligned}$$
+Q.E.D
+</p>
+<p class="theory-common-box">Proposition 2: The velocity of a particle in (not necessarily uniform) circular motion is
+$$\begin{aligned}
+\vec v(t) = \vec r'(t) = R \theta'(t) \vec e_\theta(t)
+\end{aligned}$$
+</p>
+<p>
+<div class="proof-box">Proof</div>
+With $\vec r(t) = R \vec e_r(t) = R \Bigl( \cos\theta(t)\vec e_x + \sin\theta(t)\vec e_y \Bigr)$
+and Proposition 1 ($R$ constant),
+$$\begin{aligned}
+\vec v(t) &= \vec r'(t)\\[6pt]
+&= \Bigl(R \vec e_r(t)\Bigr)'\\[6pt]
+&=  R \vec e_r'(t)\\[6pt]
+&= R \theta'(t) \vec e_\theta(t)
+\end{aligned}$$
+Q.E.D
+</p>
+
+
+<p class="theory-common-box">Proposition 3: The speed in (not necessarily uniform) circular motion is
+$$\begin{aligned}
+v(t) = R |\theta'(t)|
+\end{aligned}$$
+</p>
+<p>
+<div class="proof-box">Proof</div>
+$$\begin{aligned}
+\displaystyle v(t) &= |\vec v (t)|\\[6pt] 
+&=|R \theta'(t) \vec e_\theta(t)|\\[6pt] 
+&=|R| |\theta'(t)| |\vec e_\theta(t)|\\[6pt]
+&=R |\theta'(t)| |\vec e_\theta(t)|\\[6pt] 
+\end{aligned}$$
+<br>
+Since $e_\theta(t)$ is a unit vector, $\displaystyle v(t) = R |\theta'(t)|$.　Q.E.D
+</p>
+
+<p class="theory-common-box">Proposition 4: The acceleration in (not necessarily uniform) circular motion is
+$$\begin{aligned}
+\vec a(t) = R \theta''(t) \vec e_\theta(t) - R (\theta'(t))^2 \vec e_r(t)
+\end{aligned}$$
+</p>
+<p>
+<div class="proof-box">Proof</div>
+Differentiate $\vec v(t) = R \theta'(t) \vec e_\theta(t)$ using the product rule and Proposition 1:
+$$\begin{aligned}
+\vec a(t) &= \vec v'(t) \\[6pt]
+&= \Bigl(R \theta'(t) \vec e_\theta(t)\Bigr)'\\[6pt]
+&= R \theta''(t) \vec e_\theta(t) + R \theta'(t) \vec e_\theta'(t)\\[6pt]
+&= R \theta''(t) \vec e_\theta(t) - R (\theta'(t))^2 \vec e_r(t)
+\end{aligned}$$
+Q.E.D
+</p>
+
+<p class="theory-common-box">Proposition 5: With the circle center as the origin, the equation of motion for (not necessarily uniform) circular motion is</p>
+$$\begin{aligned}
+\begin{cases}
+\displaystyle -m \frac {v(t)^2}{R} = F_r\\[6pt]
+m R \theta''(t) = F_\theta
+\end{cases}
+\end{aligned}$$
+<p>
+<div class="proof-box">Proof</div>
+From $m \vec a(t) = \vec F(t)$ and Proposition 4,
+$$\begin{aligned} 
+\displaystyle &m \vec a(t) = \vec F(t)\\[6pt]
+\displaystyle \Leftrightarrow &- m R (\theta'(t))^2 \vec e_r(t) + m R \theta''(t) \vec e_\theta(t) \\[6pt]
+\ \ \ \ \ \ \ \ &= F_r \vec e_r(t) + F_\theta \vec e_\theta(t)
+\end{aligned}$$
+. Comparing components and using Proposition 3, $v(t)= R|\theta'(t)|$,
 $$\begin{aligned}
 \begin{cases}
 \displaystyle - m R (\theta'(t))^2 = -m \frac{v(t)^2}{R} = F_r\\[6pt]

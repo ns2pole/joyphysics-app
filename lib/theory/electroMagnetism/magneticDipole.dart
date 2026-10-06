@@ -2,6 +2,7 @@ import '../../model.dart';
 
 final magneticDipole = TheoryTopic(
   title: '磁気双極子',
+  titleEn: 'Magnetic dipole',
   // imageAsset: 'assets/mindMap/forTopics/magneticDipole.png',
   latexContent: r"""
 
@@ -454,6 +455,466 @@ $$\displaystyle \vec{\tau}_{loop}=I \pi a^2\hat{k} \times\vec{B}$$
 [2]仮想磁荷双極子側（磁荷は $+Q,-Q$ を位置 $ \vec r_\pm=\pm\frac{a}{2}\hat z$ に置く）：
 各磁荷に与えられた力を $\vec F_\pm=\pm Q\,\vec H$ とする。
 仮定より、 $Q = \mu_0 I\pi a$ を使うと
+$$\begin{aligned}
+\vec {\tau}
+= \mu_0 I\pi a^2 \hat z \times \vec H
+=I \pi a^2\hat{k} \times\vec{B}
+= \vec {\tau}_{loop}
+\end{aligned}$$
+　Q.E.D
+</p>
+""",
+  latexContentEn: r"""
+
+<div class="theory-common-box">Proposition 1: field of a single virtual magnetic charge (virtual magnetic-charge model)</div>
+<p>
+If we assume the virtual magnetic-charge model, the magnetic field produced by a virtual magnetic charge $\displaystyle q_m$ at position $\displaystyle \vec{r}_q$ is written as an inverse-square field:
+$$
+\vec B(\vec r) = \frac{q_m}{4\pi}\frac{\vec r-\vec r_q}{|\vec r-\vec r_q|^3}
+$$
+※ Note: virtual magnetic charges have not been observed, so this model is only a convenient conceptual device.
+</p>
+
+
+<div class="theory-common-box">Proposition 2: Taylor expansion</div>
+When $|\vec{\epsilon}|$ is much smaller than $|\vec{r}|$, $|\vec{r}+\vec{\epsilon}|^{-3}$ can be approximated as:
+$$
+r^{-3} \left( 1 - 3 \frac{\hat r \cdot \vec \epsilon}{r} \right),
+$$
+
+<div class="proof-box">Proof</div>
+<p>
+$$\begin{aligned}
+\ \ &|\vec r+\vec\epsilon|^{-3}\\[6pt]
+=&(|\vec r+\vec\epsilon|^2)^{-\frac 2 3}\\[6pt]
+=&\bigl((\vec r+\vec\epsilon) \cdot (\vec r+ \vec \epsilon) )\bigr) ^{-\frac 2 3}\\[6pt]
+=&\bigl(|\vec r|^2+2 \vec v \cdot \vec \epsilon+ |\epsilon|^2\bigr) ^{-\frac 2 3}\\[6pt]
+=&\bigl(r^2+2 \vec v \cdot \vec \epsilon+ \epsilon^2 \bigr) ^{-\frac 2 3}\\[6pt]
+=&\Biggl(r^{2}\Bigl(1+2 \frac {\vec v \cdot \vec \epsilon}{r^2}+ \frac {\epsilon^2}{r^2} \Bigr)\Biggr) ^{-\frac 2 3}\\[6pt]
+=&r^{-3} \Bigl(1+2 \frac {\vec v \cdot \vec \epsilon}{r^2}+ \frac {\epsilon^2}{r^2} \Bigr) ^{-\frac 2 3}\\[6pt]
+=&r^{-3} \Bigl(1+x \Bigr) ^{-\frac 2 3}\ \ ;\ \ x:=2\frac{\vec r\cdot\vec\epsilon}{r^2}+\frac{\epsilon^2}{r^2}
+\end{aligned}$$
+
+Keeping the binomial expansion to first order,
+$$
+(1+x)^{-3/2}\fallingdotseq 1-\frac{3}{2}x
+$$
+
+Therefore
+$$\begin{aligned}
+|\vec r+\vec\epsilon|^{-3}&\fallingdotseq r^{-3}\Bigl(1-\frac{3}{2}\Bigl(2\frac{\vec r\cdot\vec\epsilon}{r^2}+\frac{\epsilon^2}{r^2}\Bigr)\Bigr)\\[6pt]
+&= r^{-3}\Bigl(1-3\frac{\vec r\cdot\vec\epsilon}{r^2}-\frac{3}{2}\frac{\epsilon^2}{r^2}\Bigr)
+\end{aligned}$$
+Keeping terms through first order in $\epsilon$,
+$$
+|\vec r+\vec\epsilon|^{-3}\fallingdotseq r^{-3}\Bigl(1-3\frac{\vec r\cdot\vec\epsilon}{r^2}\Bigr)
+\Bigr)
+$$
+Q.E.D
+</p>
+
+<div class="theory-common-box">Proposition 3 (magnetic field of a dipole in the virtual magnetic-charge model):
+When equal and opposite virtual magnetic charges $\displaystyle \pm q_m$ are located at $\displaystyle \pm \frac{1}{2}\vec{d}$, the field at a point with $\displaystyle |\vec{d}|\ll|\vec{r}|$ can be approximated as:
+$$
+\vec B(\vec r)=\frac{\mu_0}{4\pi r^3}\Bigl(-\vec m + 3(\vec m\cdot\hat r)\hat r\Bigr)
+$$
+where $ \displaystyle \vec m=\frac{q_m\vec d}{\mu_0}$, $ \displaystyle r=|\vec r|,\ \hat r=\displaystyle \frac{\vec r}{r}$.</div>
+<div class="paragraph-box">Proof</div>
+<p>
+The net field of the two virtual magnetic charges is
+$$\begin{aligned}
+&\ \ \ \ \ \vec B(\vec r) = \vec B_+ + \vec B_- \\[6pt]
+& = \frac{q_m}{4\pi}  \left( \frac{\vec r - \frac{1}{2}\vec d}{|\vec r - \frac{1}{2}\vec d|^3} - \frac{\vec r + \frac{1}{2}\vec d}{|\vec r + \frac{1}{2}\vec d|^3} \right)
+\end{aligned}$$
+
+Substituting $\displaystyle \vec{\epsilon}=\pm\frac{\vec{d}}{2}$ into Proposition 2 above yields
+$$
+\frac{1}{|\vec r \pm \frac{1}{2}\vec d|^3} \fallingdotseq \frac{1}{r^3} \left( 1 \mp 3 \frac{\vec r \cdot \vec d}{2 r^2} \right)
+$$
+.
+Hence, multiplying by $\displaystyle \vec{r}\mp\frac{1}{2}\vec{d}$ gives
+Multiplying by the numerator $\displaystyle \vec{r}\mp\frac12\vec{d}$ and writing the first-order expansion gives
+$$
+\frac{\vec r-\frac12\vec d}{\bigl|\vec r-\frac12\vec d\bigr|^3}=\frac{\vec r}{r^3}-\frac{\vec d}{2r^3}+\frac{3(\vec r\cdot\vec d)\vec r}{2r^5}+O\!\Bigl(\frac{|\vec d|^2}{r^4}\Bigr),
+$$
+$$
+\frac{\vec r+\frac12\vec d}{\bigl|\vec r+\frac12\vec d\bigr|^3}=\frac{\vec r}{r^3}+\frac{\vec d}{2r^3}-\frac{3(\vec r\cdot\vec d)\vec r}{2r^5}+O\!\Bigl(\frac{|\vec d|^2}{r^4}\Bigr)
+$$
+Taking the difference cancels the zeroth-order term $\displaystyle \frac{\vec{r}}{r^3}$, leaving only the first-order terms:
+$$
+\frac{\vec r-\frac12\vec d}{\bigl|\vec r-\frac12\vec d\bigr|^3}-\frac{\vec r+\frac12\vec d}{\bigl|\vec r+\frac12\vec d\bigr|^3}
+= -\frac{\vec d}{r^3}+\frac{3(\vec r\cdot\vec d)\vec r}{r^5}+O\!\Bigl(\frac{|\vec d|^2}{r^4}\Bigr)
+$$
+
+Multiplying by $\displaystyle \frac{q_m}{4\pi}$ gives the field; with $\displaystyle \vec{m}=q_m\vec{d}$ and $\hat{r}=\frac{\vec{r}}{r}$, we obtain
+$$\begin{aligned}
+&\vec B(\vec r)\\[6pt]
+\fallingdotseq &\frac{q_m}{4\pi r^3} \Biggl( - { \vec d}+\frac{3(\vec r\cdot\vec d)\vec r}{r^2}\Biggr)+O\!\Bigl(\frac{|\vec d|^3}{r^5}\Bigr)\\[6pt]
+\fallingdotseq &\frac{q_m}{4\pi r^3} \Biggl( - { \vec d}+3 \frac{\vec r}{r} \cdot\vec d \frac{\vec r}{r} \Biggr)+O\!\Bigl(\frac{|\vec d|^3}{r^5}\Bigr)\\[6pt]
+\fallingdotseq &\frac{\mu_0}{4\pi r^3} \Biggl( - \frac{q_m \vec d}{\mu_0}+3 \frac{\vec r}{r} \cdot \frac{q_m \vec d}{\mu_0} \frac{\vec r}{r} \Biggr)+O\!\Bigl(\frac{|\vec d|^3}{r^5}\Bigr)\\[6pt]
+\fallingdotseq &\frac{\mu_0}{4\pi r^3} \Bigl(- \vec m + 3(\vec m\cdot\hat r)\hat r \Bigr) + O\!\Bigl(\frac{|\vec d|^3}{r^5}\Bigr)
+\end{aligned}$$
+Discarding terms of order $|\vec{d}|^2$ and higher then yields the desired approximation.
+</p>
+
+<div class="theory-common-box">Definition (magnetic dipole moment)</div>
+<p>
+For a planar loop, define the magnetic dipole moment $\displaystyle \vec{m}$ by:
+$$
+\vec m = I\vec S
+$$
+Here $\displaystyle I$ is the loop current and $\displaystyle \vec{S}$ is the area vector of the loop (magnitude equal to the area; direction by the right-hand rule).
+</p>
+
+<div class="theory-common-box">Example: magnetic moment of a circular loop</div>
+<p>
+When a circular loop of radius $\displaystyle r$ carries current $\displaystyle I$, its magnetic moment is:
+$$
+\vec m = I \pi r^2\hat n
+$$
+</p>
+
+<div class="theory-common-box">Proposition 4 (torque on a square current loop): For a square loop of side $\displaystyle a$ centered at the origin in the $xy$-plane carrying current $\displaystyle I$ in a uniform field $\displaystyle \vec{B}=(B_x,B_y,B_z)$, the torque on the current loop is:
+$$
+\displaystyle \vec{\tau}=\vec{m}\times\vec{B},\ \ ; \ \ \vec{m}=I a^2\hat{k}
+$$</div>
+
+<div class="paragraph-box">Proof</div>
+
+<p>The general torque formula for circuit $C$ is</p>
+$$
+\displaystyle \vec{\tau}=\oint_{C} \vec{r}\times\bigl(Id\vec{l}\times\vec{B}\bigr)
+$$
+<p>Take the current counterclockwise as viewed from the origin, and traverse the sides AB → BC → CD → DA. Expand the integrand on each side and integrate.</p>
+
+<p><strong>Side AB</strong>:$ \displaystyle y=-\frac{a}{2},\ x\in[-\frac{a}{2},\frac{a}{2}],\ d\vec{l}=dx\hat{i},\ \vec{r}=x\hat{i}-\frac{a}{2}\hat{j}$</p>
+$$
+\displaystyle d\vec{l}\times\vec{B}=dx\hat{i}\times(B_x\hat{i}+B_y\hat{j}+B_z\hat{k})
+=dx(B_y\hat{k}-B_z\hat{j})
+$$
+Next,
+$$
+\displaystyle \vec{r}\times(d\vec{l}\times\vec{B})
+=(x\hat{i}-\frac{a}{2}\hat{j})\times(B_y\hat{k}-B_z\hat{j})dx
+$$
+Expanding by components,
+$$\begin{aligned}
+(x\hat{i})\times(B_y\hat{k}-B_z\hat{j})
+&=xB_y(\hat{i}\times\hat{k})-xB_z(\hat{i}\times\hat{j})\\[6pt]
+&=xB_y(-\hat{j})-xB_z(\hat{k})=-xB_y\hat{j}-xB_z\hat{k},\\[6pt]
+\left(-\frac{a}{2}\hat{j}\right)\times(B_y\hat{k}-B_z\hat{j})
+&=-\frac{a}{2}B_y(\hat{j}\times\hat{k})+0=-\frac{a}{2}B_y\hat{i}
+\end{aligned}$$
+Therefore
+$$
+\displaystyle \vec{r}\times(d\vec{l}\times\vec{B})
+=dx\bigl(-\frac{a}{2}B_y\hat{i}-xB_y\hat{j}-xB_z\hat{k}\bigr)
+$$
+Integrating in $\displaystyle x$ (odd terms in $x$ vanish),
+$$
+\displaystyle \vec{\tau}_{AB}=I\int_{-a/2}^{a/2}\bigl(-\frac{a}{2}B_y\hat{i}-xB_y\hat{j}-xB_z\hat{k}\bigr)dx
+=I\bigl(-\frac{a^2}{2}B_y\hat{i}\bigr)
+$$
+
+<p><strong>Side BC</strong>:$ \displaystyle  x=\frac{a}{2},\ y\in[-\frac{a}{2},\frac{a}{2}],\ d\vec{l}=dy\hat{j},\ \vec{r}=\frac{a}{2}\hat{i}+y\hat{j}$</p>
+$$
+\displaystyle d\vec{l}\times\vec{B}=dy\hat{j}\times(B_x\hat{i}+B_y\hat{j}+B_z\hat{k})
+=dy(-B_x\hat{k}+B_z\hat{i})
+$$
+Hence
+$$
+\displaystyle \vec{r}\times(d\vec{l}\times\vec{B})
+=(\frac{a}{2}\hat{i}+y\hat{j})\times(-B_x\hat{k}+B_z\hat{i})dy
+$$
+Evaluating each term,
+$$\begin{aligned}
+(\frac{a}{2}\hat{i})\times(-B_x\hat{k})&=\frac{a}{2}B_x\hat{j},\\[6pt]
+(y\hat{j})\times(-B_x\hat{k})&=-yB_x\hat{i},\\[6pt]
+(y\hat{j})\times(B_z\hat{i})&=-yB_z\hat{k}
+\end{aligned}$$
+（$ \displaystyle \hat{i}\times\hat{i}=\hat{j}\times\hat{j}=0$  terms omitted)
+Therefore
+$$
+\displaystyle \vec{r}\times(d\vec{l}\times\vec{B})=dy\bigl(-yB_x\hat{i}+\frac{a}{2}B_x\hat{j}-yB_z\hat{k}\bigr)
+$$
+Integrating in $\displaystyle y$,
+$$
+\displaystyle \vec{\tau}_{BC}=I\int_{-a/2}^{a/2}\bigl(-yB_x\hat{i}+\frac{a}{2}B_x\hat{j}-yB_z\hat{k}\bigr)dy
+=I\bigl(\frac{a^2}{2}B_x\hat{j}\bigr)
+$$
+
+<p><strong>Side CD</strong> (traverse $y=+\frac{a}{2}$ in the opposite sense): the same calculation as AB with orientation reversed gives</p>
+$$
+\displaystyle \vec{\tau}_{CD}=I\bigl(-\frac{a^2}{2}B_y\hat{i}\bigr)
+$$
+
+<p><strong>Side DA</strong> (traverse $x=-\frac{a}{2}$ in the opposite sense): similarly to BC,</p>
+$$
+\displaystyle \vec{\tau}_{DA}=I\bigl(\frac{a^2}{2}B_x\hat{j}\bigr)
+$$
+
+<p>Adding these contributions,</p>
+$$\begin{aligned}
+\displaystyle \vec{\tau}
+&=\vec{\tau}_{AB}+\vec{\tau}_{BC}+\vec{\tau}_{CD}+\vec{\tau}_{DA}\\[6pt]
+&=I\Bigl(-\frac{a^2}{2}B_y\hat{i}+\frac{a^2}{2}B_x\hat{j}-\frac{a^2}{2}B_y\hat{i}+\frac{a^2}{2}B_x\hat{j}\Bigr)\\[6pt]
+&=I\bigl(-a^2B_y\hat{i}+a^2B_x\hat{j}\bigr)\\[6pt]
+&=I a^2\bigl(-B_y\hat{i}+B_x\hat{j}\bigr)
+\end{aligned}
+$$
+
+<p>With magnetic moment $\displaystyle \vec{m}=I a^2\hat{k}$, the right-hand side matches $\displaystyle \vec{m}\times\vec{B}$. Q.E.D.</p>
+
+<hr style="margin:1.0em 0;">
+
+<div class="theory-common-box">Proposition 5 (torque on a circular coil):
+Consider a circular loop of radius $\displaystyle R$ centered at the origin in the $xy$-plane carrying current $\displaystyle I$ in a uniform field $\displaystyle \vec{B}=(B_x,B_y,B_z)$. The torque on the loop is then given by:
+$$
+\displaystyle \vec{\tau}=\vec{m}\times\vec{B},\qquad \vec{m}=I\pi R^2\hat{k}
+$$
+</div>
+
+<div class="paragraph-box">Proof</div>
+
+<p>Parametrize the position vector with angle $\displaystyle \theta$ as</p>
+$$
+\displaystyle \vec{r}(\theta)=R\cos\theta\hat{i}+R\sin\theta\hat{j},\qquad 0\le\theta<2\pi,
+$$
+, and the line element as
+$$
+\displaystyle d\vec{l}=\frac{d\vec{r}}{d\theta}d\theta =(-R\sin\theta\hat{i}+R\cos\theta\hat{j})d\theta.
+$$
+
+<p>The torque is</p>
+$$
+\displaystyle \vec{\tau}=I\oint \vec{r}\times\bigl(d\vec{l}\times\vec{B}\bigr)
+=I\int_{0}^{2\pi}\vec{r}(\theta)\times\bigl(d\vec{l}(\theta)\times\vec{B}\bigr)
+$$
+
+<p>First expand $\displaystyle d\vec{l}\times\vec{B}$:</p>
+$$\begin{aligned}
+\displaystyle d\vec{l}\times\vec{B}
+&=(-R\sin\theta\hat{i}+R\cos\theta\hat{j})\times(B_x\hat{i}+B_y\hat{j}+B_z\hat{k})d\theta\\[6pt]
+&= \Bigl[(-R\sin\theta)(B_x\hat{i}\times\hat{i})+(-R\sin\theta)(B_y\hat{i}\times\hat{j})+(-R\sin\theta)(B_z\hat{i}\times\hat{k})\\[6pt]
+&\qquad +(R\cos\theta)(B_x\hat{j}\times\hat{i})+(R\cos\theta)(B_y\hat{j}\times\hat{j})+(R\cos\theta)(B_z\hat{j}\times\hat{k})\Bigr]d\theta\\[6pt]
+&= \bigl(R\sin\theta B_z\hat{j} + R\sin\theta B_y\hat{k} - R\cos\theta B_x\hat{k} - R\cos\theta B_z\hat{i}\bigr)d\theta,
+\end{aligned}$$
+(rearranged using $\displaystyle \hat{i}\times\hat{j}=\hat{k}$, $\hat{j}\times\hat{i}=-\hat{k}$, etc.)
+
+<p>Next compute $\displaystyle \vec{r}\times(d\vec{l}\times\vec{B})$. First check the scalar product:</p>
+$$
+\displaystyle \vec{r}\cdot\vec{B}=R\cos\theta B_x+R\sin\theta B_y,
+\qquad
+\displaystyle \vec{r}\cdot d\vec{l}=R\cos\theta(-R\sin\theta d\theta)+R\sin\theta(R\cos\theta d\theta)=0
+$$
+($\displaystyle \vec{r}\cdot d\vec{l}=0$ expresses that the tangent and radius are orthogonal on the circle)
+
+<p>We expand components directly without the triple-product identity, using $d\vec{l}\times\vec{B}$ from above:</p>
+$$\begin{aligned}
+\displaystyle \vec{r}\times(d\vec{l}\times\vec{B})
+&=(R\cos\theta\hat{i}+R\sin\theta\hat{j})\\
+&\qquad\times\bigl( -R\cos\theta B_z\hat{i} + R\sin\theta B_z\hat{j} + (R\sin\theta B_y - R\cos\theta B_x)\hat{k} \bigr)d\theta
+\end{aligned}$$
+(the parentheses rearrange the previous expression by components)
+
+<p>Compute term by term:</p>
+$$\begin{aligned}
+\displaystyle &(R\cos\theta\hat{i})\times\bigl(-R\cos\theta B_z\hat{i}\bigr)=0,\\[6pt]
+\displaystyle &(R\cos\theta\hat{i})\times\bigl(R\sin\theta B_z\hat{j}\bigr)
+=R^2\cos\theta\sin\theta B_z(\hat{i}\times\hat{j})=R^2\cos\theta\sin\theta B_z\hat{k},\\[6pt]
+\displaystyle &(R\cos\theta\hat{i})\times\bigl((R\sin\theta B_y - R\cos\theta B_x)\hat{k}\bigr)\\[6pt]
+&\qquad=R^2\cos\theta\bigl(\sin\theta B_y - \cos\theta B_x\bigr)(\hat{i}\times\hat{k})\\[6pt]
+&\qquad=R^2\cos\theta\bigl(\sin\theta B_y - \cos\theta B_x\bigr)(-\hat{j})\\[6pt]
+&\qquad=-R^2\cos\theta\bigl(\sin\theta B_y - \cos\theta B_x\bigr)\hat{j}
+\end{aligned}$$
+and
+$$\begin{aligned}
+\displaystyle &(R\sin\theta\hat{j})\times\bigl(-R\cos\theta B_z\hat{i}\bigr)
+= -R^2\sin\theta\cos\theta B_z(\hat{j}\times\hat{i})\\[6pt]
+&\qquad= -R^2\sin\theta\cos\theta B_z(-\hat{k})=R^2\sin\theta\cos\theta B_z\hat{k},\\[6pt]
+\displaystyle &(R\sin\theta\hat{j})\times\bigl(R\sin\theta B_z\hat{j}\bigr)=0,\\[6pt]
+\displaystyle &(R\sin\theta\hat{j})\times\bigl((R\sin\theta B_y - R\cos\theta B_x)\hat{k}\bigr)\\[6pt]
+&\qquad=R^2\sin\theta\bigl(\sin\theta B_y - \cos\theta B_x\bigr)(\hat{j}\times\hat{k})\\[6pt]
+&\qquad=R^2\sin\theta\bigl(\sin\theta B_y - \cos\theta B_x\bigr)\hat{i}
+\end{aligned}$$
+
+<p>Adding these and collecting spatial components of $\displaystyle \vec{r}\times(d\vec{l}\times\vec{B})$ (the $\hat{k}$ part depending on $B_z$ cancels):</p>
+$$
+\displaystyle \vec{r}\times(d\vec{l}\times\vec{B})
+= d\theta R^2\Bigl( -B_y\cos\theta\sin\theta + B_x\cos^2\theta \Bigr)\hat{i}
++ d\theta R^2\Bigl( -B_y\sin^2\theta + B_x\sin\theta\cos\theta \Bigr)\hat{j}
+$$
+
+<p>Integrate from $\displaystyle 0$ to $\displaystyle 2\pi$ to obtain the torque components.</p>
+
+<p><strong>(x-component)</strong></p>
+$$\begin{aligned}
+\displaystyle \tau_x
+&=I\int_0^{2\pi} R^2\bigl(-B_y\cos\theta\sin\theta + B_x\cos^2\theta\bigr)d\theta\\[6pt]
+&=I R^2\Bigl(-B_y\int_0^{2\pi}\cos\theta\sin\theta d\theta + B_x\int_0^{2\pi}\cos^2\theta d\theta\Bigr)\\[6pt]
+&=I R^2\Bigl(-B_y\cdot 0 + B_x\cdot \pi\Bigr)\quad\Bigl(\int_0^{2\pi}\cos\theta\sin\theta d\theta=0,\ \int_0^{2\pi}\cos^2\theta d\theta=\pi\Bigr)\\[6pt]
+&=I\pi R^2 B_x
+\end{aligned}$$
+<p><strong>(y-component)</strong></p>
+$$\begin{aligned}
+\displaystyle \tau_y
+&=I\int_0^{2\pi} R^2\bigl(-B_y\sin^2\theta + B_x\sin\theta\cos\theta\bigr)d\theta\\[6pt]
+&=I R^2\Bigl(-B_y\int_0^{2\pi}\sin^2\theta d\theta + B_x\int_0^{2\pi}\sin\theta\cos\theta d\theta\Bigr)\\[6pt]
+&=I R^2\Bigl(-B_y\cdot \pi + B_x\cdot 0\Bigr)\\[6pt]
+&=-I\pi R^2 B_y
+\end{aligned}$$
+<p><strong>(z-component)</strong>: clearly $\displaystyle \tau_z=0$ from the above</p>
+
+<p>Therefore</p>
+$$
+\displaystyle \vec{\tau}=I\pi R^2\bigl(-B_y\hat{i}+B_x\hat{j}\bigr)
+$$
+With magnetic moment $\displaystyle \vec{m}=I\pi R^2\hat{k}$, the right-hand side matches $\displaystyle \vec{m}\times\vec{B}$.　Q.E.D</p>
+
+<hr style="margin:1.0em 0;">
+
+
+
+
+<div class="theory-common-box">Proposition 6 (far-field of a circular current): The magnetic field of a circular current loop of current $I$ and radius $a$ centered at the origin in the $xy$-plane can be approximated as follows when the observation point is far from the loop ($a \ll r$).
+$$
+\vec B(\vec r)= \displaystyle \frac{\mu_0}{4\pi r^3} \Bigl(-\vec m + 3(\vec m \cdot \hat{r})\hat{r}\Bigr)
+$$
+where、$\displaystyle \vec m= \pi a^2 I\hat{z}, \ \ r=|\vec r|, \ \ \hat{r}=\frac{\vec r}{r}$</div>
+
+<div class="proof-box">Proof</div>
+<p>
+With the loop center at the origin and the loop in the $xy$-plane, Biot–Savart’s law gives
+$$\begin{aligned}
+\vec{B}(\vec r)
+&= \displaystyle \frac{\mu_0 I}{4\pi}\oint_{\mathcal C}\frac{d\vec{\ell'}\times(\vec r-\vec r')}{|\vec r-\vec r'|^3},
+\end{aligned}$$
+is given by.
+Next, expand the kernel with respect to $\displaystyle \vec{r}'$ using Proposition 2:
+$\displaystyle \frac{\vec r-\vec r'}{|\vec r-\vec r'|^3}$
+ with $\displaystyle \hat{r}=\frac{\vec{r}}{r}$,
+$$\begin{aligned}
+\frac{\vec r-\vec r'}{|\vec r-\vec r'|^3}
+&= \displaystyle \frac{\hat{r}}{r^2} + \frac{3\hat{r}(\hat{r}\cdot\vec r')-\vec r'}{r^3} + O\!\Bigl(\frac{r'^2}{r^4}\Bigr)
+\end{aligned}$$
+Biot–Savart’s formula is
+$$\begin{aligned}
+\vec B(\vec r)
+&= \displaystyle \frac{\mu_0 I}{4\pi}\oint_{\mathcal C}\! d\vec{\ell'}\times\left[
+\frac{\hat{r}}{r^2} + \frac{3\hat{r}(\hat{r}\cdot\vec r')-\vec r'}{r^3} + O\!\Bigl(\frac{r'^2}{r^4}\Bigr)
+\right]
+\end{aligned}$$
+. Expanding this,
+$$\begin{aligned}
+\vec B(\vec r)
+&= \displaystyle \frac{\mu_0 I}{4\pi}\left[
+\frac{1}{r^2}\oint_{\mathcal C} d\vec{\ell'}\times\hat{r}
++\frac{1}{r^3}\oint_{\mathcal C} d\vec{\ell'}\times\big(3\hat{r}(\hat{r}\cdot\vec r')-\vec r'\big)
++O\!\Bigl(\frac{a^2}{r^4}\Bigr)
+\right].
+\end{aligned}$$
+
+The first term involves the total line element of a closed curve, which vanishes:
+$$\begin{aligned}
+\oint_{\mathcal C} d\vec{\ell'} &= \displaystyle \vec 0
+\quad\Longrightarrow\quad
+\oint_{\mathcal C} d\vec{\ell'}\times\hat{r}=\vec 0.
+\end{aligned}$$
+Hence the leading contribution is the second term.
+
+We now evaluate the second term with an explicit parametrization of the circular loop. Write the loop with angle $\displaystyle \varphi\in[0,2\pi)$ as
+$$\begin{aligned}
+\vec r'(\varphi) &= \displaystyle a(\cos\varphi,\ \sin\varphi,\ 0),\\[6pt]
+d\vec{\ell'}(\varphi) &= \displaystyle a(-\sin\varphi,\ \cos\varphi,\ 0)d\varphi
+\end{aligned}$$
+. Writing the observation direction as the constant vector $\displaystyle \hat{r}=(n_x,n_y,n_z)$, the integrand numerator
+$$\begin{aligned}
+\vec J(\varphi)
+&:= \displaystyle d\vec{\ell'}(\varphi)\times\big(3\hat{r}(\hat{r}\cdot\vec r'(\varphi))-\vec r'(\varphi)\big)
+\end{aligned}$$
+can be computed componentwise. First the inner product
+$$\begin{aligned}
+\hat{r}\cdot\vec r'(\varphi)
+&= \displaystyle a\bigl(n_x\cos\varphi+n_y\sin\varphi\bigr).
+\end{aligned}$$
+Therefore
+$$\begin{aligned}
+&\ \ 3\hat{r}(\hat{r}\cdot\vec r'(\varphi))-\vec r'(\varphi)\\[6pt]
+&= \displaystyle a\Bigl(3\hat{r}(n_x\cos\varphi+n_y\sin\varphi)-(\cos\varphi,\sin\varphi,0)\Bigr).
+\end{aligned}$$
+Crossing this with $\displaystyle d\vec{\ell'}(\varphi)=a(-\sin\varphi,\cos\varphi,0)\,d\varphi$ and integrating in $\varphi$, using known trigonometric integrals, yields
+$$\begin{aligned}
+\oint_{\mathcal C}\vec J(\varphi)
+&= \displaystyle a^2\pi\begin{pmatrix}3 n_x n_z\\[6pt] 3 n_y n_z\\[6pt] 3 n_z^2-1\end{pmatrix}.
+\end{aligned}$$
+<br>
+In compact vector form this is
+$$\begin{aligned}
+\oint_{\mathcal C} d\vec{\ell'}\times\big(3\hat{r}(\hat{r}\cdot\vec r')-\vec r'\big)
+&= \displaystyle \pi a^2\big(3\hat{r}(\hat{r}\cdot\hat{z})-\hat{z}\big),
+\end{aligned}$$
+(here $\displaystyle \hat{z}$ is the loop normal).
+<br>
+On the other hand, the magnetic moment $\vec{m}$ of the circular loop is, by definition,
+$$\begin{aligned}
+& \vec m = \displaystyle \pi a^2 I\hat{z}\\[6pt]
+\Leftrightarrow & \hat{z} = \vec m \displaystyle \frac{I}{\pi a^2}
+\end{aligned}$$
+, so
+$$\begin{aligned}
+&\ \displaystyle \pi a^2\big(3\hat{r}(\hat{r}\cdot\hat{z})-\hat{z}\big)\\[6pt]
+&= \displaystyle \frac{1}{I}\big(3\hat{r}(\hat{r}\cdot\vec m)-\vec m\big)
+\end{aligned}$$
+
+Substituting back into Biot–Savart, the leading term is
+$$\begin{aligned}
+\vec B(\vec r)
+&= \displaystyle \frac{\mu_0 I}{4\pi}\cdot\frac{1}{r^3}\cdot\frac{1}{I}\big(3\hat{r}(\hat{r}\cdot\vec m)-\vec m\big) + O\!\Bigl(\frac{a^2}{r^4}\Bigr)\\[6pt]
+&= \displaystyle \frac{\mu_0}{4\pi r^3}\Bigl(-\vec m + 3(\vec m \cdot \hat{r})\hat{r}\Bigr) +O\!\Bigl(\frac{a^2}{r^4}\Bigr)
+\end{aligned}$$
+Neglecting $\displaystyle O\bigl(\frac{a^2}{r^4}\bigr)$ for $a\ll r$ yields the desired formula.　Q.E.D<br>
+※ The error corresponds to quadrupole and higher multipoles and is of order $\displaystyle O\bigl(\frac{a^2}{r^4}\bigr)$ in the field.
+<div class="paragraph-box">Remark</div><br>
+Finally, as a special case on axis ($\displaystyle \hat{r}\parallel\vec{m}$), $\displaystyle \hat{r}\cdot\vec{m}=|\vec{m}|$, so
+$$\begin{aligned}
+&\ \ \  \vec B_{\text{axis}}(r)\\[6pt]
+&= \displaystyle \frac{\mu_0}{4\pi}\frac{2\vec m}{r^3}\\[6pt]
+&= \displaystyle \frac{\mu_0 I a^2}{2}\frac{\hat{z}}{r^3}
+\end{aligned}$$
+, which matches the known $r^{-3}$ decay on axis.
+</p>
+
+<div class="theory-common-box">
+Proposition 7 (equivalence of a circular current and a virtual magnetic-charge pair (dipole)): When $a \ll r$, the magnetic field of a circular current loop of current $I$ and radius $a$ equals that of a magnetic-charge pair (dipole) with charges $q_m = \pm \mu_0 \pi a I$ separated by distance $a$.
+</div>
+<div class="proof-box">Proof</div>
+From Propositions 3 and 6 above (dipole field in the virtual magnetic-charge model; far-field of a circular current), the following two formulas hold.
+<p>
+[1] When equal and opposite virtual magnetic charges $\displaystyle \pm q_m$ are at $(0,0,\pm\frac{a}{2})$, the field at a point with $\displaystyle |\vec{a}|=a\ll|\vec{r}|$ is
+$$\begin{aligned}
+\vec B(\vec r)=&\frac{\mu_0}{4\pi r^3}\Bigl(-\frac{q_m\vec a}{\mu_0} + 3(\frac{q_m\vec a}{\mu_0} \cdot \hat r)\hat r\Bigr)\\[6pt]
+=&\frac{\mu_0}{4\pi r^3}\Bigl(-\frac{q_m a \hat{z}}{\mu_0} + 3(\frac{q_m a \hat{z}}{\mu_0} \cdot \hat r)\hat r\Bigr)\\[6pt]
+\end{aligned}$$
+
+[2] The magnetic field of a circular current loop of current $I$ and radius $a$ centered at the origin in the $xy$-plane can be approximated as follows when the observation point is far from the loop ($a \ll r$).
+$$
+\vec B(\vec r)= \displaystyle \frac{\mu_0}{4\pi r^3} \Bigl(-\pi a^2 I\hat{z} + 3(\pi a^2 I\hat{z} \cdot \hat{r})\hat{r}\Bigr)
+$$
+For these to produce the same far field where $a \ll r$, it suffices that $q_m = \mu_0 \pi a I\,[\mathrm{Wb}]$.　 Q.E.D
+</p>
+
+
+<div class="theory-common-box">
+Proposition 8 (force of a magnetic field on a virtual magnetic charge): Treating a circular current loop of current $I$ and radius $a$ as equivalent to a magnetic-charge pair (dipole) with charges $\pm \mu_0 \pi a I$ separated by distance $a$, and taking the force on a charge $Q\,[\mathrm{Wb}]$ to be $Q \vec H$, the torque about the origin on the rotating current equals the torque about the origin on the magnetic charges.
+</div>
+<div class="proof-box">Proof</div>
+<p>
+[1] The torque on the circular current loop is, by Proposition 5,
+$$\displaystyle \vec{\tau}_{loop}=I \pi a^2\hat{k} \times\vec{B}$$
+
+[2] On the virtual magnetic-charge dipole side (place charges $+Q,-Q$ at $\vec{r}_\pm=\pm\frac{a}{2}\hat{z}$):
+Let the forces on the charges be $\vec{F}_\pm=\pm Q\,\vec{H}$.
+Using the assumption $Q = \mu_0 I\pi a$,
 $$\begin{aligned}
 \vec {\tau}
 = \mu_0 I\pi a^2 \hat z \times \vec H

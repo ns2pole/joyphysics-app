@@ -2,7 +2,9 @@ import '../../model.dart';
 
 final rcCircuitTheory = TheoryTopic(
   title: 'RC回路微分方程式の解(充電)',
+  titleEn: 'Solution of the RC circuit differential equation (charging)',
   videoURL: "oVY3-umLN14",
+  videoURLEn: "Z9iSewjr7DA",
   imageAsset: 'assets/mindMap/forTopics/rcCircuit.png', // 実際の画像パス
   latexContent: r"""
 
@@ -123,6 +125,126 @@ ${\displaystyle I(t)=C\cdot V_0\cdot\frac{1}{RC}e^{-\frac{t}{RC}}=\frac{V_0}{R}e
 時定数 ${\displaystyle \tau=RC}$ は時間の尺度を与え，充電・放電の指数的変化の速さを決定する。特に ${\displaystyle t=\tau}$ において
 ${\displaystyle V_c(\tau)=V_0(1-e^{-1})\fallingdotseq 0.632\,V_0}$
 が成立する。
+
+""",
+  latexContentEn: r"""
+
+<div class="theory-common-box">Definition (RC circuit)</div>
+•A circuit with a resistor ${R}$ and a capacitor ${C}$ in series is called an RC circuit.<br>
+•An RC circuit describes the time-dependent voltage change associated with charge storage and release.<br>
+  <div style="text-align:center; margin:1em 0;">
+    <img src="assets/electroMagnetismTheory/rcCircuit.png"
+          alt=""
+          style="max-width:75%; height:auto;" />
+  </div>
+<div class="theory-common-box">Symbols and sign convention</div>
+•${V_0}$: source voltage<br>
+•${V_c(t)}$: capacitor voltage (potential difference between the positive and negative plates)<br>
+•${I(t)}$: current in the circuit (positive direction defined from the source through the resistor toward the capacitor)<br>
+•${Q(t)}$: capacitor charge (charge on the positive plate), satisfying ${Q(t)=C\,V_c(t)}$ (sign consistent with the above orientation)<br>
+
+<div class="theory-common-box">Basic equation (Kirchhoff)</div>
+•By Kirchhoff's law, the source voltage equals the sum of the resistor drop and the capacitor voltage:
+$${\displaystyle R\,I(t) + V_c(t)=V_0}$$
+•The current through the capacitor is the rate of change of charge:
+$${\displaystyle I(t)= Q'(t)=C\,V_c'(t)}$$
+Combining these yields the basic differential equation
+$${\displaystyle RC\,V_c'(t) + V_c(t) = V_0}$$
+
+
+<div class="theory-common-box">Proposition 1 (derivation of the basic equation): The capacitor voltage obeys
+${\displaystyle RC\,V_c'(t) + V_c(t) = V_0.}$
+</div>
+
+<div class="proof-box">Proof</div><p>
+With current ${\displaystyle I(t)}$ from the source through the resistor to the capacitor, Ohm's law gives a drop ${\displaystyle R\,I(t)}$, and going around the loop,
+${\displaystyle R\,I(t)+V_c(t)=V_0}$
+.<br>
+Also ${\displaystyle I(t)=Q'(t)}$ and ${\displaystyle Q=C\,V_c}$, so
+$${\displaystyle I(t)=C\,V_c'(t)}$$
+. Substituting and rearranging,
+\begin{aligned}
+& R\bigl(C\,V_c'(t)\bigr)+V_c(t)=V_0\\[6pt]
+\Leftrightarrow \ \  & RC\,V_c'(t)+V_c(t)=V_0
+\end{aligned}
+.　Q.E.D
+
+</p><div class="theory-common-box">Proposition 2 (particular solution): For the nonhomogeneous equation
+${\displaystyle RC\,V_c'(t)+V_c(t)=V_0}$,
+the constant solution is ${\displaystyle V_p=V_0}$.
+</div>
+
+<div class="proof-box">Proof</div><p>
+Seek a constant solution ${V_p}$ of ${\displaystyle RC\,V_c'(t)+V_c(t)=V_0}$. Since ${V_p' = 0}$,
+$${RC\cdot 0 + V_p = V_0}$$
+, hence ${V_p=V_0}$.　Q.E.D
+
+
+</p><div class="theory-common-box">Proposition 3 (reduction to homogeneous form): If
+${\displaystyle RC\,V_c'(t)+V_c(t)=V_0}$,
+then $u(t):=V_c(t)-V_p$ satisfies
+$$RC\,u'(t) + u(t) = 0$$
+</div>
+
+<div class="proof-box">Proof</div><p>
+By Proposition 2, the constant $V_0$ solves ${\displaystyle RC\,V_c'(t)+V_c(t)=V_0}$, so
+$$
+\displaystyle RC\,V_0'+ V_0=V_0
+$$
+. Subtracting from the differential equation,
+\begin{aligned}
+&RC\,(V_c'(t)-V_0')+V_c(t)-V_0=V_0-V_0\\[6pt]
+\Leftrightarrow \ & RC\,(V_c(t)-V_0)'+V_c(t)-V_0=0
+\end{aligned}
+. Setting ${u(t):=V_c(t)-V_0}$,
+$${RC\,u'(t) + u(t) = 0}$$
+.　Q.E.D
+
+</p><div class="theory-common-box">Proposition 4 (homogeneous solution): The solution of ${\displaystyle RC\,u'(t)+u(t)=0}$ is
+$${\displaystyle u(t)=u(0)\,e^{-\frac{t}{RC}}}$$</div>
+
+<div class="proof-box">Proof</div><p>
+Separating variables,
+$${\displaystyle\frac{1}{u(t)}u'(t)=-\frac{1}{RC}}$$
+. Integrating from $0$ to $t$,
+$${\displaystyle\int_{0}^{t}\frac{1}{u(t')}\frac{du}{dt'}\,dt'=\int_{0}^{t}-\frac{1}{RC}\,dt'}$$
+.<br> 
+<div class="paragraph-box">Right-hand side</div><br> 
+${\displaystyle -\frac{t}{RC}}$.<br> 
+<div class="paragraph-box">Left-hand side</div><br> 
+With $s=u(t')$, \begin{aligned} \int_{u(0)}^{u(t)}\frac{1}{s}\,ds &=\ln|u(t)|-\ln|u(0)|\\[6pt] &=\ln\!\Biggl(\frac{|u(t)|}{|u(0)|}\Biggr) \end{aligned}.<br><br> 
+Hence $${\displaystyle\ln\!\Biggl(\frac{|u(t)|}{|u(0)|}\Biggr)=-\frac{t}{RC}}$$ 
+and $${\displaystyle u(t)=u(0)\,e^{-\frac {t} {RC}}}$$.　Q.E.D
+
+</p><div class="theory-common-box">Proposition 5 (charging solution): Under ${\displaystyle V_c(0)=0}$, the solution of
+${\displaystyle RC\,V_c'(t)+V_c(t)=V_0}$
+is
+$${\displaystyle V_c(t)=V_0\bigl(1-e^{-\frac{t}{RC}}\bigr)}$$
+</div>
+
+<div class="proof-box">Proof</div><p>
+By Propositions 2–4, ${\displaystyle V_c(t)=V_p+u(t)}$ with ${\displaystyle V_p=V_0}$ and ${\displaystyle u(t)=u(0)e^{-\frac{t}{RC}}}$. The initial condition gives
+${\displaystyle u(0)=V_c(0)-V_p=0-V_0=-V_0}$,
+so
+${\displaystyle V_c(t)=V_0 + \bigl(-V_0\bigr)e^{-\frac{t}{RC}} = V_0\bigl(1-e^{-\frac{t}{RC}}\bigr)}$
+.　Q.E.D
+
+</p><div class="theory-common-box">Proposition 6 (current and initial current): During charging,
+$${\displaystyle I(t)=\frac{V_0}{R}\,e^{-\frac{t}{RC}}}$$
+※ In particular ${\displaystyle I(0)=\frac{V_0}{R}}$.
+</div>
+
+<div class="proof-box">Proof</div><p>
+${\displaystyle I(t)=C\,V_c'(t)}$. Differentiating Proposition 5,
+${\displaystyle V_c'(t)=V_0\cdot\frac{1}{RC}e^{-\frac{t}{RC}}}$,
+so
+${\displaystyle I(t)=C\cdot V_0\cdot\frac{1}{RC}e^{-\frac{t}{RC}}=\frac{V_0}{R}e^{-\frac{t}{RC}}}$
+.<br>
+At $t=0$, ${\displaystyle I(0)=\frac{V_0}{R}}$.　Q.E.D
+
+</p><div class="theory-common-box">Remark: time constant</div>
+The time constant ${\displaystyle \tau=RC}$ sets the time scale of exponential charging/discharging. At ${\displaystyle t=\tau}$,
+${\displaystyle V_c(\tau)=V_0(1-e^{-1})\fallingdotseq 0.632\,V_0}$.
 
 """,
 );

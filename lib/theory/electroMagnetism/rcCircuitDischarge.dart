@@ -2,6 +2,7 @@ import '../../model.dart';
 
 final rcCircuitDischarge = TheoryTopic(
   title: 'RC回路微分方程式の解(放電)',
+  titleEn: 'Solution of the RC circuit differential equation (discharging)',
   imageAsset: 'assets/mindMap/forTopics/rcCircuitDischarge.png',
   latexContent: r"""
 
@@ -105,5 +106,105 @@ V_c(\tau) = V_0\,e^{-1} \fallingdotseq 0.368\,V_0
 ・時定数 $\tau=RC$ が放電の速さを決める。<br>
 ・方程式は一階線形常微分方程式であり，任意の初期条件に対して解は一意に存在する。
 
+""",
+  latexContentEn: r"""
+
+<div class="theory-common-box">Setup and notation</div>
+  <div style="text-align:center; margin:1em 0;">
+    <img src="assets/electroMagnetismTheory/rcCircuitDischarge.png"
+         alt=""
+         style="max-width:75%; height:auto;" />
+  </div>
+•$C$: capacitance of the capacitor<br>
+•$R$: resistance<br>
+•${V_0}$: capacitor voltage just before discharge starts (initial voltage) ${\displaystyle V_c(0)=V_0}$<br>
+•${Q_0}$: charge on the capacitor just before discharge starts. ${\displaystyle Q_0=Q(0)=CV_0}$<br>
+•${V_c(t)}$: capacitor voltage (potential difference between plates).<br>
+•${I(t)}$: current in the circuit. The positive sense is “from the resistor toward the capacitor (same as during charging)” (under this convention $I(t)$ is negative during discharge).<br>
+•${Q(t)}$: charge stored on the capacitor (charge on the positive plate); ${\ \displaystyle Q(t)=C\,V_c(t)}$ (sign consistent with the above orientation)<br>
+
+<div class="theory-common-box">Proposition 1 (derivation of the basic equation): The time evolution of the charge on the capacitor obeys
+$$\begin{aligned}
+Q'(t) = -\frac{Q(t)}{RC}
+\end{aligned}$$
+</div>
+
+<div class="proof-box">Proof</div><p>
+Going around the loop, with no source the sum of the resistor and capacitor voltages is
+$$\begin{aligned}
+R\,I(t) + V_c(t) = 0
+\end{aligned}$$
+. Since $\displaystyle V_c(t)=\frac{Q(t)}{C}$,
+$$\begin{aligned}
+R\,I(t) + \frac{Q(t)}{C} = 0
+\end{aligned}$$
+. With $Q'(t)=I(t)$,
+$$\begin{aligned}
+&\ R\,Q'(t) + \frac{Q(t)}{C} = 0\\[6pt]
+\Leftrightarrow &\ Q'(t) = -\frac{Q(t)}{RC}
+\end{aligned}$$
+　Q.E.D
+</p>
+
+<div class="theory-common-box">Proposition 2 (discharge solution): Under ${\displaystyle Q(0)=Q_0=C V_0}$, the solution of
+$\displaystyle Q'(t) = -\frac{Q(t)}{RC}$ is
+$ \displaystyle Q(t)=Q_0\,e^{-\frac{t}{RC}}$.<br>
+Also, from \( \displaystyle V_c(t)=\frac{Q(t)}{C}\),
+$\displaystyle V_c(t)= V_0\,e^{-\frac{t}{RC}}$.
+</div>
+<div class="proof-box">Proof</div><p>
+Solving the first-order linear homogeneous ODE \( \displaystyle Q'(t) + \frac{1}{RC}Q(t)=0\) with \( \displaystyle Q(0)=Q_0\) gives
+$$\begin{aligned}
+Q(t)=Q_0 e^{-\frac{t}{RC}}
+\end{aligned}$$
+. Substituting into \( \displaystyle V_c(t)=\frac{Q(t)}{C}\) yields \( \displaystyle V_c(t)=V_0 e^{-\frac{t}{RC}}\). Q.E.D
+</p>
+
+<div class="theory-common-box">Proposition 3 (current and initial current): During discharge the circuit current is
+$$\begin{aligned}
+I(t)= -\frac{V_0}{R}\,e^{-\frac{t}{RC}}
+\end{aligned}$$
+※ In particular the initial current is ${\displaystyle I(0)=-\frac{V_0}{R}}$, meaning it is opposite to the defined positive direction.
+</div>
+
+<div class="proof-box">Proof</div><p>
+From Proposition 2, \( \displaystyle Q(t)=Q_0 e^{-\frac{t}{RC}}\), so
+$\displaystyle Q'(t) = -\frac{Q_0}{RC} e^{-\frac{t}{RC}}.$
+Hence
+$$\begin{aligned}
+I(t) = -\frac{Q_0}{RC} e^{-\frac{t}{RC}} = -\frac{V_0}{R} e^{-\frac{t}{RC}}
+\end{aligned}$$
+.　Q.E.D
+</p>
+
+<div class="theory-common-box">Proposition 4 (uniqueness of the ODE solution)
+For the first-order linear ODE
+$$\begin{aligned}
+Q'(t) = -\frac{Q(t)}{RC}
+\end{aligned}$$
+, for any initial condition ${\displaystyle Q(0)=Q_0}$ a unique solution exists.</div>
+
+<div class="proof-box">Proof</div><p>
+<div class="paragraph-box">Existence</div><br>
+Existence was already shown above.<br>
+<div class="paragraph-box">Uniqueness</div><br>
+Suppose two solutions ${\displaystyle Q_1(t)}$ and ${\displaystyle Q_2(t)}$ share the same initial condition. Their difference ${\displaystyle w(t):=Q_1(t)-Q_2(t)}$ satisfies
+$$\begin{aligned}
+w'(t) = -\frac{1}{RC} w(t)
+\end{aligned}$$
+with ${\displaystyle w(0)=0}$. Solving as above, \( \displaystyle w(t)=w(0)e^{-\frac{t}{RC}}=0\), so ${\displaystyle Q_1(t)=Q_2(t)}$.　Q.E.D
+</p>
+
+<div class="theory-common-box">Appendix: time constant and physical meaning</div>
+The time constant ${\displaystyle \tau=RC}$ sets the exponential decay scale. At ${\displaystyle t=\tau}$,
+$$\begin{aligned}
+V_c(\tau) = V_0\,e^{-1} \fallingdotseq 0.368\,V_0
+\end{aligned}$$
+i.e. it has fallen to about $36.8\%$ of the initial value. The absolute value of the current decays similarly.
+
+<div class="theory-common-box">Summary</div>
+•During discharge the capacitor charge decays exponentially: $Q(t)=Q_0 e^{-\frac{t}{RC}}$, and $V_c(t)=V_0 e^{-\frac{t}{RC}}$.<br>
+•The current is $I(t)=-\displaystyle\frac{V_0}{R}e^{-\frac{t}{RC}}$, negative relative to the defined positive direction (actual flow is opposite).<br>
+•The time constant $\tau=RC$ determines the discharge rate.<br>
 """,
 );

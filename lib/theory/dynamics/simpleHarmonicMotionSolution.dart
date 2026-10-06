@@ -2,6 +2,7 @@ import '../../model.dart';
 
 final simpleHarmonicMotionSolution = TheoryTopic(
   title: '単振動の運動方程式の解',
+  titleEn: 'Solution of the equation of motion for simple harmonic motion',
   isNew: false,
   imageAsset: 'assets/mindMap/forTopics/simpleHarmonicMotionSolution.png',
   latexContent: r"""
@@ -79,6 +80,82 @@ $\psi(t)=\alpha$
 近傍の任意の $\displaystyle t\neq t_0$ では $\displaystyle \psi(t)\neq\frac{\pi}{2}+n\pi$ である．<br>
 すなわち $\cos\psi(t)\neq0$ が $t_0$ の十分小さい近傍で成り立つので，
 $t_0$ は孤立点である．　Q.E.D
+</p>
+""",
+  latexContentEn: r"""
+<div class="theory-common-box">Proposition (solution of the SHM equation of motion):
+The solution of $mx''(t)= -kx(t)$ is
+$$\begin{aligned}
+x(t) = A\sin \Bigl(\sqrt {\frac{k}{m}}t + C\Bigr)
+\end{aligned}$$
+($E,C$ are constants fixed by the initial position and velocity).
+</div>
+
+<p><div class="proof-box">Proof</div>
+From energy conservation,
+$\displaystyle E = \frac{1}{2}mx'(t)^2 + \frac {1}{2}k x(t)^2$
+is constant in time. Dividing both sides by $E$,
+$$\begin{aligned}
+1 &=  \displaystyle \frac{x'(t)^2}{\frac{2E}{m}} + \displaystyle \frac{x(t)^2}{\frac{2E}{k}} \\[6pt]
+\end{aligned}$$
+This is the equation of an ellipse, so with a parameter $\psi$,
+$$\begin{aligned}
+\begin{cases}
+x(t) = \displaystyle \sqrt{\frac{2E}{k}} \sin \psi(t), \\[6pt]
+x'(t) = \displaystyle \sqrt{\frac{2E}{m}} \cos \psi(t)\  \cdots (1)
+\end{cases}
+\end{aligned}$$
+Differentiating the upper equation,
+$$\begin{aligned}
+x'(t) &= \psi '(t)\,\sqrt {\frac{2E}{k}}\cos\psi(t) \cdots (2)
+\end{aligned}$$
+Matching with the lower equation,
+$$\begin{aligned}
+\sqrt {\frac{2E}{m}}\cos\psi(t) = \psi '(t)\,\sqrt {\frac{2E}{k}}\cos\psi(t) \\[6pt]
+\end{aligned}$$
+Agreement of both sides requires
+$$\Rightarrow \psi '(t) = \sqrt{\frac{k}{m}}$$
+(see the remark below for sufficiency).
+Hence with an integration constant $C$,
+$$
+\begin{aligned}
+\psi(t)=\sqrt{\frac{k}{m}}t + C,
+\end{aligned}
+$$
+and therefore
+$$
+\begin{aligned}
+x(t) &= \sqrt { \frac{2E}{k}} \sin\psi(t)\\[6pt]
+&= \sqrt { \frac{2E}{k}}\sin\Bigl(\sqrt {\frac{k}{m}}t + C\Bigr).
+\end{aligned}
+$$
+Setting $\displaystyle A=\sqrt{\frac{2E}{k}}$ yields the solution
+$$
+x(t) = A\sin \Bigl(\sqrt {\frac{k}{m}}t + C\Bigr)
+$$
+Q.E.D</p>
+
+<div class="theory-common-box">Proposition (functional form of $\psi(t)$): If $\psi(t)$ is continuous and strictly monotonic, then
+$$\begin{aligned}
+\sqrt {\frac{2E}{m}}\cos\psi(t) &= \psi '(t)\,\sqrt {\frac{2E}{k}}\cos\psi(t) \\[6pt]
+\Rightarrow \psi '(t) &= \sqrt{\frac{k}{m}}
+\end{aligned}$$
+holds.</div>
+<p><div class="proof-box">Proof</div>
+By the lemma below, times with $\cos\psi(t)=0$ are isolated and can be filled in by continuity of $\psi(t)$, so for all $t$ one obtains
+$\displaystyle \psi(t)=\sqrt{\frac{k}{m}}t + C\ $ ($C$ an integration constant). Hence $\displaystyle \psi '(t) = \sqrt{\frac{k}{m}}$.  Q.E.D
+</p>
+<div class="theory-common-box">Lemma: If $\psi(t)$ is continuous and strictly monotonic (increasing or decreasing), then times $t$ with
+$\cos\psi(t)=0$ are isolated.
+</div>
+<p><div class="proof-box">Proof</div>
+$\displaystyle \cos\psi(t)=0$ is equivalent to $\displaystyle \psi(t)=\frac{\pi}{2}+n\pi\ (\text{$n$ an integer})$.<br>
+If $\psi$ is continuous and strictly monotonic, then for any constant $\alpha$ the equation
+$\psi(t)=\alpha$
+has at most one solution.<br>
+Hence if $\displaystyle \psi(t_0)=\frac{\pi}{2}+n\pi$ at some $t_0$,
+then for any nearby $\displaystyle t\neq t_0$ one has $\displaystyle \psi(t)\neq\frac{\pi}{2}+n\pi$.<br>
+Thus $\cos\psi(t)\neq0$ in a sufficiently small neighborhood of $t_0$, so $t_0$ is isolated.　Q.E.D
 </p>
 """
 );

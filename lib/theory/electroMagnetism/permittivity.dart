@@ -2,6 +2,7 @@ import '../../model.dart';
 
 final permittivity = TheoryTopic(
   title: '分極, 電気感受率, 誘電率, 比誘電率',
+  titleEn: 'Polarization, electric susceptibility, permittivity, and relative permittivity',
   imageAsset: 'assets/mindMap/forTopics/permittivity.png',
 
   latexContent: r"""
@@ -93,6 +94,97 @@ $$
 <p><div class="proof-box">証明</div>
 線形媒質の場合、$\vec D = \varepsilon \vec E\ $であるが、比透磁率の定義より、$\varepsilon = \varepsilon_r \varepsilon_0\  $なので、
 $\displaystyle \vec D = \varepsilon \vec E = \varepsilon_r \varepsilon_0 \vec E\ $となる。　Q.E.D
+</p>
+
+""",
+  latexContentEn: r"""
+
+<div class="theory-common-box">Definition (vacuum permittivity: $\varepsilon_0$)</div>
+<p>
+The vacuum permittivity is an electromagnetic constant; in SI units its approximate value is
+$$
+\displaystyle \varepsilon_0 \fallingdotseq 8.854\,187\,817\times 10^{-12}\ \mathrm{F/m}
+$$
+.
+</p>
+
+
+<div class="theory-common-box">Definition (electric dipole)</div>
+<p>
+When two point charges $+q$ and $-q$ of equal magnitude and opposite sign are separated by a displacement vector $\vec d$,
+the pair is an electric dipole. By convention $\vec d$ points from the negative to the positive charge, and the electric dipole moment $\vec p$ is
+$$
+\vec p = q \vec d
+$$
+(unit: $C\cdot m$).
+</p>
+
+<div class="theory-common-box">Definition (polarization)</div>
+<p>
+When an external electric field is applied, electron clouds in molecules or atoms of a dielectric shift slightly relative to the nuclei,
+so the centers of positive and negative charge separate. This phenomenon is polarization. (As a result, an electric dipole is induced in each molecule or atom.)
+</p>
+
+<div class="theory-common-box">Definition (polarization vector)</div>
+<p>
+When an electric field is applied to a dielectric, its constituent molecules polarize and electric dipoles appear. The electric dipole moment per unit volume is called the polarization vector.
+</p>
+
+
+<div class="theory-common-box">Definition (electric susceptibility: $\chi_e\ $)</div>
+<p>
+When the polarization vector responds linearly to the applied field, it can be written
+$$
+\displaystyle \vec P = \chi_e\,\varepsilon_0\,\vec E
+$$
+where $\chi_e$ is the electric susceptibility, measuring the strength of the dipole response in the medium.
+</p>
+
+<div class="theory-common-box">Definition (electric displacement)</div>
+Define the electric displacement $\vec D$ from the electric field and the polarization $\vec P$ by
+$$
+\vec D = \varepsilon_0 \vec E + \vec P
+$$
+
+
+<div class="theory-common-box">Proposition (electric displacement in vacuum):
+In vacuum the relation between $\vec D$ and $\vec E$ is
+$$
+\vec D = \varepsilon_0 \vec E
+$$  
+</div>
+<div class="proof-box">Proof</div>
+In vacuum there is no polarization, so $\vec P = \vec 0\ $, and the result follows at once. Q.E.D
+</p>
+
+<div class="theory-common-box">Definition (permittivity: $\varepsilon$)</div>
+<p>
+Combining $\vec D=\varepsilon_0\vec E+\vec P$ with $\vec P = \chi_e \varepsilon_0 \vec E$, in a linear isotropic medium one obtains
+$$\begin{aligned}
+\vec D &= \varepsilon_0\vec E+\vec P\\[6pt]
+ &=\varepsilon_0\vec E + \chi_e\,\varepsilon_0\,\vec E\\[6pt]
+&= \varepsilon \vec E \quad ;\ \varepsilon=\varepsilon_0(1+\chi_e)
+\end{aligned}$$
+. This $\varepsilon$ is the permittivity of the medium. The unit is farad per meter ($\mathrm{F/m}$).
+</p>
+
+<div class="theory-common-box">Definition (relative permittivity: $\varepsilon_r$)</div>
+<p>
+$$
+\displaystyle \varepsilon_r \equiv \frac{\varepsilon}{\varepsilon_0} = 1+\chi_e
+$$
+is the relative permittivity. In vacuum $\varepsilon_r=1$.
+</p>
+
+
+<div class="theory-common-box">Proposition (electric field $\vec E$ in a linear medium): In a linear medium, using the definitions above, the electric displacement can be written in terms of $\vec E$ as
+$$
+\displaystyle \vec D = \varepsilon_r \varepsilon_0 \vec E
+$$
+</div>
+<p><div class="proof-box">Proof</div>
+In a linear medium $\vec D = \varepsilon \vec E\ $, and by definition $\varepsilon = \varepsilon_r \varepsilon_0\ $, so
+$\displaystyle \vec D = \varepsilon \vec E = \varepsilon_r \varepsilon_0 \vec E\ $.　Q.E.D
 </p>
 
 """,

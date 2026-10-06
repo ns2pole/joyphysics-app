@@ -5,5 +5,6 @@ final moment_of_inertia = TheoryTopic(
   imageAsset: 'assets/mindMap/forTopics/moment_of_inertia.png',
   
   title: '慣性モーメント',
+  titleEn: 'Moment of inertia',
   latexContent: r""""""
 );

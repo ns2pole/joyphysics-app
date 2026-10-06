@@ -2,6 +2,7 @@ import '../../model.dart';
 
 final surfaceGravAndFookEnergyConservation = TheoryTopic(
   title: '地上の重力と弾性力の下でのエネルギー保存',
+  titleEn: 'Energy conservation under surface gravity and elastic force',
   isNew: false,
   imageAsset: 'assets/mindMap/forTopics/surfaceGravAndFookEnergyConservation.png',
   latexContent: r"""
@@ -35,6 +36,39 @@ $$
 E = \tfrac{1}{2} m v(t)^2 + \tfrac{1}{2} k x(t)^2 + mgx(t)
 $$
 となる。符号の違いは座標系の取り方によるものであり、物理的な意味は基準エネルギーの定数差にすぎない。
+</p>
+""",
+  latexContentEn: r"""
+<div class="theory-common-box">Proposition (energy conservation for a system with both a spring and gravity):
+When the equation of motion $m x''(t) = -kx(t) + mg$ holds,
+$$\begin{aligned}
+E = \frac{1}{2}m v(t)^2 + \frac{1}{2}k x(t)^2 - mgx(t)
+\end{aligned}$$
+is constant in time.
+</div>
+
+<p><div class="proof-box">Proof</div>
+It suffices to show that the time derivative vanishes. Multiplying both sides by $x'(t)$ gives
+$$\begin{aligned}
+\ \ \ \ \ \ \ &m x'(t)x''(t) = -k x(t) x'(t) + mg x'(t) \\[6pt]
+\Leftrightarrow \ &\Bigl[\frac{1}{2}m \bigl(x'(t)\bigr)^2\Bigr]' = \Bigl[-\frac{1}{2}k \bigl(x(t)\bigr)^2 + mg x(t)\Bigr]' \\[6pt]
+\Leftrightarrow \ &\Bigl[\frac{1}{2}m \bigl(x'(t)\bigr)^2 + \frac{1}{2}k \bigl(x(t)\bigr)^2 - mg x(t)\Bigr]' = 0
+\end{aligned}$$
+Q.E.D.
+</p>
+
+<div class="theory-common-box">Remark (choice of coordinates)</div>
+<p style="margin-left:22px; line-height:1.5;">
+In this proposition the positive direction is taken vertically downward, so energy conservation takes the form
+$$
+E = \frac{1}{2} m v(t)^2 + \frac{1}{2} k x(t)^2 - mgx(t)
+$$
+.<br>
+If the positive direction is taken vertically upward, the equation of motion becomes $m x''(t) = -kx(t) - mg$, and the gravitational potential term becomes $+mgx(t)$. The conserved quantity is then
+$$
+E = \frac{1}{2} m v(t)^2 + \frac{1}{2} k x(t)^2 + mgx(t)
+$$
+. The sign difference comes only from the choice of coordinates and amounts to a constant shift of the reference energy.
 </p>
 """
 );

@@ -2,6 +2,7 @@ import '../../model.dart';
 
 final doubleMassPoint = TheoryTopic(
   title: '2質点系における諸命題',
+  titleEn: 'Propositions for two-particle systems',
   isNew: false,
   imageAsset: 'assets/mindMap/forTopics/doubleMassPoint.png', // 実際の画像パス
   latexContent: r"""
@@ -144,5 +145,139 @@ m_2\overrightarrow{r}_2''(t) = \ \overrightarrow{F}_{2\leftarrow1}(t),
 \end{cases}
 \end{aligned}$$
 すなわち元の二つの運動方程式が得られる。　 Q.E.D</p>
+""",
+  latexContentEn: r"""
+<div class="theory-common-box">Definition: A problem involving only two particles is called the two-body problem.</div>
+<br>
+<div class="theory-common-box">Definition: For masses $m_1$ and $m_2$, $\mu= \displaystyle\frac {m_1 m_2}{m_1 + m_2}$ is the reduced mass of particles 1 and 2.</div>
+<br>
+<div class="theory-common-box">Definition: With position vectors $\overrightarrow{r_1}(t),\overrightarrow{r_2}(t)$, the relative position of particle 2 as seen from particle 1 is $\overrightarrow{R}_{2 \leftarrow 1}(t) = \overrightarrow{r_2}(t) - \overrightarrow{r_1}(t)$.</div>
+<br>
+<div class="theory-common-box">Definition: The equation describing the time evolution of that relative position is the relative equation of motion of particle 2 with respect to particle 1 (see below).
+</div>
+<br>
+
+<div class="theory-common-box">Proposition 1: In the two-body problem the center of mass of the two particles moves in uniform straight-line motion.</div>
+<p><div class="proof-box">Proof</div>
+The only forces between the bodies are internal. Writing the force on particle 1 as
+$\overrightarrow{F}_{2\leftarrow1}(t)$, the equations of motion are
+$$
+\begin{cases}
+m_1\,\overrightarrow{r}_1''(t) &= -\overrightarrow{F}_{2\leftarrow1}(t)\\[6pt]
+m_2\,\overrightarrow{r}_2''(t) &= \overrightarrow{F}_{2\leftarrow1}(t) \end{cases}
+$$ 
+. Adding them cancels the internal forces:
+$$ m_1\,\overrightarrow{r}_1''(t)+m_2\,\overrightarrow{r}_2''(t)=\vec 0. $$ 
+By definition
+$\displaystyle \overrightarrow{R_G}(t)=\frac{m_1\overrightarrow{r}_1(t)+m_2\overrightarrow{r}_2(t)}{m_1+m_2} $, so
+$$\begin{aligned}
+&\ \ \ \ \ \ \ m_1\,\overrightarrow{r}_1''(t)+m_2\,\overrightarrow{r}_2''(t)=\vec 0 \\[6pt]
+&\Leftrightarrow (m_1+m_2) \frac{m_1\,\overrightarrow{r}_1''(t)+m_2\,\overrightarrow{r}_2''(t)}{m_1+m_2}=\vec 0 \\[6pt]
+&\Leftrightarrow (m_1+m_2)\,\overrightarrow{R_G}''(t)=\vec 0 \\[6pt]
+&\Leftrightarrow \overrightarrow{R_G}''(t)=\vec 0, 
+\end{aligned}$$
+
+i.e. the center-of-mass acceleration vanishes.
+Integrating, the center-of-mass velocity is constant,
+$$ \overrightarrow{R_G}'(t)=\overrightarrow{V}=\text{constant} $$
+and integrating again $$ \overrightarrow{R_G}(t)=\overrightarrow{V}t+\overrightarrow{R_G}(0) $$.
+Hence the center of mass moves uniformly in a straight line. Q.E.D</p>
+
+<div class="theory-common-box">Proposition 2: Let the masses be $m_1$,$m_2$ and the force from 1 on 2 be $\overrightarrow{F}_{2 \leftarrow 1}(t)$. With reduced mass $\mu$, the relative equation of motion of 2 with respect to 1 is
+$$ \displaystyle \mu \overrightarrow{R}_{2 \leftarrow 1}''(t) = \overrightarrow{F}(t)\ \ \ ;\ \ \ \overrightarrow{R}_{2 \leftarrow 1}(t):= \overrightarrow{r}_2(t)-\overrightarrow{r}_1(t)$$</div>
+<p><div class="proof-box">Proof</div>
+$$\begin{aligned}
+ \ \ \ \ \ \begin{cases}
+ m_1\,\overrightarrow{r}_1''(t) &= -\overrightarrow{F}_{2 \leftarrow 1}(t)\ \ \cdots (1)\\[6pt]
+ m_2\,\overrightarrow{r}_2''(t) &= \overrightarrow{F}_{2 \leftarrow 1}(t)\ \ \cdots (2)
+\end{cases}\\[6pt]
+\end{aligned}$$
+From $(2) \times m_1 - (1)\times m_2$,
+$$\begin{aligned}
+ m_1m_2\bigl(\overrightarrow{r}_2''(t)-\overrightarrow{r}_1''(t)\bigr) &= (m_1+m_2)\,\overrightarrow{F}_{2\leftarrow1}(t)\\[6pt]
+\end{aligned}$$
+With $\displaystyle \ \mu = \frac{m_1m_2}{m_1+m_2}$ and
+$\displaystyle \overrightarrow{R}_{2 \leftarrow 1}(t) = \overrightarrow{r}_2(t)-\overrightarrow{r}_1(t)$,
+$$ \mu\,\overrightarrow{R}_{2 \leftarrow 1}''(t) = \overrightarrow{F}_{2\leftarrow1}(t)$$
+　　Q.E.D</p>
+<div class="theory-common-box">Proposition 3: Given the center-of-mass position $\overrightarrow{R_G}(t)$ and the relative position $\overrightarrow{R}_{2 \leftarrow 1}(t)$, the individual positions are
+$$\begin{aligned}
+\begin{cases}
+\overrightarrow{r_1}(t) = \displaystyle \overrightarrow{R_G}(t) - \frac{m_2}{m_1 + m_2} \overrightarrow{R}_{2 \leftarrow 1}(t)\\[6pt]
+\overrightarrow{r_2}(t) =  \displaystyle \overrightarrow{R_G}(t) + \frac{m_1}{m_1 + m_2} \overrightarrow{R}_{2 \leftarrow 1}(t)
+\end{cases}
+\end{aligned}$$
+.</div>
+<p><div class="proof-box">Proof</div>
+$$\begin{aligned}
+\begin{cases}
+\overrightarrow{R_G}(t)=\displaystyle \frac{m_1\overrightarrow{r}_1(t)+m_2\overrightarrow{r}_2(t)}{m_1+m_2}\\[6pt]
+\overrightarrow{R}_{2\leftarrow1}(t)=\overrightarrow{r}_2(t)-\overrightarrow{r}_1(t)
+\end{cases}
+\end{aligned}$$
+. From the relative-position equation $\overrightarrow{r}_2(t)=\overrightarrow{r}_1(t)+\overrightarrow{R}_{2\leftarrow1}(t)$; substitute into the center-of-mass equation:
+$$\begin{aligned}
+\overrightarrow{R_G}(t)&=\frac{m_1\overrightarrow{r}_1(t)+m_2\bigl(\overrightarrow{r}_1(t)+\overrightarrow{R}_{2\leftarrow1}(t)\bigr)}{m_1+m_2}\\[6pt]
+&=\overrightarrow{r}_1(t)+\frac{m_2}{m_1+m_2}\,\overrightarrow{R}_{2\leftarrow1}(t)
+\end{aligned}$$
+
+Rearranging,
+$$\begin{aligned}
+\overrightarrow{r}_1(t)=\overrightarrow{R_G}(t)-\frac{m_2}{m_1+m_2}\,\overrightarrow{R}_{2\leftarrow1}(t)
+\end{aligned}$$
+. Likewise, substituting into $\overrightarrow{r}_2=\overrightarrow{r}_1+\overrightarrow{R}_{2\leftarrow1}$,
+$$\begin{aligned}
+\overrightarrow{r}_2(t)&=\overrightarrow{R_G}(t)-\frac{m_2}{m_1+m_2}\,\overrightarrow{R}_{2\leftarrow1}(t)+\overrightarrow{R}_{2\leftarrow1}(t) \\[6pt]
+ &=\overrightarrow{R_G}(t)+\frac{m_1}{m_1+m_2}\,\overrightarrow{R}_{2\leftarrow1}(t)
+\end{aligned}$$
+. Q.E.D</p>
+
+<div class="theory-common-box">Proposition 4: The two-body equations of motion
+$$\begin{aligned}
+\begin{cases}
+m_1\,\overrightarrow{r}_1''(t) = -\overrightarrow{F}_{2\leftarrow1}(t),\\[6pt]
+m_2\,\overrightarrow{r}_2''(t) = \ \overrightarrow{F}_{2\leftarrow1}(t),
+\end{cases}
+\end{aligned}$$
+are equivalent to the pair of center-of-mass and relative equations
+$$\begin{aligned}
+\begin{cases}
+(m_1+m_2)\,\overrightarrow{R_G}''(t)=\vec{0}\\[6pt]
+\mu\,\overrightarrow{R}_{2\leftarrow1}''(t)=\overrightarrow{F}_{2\leftarrow1}(t)
+\end{cases}
+\end{aligned}$$
+(each set implies the other).</div>
+
+<p><div class="proof-box">Proof</div>
+Propositions 1 and 2 derive the CM and relative equations from the two equations of motion; it remains to show the converse.<br>
+From Proposition 3,
+$$\begin{aligned}
+\begin{cases}
+\overrightarrow{r}_1(t) = \overrightarrow{R_G}(t) - \frac{m_2}{m_1+m_2}\,\overrightarrow{R}_{2\leftarrow1}(t)\\[6pt]
+\overrightarrow{r}_2(t) = \overrightarrow{R_G}(t) + \frac{m_1}{m_1+m_2}\,\overrightarrow{R}_{2\leftarrow1}(t)
+\end{cases}
+\end{aligned}$$
+. Differentiating twice,
+$$\begin{aligned}
+\begin{cases}
+\overrightarrow{r}_1''(t) = \overrightarrow{R_G}''(t) - \frac{m_2}{m_1+m_2}\,\overrightarrow{R}_{2\leftarrow1}''(t)\\[6pt]
+\overrightarrow{r}_2''(t) = \overrightarrow{R_G}''(t) + \frac{m_1}{m_1+m_2}\,\overrightarrow{R}_{2\leftarrow1}''(t)
+\end{cases}
+\end{aligned}$$
+. Multiplying by $m_1, m_2$,
+$$\begin{aligned}
+\begin{cases}
+m_1\overrightarrow{r}_1''(t) = m_1\overrightarrow{R_G}''(t) - \frac{m_1m_2}{m_1+m_2}\,\overrightarrow{R}_{2\leftarrow1}''(t),\\[6pt]
+m_2\overrightarrow{r}_2''(t) = m_2\overrightarrow{R_G}''(t) + \frac{m_1m_2}{m_1+m_2}\,\overrightarrow{R}_{2\leftarrow1}''(t).
+\end{cases}
+\end{aligned}$$
+Using $\overrightarrow{R_G}''(t)=\overrightarrow{0}$, $\frac{m_1m_2}{m_1+m_2}=\mu$, and $\mu\,\overrightarrow{R}_{2\leftarrow1}''(t)=\overrightarrow{F}_{2\leftarrow1}(t)$,
+$$\begin{aligned}
+\begin{cases}
+m_1\overrightarrow{r}_1''(t) = -\overrightarrow{F}_{2\leftarrow1}(t),\\[6pt]
+m_2\overrightarrow{r}_2''(t) = \ \overrightarrow{F}_{2\leftarrow1}(t),
+\end{cases}
+\end{aligned}$$
+recovering the original equations.　 Q.E.D</p>
 """
 );

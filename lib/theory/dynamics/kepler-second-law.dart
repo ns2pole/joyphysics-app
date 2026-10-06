@@ -2,6 +2,7 @@ import '../../model.dart';
 
 final keplerSecondLaw = TheoryTopic(
   title: 'ケプラー第二法則',
+  titleEn: 'Kepler\'s second law',
   isNew: false,
   imageAsset: 'assets/mindMap/forTopics/keplerSecondLaw.png', // 実際の画像パス
   latexContent: r"""
@@ -226,5 +227,223 @@ $$\begin{aligned}
   <div class="proof-box">証明</div>
   命題4より、座標軸を適切に取ると、任意の時刻について$z(t)=0,\ v_z(t)=0$が成り立ち、z方向の運動が起きない。これはすなわち、物体の運動が平面上で運行する事を意味する。 Q.E.D
 
+""",
+  latexContentEn: r"""
+<div class="theory-common-box">
+Setup and notation
+</div>
+A particle of mass $m$ moves in the gravitational field of a central mass $M$.<br>
+Write 3D vectors as columns:
+$$\begin{aligned}
+\vec{r}(t)&=\begin{pmatrix}x(t)\\[6pt] y(t)\\[6pt] z(t)\end{pmatrix}\\[6pt]
+\vec{v}(t)&=\vec{r}'(t)=\begin{pmatrix}x'(t)\\[6pt] y'(t)\\[6pt] z'(t)\end{pmatrix}\\[6pt]
+r(t)&=\sqrt{x(t)^2+y(t)^2+z(t)^2}
+\end{aligned}$$
+<div class="paragraph-box">
+Definition of the cross product
+</div><br>
+For vectors
+$
+\displaystyle \vec a=\begin{pmatrix}a_x\\[6pt] a_y\\[6pt] a_z\end{pmatrix},\quad
+\displaystyle \vec b=\begin{pmatrix}b_x\\[6pt] b_y\\[6pt] b_z\end{pmatrix}
+$,
+define the product $\times$ (producing a vector from two vectors) by
+$$
+\vec a\times\vec b=
+\begin{pmatrix}
+a_yb_z-a_zb_y\\[6pt]
+a_zb_x-a_xb_z\\[6pt]
+a_xb_y-a_yb_x
+\end{pmatrix}
+$$
+<div class="paragraph-box">
+Definition of the angular momentum vector
+</div><br>
+The following vector is the angular momentum:
+$$\begin{aligned}
+\vec L &= m\bigl(\vec r(t)\times \vec v(t)\bigr)\\[6pt]
+&= \begin{pmatrix}
+m\bigl(z(t)v_y(t)-y(t)v_z(t)\bigr)\\[6pt]
+m\bigl(x(t)v_z(t)-z(t)v_x(t)\bigr)\\[6pt]
+m\bigl(y(t)v_x(t)-x(t)v_y(t)\bigr)
+\end{pmatrix}
+\end{aligned}
+$$
+
+<div class="theory-common-box">Lemma 1 (conservation of angular momentum)
+The angular momentum vector is constant in time.
+</div>
+
+<div class="proof-box">Proof</div>
+Show that the derivative of the $x$-component $m\bigl(z(t)v_y(t)-y(t)v_z(t)\bigr)$ vanishes (other components are similar).
+From the equation of motion,
+$$
+m\vec a(t):=-\frac{G M m}{r^3(t)}\vec r(t)
+$$
+in components
+$$
+\begin{cases}
+\displaystyle m a_x(t):=-\frac{GMm}{(x^2+y^2+z^2)^{3/2}}x(t)\quad\cdots(1)\\[6pt]
+\displaystyle m a_y(t):=-\frac{GMm}{(x^2+y^2+z^2)^{3/2}}y(t)\quad\cdots(2)\\[6pt]
+\displaystyle m a_z(t):=-\frac{GMm}{(x^2+y^2+z^2)^{3/2}}z(t)\quad\cdots(3)
+\end{cases}
+$$
+Multiply (1) by $y(t)$ and (2) by $x(t)$ and subtract:
+$$
+m\bigl(y(t)a_x(t)-x(t)a_y(t)\bigr)=0\quad \cdots(4)
+$$
+One has the identity
+$$\begin{aligned}
+&y(t)a_x(t)-x(t)a_y(t)=\frac{d}{dt}\bigl(y(t)v_x(t)-x(t)v_y(t)\bigr)
+\end{aligned}$$
+, so (4) becomes
+$$\begin{aligned}
+m\bigl(y(t)a_x(t)-x(t)a_y(t)\bigr)&=0\\[6pt]
+\Leftrightarrow \frac{d}{dt}\Bigl(m \bigl(y(t)v_x(t)-x(t)v_y(t)\bigl)\Bigl)&=0
+\end{aligned}$$
+
+Hence the $x$-component of angular momentum is constant.<br>
+The other two components follow similarly, proving that the angular momentum vector is constant in time.
+This is the conservation of angular momentum. ⬜︎
+
+
+
+<div class="theory-common-box">Lemma 2. Magnitude of a cross product
+If ${\theta}$ is the angle between ${\vec a, \vec b}$, then
+$${|\vec a \times \vec b| = \Biggr| \left(\begin{smallmatrix} \displaystyle a_yb_z- a_zb_y \\ \ \\ \displaystyle a_zb_x- a_xb_z \\ \ \\ \displaystyle a_xb_y - a_yb_x \end{smallmatrix} \right)\Biggr| = |\vec a|  |\vec b| \sin \theta }$$
+</div>
+
+<div class="proof-box">Proof</div>
+Compute both sides.
+
+$$\begin{aligned}
+&\Biggr| \left(\begin{smallmatrix} \displaystyle a_yb_z- a_zb_y \\ \ \\ \displaystyle a_zb_x- a_xb_z \\ \ \\ \displaystyle a_xb_y - a_yb_x \end{smallmatrix} \right)\Biggr| \\ \ \\
+&=\sqrt {(a_yb_z- a_zb_y)^2+(a_zb_x- a_xb_z )^2+(a_xb_y - a_yb_x )^2} \\ \ \\
+&=\sqrt {a_y^2b_z^2+ a_z^2b_y^2-2a_yb_za_zb_y+a_z^2b_x^2+ a_x^2b_z^2 -2a_zb_x a_xb_z+a_x^2b_y^2 + a_y^2b_x^2-2a_xb_y a_yb_x}
+\end{aligned}$$
+<br>
+$$\begin{aligned}
+&|\vec a|  |\vec b| \sin \theta  \\ \ \\
+&=|\vec a|  |\vec b| \sqrt{1-\cos^2 \theta} \\ \ \\
+&=|\vec a||\vec b|\sqrt {1-\Biggr(\frac{\vec a \cdot \vec b}{|\vec a||\vec b|}\Biggr)^2}\\ \ \\
+&=\sqrt {|\vec a|^2|\vec b|^2-(\vec a \cdot \vec b)^2}\\ \ \\
+&=\sqrt{(a_x^2+a_y^2+a_z^2)(b_x^2+b_y^2+b_z^2)-(a_xb_x+a_yb_y+a_zb_z)^2} \\ \ \\
+&=\sqrt{a_x^2b_y^2+a_x^2b_z^2+a_y^2b_x^2+a_y^2b_z^2+a_z^2b_x^2+a_z^2b_y^2-2a_xb_xa_yb_y-2a_xb_xa_zb_z-2a_yb_ya_zb_z} \\ \ \\
+&=\sqrt{a_x^2b_y^2+a_x^2b_z^2+a_y^2b_x^2+a_y^2b_z^2+a_z^2b_x^2+a_z^2b_y^2-2a_xb_xa_yb_y-2a_xb_xa_zb_z-2a_yb_ya_zb_z}
+\end{aligned}$$
+　⬜︎
+
+<div class="theory-common-box">Theorem (Kepler's second law): If ${S(t)}$ is the area swept by the particle's trajectory about the origin, then ${\displaystyle \frac{dS}{dt}}$ is constant in time.
+  <div style="text-align:center; margin:1em 0;">
+    <img src="assets/dynamicsTheory/kepler-second.png"
+          alt="areal velocity"
+          style="max-width:100%; height:auto;" />
+  </div>
+</div>
+
+<div class="proof-box">Proof</div>
+
+Write ${\theta_{\vec a, \vec b}}$ for the angle between ${\vec a}$ and ${\vec b}$.
+For sufficiently small $\Delta t$, approximate the change of area $\Delta S$ by the area $\Delta T$ of the green triangle, and accept that the areal velocity is
+$$
+\lim_{\Delta t \rightarrow 0} \frac{\Delta S}{\Delta t} = \lim_{\Delta t \rightarrow 0} \frac{\Delta T}{\Delta t}
+$$
+.
+<div style="text-align:center; margin:1em 0;">
+    <img src="assets/dynamicsTheory/kepler-second-approx.png"
+          alt="areal velocity"
+          style="max-width:70%; height:auto;" />
+  </div>
+Then
+$$\begin{aligned}
+&\lim_{\Delta t \rightarrow 0} \frac{\Delta S}{\Delta t} = \lim_{\Delta t \rightarrow 0} \frac{\Delta T}{\Delta t} \\ \ \\
+&= \lim_{\Delta t \rightarrow 0} \frac{1}{2}|\vec r(t)| \frac{ |\vec r(t+\Delta t)- \vec r(t)|}{\Delta t}\sin \theta_{\vec r(t), \vec r(t) - \vec r(t+\Delta t)}\\ \ \\
+& = \frac{1}{2}|\vec r(t)||\vec v(t)|\sin \theta_{\vec r(t), \vec v(t)} \\ \ \\
+&\underset{lemma.2}{=}\ \ \Biggr|\left(\begin{smallmatrix}\displaystyle y(t){v_x}(t) - x(t){v_y}(t) \\ \ \\ \displaystyle z(t){v_y}(t) - y(t){v_z}(t) \\ \ \\\displaystyle x(t){v_z}(t) - z(t){v_x}(t)\end{smallmatrix}\right)\Biggr|\\ \ \\ 
+& \underset{lemma.1}{=}constant \ value
+\end{aligned}$$　⬜︎
+
+
+  <div class="theory-common-box">
+    <p>Proposition 1 (orthogonality of a cross product)
+      For two non-parallel vectors $\vec a=\begin{pmatrix}a_x\\[6pt]a_y\\[6pt]a_z\end{pmatrix} \neq \vec 0, \quad \vec b=\begin{pmatrix}b_x\\[6pt]b_y\\[6pt]b_z\end{pmatrix} \neq \vec 0$,
+      $\vec a\times\vec b=\begin{pmatrix}a_yb_z-a_zb_y\\[6pt]a_zb_x-a_xb_z\\[6pt]a_xb_y-a_yb_x\end{pmatrix}$
+      is orthogonal to both $\vec a$ and $\vec b$.
+    </div>
+    <div class="proof-box">Proof</div>
+    <p>Compute the inner product and show it vanishes:</p>
+ $$\begin{aligned}
+      & \ \ (\vec a\times\vec b)\cdot\vec a \\[6pt]
+      &= (a_yb_z-a_zb_y)a_x + (a_zb_x-a_xb_z)a_y + (a_xb_y-a_yb_x)a_z\\[6pt]
+      &= a_xa_yb_z - a_xa_zb_y + a_ya_zb_x - a_ya_xb_z + a_za_xb_y - a_za_yb_x.
+    \end{aligned}$$
+    All terms cancel, so $(\vec a\times\vec b)\cdot\vec a=0$. Similarly $(\vec a\times\vec b)\cdot\vec b=0$. Hence $\vec a\times\vec b$ is orthogonal to $\vec a,\vec b$.
+  　⬜︎
+  <div class="theory-common-box">
+    Proposition 2: If $\vec r (t) \neq \vec 0$ and $\vec v (t) \neq \vec 0$ are not parallel, the angular momentum is orthogonal to both position and velocity.
+  </div>
+
+  <div class="proof-box">Proof</div>
+  Immediate from Proposition 1.　⬜︎
+    <div class="theory-common-box">
+    Proposition 3 (vanishing cross product and parallelism): For $\vec a ,\vec b \neq \vec 0$, $\vec a\times\vec b = \vec 0 \Leftrightarrow \vec a \parallel \vec b$
+    </div>
+  <div class="proof-box">Proof</div>
+    <div class="paragraph-box">$\Rightarrow$</div><br>
+    By Lemma 2, $ |\vec a\times\vec b|= |a||b| \sin \theta$<br>
+    By assumption $|a||b| \sin \theta = 0$, so $\sin\theta=0$, hence $\theta=0$ or $\pi$ (parallel or anti-parallel).<br>
+    <div class="paragraph-box">$\Leftarrow$</div><br>
+  By Lemma 2, $ |\vec a\times\vec b|= |a||b| \sin \theta$<br>
+  By assumption $\theta = 0$ or $\pi$, so $\sin \theta = 0$ and $ |\vec a\times\vec b|= 0$, hence $\vec a\times\vec b = \vec 0$.
+
+  <div class="theory-common-box">
+    Proposition 4: Choosing the origin and axes so that $z(0)=0,\ v_z(0)=0$ at the initial time, and assuming $\vec L(0)\neq\vec0$, one has $z(t)=0,\ v_z(t)=0$ for all $t$.</p>
+    </div>
+    <div class="proof-box">Proof</div>
+    <p>By angular-momentum conservation (Lemma 1) and the assumption, in components</p>
+    $$
+    \begin{pmatrix}
+      z(t)v_y(t) - y(t)v_z(t)\\[6pt]
+      x(t)v_z(t) - z(t)v_x(t)\\[6pt]
+      y(t)v_x(t) - x(t)v_y(t)
+    \end{pmatrix}
+    =
+    \begin{pmatrix}
+      0\\[6pt]
+      0\\[6pt]
+      y(0)v_x(0)-x(0)v_y(0)
+    \end{pmatrix}.
+    $$
+    <p>Hence</p>
+
+    $$
+    \begin{cases}
+      z(t)v_y(t) = y(t)v_z(t) &\quad\cdots(1)\\[6pt]
+      x(t)v_z(t) = z(t)v_x(t) &\quad\cdots(2)\\[6pt]
+      y(t)v_x(t) = x(t)v_y(t) + y(0)v_x(0)-x(0)v_y(0) &\quad\cdots(3)
+    \end{cases}
+    $$
+
+    <p>Multiply (3) by $v_z(t)$ and use (1),(2):</p>
+    $$\begin{aligned}
+      \ \ \ &y(t)v_x(t) = x(t)v_y(t) + y(0)v_x(0)-x(0)v_y(0) &\quad\cdots(3)\\[6pt]
+      \underset{\times v_z(t)}{\Leftrightarrow}\  &y(t)v_x(t)v_z(t) = x(t)v_y(t)v_z(t) + \Bigl(y(0)v_x(0)-x(0)v_y(0)\Bigr)v_z(t)\\[6pt]
+      \underset{(1),(2)\text{ subst.}}{\Leftrightarrow}\  &v_x(t)z(t)v_y(t) = v_y(t)z(t)v_x(t) + \Bigl(y(0)v_x(0)-x(0)v_y(0)\Bigr)v_z(t)\\[6pt]
+      \Leftrightarrow\  &v_z(t)\Bigl(y(0)v_x(0)-x(0)v_y(0)\Bigr) = 0
+    \end{aligned}$$
+    <p>Nonzero initial angular momentum means the parenthesis is nonzero, so $v_z(t)=0$.<br>
+    Substituting into (1),(2),
+    $$\begin{aligned}
+    \begin{cases}
+    z(t)v_y(t)=0\\[6pt]
+    z(t)v_x(t)=0
+    \end{cases}
+    \end{aligned}$$
+    Since $\vec v(t)\neq\vec 0$, at least one of $v_x(t),v_y(t)$ is nonzero, hence $z(t)=0$. Q.E.D.
+    <div class="theory-common-box">
+    Theorem: Motion under a gravitational potential takes place in a plane.
+    </div>
+  <div class="proof-box">Proof</div>
+  By Proposition 4, with suitably chosen axes one has $z(t)=0,\ v_z(t)=0$ for all $t$, so there is no motion in the $z$ direction; the motion is planar. Q.E.D
 """
 );

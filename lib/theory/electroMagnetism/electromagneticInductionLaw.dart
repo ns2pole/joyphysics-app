@@ -3,6 +3,7 @@ import '../../model.dart';
 
 final electromagneticInductionLaw = TheoryTopic(
     title: 'ファラデーの電磁誘導の法則',
+  titleEn: 'Faraday\'s law of electromagnetic induction',
     imageAsset: 'assets/mindMap/forTopics/electromagneticInductionLaw.png',
     latexContent: r"""
     <div class="theory-common-box">定義（磁束）</div>
@@ -51,6 +52,55 @@ final electromagneticInductionLaw = TheoryTopic(
     \oint_{\partial S(t)} (\vec E + \vec v\times\vec B)\cdot d\vec r = -\frac{d}{dt}\iint_{S(t)}\vec B\cdot d\vec S
     $$
     ※ 運動項 $\vec v\times\vec B$ による起電力もレンツの法則に従い、磁束変化に抗する向きの電流を生じさせる。
+    </p>
+    """,
+  latexContentEn: r"""
+    <div class="theory-common-box">Definition (magnetic flux)</div>
+    <p>
+    Define the magnetic flux (the surface integral of magnetic flux density) by
+    $$
+    \Phi_B := \iint_S \vec B\cdot d\vec S
+    $$
+    .
+    </p>
+    <div class="theory-common-box">Definition (induced electromotive force)</div>
+    <p>
+    $$
+    V := \oint_{\partial S} \vec{E}\cdot d\vec{r}
+    $$
+    represents the circulation work done by the electric field produced by electromagnetic induction on a unit charge. This is called the induced EMF.
+    </p>
+
+    <div class="theory-common-box">Definition (induced current)</div>
+    <p>
+    When the induced EMF causes a current to flow in a circuit, that current is called an induced current.
+    </p>
+
+    <div class="theory-common-box">Law of electromagnetic induction (integral form)</div>
+    <p>
+    “A time change of magnetic flux produces circulation work on a unit charge (an induced EMF).”<br>
+    This is the law of electromagnetic induction, written as
+    $$
+    \oint_{\partial S} \vec{E}\cdot d\vec{r} = -\frac{d}{dt}\iint_{S} \vec{B}\cdot d\vec{S}.
+    $$
+    ※ The normal $\vec{n}$ of the surface $S$ and the orientation of $\partial S$ are linked by the right-hand rule.<br>
+    ※ The law also holds in matter and is commonly used in this form.
+    </p>
+
+
+    <div class="theory-common-box">Proposition (Lenz's law)</div>
+    <p>
+    From the law of electromagnetic induction and the Ampère–Maxwell law, the meaning of the minus sign ($-$) is that the induced current flows in the direction such that the magnetic field it produces opposes the original change of flux.
+    </p>
+
+    <div class="theory-common-box">Remark: when a conductor moves</div>
+    <p>
+    When a conductor moves, an additional EMF due to the Lorentz force appears in the circuit.<br>
+    That is, when the surface $S(t)$ or boundary $\partial S(t)$ evolves in time, letting $\vec v$ be the velocity of each point on the boundary and including the motional term gives
+    $$
+    \oint_{\partial S(t)} (\vec E + \vec v\times\vec B)\cdot d\vec r = -\frac{d}{dt}\iint_{S(t)}\vec B\cdot d\vec S
+    $$
+    ※ The EMF from the motional term $\vec v\times\vec B$ also obeys Lenz's law and drives a current that opposes the flux change.
     </p>
     """,
 );

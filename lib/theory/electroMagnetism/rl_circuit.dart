@@ -5,5 +5,6 @@ final rl_circuit = TheoryTopic(
   imageAsset: 'assets/mindMap/forTopics/rl_circuit.png',
   
   title: 'RL回路',
+  titleEn: 'RL circuit',
   latexContent: r""""""
 );

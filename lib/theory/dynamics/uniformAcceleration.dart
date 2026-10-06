@@ -2,6 +2,7 @@ import '../../model.dart';
 
 final uniformAcceleration = TheoryTopic(
   title: '等加速度直線運動',
+  titleEn: 'Uniformly accelerated linear motion',
   imageAsset: 'assets/mindMap/forTopics/uniformAcceleration.png',
   latexContent: r"""
 <div class="theory-common-box">命題1（1次元運動の運動方程式）：質量 $m$ の質点に一定の力 $F$ が、直線上に働くとする。このとき運動方程式は
@@ -86,5 +87,88 @@ $$
 \frac{1}{2} m v^2 - \frac{1}{2} m v_0^2 = F(x-x_0)
 $$
 となる。左辺は運動エネルギーの変化、右辺は力のした仕事である。
+""",
+  latexContentEn: r"""
+<div class="theory-common-box">Proposition 1 (1D equation of motion): A constant force $F$ acts along a straight line on a particle of mass $m$. Then the equation of motion is
+$
+F = m a
+$.</div>
+<div class="proof-box">Proof</div>
+<p>Taking a 1D axis in the vector equation $\vec{F} = m\vec{a}$ and comparing components yields $F = ma$. $\square$</p>
+
+
+<div class="theory-common-box">Proposition 2 (uniform acceleration): If a constant force $F$ acts on a particle of mass $m$, then the acceleration of the particle is constant.</div>
+<div class="proof-box">Proof</div>
+<p>From Proposition 1, $\displaystyle a= \frac{F}{m} $. If $m$ and $F$ are constant, then $a$ is constant.</p>
+(Note) This constant $a$ depends on the orientation of the axis.<br>
+(Note) If the initial velocity is along the force, the motion is uniformly accelerated linear motion.<br><br>
+<div class="theory-common-box">Proposition 3 (velocity formula): When the acceleration of a particle of mass $m$ is a constant $a$, the velocity is
+$
+v(t) = v_0 + a t
+$.</div>
+
+<div class="proof-box">Proof</div>
+$$\begin{aligned}
+v' &= a \quad \quad \\[6pt]
+\Leftrightarrow \int_{0}^{t} v' \, dt &= \int_{0}^{t} a \, dt \\[6pt]
+\Leftrightarrow v(t) - v_0 &= a t \\[6pt]
+\Leftrightarrow v(t) &= v_0 + at
+\end{aligned}$$
+$\square$
+
+
+<div class="theory-common-box">Proposition 4 (position formula): When a particle of mass $m$ starts at position $x_0$ with initial velocity $v_0$ and has constant acceleration $a$, its position is $ \displaystyle
+x(t) = x_0 + v_0 t + \frac{1}{2} a t^2$.</div>
+
+
+
+<div class="proof-box">Proof</div>
+$$\begin{aligned}
+x' &= v \quad  \quad \\[6pt]
+\Leftrightarrow \int_{0}^{t} x' \, dt &= \int_{0}^{t} (v_0 + a t) \, dt \\[6pt]
+\Leftrightarrow x(t) - x_0 &= v_0 t + \frac{1}{2} a t^2 \\[6pt]
+\Leftrightarrow x(t) &= x_0 + v_0 t + \frac{1}{2} a t^2
+\end{aligned}$$
+$\square$
+
+<div class="theory-common-box">Proposition 5 (relation between velocity and displacement): Velocity and displacement satisfy
+$$
+v^2 - v_0^2 = 2 a (x - x_0)
+$$</div>
+
+<div class="proof-box">Proof</div>
+From Propositions 3 and 4,
+$$\begin{aligned}
+\begin{cases}
+ & v = v_0 + a t& \quad \\[6pt]
+&x - x_0 = v_0 t + \frac{1}{2} a t^2 &
+\end{cases}
+\end{aligned}$$
+Rewriting the first as $\displaystyle t = \frac{v - v_0}{a}$ and substituting into the second,
+
+$$\begin{aligned}
+x - x_0 &= v_0\frac{v-v_0}{a} + \frac{1}{2}a \left(\frac{v-v_0}{a}\right)^2 \\[6pt]
+\Leftrightarrow x - x_0 &= \frac{v_0(v-v_0)}{a} + \frac{1}{2a}(v-v_0)^2 \\[6pt]
+\Leftrightarrow a(x-x_0) &= v_0(v-v_0) +\frac{1}{2}(v-v_0)^2 \\[6pt]
+\Leftrightarrow v^2 &= v_0^2 + 2a(x-x_0)\\[6pt]
+\Leftrightarrow v^2 - v_0^2 &= 2a(x-x_0)\\[6pt]
+\end{aligned}$$
+$\square$
+
+<div class="theory-common-box">Proposition 6 (work and energy): When a constant force $F$ acts on a particle, the change in kinetic energy equals the work done by the force:
+$$
+\frac12 m v^2 - \frac12 m v_0^2 = F (x - x_0)
+$$</div>
+
+<div class="proof-box">Proof</div>
+Multiplying the equation of Proposition 5 by $\displaystyle \frac {m} {2} $ gives
+$$
+\frac{1}{2} m (v^2 - v_0^2) = m a (x - x_0)
+$$
+. Using $F=ma$,
+$$
+\frac{1}{2} m v^2 - \frac{1}{2} m v_0^2 = F(x-x_0)
+$$
+. The left-hand side is the change in kinetic energy; the right-hand side is the work done by the force.
 """,
 );

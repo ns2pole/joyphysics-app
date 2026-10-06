@@ -2,6 +2,7 @@ import '../../model.dart';
 
 final biotSavartLaw = TheoryTopic(
   title: 'ビオ・サバールの法則',
+  titleEn: 'Biot–Savart law',
   videoURL: "",
   inPreparation: true,
   imageAsset: 'assets/mindMap/forTopics/biotSavartLaw.png',
@@ -129,6 +130,132 @@ $$
 - その有限和が十分に細かい分割の極限で線積分に収束することが、数学的にも物理的にも自然な流れです。  
 - パラメータ導入は計算の便宜に過ぎず、線積分という形式に戻せば「パラメータに依らない」ことが明確です。  
 - 円形ループの軸上評価は対称性により非常に簡単になり、解析解も得られるため数値実装の検算に最適です。
+
+""",
+  latexContentEn: r"""
+
+<div class="theorem-box">Proposition (overview)</div>
+
+In this article we present the Biot–Savart law in a clear order: **(1) define the symbols carefully → (2) write it as a finite sum (Riemann sum) → (3) show that the limit converges to a line integral (integral form)**.
+Finally we compute a concrete example for a circular loop (on-axis evaluation: arbitrary \(z\) and especially \(z=0\)), and summarize practical notes for numerical implementation.
+
+---
+
+<div class="theory-common-box">Symbols and assumptions (gentle introduction)</div>
+
+- \(C\): oriented path of the wire (a curve). We assume the curve is piecewise smooth.
+- \(I\): (steady) current in the wire (a constant).
+- \(\mathbf r\): observation point where the magnetic field is evaluated. In the analysis we assume the observation point does not lie on the wire (so the denominator does not vanish).
+- \(\mathbf r' \in C\): an arbitrary point on the wire (position vector).
+- \(d\boldsymbol\ell'\): oriented infinitesimal line-element vector along the wire (has direction and length).
+- \(\Delta\boldsymbol\ell_k\): the \(k\)-th line element after a finite partition (difference vector): \(\Delta\boldsymbol\ell_k = \mathbf r'_{k+1}-\mathbf r'_k\).
+- \(|\cdot|\): Euclidean norm (length).
+- \(\mu_0\): vacuum permeability (numerical value \(\mu_0=4\pi\times10^{-7}\ \mathrm{H/m}\)).
+
+---
+
+<div class="theory-common-box">1. Writing the Biot–Savart law as a finite sum (Riemann sum) — intuition and formulation</div>
+
+**Intuition (what we are doing)**: Cut the wire into small segments, compute the tiny magnetic field that each current element produces at the observation point, and add them up. That is the “finite-sum” form. Making the partition finer brings the result closer to the true value.
+
+**Finite-sum (Riemann-sum) formulation**: Partition the curve \(C\) by nodes \(\{\mathbf r'_0,\mathbf r'_1,\dots,\mathbf r'_N\}\), and set each line element to \(\Delta\boldsymbol\ell_k=\mathbf r'_{k+1}-\mathbf r'_k\). The finite approximation at the observation point \(\mathbf r\) is
+$$
+\boxed{%
+\mathbf B_N(\mathbf r)
+\;=\;
+\sum_{k=0}^{N-1}
+\frac{\mu_0}{4\pi}\,
+\frac{I\,\Delta\boldsymbol\ell_k\times(\mathbf r-\mathbf r'_k)}
+{|\mathbf r-\mathbf r'_k|^3}.
+}
+$$
+
+- This simply adds the magnetic field that each segment’s **“current element” \(I\Delta\boldsymbol\ell_k\)** produces at the observation point.
+- The choice of nodes (how you partition) is arbitrary, but refining the partition makes the result more accurate (we take the limit in the next section).
+
+---
+
+<div class="theory-common-box">2. The limit (passage to a line integral) — why it becomes an integral (intuition)</div>
+
+- When the maximum segment length \(\max_k|\Delta\boldsymbol\ell_k|\) approaches \(0\) (\(N\to\infty\)), \(\Delta\boldsymbol\ell_k\) approaches the true infinitesimal line element \(d\boldsymbol\ell'\).
+- Therefore the Riemann sum \(\mathbf B_N(\mathbf r)\) converges to a line integral, and the following holds:
+
+$$
+\boxed{%
+\mathbf B(\mathbf r)
+=\lim_{N\to\infty}\mathbf B_N(\mathbf r)
+= \frac{\mu_0 I}{4\pi} \int_{C}\frac{d\boldsymbol\ell'\times(\mathbf r-\mathbf r')}{|\mathbf r-\mathbf r'|^3}.
+}
+$$
+
+**Note (reparameterization invariance)**: The line integral above does not depend on the parameterization. Even if, for convenience, one introduces a parameter \(\xi\) and writes \(\mathbf r'=\mathbf r'(\xi)\), after a change of parameter \(\xi=\xi(\eta)\) one has \(\displaystyle d\boldsymbol\ell'=\frac{d\mathbf r'}{d\xi}d\xi=\frac{d\mathbf r'}{d\eta}d\eta\), so the value is unchanged. This is the mathematical reason that the integral “does not intrinsically depend on the parameter.”
+
+---
+
+<div class="theory-common-box">3. Concrete example: circular loop (step by step)</div>
+
+**Setup**: A circular wire of radius \(R\) carries current \(I\). The observation point is on the axis, \(\mathbf r=(0,0,z)\) (arbitrary \(z\)).
+
+**Step 1 — Geometry**: Parameterize the circle by the angle \(\phi\) (a parameter chosen for computational convenience):
+$$
+\mathbf r'(\phi) = \begin{pmatrix} R\cos\phi \\[4pt] R\sin\phi \\[4pt] 0 \end{pmatrix},\qquad
+\frac{d\mathbf r'}{d\phi} = \begin{pmatrix} -R\sin\phi \\[4pt] R\cos\phi \\[4pt] 0 \end{pmatrix}.
+$$
+
+**Step 2 — Denominator (distance)**:
+$$
+\begin{aligned}
+\mathbf r - \mathbf r'(\phi) = \begin{pmatrix} -R\cos\phi \\[4pt] -R\sin\phi \\[4pt] z \end{pmatrix}\\[6pt]
+|\mathbf r - \mathbf r'(\phi)| = \sqrt{R^2 + z^2}.
+\end{aligned}
+$$
+→ Important point: the denominator is **independent of \(\phi\)** (an effect of circular symmetry). This greatly simplifies the integral.
+
+**Step 3 — Numerator (cross product)**:
+A direct computation gives
+$$
+\begin{aligned}
+
+\frac{d\mathbf r'}{d\phi}\times(\mathbf r-\mathbf r'(\phi))
+= R^2\,\hat{\mathbf z} + Rz(\cos\phi\,\hat{\mathbf x} + \sin\phi\,\hat{\mathbf y}).
+\end{aligned}
+
+$$
+
+**Step 4 — Cancellation of angular components**:
+Integrating \(\cos\phi\) and \(\sin\phi\) from \(0\) to \(2\pi\) makes them vanish (or summing them in a Riemann sum also yields zero), so only the \(\hat{\mathbf z}\) component remains.
+
+**Step 5 — Integration (analytic solution)**:
+The integrand has a \(\phi\)-independent factor \(\displaystyle \frac{R^2}{(R^2+z^2)^{3/2}}\), so
+$$
+B_z(z) = \frac{\mu_0 I}{4\pi} \int_0^{2\pi} \frac{R^2}{(R^2+z^2)^{3/2}}\, d\phi
+= \frac{\mu_0 I R^2}{4\pi (R^2+z^2)^{3/2}} \cdot 2\pi
+= \frac{\mu_0 I R^2}{2(R^2+z^2)^{3/2}}.
+$$
+
+**Special case \(z=0\)**:
+$$
+B_z(0) = \frac{\mu_0 I R^2}{2(R^2)^{3/2}} = \frac{\mu_0 I}{2R}.
+$$
+
+---
+
+<div class="theory-common-box">4. Practical notes when using the finite sum (Riemann sum) numerically</div>
+
+- The **midpoint rule** (evaluate at the midpoint of each segment) is easy to implement and stable. In formulas one uses \(\displaystyle \phi_k^*=\bigl(k+\frac{1}{2}\bigr)\Delta\phi\).
+- **Convergence check**: Increase the number of segments \(N\) and verify that the result stabilizes (e.g. compare \(N=32,128,512\)).
+- **Singularities**: If the observation point is close to the wire, the denominator becomes small and the numerics can blow up. Near such intervals one may need an analytic treatment or a principal-value approach.
+- **Efficiency**: Segments are independent, so parallelization (e.g. Isolates) can speed things up.
+- **Higher accuracy**: If the midpoint rule is not enough, consider the trapezoidal rule, Simpson’s rule, etc.
+
+---
+
+<div class="remark-box">5. Closing remarks (careful summary)</div>
+
+- The Biot–Savart law can be written as a Riemann sum that matches the intuition of **“adding contributions from current elements.”**
+- That the finite sum converges to a line integral under a sufficiently fine partition is a natural flow both mathematically and physically.
+- Introducing a parameter is only a computational convenience; returning to the line-integral form makes clear that the result does not depend on the parameter.
+- On-axis evaluation for a circular loop is especially simple by symmetry, and the analytic solution is ideal for checking a numerical implementation.
 
 """
 );

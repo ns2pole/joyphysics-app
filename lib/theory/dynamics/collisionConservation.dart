@@ -2,6 +2,7 @@ import '../../model.dart';
 
 final collisionConservation = TheoryTopic(
   title: '衝突における運動量保存',
+  titleEn: 'Momentum conservation in collisions',
   isNew: false,
   imageAsset: 'assets/mindMap/forTopics/collisionConservation.png', // 実際の画像パス
   latexContent: r"""
@@ -37,5 +38,39 @@ $$\begin{aligned}
 & \ \ \ \ \ = \Bigr( m_1 \overrightarrow{v_1}(t_0) + m_2 \overrightarrow{v_2}(t_0) \Bigr) + \int_{t_0}^{t_1}\ \overrightarrow{f_1}(t) + \overrightarrow{f_2}(t)dt 
 \end{aligned}$$
 ここで、衝突の時間は十分短い事を考え、$t_1 - t_0 \rightarrow 0$の極限を取ると、$\displaystyle \int_{t_0}^{t_1}\ \overrightarrow{f_1}(t) + \overrightarrow{f_2}(t)dt \rightarrow 0$となり、$\displaystyle  m_1 \overrightarrow{v_1}(t_1) + m_2 \overrightarrow{v_2}(t_1)   =  m_1 \overrightarrow{v_1}(t_0) + m_2 \overrightarrow{v_2}(t_0)  \ \ \ $ Q.E.D
+""",
+  latexContentEn: r"""
+
+<div class="theory-common-box">Notation and symbols</div>
+<ul>
+<li>Force on particle 2 from particle 1 during the collision: $\overrightarrow{F_{2 \leftarrow 1} }(t)$
+<li>Force on particle 1 from particle 2 during the collision: $\overrightarrow{F_{1 \leftarrow 2} }(t)$.
+<li>External force on particle 1 during the collision: $\overrightarrow{f_1}(t)$
+<li>External force on particle 2 during the collision: $\overrightarrow{f_2}(t)$.
+<li>Start time of the collision: $t_0$
+<li>End time of the collision: $t_1$
+</ul>
+<div class="theory-common-box">Proposition: In a collision of two bodies, if the collision duration may be regarded as sufficiently short, then momentum is conserved before and after the collision.</div>
+
+<p><div class="proof-box">Proof</div>
+The interaction forces are between the two bodies, so the action–reaction law applies.
+
+$$\begin{aligned}
+\begin{cases}
+m_1 \overrightarrow{a_1}(t) = \overrightarrow{F_{1 \leftarrow 2} }(t) + \overrightarrow{f_1}(t) \\[6pt] 
+m_2 \overrightarrow{a_2}(t) = -\overrightarrow{F_{1 \leftarrow 2} }(t) + \overrightarrow{f_2}(t) 
+\end{cases}
+\end{aligned}$$
+Adding the two equations,
+$m_1 \overrightarrow{a_1}(t) + m_2 \overrightarrow{a_2}(t) =  \overrightarrow{f_1}(t) + \overrightarrow{f_2}(t) $. Integrating from $t_0$ to $t_1$,
+$$\begin{aligned}
+&\ \ \ \ \  \int_{t_0}^{t_1} m_1 \overrightarrow{a_1}(t) + m_2 \overrightarrow{a_2}(t) dt = \int_{t_0}^{t_1}\ \overrightarrow{f_1}(t) + \overrightarrow{f_2}(t)dt \\[8pt]
+& \Leftrightarrow \Bigr[ m_1 \overrightarrow{v_1}(t) + m_2 \overrightarrow{v_2}(t) \Bigr]_{t_0}^{t_1} = \int_{t_0}^{t_1}\ \overrightarrow{f_1}(t) + \overrightarrow{f_2}(t)dt  \\[9pt]
+& \Leftrightarrow \Bigr( m_1 \overrightarrow{v_1}(t_1) + m_2 \overrightarrow{v_2}(t_1) \Bigr) - \Bigr( m_1 \overrightarrow{v_1}(t_0) + m_2 \overrightarrow{v_2}(t_0) \Bigr)\\[5pt]
+& \ \ \ \ \ = \int_{t_0}^{t_1}\ \overrightarrow{f_1}(t) + \overrightarrow{f_2}(t)dt \\[9pt]
+&\Leftrightarrow \Bigr( m_1 \overrightarrow{v_1}(t_1) + m_2 \overrightarrow{v_2}(t_1) \Bigr)   \\[5pt]
+& \ \ \ \ \ = \Bigr( m_1 \overrightarrow{v_1}(t_0) + m_2 \overrightarrow{v_2}(t_0) \Bigr) + \int_{t_0}^{t_1}\ \overrightarrow{f_1}(t) + \overrightarrow{f_2}(t)dt 
+\end{aligned}$$
+Since the collision duration is very short, taking the limit $t_1 - t_0 \rightarrow 0$ gives $\displaystyle \int_{t_0}^{t_1}\ \overrightarrow{f_1}(t) + \overrightarrow{f_2}(t)dt \rightarrow 0$, hence $\displaystyle  m_1 \overrightarrow{v_1}(t_1) + m_2 \overrightarrow{v_2}(t_1)   =  m_1 \overrightarrow{v_1}(t_0) + m_2 \overrightarrow{v_2}(t_0)  \ \ \ $ Q.E.D
 """
 );

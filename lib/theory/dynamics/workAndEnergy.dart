@@ -2,6 +2,7 @@ import '../../model.dart';
 
 final workAndEnergy = TheoryTopic(
   title: '仕事とエネルギー',
+  titleEn: 'Work and energy',
   isNew: false,
   imageAsset: 'assets/mindMap/forTopics/workAndEnergy.png',
   latexContent: r"""
@@ -105,6 +106,109 @@ W = \int_{t_0}^{t_1} \vec{f}(t) \cdot \vec{v}(t)\, dt
 = \int_{t_0}^{t_1} 0\, dt = 0
 $$
 である。よって、速度に垂直な力は仕事をしない。Q.E.D.
+
+""",
+  latexContentEn: r"""
+
+<div class="theory-common-box">Definition of kinetic energy</div>
+<p>
+When a particle of mass $m$ has speed $v$,
+$\displaystyle \frac{1}{2} m v^2$ is called the <b>kinetic energy</b> of the particle.
+</p>
+
+<div class="theory-common-box">Proposition 1: In 1D when the force is aligned with the motion, with start $x_0$ and end $x_1$, the work is
+$$
+W=\int_{x(t_0)}^{x(t_1)} F_x(x)\,dx
+$$
+</div>
+<p><div class="proof-box">Proof</div>
+By definition of work,
+$$\begin{aligned}
+W &= \int_C \vec F\cdot d\vec r\\[4pt]
+&= \lim_{| P | \to 0}
+\sum_{i=1}^{N(P)} (\vec F_i\cdot\vec\tau_i)\,\Delta s_i \\[4pt] 
+&\;\Bigl(= \lim_{| P | \to 0}
+\sum_{i=1}^{N(P)} |\vec F_i| \,\Delta s_i\Bigr)\\[4pt]
+\end{aligned}$$
+As the mesh shrinks this becomes a Riemann sum and agrees with
+$$
+W=\int_{x1}^{x0} F_x(x)\,dx
+$$
+.　Q.E.D
+</p>
+
+<div class="theory-common-box">Theorem 1: The work $W$ equals the integral
+$$\begin{aligned}
+W = \int_{t_0}^{t_1} \vec F(t)\cdot \vec v(t)\,dt.
+\end{aligned}$$
+</div>
+
+<div class="proof-box">Proof</div>
+<p>
+By definition of work,
+$$\begin{aligned}
+W = \int_C \vec F\cdot d\vec r = \lim_{| P | \to 0}
+\sum_{i=1}^{N(P)} (\vec F_i\cdot\vec\tau_i)\,\Delta s_i
+\end{aligned}$$
+
+Introduce a parameter $t$ along the curve.<br>
+For each interval $[t_{i-1},t_i]$, the mean-value theorem for integrals gives a point $\eta_i\in[t_{i-1},t_i]$ such that
+$$
+\Delta s_i=\int_{t_{i-1}}^{t_i}|\vec v(t)|\,dt=|\vec v(\eta_i)|(t_i-t_{i-1}).
+$$
+Taking this $\eta_i$ as the representative point of each subinterval,
+$$
+\vec F_i\cdot\vec\tau_i\,\Delta s_i
+=\vec F(\vec r(\eta_i))\cdot\vec v(\eta_i)\,(t_i-t_{i-1}).
+$$
+Letting $|P|\to0$, the Riemann sum yields
+$$\begin{aligned}
+W&=\vec F(\vec r(\eta_i))\cdot\vec v(\eta_i)\,(t_i-t_{i-1}) \\[5pt]
+&= \int_{t_0}^{t_1}\vec F(\vec r(t))\cdot\vec v(t)\,dt.
+\end{aligned}$$
+Q.E.D
+</p>
+
+<div class="theory-common-box">Theorem 2: Relation between work and kinetic energy
+<p>
+The change in kinetic energy of a particle of mass $m$ from time $t_0$ to $t_1$ equals
+the total work done on the particle by all forces acting on it from $t_0$ to $t_1$.
+</p>
+</div>
+<div class="proof-box">Proof</div>
+Let the resultant force be $\vec{F}(t)\Bigl(= \displaystyle \sum_{i=1}^{n} \vec{F}_i(t) \Bigr) $.<br>
+From the equation of motion, $m \vec{a}(t) = \vec{F}(t)$.<br>
+Taking the inner product with $\vec{v}(t)$ and integrating from $t_0$ to $t_1$,
+$$
+\int_{t_0}^{t_1} m \vec{a}(t) \cdot \vec{v}(t)\, dt
+= \int_{t_0}^{t_1} \vec{F}(t) \cdot \vec{v}(t)\, dt
+$$
+<div class="paragraph-box">Right-hand side</div><br>
+By Theorem 1, this is precisely the work $W$ done by the resultant from $t_0$ to $t_1$.
+<p>
+<div class="paragraph-box">Left-hand side</div><br>
+From the product rule, $\displaystyle \frac{1}{2} \bigl(v(t)^2\bigr)' = \vec{a}(t) \cdot \vec{v}(t)$,
+so the left-hand side becomes
+$$\begin{aligned}
+\ \ \ &\int_{t_0}^{t_1} \Bigl(\frac{1}{2} m v(t)^2\Bigr)'\, dt\\[6pt]
+&=\Bigl[\frac{1}{2} m v(t)^2\Bigr]_{t_0}^{t_1} \\[6pt]
+&=\frac{1}{2} m v(t_1)^2 - \frac{1}{2} m v(t_0)^2\\[6pt]
+\end{aligned}$$
+</p>
+which is the change in kinetic energy between $t_1$ and $t_0$.<br>
+Hence the work done by the resultant from $t_0$ to $t_1$ equals that change in kinetic energy.
+　Q.E.D
+
+<div class="theory-common-box">Proposition: A force perpendicular to the velocity does no work</div>
+<div class="proof-box">Proof</div>
+Let $\vec{f}(t)$ be a force perpendicular to the velocity. Then at every time $t$,
+$\vec{f}(t) \cdot \vec{v}(t) = 0$.
+Hence the work $W$ from $t_0$ to $t_1$ is, by Theorem 1,
+$$
+W = \int_{t_0}^{t_1} \vec{f}(t) \cdot \vec{v}(t)\, dt
+= \int_{t_0}^{t_1} 0\, dt = 0
+$$
+. Therefore a force perpendicular to the velocity does no work. Q.E.D.
 
 """
 );

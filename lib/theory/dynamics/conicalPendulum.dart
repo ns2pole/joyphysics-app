@@ -2,6 +2,7 @@ import '../../model.dart';
 
 final conicalPendulum = TheoryTopic(
   title: '円錐振り子の周期',
+  titleEn: 'Period of a conical pendulum',
   isNew: false,
   imageAsset: 'assets/mindMap/forTopics/conicalPendulum.png', // 実際の画像パス
   latexContent: r"""
@@ -36,6 +37,44 @@ T &= \frac{2\pi r}{v} \\[6pt]
  &= \frac{2\pi L \sin \theta }{\sqrt{g L \sin \theta \tan \theta}} \\[6pt]
  &= 2\pi \sqrt {\frac{L \sin \theta }{g \tan \theta}} \\[6pt]
  &= 2\pi \sqrt {\frac{L \cos \theta }{g}} \ [s]
+\end{aligned}$$
+
+Q.E.D
+
+</p>
+""",
+  latexContentEn: r"""
+<div class="theory-common-box">Proposition: Under the setup of Fig. 1 (conical pendulum; the bob moves in uniform horizontal circular motion), the period $T$ of the bob is
+$$
+\displaystyle T = 2\pi \sqrt {\frac{L \cos \theta }{g}}\ [\mathrm{s}]
+$$
+<div style="text-align:center; margin:1em 0;">
+    <img src="assets/dynamicsTheory/conicalPendulum.png"
+          alt="conical pendulum"
+          style="max-width:75%; height:auto;" />
+  </div>
+</div>
+<p><div class="proof-box">Proof</div>
+Vertical forces on the body balance. Letting the string tension be ${T \ [\mathrm{N}]} $,
+$$\displaystyle mg = T \cos \theta\ \Leftrightarrow \ T = \frac{mg}{\cos \theta} \ \cdots (1) $$
+If the body moves in uniform circular motion with radius ${r = L \sin \theta \ [\mathrm{m}]} $, the radial equation of motion gives
+$$
+\displaystyle m\frac{v^2}{r} = T\sin \theta  \\ \ \\\Leftrightarrow m\frac{v^2}{L \sin \theta } = T\sin \theta \ \cdots (2)
+$$
+Substituting ${(1)} $ into ${(2)} $,
+
+$$\begin{aligned}
+\ \ \ \ \ &\displaystyle m\frac{v^2}{L \sin \theta } = mg\frac{ \sin \theta }{\cos \theta}  \\[6pt]
+\Leftrightarrow \ \ &\frac{v^2}{L \sin \theta } = g \tan \theta\\[6pt]
+\Leftrightarrow \ \ &v^2 = g L \sin \theta \tan \theta \\[6pt]
+\Leftrightarrow \ \ &v = \sqrt{g L \sin \theta \tan \theta} \ [\mathrm{m\cdot s^{-1}}] \ \cdots (3)
+\end{aligned}$$
+The period of the conical pendulum is $\displaystyle T = \frac{2\pi r}{v} \ [\mathrm{s}]$, so from ${(3)} $,
+$$\begin{aligned}
+T &= \frac{2\pi r}{v} \\[6pt]
+ &= \frac{2\pi L \sin \theta }{\sqrt{g L \sin \theta \tan \theta}} \\[6pt]
+ &= 2\pi \sqrt {\frac{L \sin \theta }{g \tan \theta}} \\[6pt]
+ &= 2\pi \sqrt {\frac{L \cos \theta }{g}} \ [\mathrm{s}]
 \end{aligned}$$
 
 Q.E.D

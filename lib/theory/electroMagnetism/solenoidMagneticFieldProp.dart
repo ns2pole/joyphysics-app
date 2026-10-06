@@ -2,6 +2,7 @@ import '../../model.dart';
 import '../../model.dart';
 final solenoidMagneticFieldProp = TheoryTopic(
   title: '無限に長いソレノイドコイルに流れる電流の作る磁場(真空中)',
+  titleEn: 'Magnetic field of a current in an infinitely long solenoid (in vacuum)',
   imageAsset: 'assets/mindMap/forTopics/solenoidMagneticFieldProp.png',
   latexContent: r"""
   <div style="text-align:center; margin:1em 0;">
@@ -188,6 +189,198 @@ $$\begin{aligned}
  <br> 
   <div class="remark-box">補足</div><br>
     磁束密度は $\mathbf B=\mu_0\mathbf H$（真空）なので、下記の通りとなる。
+    $$\begin{aligned}
+    \overrightarrow B(r)=
+      \begin{cases}
+        \mu_0 nI \hat{\mathbf z} : r < a \\
+        \vec {0}  : r > a
+      \end{cases}
+    \end{aligned}$$
+  """,
+  latexContentEn: r"""
+  <div style="text-align:center; margin:1em 0;">
+    <img src="assets/electroMagnetismTheory/initSolenoid.png"
+      alt="ideal solenoid"
+      style="max-width:95%; height:auto;" />
+  </div>
+
+  <div class="condition-box">Assumptions and notation</div>
+  <ul>
+    <li>Space is vacuum</li>
+    <li>Infinitely long ideal solenoid of radius $a$, turn density $n\,[\text{/m}]$, current $I\,[\text{A}]$</li>
+    <li>Rotational symmetry about $z$ and translational symmetry in $z$</li>
+    <li>Displacement current neglected</li>
+    <li>Unit vectors $\hat{\mathbf r},\ \hat{\boldsymbol\phi},\ \hat{\mathbf z}$</li>
+    <li>Magnetic field $\overrightarrow H=H_r(r,\phi,z)\,\hat{\mathbf r}+H_\phi(r,\phi,z)\,\hat{\boldsymbol\phi}+H_z(r,\phi,z)\,\hat{\mathbf z}$</li>
+  </ul>
+    <div style="text-align:center; margin:1em 0;">
+      <img src="assets/electroMagnetismTheory/idealSolenoidCoodinate.png"
+        alt=""
+        style="max-width:95%; height:auto;" />
+    </div>
+  <div class="theorem-box">
+  Theorem (magnetic field of an ideal solenoid):
+  $$\begin{aligned}
+  \overrightarrow H(r)=
+    \begin{cases}
+      nI \hat{\mathbf z} : r < a \\
+      \vec {0}  : r > a
+    \end{cases}
+  \end{aligned}$$
+  </div>
+  We prove this using Propositions 1–9.
+  <br><br>
+
+  <div class="theory-common-box">Proposition 1: Field components depend only on $r$: $\displaystyle
+    \overrightarrow H=H_r(r)\,\hat{\mathbf r}+H_\phi(r)\,\hat{\boldsymbol\phi}+H_z(r)\,\hat{\mathbf z}
+  $</div>
+  <div class="proof-box">Proof</div>
+  Rotational and $z$-translational symmetry imply independence of $\phi,z$; each component is a function of $r$ alone.<br>$\square$
+
+  <div class="theory-common-box">Proposition 2: For a closed concentric cylinder (radius $r$, height $L$), $ \displaystyle \oint_A \overrightarrow H\cdot d\overrightarrow A = 2\pi r L\, H_r(r)$</div>
+  <div style="text-align:center; margin:1em 0;">
+    <img src="assets/electroMagnetismTheory/idealSolenoid_cylinder.png"
+      alt="cylindrical Gaussian surface"
+      style="max-width:95%; height:auto;" />
+  </div>
+  <div class="proof-box">Proof</div>
+  Top/bottom contribute only via $H_z$ (and cancel by opposite orientation); the side contributes area times $H_r(r)$.<br>$\square$
+
+  <div class="theory-common-box">Proposition 3: $H_r(r)=0$ for any $r$</div>
+  <div class="proof-box">Proof</div>
+  Gauss's law for $\overrightarrow H$: $\displaystyle \oint_A \overrightarrow H\cdot d\overrightarrow A = 0$. With Proposition 2,
+  $2\pi r L\,H_r(r)=0 \Leftrightarrow H_r(r)=0$.<br>$\square$
+
+  <div class="theory-common-box">Proposition 4: $H_\phi(r)=0$ for any $r$</div>
+  <div style="text-align:center; margin:1em 0;">
+    <img src="assets/electroMagnetismTheory/idealSolenoidLoop4.png"
+      alt=""
+      style="max-width:95%; height:auto;" />
+  </div>
+  <div class="proof-box">Proof</div>
+  On a concentric circle of radius $r$, any spanning surface is not pierced by the solenoid current, so
+  $\displaystyle \oint_C \overrightarrow H\cdot d\overrightarrow l = H_\phi(r)\,2\pi r = 0\Leftrightarrow H_\phi(r)=0$
+  <br>$\square$
+  
+  <div class="theory-common-box">Proposition 5: Inside the solenoid, $H_z(r)$ is constant</div>
+  <div style="text-align:center; margin:1em 0;">
+    <img src="assets/electroMagnetismTheory/idealSolenoidLoop5.png"
+        alt="rectangular loop (interior)"
+        style="max-width:95%; height:auto;" />
+  </div>
+<div class="proof-box">Proof</div>
+In the $rz$-plane take a rectangular loop entirely inside (not crossing the surface).<br>
+Enclosed current is $0$, so
+$$
+\oint_C \overrightarrow H \cdot d\overrightarrow l = 0.
+$$
+With sides at $r_1,r_2 < a$ and $H_r=0$, only the vertical segments contribute:
+$$
+\oint_C \overrightarrow H \cdot d\overrightarrow l
+  = H_z(r_2)\,L - H_z(r_1)\,L.
+$$
+Hence
+$$\begin{aligned}
+H_z(r_2)-H_z(r_1) &=0 \\
+\Leftrightarrow \quad H_z(r_1)&=H_z(r_2).
+\end{aligned}$$
+Since $r_1,r_2 < a$ are arbitrary,
+$$
+H_z^{(\mathrm{in})}(r)=\text{constant}. \quad\square
+$$
+
+<div class="theory-common-box">Proposition 6: Outside the solenoid, $H_z(r)$ is constant</div>
+  <div style="text-align:center; margin:1em 0;">
+    <img src="assets/electroMagnetismTheory/idealSolenoidLoop6.png"
+        alt="rectangular loop (exterior)"
+        style="max-width:95%; height:auto;" />
+  </div>
+<div class="proof-box">Proof</div>
+Likewise for a rectangular loop entirely outside: enclosed current $0$, so
+$$
+\oint_C \overrightarrow H \cdot d\overrightarrow l = 0.
+$$
+With $r_1,r_2 > a$ and $H_r=0$,
+$$
+\oint_C \overrightarrow H \cdot d\overrightarrow l
+  = H_z(r_2)\,L - H_z(r_1)\,L,
+$$
+hence
+$$\begin{aligned}
+H_z(r_2)-H_z(r_1) &=0 \\
+\Leftrightarrow \quad H_z(r_1)&=H_z(r_2).
+\end{aligned}$$
+Thus
+$$
+H_z^{(\mathrm{out})}(r)=\text{constant}. \quad\square
+$$
+
+<div class="theory-common-box">Proposition 7: The jump of $H_z$ across the solenoid is $nI$</div>
+<div style="text-align:center; margin:1em 0;">
+  <img src="assets/electroMagnetismTheory/idealSolenoidLoop7.png"
+       alt="rectangular loop crossing the cylinder"
+       style="max-width:95%; height:auto;" />
+</div>
+<div class="proof-box">Proof</div>
+Take a rectangular loop in the $rz$-plane that crosses the solenoid surface.<br>
+Enclosed current is $nI\ell$, so
+$$
+\oint_C \overrightarrow H \cdot d\overrightarrow l = nI\ell .
+$$
+With $r_1 < a$ and $r_2 > a$, and $H_r=0$,
+
+$$
+\oint_C \overrightarrow H \cdot d\overrightarrow l
+  = H_z(r_2)\,L - H_z(r_1)\,L,
+$$
+hence
+$$\begin{aligned}
+H_z(r_2)\ell  - H_z(r_1)\ell &= nI\ell. \\
+\Leftrightarrow H_z(r_2)  - H_z(r_1) &= nI 
+\end{aligned}$$
+. The interior–exterior difference of $H_z$ is $nI$.
+<br>$\square$
+<div class="theory-common-box">Proposition 8: Exterior field vanishes by the condition at infinity</div>
+<div class="proof-box">Proof</div>
+Imposing
+$$
+\lim_{r\to\infty} |\overrightarrow H(r)| = 0
+$$
+and using Proposition 6 (exterior field is a single constant), that constant is 0:
+$$
+H_z^{(\mathrm{out})}=0. \quad\square
+$$
+
+<div class="theory-common-box">Proposition 9: Interior field is $nI$</div>
+<div class="proof-box">Proof</div>
+By Proposition 7,
+$$
+H_z^{(\mathrm{in})}-H_z^{(\mathrm{out})}=nI,
+$$
+and by Proposition 8 $H_z^{(\mathrm{out})}=0$, so
+$$
+H_z^{(\mathrm{in})}=nI.
+$$
+Hence
+$$
+\overrightarrow H^{(\mathrm{in})}=nI\,\hat{\mathbf z},\qquad\square
+$$
+
+
+  <div class="theorem-box">Theorem: magnetic field of an ideal solenoid</div>
+  <div class="proof-box">Proof</div>
+  By Propositions 3–4, $H_r=H_\phi=0$. Propositions 8–9 then give
+$$\begin{aligned}
+  \overrightarrow H(r)=
+    \begin{cases}
+      nI \hat{\mathbf z} : r < a \\
+      \vec {0}  : r > a
+    \end{cases}
+  \end{aligned}$$
+  $\square$
+ <br> 
+  <div class="remark-box">Remark</div><br>
+    With $\mathbf B=\mu_0\mathbf H$ in vacuum,
     $$\begin{aligned}
     \overrightarrow B(r)=
       \begin{cases}

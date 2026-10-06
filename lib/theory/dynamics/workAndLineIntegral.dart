@@ -2,6 +2,7 @@ import '../../model.dart';
 
 final workAndLineIntegral = TheoryTopic(
   title :  '定義および命題',
+  titleEn: 'Definitions and propositions',
   imageAsset: 'assets/mindMap/forTopics/workAndLineIntegral.png',
 
   latexContent :  r"""
@@ -55,6 +56,65 @@ $$\begin{aligned}
 &= F \cos \theta \cdot L
 \end{aligned}$$
 よって、
+$$\begin{aligned}
+\int_C \vec F\cdot d\vec r
+&= \lim_{| P | \to 0} \Bigl( F \cos \theta \cdot L\Bigr)\\[5pt]
+&= F \cos \theta \cdot L
+\end{aligned}$$
+Q.E.D
+</p>
+""",
+  latexContentEn: r"""
+<div class="theory-common-box">Definition of work for a constant force and straight-line motion</div>
+
+When a body moves in a straight line by $\Delta \vec x$ under a constant force $ \vec F $, the work $W$ done by the force on the particle is defined by
+$$
+W = |\vec F| | \Delta \vec x| \cos\theta  = \vec F \cdot  \vec x
+$$
+※ Here $ \theta $ is the angle between the force and the direction of motion.
+
+
+<div class="theory-common-box">Definition of work in general (line integral)</div>
+In general, when a body moves along a curve under a force that may change in direction and magnitude, the work $W$ done by the force is defined by
+
+$$\begin{aligned}
+\quad \int_C \vec F\cdot d\vec r
+&:= \lim_{| P | \to 0}
+\sum_{i=1}^{N(P)} (\vec F_i\cdot\vec\tau_i)\,\Delta s_i \\[4pt] 
+&\;\Bigl(= \lim_{| P | \to 0}
+\sum_{i=1}^{N(P)} |\vec F_i|\cos\theta_i\,\Delta s_i\Bigr)
+\end{aligned}$$
+
+<div class="paragraph-box">Notation</div><br>
+<ul>
+  <li> $ P = \{t_0 < t_1 < \cdots < t_N \}$ : a partition
+<li> $N(P)$ : number of subintervals</li>
+  <li>  $ | P| := \displaystyle \max_i |t_i-t_{i-1}| $ : mesh (largest subinterval width)
+  <li> $\Delta s_i$ : arc length of the $i$-th subinterval
+  <li> $\vec F_i$ : the vector field $ \vec F $ at a representative point of the $i$-th arc
+  <li> $\vec\tau_i$ : unit tangent at a representative point of the $i$-th arc
+  <li> $\theta_i$ : angle between $ \vec F_i $ and $ \vec\tau_i $
+  <li> $\vec F_i\cdot\vec\tau_i\,\Delta s_i,\ |\vec F_i|\cos\theta_i\,\Delta s_i$: approximate work by $\vec F$ on the $i$-th arc
+</ul>
+
+
+<div class="theory-common-box">Proposition: If $|\vec F|$ is a constant $F$ along a curve $C$ and the angle with the tangent is a constant $ \theta $ along the curve, then with curve length $L$,
+$$
+\int_C \vec F\cdot d\vec r = F\cos\theta\cdot L
+$$
+</div>
+<p><div class="proof-box">Proof</div>
+By definition
+$$
+\int_C \vec F\cdot d\vec r = \lim_{| P | \to 0}\sum_{i=1}^{N(P)} (\vec F_i\cdot\vec\tau_i)\,\Delta s_i.
+$$
+At each representative point $|\vec F_i|=F$ and $\vec F_i\cdot\vec\tau_i=F\cos\theta$, so
+$$\begin{aligned}
+\sum_{i=1}^{N(P)} (\vec F_i\cdot\vec\tau_i)\,\Delta s_i
+&= F\cos\theta \sum_{i=1}^{N(P)}\Delta s_i \\[5pt]
+&= F \cos \theta \cdot L
+\end{aligned}$$
+Hence
 $$\begin{aligned}
 \int_C \vec F\cdot d\vec r
 &= \lim_{| P | \to 0} \Bigl( F \cos \theta \cdot L\Bigr)\\[5pt]

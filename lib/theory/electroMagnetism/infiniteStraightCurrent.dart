@@ -2,6 +2,7 @@ import '../../model.dart';
 
 final infiniteStraightCurrent = TheoryTopic(
   title: '無限に長い直線電流の作る磁場(真空中)',
+  titleEn: 'Magnetic field of an infinitely long straight current (in vacuum)',
   imageAsset: 'assets/mindMap/forTopics/infiniteStraightCurrent.png',
   latexContent: r"""
   <div style="text-align:center; margin:1em 0;">
@@ -124,6 +125,137 @@ $\square $
 <div class="proof-box">証明</div>
 命題6より、$H_{z0} = 0$ を示せば良い。<br>
 無限遠方で磁場が 0 に収束する境界条件を課すと
+$$\begin{aligned}
+   & \lim_{r\to\infty}|\overrightarrow H| = 0 \\[6pt]
+  \Leftrightarrow & \lim_{r\to\infty} \sqrt{\overrightarrow H \cdot \overrightarrow H} = 0 \\[6pt]
+  \Leftrightarrow &\lim_{r\to\infty} \sqrt{\Bigl(\displaystyle \frac{I}{2\pi r} \, \hat{\boldsymbol\phi} + H_{z0} \, \hat{\mathbf z} \Bigr) \cdot \Bigl(\displaystyle \frac{I}{2\pi r} \, \hat{\boldsymbol\phi} + H_{z0} \, \hat{\mathbf z} \Bigr)} = 0 \\[6pt]
+  \Leftrightarrow &\lim_{r\to\infty} \sqrt{\Bigl(\displaystyle \frac{I}{2\pi r} \Bigr)^2 + H_{z0}^2} = 0 \\[6pt]
+  \Leftrightarrow & \sqrt{ H_{z0}^2} = 0 \\[6pt]
+  \Leftrightarrow &|H_{z0}| = 0 \\[6pt]
+  \Leftrightarrow &H_{z0} = 0 \\[6pt]
+\end{aligned}$$
+$\square$
+""",
+  latexContentEn: r"""
+  <div style="text-align:center; margin:1em 0;">
+  <img src="assets/electroMagnetismTheory/infiniteStraightCurrent.png"
+    alt="data"
+    style="max-width:60%; height:auto;" />
+</div>
+
+<div class="condition-box">Assumptions and notation</div>
+<ul>
+  <li>Space is vacuum</li>
+  <li>An infinitely long straight current $I[\mathrm{A}]$ flows concentrated at $r=0$ along the $z$-axis (the system is rotationally symmetric about $z$ and translationally symmetric in $z$)</li>
+  <li>There is no displacement current</li>
+  <li>Unit vector in the $z$ direction: $\hat{\mathbf z}$</li>
+  <li>Radial unit vector: $\hat{\mathbf r}$</li>
+  <li>Azimuthal unit vector: $\hat{\boldsymbol\phi}$</li>
+  <li>The magnetic field produced is $ \overrightarrow H=H_r(r,\phi,z)\,\hat{\mathbf r}+H_\phi(r,\phi,z)\,\hat{\boldsymbol\phi}+H_z(r,\phi,z)\,\hat{\mathbf z} $</li>
+</ul>
+  <div style="text-align:center; margin:1em 0;">
+    <img src="assets/electroMagnetismTheory/infiniteStraightCurrent0.png"
+      alt="data"
+      style="max-width:70%; height:auto;" />
+  </div>
+<div class="theorem-box">
+Theorem: Under the above assumptions, $\overrightarrow H = \displaystyle \frac{I}{2\pi r} \, \hat{\boldsymbol\phi}$
+</div>
+We prove this using Propositions 1–6.
+<br><br>
+<div class="theory-common-box">Proposition 1: The field components depend only on $r$: $\displaystyle
+  \overrightarrow H=H_r(r)\,\hat{\mathbf r}+H_\phi(r)\,\hat{\boldsymbol\phi}+H_z(r)\,\hat{\mathbf z}
+$</div>
+<div class="proof-box">Proof</div>
+In general write
+$\displaystyle
+  \overrightarrow H=H_r(r,\phi,z)\,\hat{\mathbf r}+H_\phi(r,\phi,z)\,\hat{\boldsymbol\phi}+H_z(r,\phi,z)\,\hat{\mathbf z}
+$
+. Rotational symmetry about $z$ and translational symmetry in $z$ imply independence of $\phi$ and $z$, so each component is a function of $r$ alone:
+$\displaystyle
+  \overrightarrow H=H_r(r)\,\hat{\mathbf r}+H_\phi(r)\,\hat{\boldsymbol\phi}+H_z(r)\,\hat{\mathbf z}
+$. $\square$
+
+<div class="theory-common-box">Proposition 2: For a closed cylindrical surface of radius $r$ and height $L$, $\displaystyle \oint_A \overrightarrow H \cdot d\overrightarrow A = 2\pi r L \times H_r(r)$</div>
+<div style="text-align:center; margin:1em 0;">
+  <img src="assets/electroMagnetismTheory/infiniteStraightCurrent2.png"
+    alt="data"
+    style="max-width:90%; height:auto;" />
+</div>
+<div class="proof-box">Proof</div>
+Compute the flux through the top, bottom, and side.<br>
+[1] Bottom: only the $z$ component contributes. The <span style="color: red;">outward</span> flux is $\displaystyle \int_{A_{under}} \overrightarrow H \cdot d\overrightarrow A = - \displaystyle \int_{S} H_z(r) dS $<br>
+[2] Top: outward flux $\displaystyle \int_{A_{over}} \overrightarrow H \cdot d\overrightarrow A =  \displaystyle \int_{S} H_z(r) dS$<br>
+[3] Side: only the $r$ component contributes:
+$\displaystyle \int_{A_{side}} \overrightarrow H \cdot d\overrightarrow A = \displaystyle \int_{S} H_r(r) dS = 2\pi r L \times H_r(r)$<br>
+Summing,
+$$\begin{aligned}
+\displaystyle
+  \oint_A \overrightarrow H \cdot d\overrightarrow A &= - \displaystyle \int_{S} H_z(r) dS + \displaystyle \int_{S} H_z(r) dS + 2\pi r L \times H_r(r) \\ &= 2\pi r L \times H_r(r)
+\end{aligned}$$
+ $\square$
+
+<div class="theory-common-box">Proposition 3: For any $r$, $H_r(r)=0$</div>
+<div class="proof-box">Proof</div>
+Gauss's law for the magnetic field: $\displaystyle \oint_A \overrightarrow H \cdot d\overrightarrow A = 0$.<br>
+By Proposition 2,
+$\displaystyle
+  2\pi r L \times H_r(r) = 0 \Leftrightarrow H_r(r) = 0
+$ $\square$
+
+
+<div class="theory-common-box">Proposition 4: The $z$ component $H_z(r)$ is independent of position</div>
+<div style="text-align:center; margin:1em 0;">
+  <img src="assets/electroMagnetismTheory/infiniteStraightCurrent1.png"
+    alt=""
+    style="max-width:70%; height:auto;" />
+</div>
+<div class="proof-box">Proof</div>
+For a rectangular loop in the $rz$-plane with vertical sides at $r=r_1$ and $r=r_2$,
+$\displaystyle \oint_C \overrightarrow H \cdot d\overrightarrow l = \displaystyle H_z(r_1)L - H_z(r_2)L$
+.
+The loop encloses no current, so Ampère's law gives
+$$\begin{aligned}
+\displaystyle
+\oint_C \overrightarrow H \cdot d\overrightarrow{l} &= 0 \\[6pt]
+\Leftrightarrow H_z(r_1) - H_z(r_2) &= 0 \\[6pt] 
+\Leftrightarrow H_z(r_1) &= H_z(r_2)
+\end{aligned}$$
+. Since $r_1,r_2$ are arbitrary, $H_z(r)$ is constant. $\square$
+
+<div class="theory-common-box">Proposition 5: The azimuthal component is $ \displaystyle H_\phi(r) = \frac{I} {2\pi r} $</div>
+<div style="text-align:center; margin:1em 0;">
+  <img src="assets/electroMagnetismTheory/infiniteStraightCurrent3.png"
+    alt="data"
+    style="max-width:70%; height:auto;" />
+</div>
+<div class="proof-box">Proof</div>
+On a concentric circle of radius $r$,
+$\displaystyle
+  \oint_C \overrightarrow H \cdot d\overrightarrow l = H_\phi(r) \times 2\pi r
+$
+. Ampère's law gives
+$$
+\displaystyle
+  H_\phi(r) \times 2\pi r = I \Leftrightarrow H_\phi(r) = \displaystyle \frac{I}{2\pi r}\ \ \square
+$$
+
+<div class="theory-common-box">Proposition 6: The field can be written $\overrightarrow H = \displaystyle \frac{I}{2\pi r} \, \hat{\boldsymbol\phi} + H_{z0} \, \hat{\mathbf z}$
+(with $H_{z0}$ a position-independent constant)</div>
+<div class="proof-box">Proof</div>
+Proposition 3: $H_r=0$; Proposition 4: $H_z=H_{z0}$; Proposition 5: $H_{\phi}=\displaystyle \frac{I}{2\pi r}$.<br>
+Combining with Proposition 1,
+$$\begin{aligned}
+\displaystyle
+  \overrightarrow H &= H_r(r)\,\hat{\mathbf r}+H_\phi(r)\,\hat{\boldsymbol\phi}+H_z(r)\,\hat{\mathbf z} \\[6pt]
+  &= \displaystyle \frac{I}{2\pi r} \, \hat{\boldsymbol\phi} + H_{z0} \, \hat{\mathbf z}
+\end{aligned}$$
+$\square $
+
+<div class="theorem-box">Theorem: $\overrightarrow H = \displaystyle \frac{I}{2\pi r} \, \hat{\boldsymbol\phi}$</div>
+<div class="proof-box">Proof</div>
+By Proposition 6 it remains to show $H_{z0} = 0$.<br>
+Imposing that the field vanish at infinity,
 $$\begin{aligned}
    & \lim_{r\to\infty}|\overrightarrow H| = 0 \\[6pt]
   \Leftrightarrow & \lim_{r\to\infty} \sqrt{\overrightarrow H \cdot \overrightarrow H} = 0 \\[6pt]

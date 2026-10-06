@@ -2,6 +2,7 @@ import '../../model.dart';
 
 final uniformCircularMotion = TheoryTopic(
   title: '等速円運動の運動方程式',
+  titleEn: 'Equation of motion for uniform circular motion',
   isNew: false,
   imageAsset: 'assets/mindMap/forTopics/uniformCircularMotion.png',
   latexContent: r"""
@@ -123,6 +124,130 @@ $$\begin{aligned}
 -m R \omega^2 \vec e_r(t) &= F_r \vec e_r(t) + F_\theta \vec e_\theta(t)
 \end{aligned}$$
 命題3より、$v=R |\omega|$に注意して、$\vec e_r(t),\vec e_\theta(t)\ $の各成分を比較すると、下記を得る。
+$$\begin{aligned}
+\begin{cases}
+\displaystyle -m R \omega^2 = -m \frac{v^2}{R} = F_r\\[6pt]
+F_\theta = 0
+\end{cases}
+\end{aligned}$$
+Q.E.D
+</p>
+""",
+  latexContentEn: r"""
+<div class="theory-common-box">Definition of symbols</div>
+  <div style="margin-left: 22px; line-height: 1.5;">
+  <p>
+  $\cdot \  \displaystyle F_r\cdots$ radial (centripetal) component of $\vec F$<br>
+  $\cdot \ \displaystyle F_\theta \cdots$ angular component of $\vec F$<br>
+  $\cdot \ \displaystyle \theta(t)=\omega t \cdots$ angle of the particle from the $x$-axis (angular velocity $\omega$ constant)<br>
+  $\cdot \ \vec r(t) \cdots$ position vector<br>
+  $\cdot \ \vec v(t) \cdots$ velocity vector<br>
+  $\cdot \ \vec a(t) \cdots$ acceleration vector<br>
+  $\cdot \ v(t)=|\vec v(t)|\cdots$ speed
+  </p>
+  </div>
+
+<div class="theory-common-box">Definition (radial and angular unit vectors)</div>
+Define the radial and angular unit vectors for circular motion by
+$$\begin{aligned}
+\begin{cases}
+\vec e_r(t) = \cos(\omega t)\vec e_x + \sin(\omega t)\vec e_y\\[6pt]
+\vec e_{\theta}(t) = -\sin(\omega t)\vec e_x + \cos(\omega t)\vec e_y
+\end{cases}
+\end{aligned}$$
+
+<div class="theory-common-box">Proposition 1: The time derivatives of the radial and angular unit vectors are
+$$\begin{aligned}
+\begin{cases}
+\vec {e_r}'(t) = \omega \vec {e_{\theta}}(t)\\[6pt]
+\vec {e_\theta}'(t) = -\omega \vec e_r(t)
+\end{cases}
+\end{aligned}$$
+</div>
+<p>
+<div class="proof-box">Proof</div>
+From $\displaystyle \vec e_r(t)=\cos(\omega t)\,\vec e_x + \sin(\omega t)\,\vec e_y$,
+$$\begin{aligned}
+\vec e_r'(t) &= -\sin(\omega t)\,\omega\,\vec e_x + \cos(\omega t)\,\omega\,\vec e_y \\
+&= \omega\bigl(-\sin(\omega t)\vec e_x + \cos(\omega t)\vec e_y\bigr)\\
+&= \omega\,\vec e_{\theta}(t)
+\end{aligned}$$
+Similarly for $e_{\theta}(t) = -\sin(\omega t)\,\vec e_x + \cos(\omega t)\,\vec e_y$,
+$$\begin{aligned}
+\vec e_{\theta}'(t) &= -\cos(\omega t)\,\omega\,\vec e_x - \sin(\omega t)\,\omega\,\vec e_y \\
+&= -\omega\bigl(\cos(\omega t)\vec e_x + \sin(\omega t)\vec e_y\bigr)\\
+&= -\omega\,\vec e_r(t).
+\end{aligned}$$
+Q.E.D
+</p>
+
+<div class="theory-common-box">Proposition 2: The velocity of a particle in uniform circular motion is
+$$\begin{aligned}
+\vec v(t) = R \omega \vec e_\theta(t)
+\end{aligned}$$
+</div>
+<p>
+<div class="proof-box">Proof</div>
+With $\vec r(t) = R \vec e_r(t)$ and Proposition 1 ($R$ constant),
+$$\begin{aligned}
+\vec v(t) &= \vec r'(t)\\[6pt]
+&= \Bigl(R \vec e_r(t)\Bigr)'\\[6pt]
+&= R \vec e_r'(t)\\[6pt]
+&= R \omega \vec e_\theta(t)
+\end{aligned}$$
+Q.E.D
+</p>
+
+<div class="theory-common-box">Proposition 3: The speed $v$ in uniform circular motion is $R |\omega|$.
+</div>
+<p>
+<div class="proof-box">Proof</div>
+$$\begin{aligned}
+\displaystyle v(t) &= |\vec v (t)|\\[6pt] 
+&= |R \omega \vec e_\theta(t)|\\[6pt] 
+&= |R|\,|\omega|\,|\vec e_\theta(t)|\\[6pt]
+&= R　|\omega| |\vec e_\theta(t)|
+\end{aligned}$$
+Since $e_\theta(t)$ is a unit vector, $\displaystyle v(t) = R|\omega|$.　Q.E.D
+</p>
+
+<div class="theory-common-box">Proposition 4: The acceleration in uniform circular motion is
+$$\begin{aligned}
+\vec a(t) = - R \omega^2 \vec e_r(t)
+\end{aligned}$$
+</div>
+<p>
+<div class="proof-box">Proof</div>
+Differentiate $\vec v(t) = R \omega \vec e_\theta(t)$ using Proposition 1:
+$$\begin{aligned}
+\vec a(t) &= \vec v'(t) \\[6pt]
+&= \Bigl(R \omega \vec e_\theta(t)\Bigr)'\\[6pt]
+&= R \omega \vec e_\theta'(t)\\[6pt]
+&= R \omega (-\omega \vec e_r(t))\\[6pt]
+&= - R \omega^2 \vec e_r(t)
+\end{aligned}$$
+Q.E.D
+</p>
+
+<div class="theory-common-box">Proposition 5: With the circle center as the origin, the equation of motion for uniform circular motion is
+$$\begin{aligned}
+\begin{cases}
+\displaystyle -m \frac {v^2}{R} = F_r\\[6pt]
+F_\theta = 0
+\end{cases}
+\end{aligned}$$
+</div><p>
+<div class="proof-box">Proof</div>
+From $m \vec a(t) = \vec F(t)$ and Proposition 4,
+$$\begin{aligned} 
+m \vec a(t) &= m(- R \omega^2 \vec e_r(t))\\[6pt]
+&= -m R \omega^2 \vec e_r(t)
+\end{aligned}$$
+. Decomposing the force as $\vec F(t) = F_r \vec e_r(t) + F_\theta \vec e_\theta(t)$,
+$$\begin{aligned} 
+-m R \omega^2 \vec e_r(t) &= F_r \vec e_r(t) + F_\theta \vec e_\theta(t)
+\end{aligned}$$
+. With $v=R |\omega|$ from Proposition 3, comparing components yields
 $$\begin{aligned}
 \begin{cases}
 \displaystyle -m R \omega^2 = -m \frac{v^2}{R} = F_r\\[6pt]

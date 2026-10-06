@@ -2,6 +2,7 @@ import '../../model.dart';
 
 final conservativeForce = TheoryTopic(
   title: '保存力',
+  titleEn: 'Conservative forces',
   isNew: false,
   imageAsset: 'assets/mindMap/forTopics/conservativeForce.png', // 実際の画像パス
   latexContent: r"""
@@ -86,6 +87,87 @@ W_{\rm fr}&=-\mu_{k}N\int_{t_0}^{t_1}\frac{\overrightarrow v}{|\overrightarrow v
 となる。ここで $\displaystyle \int_{t_0}^{t_1}|\overrightarrow v|\,dt$ は$\overrightarrow a$から$\overrightarrow b$までの道のりの長さなので、始点・終点だけでは一意に定まらない。したがって動摩擦力は保存力ではない。Q.E.D
 
 </p>
+""",
+  latexContentEn: r"""
+
+<div class="theory-common-box">Definition of a conservative force</div>
+<p>
+Taking some point as the origin, when a particle moves from $\overrightarrow a$ to $\overrightarrow b$ under a force $\overrightarrow F$, if the work done by $\overrightarrow F$ depends only on the endpoints $\overrightarrow a ,\overrightarrow b$ and not on the path, the force is called conservative.
+</p>
+<div class="theory-common-box">Proposition: Uniform gravity is a conservative force</div>
+<p>
+<div class="proof-box">Proof</div>
+It suffices to show that the work done by uniform gravity on a particle of mass $m$ is path-independent.
+Since $\overrightarrow{F}=m\overrightarrow g$ everywhere, for any path $\overrightarrow r(t)$ with $\overrightarrow r(t_0) = \overrightarrow a, \ \overrightarrow r(t_1) = \overrightarrow b$,
+$$\begin{aligned}
+\ \ \ \ \ &\displaystyle \int_{t_0}^{t_1} \overrightarrow{F}(t) \cdot \overrightarrow{v}(t) dt\\[6pt]
+&= \displaystyle \int_{t_0}^{t_1} m\overrightarrow g \cdot \frac {d\overrightarrow r}{dt} dt\\[6pt]
+&=  \displaystyle \int_{t_0}^{t_1} mg\frac {dy}{dt} dt \\[6pt]
+&=  \displaystyle mg \int_{t_0}^{t_1} \frac {dy}{dt} dt \\[6pt]
+&=  \displaystyle mg \bigl[ y(t) \bigr]_{t_0}^{t_1} \\[6pt]
+&=  \displaystyle mg \bigl( y(t_1) - y(t_0)\bigr)\\[6pt]
+&=  \displaystyle mg \bigl( b_y - a_y\bigr)
+\end{aligned}$$
+. The work depends only on the $y$-coordinates of $\overrightarrow a$ and $\overrightarrow b$, hence only on the endpoints. Q.E.D
+</p>
+<div class="theory-common-box">Proposition: A force proportional to the position vector is conservative</div>
+<p>
+<div class="proof-box">Proof</div>
+It suffices to show that the work of $-k\overrightarrow{r}(t)$ is path-independent.
+For any path with $\overrightarrow r(t_0) = \overrightarrow a,\  \overrightarrow r(t_1) = \overrightarrow b$,
+$$\begin{aligned}
+\ \ \ \ \ &\displaystyle \int_{t_0}^{t_1} \overrightarrow{F}(t) \cdot \overrightarrow{v}(t) dt\\[6pt]
+&= \displaystyle \int_{t_0}^{t_1} -k \overrightarrow{r}(t) \cdot \overrightarrow{v}(t) dt \\[6pt]
+&= \Bigr[-\frac {1}{2} k |\overrightarrow r (t)|^2 \Bigr]_{t_0}^{t_1}  \\[6pt]
+&= -\frac {1}{2} k \Bigl( |\overrightarrow b|^2 -  |\overrightarrow a|^2 \Bigr)
+\end{aligned}$$
+. The work depends only on the endpoint position vectors $\overrightarrow a, \overrightarrow b$. Q.E.D
+</p>
+<div class="theory-common-box">Lemma</div>
+For a vector function $\overrightarrow r(t)$ with $r(t)=|\overrightarrow r(t)|$,
+$$
+\bigl(r^{-1}\bigr)'=-\,\frac{\overrightarrow r \cdot \overrightarrow v}{r^3}.
+$$
+<p>
+<div class="proof-box">Proof</div>
+From $r(t) = \sqrt{\overrightarrow r(t)\cdot\overrightarrow r(t)}$, $r'(t)=\displaystyle \frac{\overrightarrow r(t)\cdot\overrightarrow v(t)}{r(t)}$.
+Hence
+$$
+\Bigl(\frac 1 {r(t)}\Bigr)'=-\frac{1}{r(t)^2} r(t)'=-\frac{\overrightarrow r(t)\cdot\overrightarrow v(t)}{r(t)^3}.
+$$
+Q.E.D.
+</p>
+<div class="theory-common-box">Proposition: Universal gravitation is a conservative force</div>
+<p>
+<div class="proof-box">Proof</div>
+For a particle of mass $m$ and a central mass $M$,
+$$
+\overrightarrow{F}(\overrightarrow{r})=-G\frac{Mm}{r^3}\,\overrightarrow{r},
+$$
+. The work along a path from $\overrightarrow r(t_0)=\overrightarrow a$ to $\overrightarrow r(t_1)=\overrightarrow b$ is
+$$\begin{aligned}
+\ \ \ \ \ &\int_{t_0}^{t_1}\overrightarrow{F}(\overrightarrow r)\cdot{\overrightarrow v}\,dt\\[6pt]
+&=-GMm\int_{t_0}^{t_1}\frac{\overrightarrow r\cdot{\overrightarrow v}}{r^3}\,dt \\[6pt]
+&=-{GMm}\Bigl[\frac{1}{|\overrightarrow{r}(t)|}\Bigr]_{t_0}^{t_1}\\[6pt]
+&=-GMm\Bigl(\frac{1}{|\overrightarrow {r}(t_1)|}-\frac{1}{|\overrightarrow {r}(t_0)|}\Bigr) \\[6pt]
+&=-GMm\Bigl(\frac{1}{|\overrightarrow b|}-\frac{1}{|\overrightarrow a|}\Bigr)
+\end{aligned}$$
+which depends only on the endpoints, so universal gravitation is conservative. Q.E.D
+</p>
+
+<div class="theory-common-box">Proposition: Kinetic friction is not a conservative force</div>
+<p>
+<div class="proof-box">Proof</div>
+When a body slides on a contact surface with velocity $\overrightarrow v$, kinetic friction is
+$$
+\overrightarrow{F}_{\rm fr}=-\,\mu_{k}N\,\frac{\overrightarrow v}{|\overrightarrow v|},
+$$
+where $\mu_{k}$ is the coefficient of kinetic friction and $N$ the normal force. Work along any path from $\overrightarrow a$ to $\overrightarrow b$ is
+$$\begin{aligned}
+W_{\rm fr}&=-\mu_{k}N\int_{t_0}^{t_1}\frac{\overrightarrow v}{|\overrightarrow v|}\cdot\overrightarrow v\,dt\\[6pt]
+&=-\mu_{k}N\int_{t_0}^{t_1}|\overrightarrow v|\,dt
+\end{aligned}$$
+. Here $\displaystyle \int_{t_0}^{t_1}|\overrightarrow v|\,dt$ is the path length from $\overrightarrow a$ to $\overrightarrow b$, which is not uniquely determined by the endpoints alone. Hence kinetic friction is not conservative. Q.E.D
 """
 );
 

@@ -2,6 +2,7 @@ import '../../model.dart';
 
 final bioSarvartLawForCircleCurrent = TheoryTopic(
   title: '円形電流が円の中心に作る磁場',
+  titleEn: 'Magnetic field at the center of a circular current loop',
   videoURL: "",
   inPreparation: true,
   imageAsset: 'assets/mindMap/forTopics/bioSarvartLawForCircleCurrent.png',
@@ -179,6 +180,181 @@ $$
 
 
 <div class="proof-box">証明終了</div>
+
+""",
+  latexContentEn: r"""
+
+<div class="theorem-box">Proposition (final)</div>
+
+
+$$
+\text{When a circular wire of radius } R \text{ carries current } I\text{, the magnetic field at the center of the circle (on axis at } z=0\text{) is}
+$$
+
+
+$$
+\mathbf{B}(0)=B_z(0)\,\hat{\mathbf{z}},\qquad
+B_z(0)=\frac{\mu_0 I}{2R}.
+$$
+
+
+---
+
+<div class="proof-box">Proof (finite sum → quadrature form, via lemmas)</div>
+
+
+<div class="theory-common-box">Lemma 1 (setup of the finite partition)</div>
+
+
+**Claim.** Divide the circumference into \(N\) equal parts, and set the angular coordinates
+$$
+\phi_k=\frac{2\pi k}{N}\quad(k=0,1,\dots,N-1).
+$$
+
+
+The corresponding position vectors and (approximate) line elements are
+$$
+\mathbf{r}'_k=\mathbf{r}'(\phi_k)=R\cos\phi_k\,\hat{\mathbf{x}}+R\sin\phi_k\,\hat{\mathbf{y}},
+$$
+
+$$
+\Delta\mathbf{l}_k \fallingdotseq \mathbf{r}'(\phi_{k+1})-\mathbf{r}'(\phi_k)
+\fallingdotseq \frac{d\mathbf{r}'}{d\phi}(\phi_k)\,\Delta\phi,
+\quad \Delta\phi=\frac{2\pi}{N}.
+$$
+
+
+**Proof.** By definition. For large \(N\), the difference can be written via the first-order approximation by the derivative (a preparatory step for quadrature).
+
+
+---
+
+<div class="theory-common-box">Lemma 2 (evaluation point and difference vector — \(z=0\))</div>
+
+
+**Claim.** Take the evaluation point at the center of the circle (\(\mathbf{r}=\mathbf{0}\)). Then
+$$
+\mathbf{r}-\mathbf{r}'_k = -\mathbf{r}'_k = -R\cos\phi_k\,\hat{\mathbf{x}} - R\sin\phi_k\,\hat{\mathbf{y}},
+$$
+
+the distance is
+$$
+|\mathbf{r}-\mathbf{r}'_k| = |\mathbf{r}'_k| = R,
+$$
+
+and hence the cube is
+$$
+|\mathbf{r}-\mathbf{r}'_k|^3 = R^3.
+$$
+
+
+**Proof.** Simply substitute \(\mathbf{r}=\mathbf{0}\). The identity of the Pythagorean theorem yields \(R\).
+
+
+---
+
+<div class="theory-common-box">Lemma 3 (evaluating the cross product in the finite sum — \(z=0\))</div>
+
+
+**Claim.** The cross product on each segment is (approximately)
+$$
+\Delta\mathbf{l}_k \times (\mathbf{r}-\mathbf{r}'_k)
+\fallingdotseq \left(\frac{d\mathbf{r}'}{d\phi}(\phi_k)\,\Delta\phi\right)\times(-\mathbf{r}'(\phi_k))
+=R^2\,\hat{\mathbf{z}}\,\Delta\phi.
+$$
+
+
+**Proof.** Substitute \(z=0\) into the continuous calculation. Indeed,
+$$
+\frac{d\mathbf{r}'}{d\phi}(\phi)
+= -R\sin\phi\,\hat{\mathbf{x}}+R\cos\phi\,\hat{\mathbf{y}},
+\qquad
+-\mathbf{r}'(\phi) = -R\cos\phi\,\hat{\mathbf{x}}-R\sin\phi\,\hat{\mathbf{y}},
+$$
+
+and expanding the determinant form gives
+$$
+\frac{d\mathbf{r}'}{d\phi}\times(-\mathbf{r}') = R^2\hat{\mathbf{z}}.
+$$
+
+Multiplying by the difference approximation then yields the claimed formula.
+
+
+---
+
+<div class="theory-common-box">Lemma 4 (piecewise-sum form of the Biot–Savart law — \(z=0\))</div>
+
+
+**Claim.** Using the piecewise approximation of the Biot–Savart law, the contribution of each segment at the center is
+$$
+\Delta\mathbf{B}_k
+= \frac{\mu_0}{4\pi}\frac{I\,(\Delta\mathbf{l}_k\times(\mathbf{r}-\mathbf{r}'_k))}{|\mathbf{r}-\mathbf{r}'_k|^3}
+\fallingdotseq \frac{\mu_0 I}{4\pi}\frac{R^2\Delta\phi}{R^3}\,\hat{\mathbf{z}}
+= \frac{\mu_0 I}{4\pi R}\,\Delta\phi\,\hat{\mathbf{z}}.
+$$
+
+
+**Proof.** Obtained simply by substituting Lemmas 2 and 3.
+
+
+---
+
+<div class="theory-common-box">Lemma 5 (evaluating the finite sum: sum of constants)</div>
+
+
+**Claim.** The finite-sum magnetic field for an \(N\)-partition is
+$$
+\mathbf{B}_N(0)=\sum_{k=0}^{N-1}\Delta\mathbf{B}_k
+\fallingdotseq \sum_{k=0}^{N-1}\frac{\mu_0 I}{4\pi R}\,\Delta\phi\,\hat{\mathbf{z}}
+= \frac{\mu_0 I}{4\pi R}\left(\sum_{k=0}^{N-1}\Delta\phi\right)\hat{\mathbf{z}}
+= \frac{\mu_0 I}{4\pi R}\cdot N\Delta\phi\,\hat{\mathbf{z}}.
+$$
+
+
+**Proof.** Each term is a constant approximation independent of \(\phi_k\), so the sum is a sum of constants.
+
+
+---
+
+<div class="theory-common-box">Lemma 6 (limit of the piecewise sum: quadrature)</div>
+
+
+**Claim.** With \(\displaystyle \Delta\phi=\frac{2\pi}{N}\), one has \(N\Delta\phi=2\pi\) fixed, so taking the limit \(N\to\infty\) yields
+$$
+\mathbf{B}(0)=\lim_{N\to\infty}\mathbf{B}_N(0)
+= \frac{\mu_0 I}{4\pi R}\cdot 2\pi\,\hat{\mathbf{z}}
+= \frac{\mu_0 I}{2R}\,\hat{\mathbf{z}}.
+$$
+
+
+**Proof.** This is a limit of a bounded sum of constants and follows the general theory of Riemann sums. Here each term is constant, so the limit of the piecewise sum is given by constant times interval length.
+
+
+---
+
+<div class="theory-common-box">Conclusion of the proposition</div>
+
+
+By Lemma 6, the magnetic field at the center \(z=0\) is
+$$
+B_z(0)=\frac{\mu_0 I}{2R}.
+$$
+The direction is \(\hat{\mathbf{z}}\) according to the right-hand rule (depending on the sense of the current).
+
+
+---
+
+<div class="remark-box">Remarks (on the finite sum and convergence)</div>
+
+
+- In this proof we write each segment’s contribution explicitly as a finite sum and take the limit \(N\to\infty\), thereby passing rigorously through the quadrature (integral) form.
+
+- For \(z=0\) the contributions are independent of \(\phi\), so the sum is especially simple; the case \(z\neq 0\) can be handled in the same finite-sum → integral framework (then the integrand depends on \(\phi\)).
+
+- Numerically, implementing this finite sum and increasing \(N\) yields the center-field value asymptotically (this is the intuitive meaning of quadrature).
+
+
+<div class="proof-box">End of proof</div>
 
 """
 );

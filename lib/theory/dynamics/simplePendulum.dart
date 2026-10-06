@@ -2,6 +2,7 @@ import '../../model.dart';
 
 final simplePendulum = TheoryTopic(
   title: '単振り子の周期',
+  titleEn: 'Period of a simple pendulum',
   isNew: false,
   imageAsset: 'assets/mindMap/forTopics/simplePendulum.png',
 
@@ -71,6 +72,75 @@ $$\begin{aligned}
 となる。これは単振動の微分方程式であり、角振動数 $\omega$ と周期$T$はそれぞれ、
 $$\begin{aligned}
 \omega = \sqrt{\dfrac{g}{L}} \quad [\text{rad/s}],\ \ T = \dfrac{2\pi}{\omega} = 2\pi \sqrt{\dfrac{L}{g}} \quad [\text{s}]
+\end{aligned}$$
+
+""",
+  latexContentEn: r"""
+
+<div class="theory-common-box">Proposition (period of a simple pendulum): When the swing angle $\theta(t)$ is sufficiently small, the period $T$ of a pendulum of string length $L$ can be approximated by
+$$\begin{aligned}
+T = 2\pi \sqrt{\frac{L}{g}} \quad [\text{s}]
+\end{aligned}$$
+<div style="text-align:center; margin:1em 0;">
+  <img src="assets/dynamicsTheory/simplePendulum.png"
+       alt=""
+       style="max-width:100%; height:auto;" />
+</div>
+</div>
+<div class="proof-box">Proof</div>
+From the figure, take the particle position as
+$$\begin{aligned}
+x(t) = L\sin\theta(t), \quad y(t) = L\cos\theta(t)
+\end{aligned}$$
+.
+
+Differentiating with respect to time as functions of $\theta(t)$:
+
+$$\begin{aligned}
+\begin{cases}
+v_x(t) = \displaystyle\frac{dx}{dt} = L\cos\theta(t) \displaystyle\frac{d\theta}{dt} \\[6pt]
+v_y(t) = \displaystyle\frac{dy}{dt} = -L\sin\theta(t) \displaystyle\frac{d\theta}{dt}
+\end{cases}
+\end{aligned}$$
+
+Differentiating again for the acceleration:
+$$\begin{aligned}
+\begin{cases}
+a_x(t) = L \left( \displaystyle\frac{d^2\theta}{dt^2} \cos\theta(t) - \left( \displaystyle\frac{d\theta}{dt} \right)^2 \sin\theta(t) \right) \\[6pt]
+a_y(t) = -L \left( \displaystyle\frac{d^2\theta}{dt^2} \sin\theta(t) + \left( \displaystyle\frac{d\theta}{dt} \right)^2 \cos\theta(t) \right)
+\end{cases}
+\end{aligned}$$
+
+The force components on the body are:
+$$\begin{aligned}
+\begin{cases}
+F_x = -T \sin \theta(t) \\[6pt]
+F_y = mg - T \cos \theta(t)
+\end{cases}
+\end{aligned}$$
+
+Using Newton's equation $ma = F$,
+
+$$\begin{aligned}
+mL\left( \displaystyle\frac{d^2\theta}{dt^2} \cos\theta(t) - \left( \displaystyle\frac{d\theta}{dt} \right)^2 \sin\theta(t) \right) &= -T \sin\theta(t) \quad \cdots (1) \\[6pt]
+-mL\left( \displaystyle\frac{d^2\theta}{dt^2} \sin\theta(t) + \left( \displaystyle\frac{d\theta}{dt} \right)^2 \cos\theta(t) \right) &= mg - T \cos\theta(t) \quad \cdots (2)
+\end{aligned}$$
+
+Multiplying (1) by $\cos\theta(t)$ and (2) by $\sin\theta(t)$ and subtracting eliminates the tension $T$:
+
+$$\begin{aligned}
+& \ \ \ \ \ mL \displaystyle\frac{d^2\theta}{dt^2} (\cos^2\theta + \sin^2\theta) = -mg\sin\theta(t) \\[6pt]
+& \Leftrightarrow mL \displaystyle\frac{d^2\theta}{dt^2} = -mg\sin\theta(t) \\[6pt]
+& \Leftrightarrow \displaystyle\frac{d^2\theta}{dt^2} = -\frac{g}{L} \sin\theta(t)
+\end{aligned}$$
+
+Assuming $\theta(t)$ is small enough that $\displaystyle \sin\theta(t) \fallingdotseq \theta(t)$,
+$$\begin{aligned}
+\displaystyle\frac{d^2\theta}{dt^2} = -\frac{g}{L} \theta(t)
+\end{aligned}$$
+. This is the SHM differential equation; the angular frequency $\omega$ and period $T$ are
+$$\begin{aligned}
+\omega = \sqrt{\frac{g}{L}} \quad [\text{rad/s}],\ \ T = \displaystyle\frac{2\pi}{\omega} = 2\pi \sqrt{\frac{L}{g}} \quad [\text{s}]
 \end{aligned}$$
 
 """

@@ -2,6 +2,7 @@ import '../../model.dart';
 
 final ampereMaxwellLaw = TheoryTopic(
   title: 'アンペール・マクスウェルの法則',
+  titleEn: 'Ampère–Maxwell law',
   imageAsset: 'assets/mindMap/forTopics/ampereMaxwellLaw.png',
 
   latexContent: r"""
@@ -40,6 +41,46 @@ $$
 \displaystyle c=\frac{1}{\sqrt{\varepsilon_0\mu_0}}\fallingdotseq 2.99792458\times10^{8}\ \mathrm{m/s}
 $$
 ※光速を用いると、アンペール・マクスウェルの法則は$\displaystyle \oint_{\partial S} \vec{B}\cdot d\vec{r} = \mu_0 \sum_{Sを貫く} I + \frac{1}{c^2} \frac{d}{dt}\iint_S \vec{E}\cdot d\vec{S}$と表すことができる。
+</p>
+
+
+""",
+  latexContentEn: r"""
+
+<div class="theory-common-box">Definition (displacement current)</div>
+<p>
+The time derivative of the product of the vacuum permittivity $\varepsilon_0$ and the electric flux $\displaystyle \iint_S \vec E\cdot d\vec S$, namely $ \displaystyle \frac{d}{dt} \Biggl(\varepsilon_0 \iint_S \vec E\cdot d\vec S \Biggr)$, is called the displacement current.
+</p>
+
+<div class="theory-common-box">Ampère–Maxwell law (integral form)</div>
+<p>
+“Current and displacement current produce the circulation of the magnetic field.” This is the Ampère–Maxwell law, written as
+$$
+\oint_{\partial S} \vec{B}\cdot d\vec{r} = \mu_0 \Biggr( \sum_{\text{through }S} I + \varepsilon_0 \frac{d}{dt}\iint_S \vec{E}\cdot d\vec{S} \Biggl)
+$$
+※ The normal $\vec{n}$ of the surface $S$ and the orientation of $\partial S$ are linked by the right-hand rule.<br>
+※ The law also holds in matter; for fields in materials one often rewrites it using $\vec D$ and $\vec H$ after separating free charges/currents from bound ones.
+</p>
+
+<div class="theory-common-box">Theorem: Ampère's law
+When the electric field does not change with time, one obtains Ampère's law:
+$$
+\oint_{\partial S} \vec{B}\cdot d\vec{r} = \mu_0 \sum_{\text{through }S} I 
+$$
+</div>
+
+<p><div class="proof-box">Proof</div>
+By assumption the displacement-current term $\Biggr( \displaystyle  \varepsilon_0 \frac{d}{dt}\iint_S \vec{E}\cdot d\vec{S} \Biggl)$ vanishes,
+so Ampère's law follows immediately from the Ampère–Maxwell law.
+</p>
+
+<div class="theory-common-box">Definition (speed of light in vacuum, $c$)</div>
+<p>
+The speed of light in vacuum is determined by the vacuum permittivity and permeability:
+$$
+\displaystyle c=\frac{1}{\sqrt{\varepsilon_0\mu_0}}\fallingdotseq 2.99792458\times10^{8}\ \mathrm{m/s}
+$$
+※ Using $c$, the Ampère–Maxwell law can be written $\displaystyle \oint_{\partial S} \vec{B}\cdot d\vec{r} = \mu_0 \sum_{\text{through }S} I + \frac{1}{c^2} \frac{d}{dt}\iint_S \vec{E}\cdot d\vec{S}$.
 </p>
 
 

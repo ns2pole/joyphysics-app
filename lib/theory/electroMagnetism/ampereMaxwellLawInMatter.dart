@@ -2,6 +2,7 @@ import '../../model.dart';
 
 final ampereMaxwellLawInMatter = TheoryTopic(
   title: 'アンペール・マクスウェルの法則',
+  titleEn: 'Ampère–Maxwell law (in matter)',
   imageAsset: 'assets/mindMap/forTopics/ampereMaxwellLawInMatter.png',
 
   latexContent: r"""
@@ -48,6 +49,53 @@ $$
 \displaystyle v=\frac{1}{\sqrt{\varepsilon\,\mu}}=\frac{c}{\sqrt{\varepsilon_r\,\mu_r}}
 $$
 で与えられる。実際には周波数依存（分散）や損失により $\varepsilon,\mu$ は複素値になり得るため、厳密には位相速度・群速度・減衰率を区別して扱う必要がある。
+</p>
+
+""",
+  latexContentEn: r"""
+
+
+<div class="theory-common-box">Definition (electric flux)</div>
+<p>
+Define the electric flux (the surface integral of the electric displacement) by
+$$
+\Psi_E := \iint_S \vec D\cdot d\vec S
+$$
+.
+</p>
+
+<div class="theory-common-box">Definition (displacement current)</div>
+<p>
+The time derivative $\displaystyle \frac{d\Psi_E}{dt}$ of the electric flux $\displaystyle \Psi_E:=\iint_S\vec D\cdot d\vec S$ is called the displacement current.
+</p>
+
+<div class="theory-common-box">Ampère–Maxwell law (integral form)</div>
+<p>
+“Free current and displacement current produce the circulation work done by the magnetic field on a hypothetical magnetic charge.”<br>
+This is the Ampère–Maxwell law, written as
+$$
+\oint_{\partial S} \vec{H}\cdot d\vec{r}
+= I_{\mathrm{free}}(S) + \frac{d}{dt}\iint_S \vec{D}\cdot d\vec{S}.
+$$
+Here $\vec D$ is the electric displacement.
+The normal $\vec{n}$ of the surface $S$ and the orientation of the boundary $\partial S$ are linked by the right-hand rule.
+</p>
+
+<div class="theory-common-box">Theorem: Ampère's law</div>
+<p>
+When the electric field does not change with time ($\displaystyle \frac{\partial\vec D}{\partial t}=0$), the displacement-current term vanishes and the law reduces to Ampère's law:
+$$
+\oint_{\partial S}\vec H\cdot d\vec r = I_{\mathrm{free}}(S).
+$$
+</p>
+
+<div class="theory-common-box">Definition (speed of light in a medium, $v$)</div>
+<p>
+In a linear isotropic medium the phase speed of an electromagnetic wave depends on the permittivity and permeability of the medium,
+$$
+\displaystyle v=\frac{1}{\sqrt{\varepsilon\,\mu}}=\frac{c}{\sqrt{\varepsilon_r\,\mu_r}}
+$$
+. In practice frequency dependence (dispersion) and loss can make $\varepsilon,\mu$ complex, so one must carefully distinguish phase velocity, group velocity, and attenuation.
 </p>
 
 """,

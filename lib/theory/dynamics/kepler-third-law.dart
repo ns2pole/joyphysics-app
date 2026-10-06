@@ -2,6 +2,7 @@ import '../../model.dart';
 
 final keplerThirdLaw= TheoryTopic(
   title: 'ケプラー第三法則',
+  titleEn: 'Kepler\'s third law',
   isNew: false,
   imageAsset: 'assets/mindMap/forTopics/keplerThirdLaw.png', // 実際の画像パス
   latexContent: r"""
@@ -123,6 +124,127 @@ $$\begin{aligned}
 $$\begin{aligned}
 \ \ \ \ \frac{T^2}{(a+b)^3} &= \frac{\pi^2}{2GM}\\[6pt]
 \Leftrightarrow \frac{T^2}{\Bigl(\tfrac{a+b}{2}\Bigr)^3} &= \frac{4\pi^2}{GM}\\[6pt]
+\Leftrightarrow \frac{T^2}{l^3} &= \frac{4\pi^2}{GM}
+\end{aligned}$$
+Q.E.D.
+""",
+  latexContentEn: r"""
+  <div class="theory-common-box">
+Definition of symbols
+</div>
+
+<div style="text-align:center; margin:1em 0;">
+    <img src="assets/dynamicsTheory/kepler-third1.png"
+          style="max-width:100%; height:auto;" />
+  </div>
+<ul>
+  <li>$G$ : gravitational constant</li>
+  <li>$M$ : mass of the central star (e.g. the Sun)</li>
+  <li>$m$ : mass of the planet (cancels in the equation of motion, but introduced for convenience)</li>
+  <li>$a$ : perihelion distance (closest approach to the center)</li>
+  <li>$b$ : aphelion distance (farthest distance from the center)</li>
+  <li>$l$ : semi-major axis of the elliptical orbit</li>
+  <li>$m$ : semi-minor axis of the elliptical orbit</li>
+  <li>$S$ : area of the ellipse</li>
+  <li>$v_a$ : speed of the planet at perihelion (distance $a$)</li>
+  <li>$v_b$ : speed of the planet at aphelion (distance $b$)</li>
+  <li>$V_s$ : areal velocity (area swept per unit time)</li>
+  <li>$T$ : orbital period (time to complete one revolution)</li>
+</ul>
+
+  
+<div class="theory-common-box">
+Lemma 1: By Kepler's first law, a planet orbits in an ellipse with the central star at a focus.
+In terms of perihelion distance $a$ and aphelion distance $b$, the area $S$ of the ellipse is
+$$
+S = \pi\frac{a+b}{2}\sqrt{ab}
+$$
+</div>
+<div class="proof-box">Proof</div>
+Let the semi-major and semi-minor axes be $l$ and $m$. The area is $\pi l m$.<br>
+From the figure, $l = \displaystyle \frac {a+b}{2}$<br>
+By the Pythagorean theorem, $l ^2 =  (l - a) ^2 + m ^2$, so
+$$\begin{aligned}
+\ \ \ l ^2 &= (l - a) ^2 + m ^2 \\[6pt]
+\Leftrightarrow \Bigl(\frac{a+b}{2}\Bigr)^2 &= \Bigl(\frac{a+b}{2} - a\Bigr)^2 + m ^2 \\[6pt]
+\Leftrightarrow \Bigl(\frac{a+b}{2}\Bigr)^2 &= \Bigl(\frac{a-b}{2}\Bigr)^2 + m ^2 \\[6pt]
+\Leftrightarrow \frac{a^2+2ab+b^2}{4} &= \frac{a^2-2ab+b^2}{4} + m ^2 \\[6pt]
+\Leftrightarrow ab &=  m ^2 \\[6pt]
+\Leftrightarrow m &=  \sqrt{ab}
+\end{aligned}$$
+Hence
+$$
+S = \pi l m = \pi\frac{a+b}{2}\sqrt{ab}
+$$
+<div style="text-align:center; margin:1em 0;">
+    <img src="assets/dynamicsTheory/kepler-third2.png"
+          style="max-width:100%; height:auto;" />
+  </div>
+　⬜︎
+<div class="theory-common-box">
+Lemma 2: In terms of perihelion $a$ and aphelion $b$, the areal velocity $V_s$ is
+$$ \displaystyle V_s = \sqrt{GM\frac{ab}{2(a+b)}}$$
+</div>
+<div class="proof-box">Proof</div>
+Let $v_a$ and $v_b$ be the speeds at perihelion and aphelion. Energy conservation and Kepler's second law give
+$$
+\begin{cases}
+\displaystyle \frac{1}{2}mv_a^2 - \frac{GMm}{a} = \frac{1}{2}mv_b^2 - \frac{GMm}{b} \\
+\displaystyle \frac{1}{2}av_a = \frac{1}{2}bv_b
+\end{cases}
+$$
+
+Expressing $v_a, v_b$ in terms of $a, b$,
+$$
+\frac{1}{2}m\frac{b^2}{a^2}v_b^2 - \frac{GMm}{a}
+= \frac{1}{2}mv_b^2 - \frac{GMm}{b}
+$$
+$$
+\Leftrightarrow \frac{1}{2}m\Bigl(\frac{b^2}{a^2}-1\Bigr)v_b^2
+= \frac{GMm}{a}- \frac{GMm}{b}
+$$
+$$
+\Leftrightarrow \frac{1}{2}m\Bigl(\frac{b^2-a^2}{a^2}\Bigr)v_b^2
+= \frac{GMm(b-a)}{ab}
+$$
+$$
+\Leftrightarrow \frac{1}{2}m(a+b)v_b^2
+= GMm\frac{a}{b}
+$$
+$$
+\Leftrightarrow v_b^2 = 2GM\frac{a}{b(a+b)}
+$$
+$$
+\Leftrightarrow v_b = \sqrt{2GM\frac{a}{b(a+b)}}\ \ (\ \because v_b > 0\ )
+$$
+
+Similarly
+$$
+v_a = \pm\sqrt{2GM\frac{b}{a(a+b)}}\ \  (\ \because v_a > 0\ )
+$$
+The areal velocity is $\displaystyle \frac 1 2 v_a a \sin 90^{\circ}$ (or $\displaystyle \frac 1 2 v_b b \sin 90^{\circ}$), so
+
+$$
+V_s = \frac 1 2 v_a a = \frac 1 2 v_b b = \sqrt{GM\frac{ab}{2(a+b)}}
+$$　⬜︎
+
+<div class="theory-common-box">
+Theorem (Kepler's third law): For gravitational constant $G$, semi-major axis $l$, period $T$, and central mass $M$,
+$$\frac{T^2}{l^3}=\frac{4\pi^2}{GM}$$
+</div>
+<div class="proof-box">Proof</div>
+The period is the elliptical area $S$ divided by the areal velocity $V_s$. Substituting Lemmas 1 and 2,
+$$\begin{aligned}
+\displaystyle T &=\frac{S}{V_s}\\[6pt]
+\displaystyle &= \frac{\pi\frac{a+b}{2}\sqrt{ab}}{\sqrt{GM\frac{ab}{2(a+b)}}}\\[6pt]
+\displaystyle &= \frac{\pi (a+b)}{\sqrt{\frac{2GM}{(a+b)}}}\\[6pt]
+\displaystyle &= \frac{\pi (a+b)^{3/2}}{\sqrt{2GM}}
+\end{aligned}$$
+
+Hence
+$$\begin{aligned}
+\ \ \ \ \frac{T^2}{(a+b)^3} &= \frac{\pi^2}{2GM}\\[6pt]
+\Leftrightarrow \frac{T^2}{\Bigl(\frac{a+b}{2}\Bigr)^3} &= \frac{4\pi^2}{GM}\\[6pt]
 \Leftrightarrow \frac{T^2}{l^3} &= \frac{4\pi^2}{GM}
 \end{aligned}$$
 Q.E.D.

@@ -3,6 +3,7 @@ import '../../model.dart';
 final inertialForceRotation = TheoryTopic(
   isNew: false,
   title: '慣性系に対し一定の角速度で回転する座標系から見た時の慣性力(遠心力,コリオリ力)',
+  titleEn: 'Inertial forces in a frame rotating at constant angular velocity relative to an inertial frame (centrifugal and Coriolis forces)',
   imageAsset: 'assets/mindMap/forTopics/inertialForceRotation.png', // 実際の画像パス
   latexContent: r"""
 
@@ -88,5 +89,90 @@ m\tilde{y}''(t) = \tilde{F}_y(t) - 2m\omega \tilde{x}'(t) + m\omega^2 \tilde{y}(
 右辺第2項：$2m\omega \tilde{y}'(t),\ \ -2m\omega \tilde{x}'(t)$ をコリオリ力と言う。<br>
 <div class="theory-common-box">定義：遠心力</div>
 右辺第3項：$m\omega^2 \vec {F}(t)\tilde{x}(t),\ \ m\omega^2 \tilde{y}(t)$ を遠心力と言う。
+""",
+  latexContentEn: r"""
+
+<div class="theory-common-box">Proposition: In a frame rotating at constant angular velocity $\omega$, let the coordinates of a particle of mass $m$ be $(\tilde{x}(t), \tilde{y}(t))$ and the force components $(\tilde{F}_x(t), \tilde{F}_y(t))$. Then the equation of motion in this frame is
+$$\begin{aligned}
+\begin{cases}
+m\tilde{x}''(t) = \tilde{F}_x(t) + 2m\omega \tilde{y}'(t) + m\omega^2 \tilde{x}(t) \\[6pt]
+m\tilde{y}''(t) = \tilde{F}_y(t) - 2m\omega \tilde{x}'(t) + m\omega^2 \tilde{y}(t)
+\end{cases}
+\end{aligned}$$
+</div>
+<p>
+<div class="proof-box">Proof</div>
+Let the inertial-frame basis vectors be $\vec{e}_x, \vec{e}_y, \vec{e}_z$.
+
+The rotating basis with angle $\theta(t) = \omega t$ is
+$$\begin{aligned}
+\begin{cases}
+\vec{\tilde{e}}_x(t) = \cos(\omega t)\vec{e}_x + \sin(\omega t)\vec{e}_y \\[6pt]
+\vec{\tilde{e}}_y(t) = -\sin(\omega t)\vec{e}_x + \cos(\omega t)\vec{e}_y \\[6pt]
+\vec{\tilde{e}}_z = \vec{e}_z
+\end{cases}
+\end{aligned}$$
+
+Its time derivatives are
+$$\begin{aligned}
+\begin{cases}
+\vec{\tilde{e}}_x'(t) = -\omega \sin(\omega t)\vec{e}_x + \omega \cos(\omega t)\vec{e}_y = \omega \vec{\tilde{e}}_y(t) \\[6pt]
+\vec{\tilde{e}}_y'(t) = -\omega \cos(\omega t)\vec{e}_x - \omega \sin(\omega t)\vec{e}_y = -\omega \vec{\tilde{e}}_x(t) \\[6pt]
+\vec{e}_z' = 0
+\end{cases}
+\end{aligned}$$
+
+The position $\vec{r}(t)$ in both frames is
+$$\begin{aligned}
+\vec{r}(t) = x(t)\vec{e}_x + y(t)\vec{e}_y = \tilde{x}(t)\vec{\tilde{e}}_x(t) + \tilde{y}(t)\vec{\tilde{e}}_y(t)
+\end{aligned}$$
+
+Differentiating once gives the velocity
+$$\begin{aligned}
+\vec{r}'(t) = (\tilde{x}'(t) - \omega \tilde{y}(t))\vec{\tilde{e}}_x(t) + (\omega \tilde{x}(t) + \tilde{y}'(t))\vec{\tilde{e}}_y(t)
+\end{aligned}$$
+
+Differentiating again for the acceleration:
+$$\begin{aligned}
+\ \ \ \ \ \vec{r}''(t) &= (\tilde{x}''(t) - 2\omega \tilde{y}'(t) - \omega^2 \tilde{x}(t))\vec{\tilde{e}}_x(t) \\[3pt]
+&+ (\tilde{y}''(t) + 2\omega \tilde{x}'(t) - \omega^2 \tilde{y}(t))\vec{\tilde{e}}_y(t)\\[8pt]
+\Leftrightarrow m\vec{r}''(t) &= m(\tilde{x}''(t) - 2\omega \tilde{y}'(t) - \omega^2 \tilde{x}(t))\vec{\tilde{e}}_x(t) \\[3pt]
+&+ m(\tilde{y}''(t) + 2\omega \tilde{x}'(t) - \omega^2 \tilde{y}(t))\vec{\tilde{e}}_y(t) \ \ \cdots(1) \\[8pt]
+\end{aligned}$$
+
+From Newton's law in the inertial frame,
+$$\begin{aligned}
+m\vec{r}''(t) = \vec{F}(t)
+\end{aligned}$$
+Decomposing $\vec {F}(t)$ in the rotating basis,
+$\displaystyle \vec {F}(t) = \tilde{F}_x(t)\vec{\tilde{e}}_x(t) + \tilde{F}_y(t)\vec{\tilde{e}}_y(t)$, so
+$$\begin{aligned}
+m\vec{r}''(t) = \displaystyle \vec {F}(t) = \tilde{F}_x(t)\vec{\tilde{e}}_x(t) + \tilde{F}_y(t)\vec{\tilde{e}}_y(t)\ \ \cdots(2)
+\end{aligned}$$
+From (1) and (2),
+$$\begin{aligned}
+\ \ \ &m(\tilde{x}''(t) - 2\omega \tilde{y}'(t) - \omega^2 \tilde{x}(t))\vec{\tilde{e}}_x(t) \\[5pt]
+ + \ &m(\tilde{y}''(t) + 2\omega \tilde{x}'(t) - \omega^2 \tilde{y}(t))\vec{\tilde{e}}_y(t) \\[5pt]
+ &\ \ = \tilde{F}_x(t)\vec{\tilde{e}}_x(t) + \tilde{F}_y(t)\vec{\tilde{e}}_y(t)
+\end{aligned}$$
+
+Comparing components:
+$$\begin{aligned}
+&\begin{cases}
+m\tilde{x}''(t) - 2m\omega \tilde{y}'(t) - m\omega^2 \tilde{x}(t) = \tilde{F}_x(t)\\[6pt]
+m\tilde{y}''(t) + 2m\omega \tilde{x}'(t) - m\omega^2 \tilde{y}(t) = \tilde{F}_y(t) 
+\end{cases}
+\\[8pt]
+\Leftrightarrow
+& \begin{cases}
+m\tilde{x}''(t) = \tilde{F}_x(t) + 2m\omega \tilde{y}'(t) + m\omega^2 \tilde{x}(t) \\[6pt]
+m\tilde{y}''(t) = \tilde{F}_y(t) - 2m\omega \tilde{x}'(t) + m\omega^2 \tilde{y}(t)
+\end{cases}\\[6pt]
+\ \ \ \ &\text{Q.E.D}\end{aligned}$$
+</p>
+<div class="theory-common-box">Definition: Coriolis force</div>
+The second terms on the right, $2m\omega \tilde{y}'(t)$ and $-2m\omega \tilde{x}'(t)$, are called the Coriolis force.<br>
+<div class="theory-common-box">Definition: centrifugal force</div>
+The third terms on the right, $m\omega^2 \tilde{x}(t)$ and $m\omega^2 \tilde{y}(t)$, are called the centrifugal force.
 """
 );

@@ -2,6 +2,7 @@ import '../../model.dart';
 
 final permeability = TheoryTopic(
   title: '磁化, 磁化率, 透磁率, 比透磁率',
+  titleEn: 'Magnetization, magnetic susceptibility, permeability, and relative permeability',
   imageAsset: 'assets/mindMap/forTopics/permeability.png',
 
   latexContent: r"""
@@ -101,6 +102,108 @@ $$
 <p><div class="proof-box">証明</div>
 線形媒質の場合、$\vec B = \mu \vec H\ $であるが、比透磁率の定義より、$\mu = \mu_r \mu_0\  $なので、
 $\displaystyle \vec B = \mu \vec H = \mu_r \mu_0 \vec H\ $となる。　Q.E.D
+</p>
+
+
+
+</p>
+""",
+  latexContentEn: r"""
+
+<div class="theory-common-box">Definition (vacuum permeability: $\mu_0$)</div>
+<p>
+The vacuum permeability is the reference magnetic constant; a conventional value is
+$$
+\displaystyle \mu_0 \fallingdotseq 4\pi\times 10^{-7}\ \mathrm{H/m}
+$$
+(treated as a standard SI constant). In vacuum $\vec B=\mu_0\vec H$ holds.
+</p>
+
+<div class="theory-common-box">Definition (magnetic dipole)</div>
+<p>
+A magnetic dipole produced by a current loop or a localized circulating current is called a <b>magnetic dipole</b>.
+</p>
+
+<div class="paragraph-box">Properties</div>
+<ul>
+  <li>A single magnetic dipole experiences a torque in an external field $\vec B$:
+    $\displaystyle \boldsymbol{\tau}=\vec m\times\vec B$.</li>
+</ul>
+
+
+<div class="theory-common-box">Definition (magnetization vector: $M$)</div>
+<p>When a magnetic field is applied to matter, the circulating currents of constituent molecules align and behave as magnetic dipoles.
+The magnetic dipole moment per unit volume is the magnetization vector, denoted $\vec M$.
+</p>
+
+<div class="theory-common-box">Definition (magnetic field: $\vec H $)</div>
+Define the magnetic field $\vec H$ from the magnetic flux density $\vec B$ and the magnetization $\vec M$ by
+$$
+\vec H = \frac {\vec B - \vec M}{\mu_0}
+$$
+
+
+
+<div class="theory-common-box">Proposition (relation in vacuum):
+In vacuum the relation between $\vec B$ and $\vec H$ is
+$$
+\vec B = \mu_0 \vec H
+$$
+</div>
+<div class="proof-box">Proof</div><p>
+In vacuum there is no magnetization, so $\vec {M}= \vec 0\ $. Hence
+$$\begin{aligned}
+&\vec H = \frac {\vec B}{\mu_0} \\[6pt]
+\Leftrightarrow &  \vec B =  \mu_0 \vec H
+\end{aligned}$$
+　Q.E.D
+
+<div class="theory-common-box">Definition (magnetic susceptibility: $\chi_m$)</div>
+<p>
+When the magnetization responds linearly to an applied field, it can be written
+$$
+\vec M = \chi_m\,\mu_0\,\vec H
+$$
+where $\chi_m$ is the magnetic susceptibility, measuring the magnetic response of electrons and atoms in the medium.
+</p>
+
+
+
+<div class="theory-common-box">Theorem (relation in a linear isotropic medium)</div>
+In a linear isotropic medium, $\vec B=\mu_0( 1 + \chi_m\,)\vec H$ in terms of magnetization $ \vec {M}$ and $\vec H$.
+<p>
+<div class="proof-box">Proof</div>
+Combining $\vec B = \mu_0 \vec H + \vec {M} $ with $\displaystyle \vec {M} = \chi_m\,\mu_0\,\vec H$ gives
+$$\begin{aligned}
+\vec B &= \mu_0 \vec H+\vec {M} \\[6pt]
+&= \mu_0( 1 + \chi_m\,) \vec H \\[6pt]
+\end{aligned}$$
+.
+</p>
+
+
+<div class="theory-common-box">Definition (permeability: $\mu$)</div>
+The coefficient of $\vec H$ above,
+$\mu_0(1+\chi_m)$, is the permeability of the linear isotropic medium, written simply $\mu$. The unit is henry per meter ($\mathrm{H/m}$).
+</p>
+
+<div class="theory-common-box">Definition (relative permeability: $\mu_r$)</div>
+<p>
+$$
+\displaystyle \mu_r \equiv \frac{\mu}{\mu_0} = 1+\chi_m
+$$
+is defined as the relative permeability. In vacuum $\mu_r=1$.
+</p>
+
+
+<div class="theory-common-box">Proposition (magnetic field $\vec H$ in a linear medium): In a linear medium, using the definitions of permeability and relative permeability, $\vec B$ can be written in terms of $\vec H$ as
+$$
+\displaystyle \vec B = \mu_r \mu_0 \vec H
+$$
+</div>
+<p><div class="proof-box">Proof</div>
+In a linear medium $\vec B = \mu \vec H\ $, and by definition $\mu = \mu_r \mu_0\ $, so
+$\displaystyle \vec B = \mu \vec H = \mu_r \mu_0 \vec H\ $.　Q.E.D
 </p>
 
 

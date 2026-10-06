@@ -2,6 +2,7 @@ import '../../model.dart';
 
 final harmonic = TheoryTopic(
   title: '単振動型の微分方程式 — 命題と証明（純粋数学）',
+  titleEn: 'Simple-harmonic-type differential equations — propositions and proofs (pure mathematics)',
   latexContent: r"""
 <div class="common-box">命題</div>
 <p>c\omega>0$ を定数とし、ベクトル値関数 $\overrightarrow{P}(t)$ が次の線形常微分方程式を満たすとする：</p>
@@ -76,5 +77,80 @@ $$</p>
 
 <div class="common-box">結論</div>
 <p>以上より、命題の主張通り（i）エネルギー $E(t)$ は保存され、（ii）表示 $\overrightarrow{P}=\overrightarrow{u}\cos\theta+\overrightarrow{v}\sin\theta$ の下では $\theta'$ は定数である。</p>
+""",
+  latexContentEn: r"""
+<div class="common-box">Proposition</div>
+<p>Let $\omega>0$ be a constant, and suppose a vector-valued function $\overrightarrow{P}(t)$ satisfies the linear ODE</p>
+<p>$$
+\overrightarrow{P}''(t) + \omega^2\,\overrightarrow{P}(t) = \overrightarrow{0}. 
+$$</p>
+<p>Suppose also there exist an orthonormal basis $\overrightarrow{u},\overrightarrow{v}$ and a scalar function $\theta(t)$ such that</p>
+<p>$$
+\overrightarrow{P}(t)=\overrightarrow{u}\cos\theta(t)+\overrightarrow{v}\sin\theta(t)
+$$</p>
+<p>holds. Then:</p>
+<ul>
+<li>The energy function
+$E(t):=\displaystyle\frac{1}{2}\|\overrightarrow{P}'(t)\|^2+\displaystyle\frac{1}{2}\omega^2\|\overrightarrow{P}(t)\|^2$
+is invariant in time (conserved).</li>
+<li>The first derivative $\theta'(t)$ of the angle function is constant (i.e. $\theta''(t)=0$).</li>
+</ul>
+
+<div class="common-box">Proof</div>
+<p>(1) First, energy conservation.</p>
+<p>Take the inner product of the given equation with $\overrightarrow{P}'(t)$:</p>
+<p>$$
+\left\langle\overrightarrow{P}',\,\overrightarrow{P}''\right\rangle
++\omega^2\left\langle\overrightarrow{P}',\,\overrightarrow{P}\right\rangle=0.
+$$</p>
+<p>The first term on the left, by the product rule, is</p>
+<p>$$
+\left\langle\overrightarrow{P}',\,\overrightarrow{P}''\right\rangle
+=\frac{1}{2}\frac{d}{dt}\|\overrightarrow{P}'\|^2,
+$$</p>
+<p>and likewise the second term is</p>
+<p>$$
+\left\langle\overrightarrow{P}',\,\overrightarrow{P}\right\rangle
+=\frac{1}{2}\frac{d}{dt}\|\overrightarrow{P}\|^2.
+$$</p>
+<p>Therefore</p>
+<p>$$
+\frac{1}{2}\frac{d}{dt}\|\overrightarrow{P}'\|^2
++\frac{1}{2}\omega^2\frac{d}{dt}\|\overrightarrow{P}\|^2
+=\frac{d}{dt}\Big(\frac{1}{2}\|\overrightarrow{P}'\|^2+\frac{1}{2}\omega^2\|\overrightarrow{P}\|^2\Big)=0.
+$$</p>
+<p>Hence $E(t)$ is constant, proving energy conservation.</p>
+
+<p>(2) Next, using $\overrightarrow{P}=\overrightarrow{u}\cos\theta+\overrightarrow{v}\sin\theta$, show that $\theta'(t)$ is constant.</p>
+<p>Compute the first and second derivatives. Abbreviate $\theta=\theta(t)$.</p>
+<p>$$
+\overrightarrow{P}'=\theta'\big(-\overrightarrow{u}\sin\theta+\overrightarrow{v}\cos\theta\big),
+$$</p>
+<p>and (by the product rule)</p>
+<p>$$
+\overrightarrow{P}''=\theta''\big(-\overrightarrow{u}\sin\theta+\overrightarrow{v}\cos\theta\big)
+-(\theta')^2\big(\overrightarrow{u}\cos\theta+\overrightarrow{v}\sin\theta\big).
+$$</p>
+<p>Set $\overrightarrow{Q}:=-\overrightarrow{u}\sin\theta+\overrightarrow{v}\cos\theta$. Note that $\overrightarrow{Q}$ is orthogonal to $\overrightarrow{P}$ and unit:</p>
+<p>$$
+\langle\overrightarrow{P},\overrightarrow{Q}\rangle
+=\cos\theta(-\sin\theta)\langle\overrightarrow{u},\overrightarrow{u}\rangle
++\sin\theta(\cos\theta)\langle\overrightarrow{v},\overrightarrow{v}\rangle
+=0,
+\quad
+\|\overrightarrow{Q}\|^2=\sin^2\theta+\cos^2\theta=1.
+$$</p>
+<p>Substitute $\overrightarrow{P}''$ into $\overrightarrow{P}''+\omega^2\overrightarrow{P}=0$:</p>
+<p>$$
+\theta''\,\overrightarrow{Q} - (\theta')^2\,\overrightarrow{P} + \omega^2\,\overrightarrow{P}=\overrightarrow{0}.
+$$</p>
+<p>Taking the inner product with $\overrightarrow{Q}$, orthogonality kills $\langle\overrightarrow{P},\overrightarrow{Q}\rangle=0$, leaving</p>
+<p>$$
+\theta''\,\langle\overrightarrow{Q},\overrightarrow{Q}\rangle =0.
+$$</p>
+<p>Hence $\theta''(t)=0$, so $\theta'(t)$ is constant.</p>
+
+<div class="common-box">Conclusion</div>
+<p>Thus, as claimed: (i) the energy $E(t)$ is conserved, and (ii) under the representation $\overrightarrow{P}=\overrightarrow{u}\cos\theta+\overrightarrow{v}\sin\theta$, $\theta'$ is constant.</p>
 """
 );

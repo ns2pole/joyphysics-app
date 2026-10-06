@@ -2,6 +2,7 @@ import '../../model.dart';
 
 final electoricGaussLawInMatter = TheoryTopic(
   title: '電場のガウスの法則',
+  titleEn: 'Gauss\'s law for the electric field (in matter)',
   imageAsset: 'assets/mindMap/forTopics/electoricGaussLawInMatter.png',
 
   latexContent: r"""
@@ -23,6 +24,28 @@ $$
 $$
 </div>
 <div class="proof-box">証明</div>
+<p>
+
+""",
+  latexContentEn: r"""
+<div class="theory-common-box">Theorem (Gauss's law for the electric field in a linear medium): Separating charge into free charge $Q_{free}$ and bound charge $Q_{bound}$ in a dielectric,
+the electric displacement in a linear medium satisfies the following Maxwell equation in matter.
+$$
+\oint_{S}\vec{E}\cdot d\vec{S}=\frac{1}{\varepsilon}\sum_{\text{inside }S}Q_{free}
+$$
+</div>
+<div class="proof-box">Proof</div>
+From Maxwell's equations in vacuum,
+accounting for polarization in a linear medium,
+<p>
+
+<div class="theory-common-box">Theorem (Gauss's law for the electric field in matter): Separating charge into free charge $Q_{free}$ and bound charge $Q_{bound}$ in a dielectric,
+the electric displacement in a linear medium satisfies the following Maxwell equation in matter.
+$$
+\oint_{S}\vec{D}\cdot d\vec{S}=Q_{free}
+$$
+</div>
+<div class="proof-box">Proof</div>
 <p>
 
 """,

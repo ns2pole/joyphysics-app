@@ -2,6 +2,7 @@ import '../../model.dart';
 
 final keplerFirstLaw = TheoryTopic(
   title: 'ケプラー第一法則',
+  titleEn: 'Kepler\'s first law',
   isNew: false,
   imageAsset: 'assets/mindMap/forTopics/keplerFirstLaw.png', // 実際の画像パス
   latexContent: r"""
@@ -235,6 +236,243 @@ $$
 r(\theta)=\frac{L^2}{GM\,m^2}\cdot\frac{1}{1+e\cos(\theta-\alpha)}
 $$
 から、両辺に $1+e\cos(\theta-\alpha)$ を掛けて変形すると
+
+$$\begin{aligned}
+r\bigl(1+e\cos(\theta-\alpha)\bigr)=\frac{L^2}{GM\,m^2}\\[6pt]
+\Leftrightarrow \ r\cos(\theta-\alpha)-\frac{L^2}{GM\,m^2e}=-\frac{r}{e}<0
+\end{aligned}$$
+</div>　⬜︎
+""",
+  latexContentEn: r"""
+
+
+  <div class="theory-common-box">
+Setup and notation
+</div>
+A particle of mass $m$ moves in the gravitational field of a central mass $M$.<br>
+Kepler's second law implies the motion is confined to a fixed plane; take that plane as the $(x,y)$ plane and write 3D vectors as columns:
+$$\begin{aligned}
+\vec{r}(t)=\begin{pmatrix}x(t)\\[6pt] y(t)\\[6pt] 0\end{pmatrix}\\[6pt]
+\vec{v}(t)=\vec{r}'(t)=\begin{pmatrix}x'(t)\\[6pt] y'(t)\\[6pt] 0\end{pmatrix} \\[6pt]
+r(t)=\sqrt{x(t)^2+y(t)^2}
+\end{aligned}$$
+By the law of universal gravitation, with the central star at the origin,
+$$
+m\vec{r}''(t)=-\frac{GMm}{r(t)^3}\,\vec{r}(t)
+$$
+In $xy$ components,
+$\displaystyle x''=-\frac{GM}{r^3}x,\quad y''=-\frac{GM}{r^3}y$
+.<br>
+For a particle obeying this equation, the following three quantities are constant in time, as proved in <a href="app://topic?video=keplerSecondLaw">this article</a> and <a href="app://topic?video=runge_lenz_vector">this article</a>.<br>
+<div class="paragraph-box">Angular momentum vector</div><br>
+$$
+\vec L:=\begin{pmatrix}0\\[6pt] 0\\[6pt] m\bigl(xy'-yx'\bigr) \end{pmatrix}
+$$
+<div class="paragraph-box">Runge–Lenz vector</div><br>
+$$\displaystyle \vec{A}:=\begin{pmatrix}mL\,y' - \frac{GM\,m^2 x}{r}\\[6pt]
+ \displaystyle -mL\,x' - \frac{GM\,m^2 y}{r}\\[6pt] 0\end{pmatrix}
+$$
+<div class="paragraph-box">Eccentricity vector (Runge–Lenz vector divided by ${GM\,m^2}$ to make it dimensionless)</div><br>
+$$\vec{e}:=\frac{\vec{A}}{GM\,m^2}$$
+
+  
+<div class="theory-common-box">
+Proposition 1 (orbit equation)<br>
+In polar coordinates $(r,\theta)$ the orbit is
+$\displaystyle r(\theta)=\frac{L^{2}}{GM\,m^{2}\bigl(1+e\cos(\theta-\alpha)\bigr)}$
+</div>
+
+<div class="proof-box">Proof</div>
+Computing $\vec{e}\cdot\vec{r}=e_x x+e_y y$ in components,
+
+$$\begin{aligned}
+\vec{e}\cdot\vec{r}&=\frac{L}{GMm}(x y'-y x')-\frac{x^2+y^2}{r}\\[6pt]
+&=\frac{L^{2}}{GM m^2}-r\quad\cdots(1)
+\end{aligned}$$
+
+Writing $\vec{e}=e(\cos \alpha, \sin \alpha)$ with angle from the $x$-axis,
+
+$$
+\vec{e}\cdot\vec{r}=e\,r\cos(\theta-\alpha)\quad\cdots(2)
+$$
+
+From (1) and (2),
+
+$$\begin{aligned}
+&e\,r\cos(\theta-\alpha)=\frac{L^{2}}{GM m^2}-r\\[6pt]
+&r\bigl(1+e\cos(\theta-\alpha)\bigr)=\frac{L^{2}}{GM m^2}\\[6pt]
+\Leftrightarrow\quad & r=\frac{L^{2}}{GM m^2\bigl(1+e\cos(\theta-\alpha)\bigr)}
+\end{aligned}$$
+
+as claimed.
+
+</div>　⬜︎
+
+<div class="theory-common-box">
+Proposition 2 (eccentricity and total energy)<br>
+Eccentricity $e$ and energy $E$ are related by
+$\displaystyle e^{2}=1+\frac{2E L^{2}}{G^{2}M^{2}m^{3}} $.
+</div>
+<div class="proof-box">Proof</div>
+Direct computation:
+
+$$\begin{aligned}
+e^2 &= e_x^2 + e_y^2 \\[6pt]
+&= \left(\frac{L\, y'}{GM m} - \frac{x}{r}\right)^2 + \left(-\frac{L\, x'}{GM m} - \frac{y}{r}\right)^2 \\[6pt]
+&= \frac{L^2(x'^2 + y'^2)}{G^2 M^2 m^2}  + \frac{x^2 + y^2}{r^2} -\frac{2L( xy'- x' y )}{GM mr} 
+\end{aligned}$$
+
+From total energy,
+$\displaystyle E = \frac12 m v^2 - \frac{GM m}{r} \Leftrightarrow v^2 = \frac{2E}{m} + \frac{2 GM}{r}$
+<br>
+and $\displaystyle xy'- x' y  = \frac L m $. Substituting,
+$$\begin{aligned}
+e^2 &= \frac{L^2}{G^2 M^2 m^2} \Bigl(  \frac{2E}{m} + \frac{2 GM}{r} \Bigr) + 1- \frac{2L^2}{GM m^2r}\\[6pt]
+&= \frac{2EL^2}{G^2 M^2 m^3} + \frac{2L^2}{GM m^2r} + 1 - \frac{2L^2}{GM m^2r}\\[6pt]
+&= 1 + \frac{2EL^2}{G^2 M^2 m^3} 
+\end{aligned}$$
+
+</div>　⬜︎
+
+<div class="theory-common-box">
+Proposition 3 (classification by eccentricity $e$)
+</div>
+From the polar equation
+$$
+r(\theta)=\frac{L^{2}}{GM\,m^2(1+e\cos(\theta-\alpha))} ; \quad L\neq0
+$$
+orbits are classified by $e$ as follows.<br>
+<div class="paragraph-box">
+  (1) $0 \le e < 1$ (ellipse: bound orbit)
+</div><br>
+•This case is Kepler's first law. The denominator is always positive, so $r(\theta)$ is bounded (has a max and min).<br>
+•Pericenter and apocenter are
+$$
+\begin{aligned}
+\begin{cases}
+\displaystyle r_{\min}=\frac{L^{2}}{GM\,m^{2}(1+e)}\quad\\[6pt]
+\displaystyle r_{\max}=\frac{L^{2}}{GM\,m^{2}(1-e)}
+\end{cases}
+\end{aligned}
+$$
+The semi-major axis is
+$$
+a=\frac{1}{2}\,(r_{\min}+r_{\max})=\frac{L^{2}}{GM\,m^{2}(1-e^{2})}
+$$
+.<br>
+•Pericenter and apocenter are also $a(1-e)$ and $a(1+e)$.<br>
+•$\theta=\alpha$ is the pericenter direction giving $r_{\min}=\displaystyle\frac{L^{2}}{GM\,m^{2}(1+e)}$, and $\theta=\alpha+\pi$ the apocenter giving $r_{\max}=\displaystyle\frac{L^{2}}{GM\,m^{2}(1-e)}$.<br>
+•Special case: $e=0$ is a circular orbit.<br>
+<div class="paragraph-box">
+(2) $e=1$ (parabola: critical orbit)
+</div><br>
+The polar equation is
+$$
+r(\theta)=\frac{L^{2}}{GM\,m^{2}(1+\cos(\theta-\alpha))}
+$$
+. As $1+\cos(\theta-\alpha)=0$, i.e. $\theta=\alpha+\pi$, one has $r\to\infty$.
+Thus a parabola has a single escape direction $\theta=\alpha+\pi$.<br>
+<div class="paragraph-box">
+(3) $e>1$ (hyperbola: unbound orbit)
+</div><br>
+•Pericenter occurs at $\cos(\theta-\alpha)=1$ ($\theta=\alpha$), with
+$$
+r_{\min}=\frac{L^{2}}{GM\,m^{2}(1+e)}>0
+$$
+•Asymptotic directions where the denominator vanishes satisfy
+$$
+1+e\cos(\theta-\alpha)=0 \iff \cos(\theta-\alpha)=-\frac{1}{e}
+$$
+; there are two such angles, the two asymptotes of the hyperbola, along which $r\to\infty$.
+
+
+<div class="theory-common-box">
+Proposition 4 (semi-major axis and energy)<br>
+For an elliptical orbit,
+$\displaystyle E=-\frac{GM\,m}{2a}\quad(<0)$
+; energy is determined by the semi-major axis alone.
+</div>
+<div class="proof-box">Proof</div>
+From Proposition 2,
+
+$$
+e^2=1+\frac{2EL^2}{G^2M^2m^3}
+$$
+
+solving for $E$,
+
+$$
+E=\frac{G^2M^2m^3}{2L^2}(e^2-1)
+   =-\frac{G^2M^2m^3}{2L^2}(1-e^2)
+$$
+
+Substitute the semi-major axis
+
+$$\begin{aligned}
+ a= \frac {r_{min} +r_{max}}{2} &= \frac{L^{2}}{GM\,m^{2}(1-e^{2})}\\[6pt]
+ \Leftrightarrow \ 1-e^{2}&=\frac{L^{2}}{GM\,m^{2}a}
+\end{aligned}$$
+
+to obtain
+
+$$
+E=-\frac{GM\,m}{2a}
+$$
+</div>
+　⬜︎
+<div class="theory-common-box">
+Proposition 5 (focus at the origin and directrix)<br>
+The curve
+$\displaystyle r(\theta)=\frac{L^2}{GM\,m^2(1+e\cos(\theta-\alpha))}; \quad L\neq 0 $
+is a conic with focus at the origin, directrix
+$\displaystyle \mathcal D:\  x\cos\alpha+y\sin\alpha=\frac{L^2}{GM\,m^2e}$, and eccentricity $e$.
+</div>
+<div class="proof-box">Proof</div>
+
+Show that the conic definition with focus $F$, line $\mathcal D$, and eccentricity $e>0$ yields the orbit of Proposition 1.
+
+Take $F$ at the origin and (by fiat) $\displaystyle \mathcal D:   x\cos\alpha+y\sin\alpha=\frac{L^2}{GM m^2e}$.
+
+The distance from $P=(x,y)$ to $\mathcal D$ is
+$$
+d(P,\mathcal D)=\Bigl|x\cos\alpha+y\sin\alpha-\frac{L^2}{GM m^2e}\Bigr|
+$$
+
+. By definition of eccentricity $\overline{PF}=ed(P,\mathcal D)$, so
+
+$\displaystyle r=e\Bigl|x\cos\alpha+y\sin\alpha-\frac{L^2}{GM m^2e}\Bigr|$
+
+. In polar coordinates $x=r\cos\theta,\ y=r\sin\theta$,
+
+$$
+\cos(\theta-\alpha)=\frac{x\cos\alpha+y\sin\alpha}{r}
+$$
+
+so
+
+$$\begin{aligned}
+r=e\Bigl|x\cos\alpha+y\sin\alpha-\frac{L^2}{GM\,m^2e}\Bigr| \\[6pt]
+r=e\Bigl|r \cos(\theta-\alpha)-\frac{L^2}{GM\,m^2e}\Bigr| \cdots(1)
+\end{aligned}$$
+
+By the lemma below the expression inside the absolute value is negative. Rearranging (1) carefully,
+
+$$
+r\bigl(1+e\cos(\theta-\alpha)\bigr)=\frac{L^2}{GM\,m^2}
+$$
+
+which matches Proposition 1. ⬜︎
+
+</div>
+
+<div class="theory-common-box">
+[Lemma]$\quad \displaystyle r\cos(\theta-\alpha)-\frac{L^2}{GM\,m^2e}$ is negative.
+</div>
+<div class="proof-box">Proof</div>
+$$
+r(\theta)=\frac{L^2}{GM\,m^2}\cdot\frac{1}{1+e\cos(\theta-\alpha)}
+$$
+. Multiplying by $1+e\cos(\theta-\alpha)$,
 
 $$\begin{aligned}
 r\bigl(1+e\cos(\theta-\alpha)\bigr)=\frac{L^2}{GM\,m^2}\\[6pt]
