@@ -26,8 +26,14 @@ def ocr_image(path: Path) -> list[dict]:
     request = Vision.VNRecognizeTextRequest.alloc().init()
     request.setRecognitionLevel_(Vision.VNRequestTextRecognitionLevelAccurate)
     request.setUsesLanguageCorrection_(False)
+    path_s = str(path)
+    languages = (
+        ["en-US"]
+        if "/en/" in path_s or path.stem.endswith("_en")
+        else ["ja-JP", "en-US"]
+    )
     try:
-        request.setRecognitionLanguages_(["ja-JP", "en-US"])
+        request.setRecognitionLanguages_(languages)
     except Exception:
         pass
 

@@ -1,7 +1,11 @@
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
+import 'package:joyphysics/l10n/app_localizations.dart';
+import 'package:joyphysics/utils/locale_utils.dart';
 
 /// 全体像画像上の正規化矩形（原点は左上、値は 0〜1）。
 /// 常に「画像ピクセル空間」基準。画面レイアウトには依存しない。
@@ -86,8 +90,31 @@ class MindMapCatalog {
     ),
   };
 
-  static ({String image, String ocr})? assetsForCategory(String category) {
-    return byCategory[_canonicalCategory(category)];
+  static const Map<String, ({String image, String ocr})> byCategoryEn = {
+    'dynamics': (
+      image: 'assets/mindMap/en/dynamicsLandScope.jpeg',
+      ocr: 'assets/mindMap/ocr/en/dynamicsLandScope.json',
+    ),
+    'electroMagnetism': (
+      image: 'assets/mindMap/en/emTheoryLandScope.jpeg',
+      ocr: 'assets/mindMap/ocr/en/emTheoryLandScope.json',
+    ),
+    'thermoDynamics': (
+      image: 'assets/mindMap/en/thermoDynamicsLandScope.jpeg',
+      ocr: 'assets/mindMap/ocr/en/thermoDynamicsLandScope.json',
+    ),
+    'waves': (
+      image: 'assets/mindMap/en/waveLandScope.jpeg',
+      ocr: 'assets/mindMap/ocr/en/waveLandScope.json',
+    ),
+  };
+
+  static ({String image, String ocr})? assetsForCategory(
+    String category, {
+    String languageCode = 'ja',
+  }) {
+    final table = languageCode == 'en' ? byCategoryEn : byCategory;
+    return table[_canonicalCategory(category)];
   }
 
   static String _canonicalCategory(String category) {
@@ -118,6 +145,7 @@ class MindMapHighlightResolver {
   static final MindMapHighlightResolver instance = MindMapHighlightResolver._();
 
   static const _queriesAsset = 'assets/mindMap/video_mindmap_queries.json';
+  static const _phraseAsset = 'lib/mindMap/orig_en_text_map.json';
 
   /// テスト用: タイトルキーワード照合だけを走らせ、採用された OCR 文言を返す。
   @visibleForTesting
@@ -145,6 +173,7 @@ class MindMapHighlightResolver {
 
   final Map<String, Future<List<_OcrBox>>> _ocrCache = {};
   Future<Map<String, Map<String, List<String>>>>? _queriesFuture;
+  Future<Map<String, List<MindMapPhrase>>>? _phrasesFuture;
 
   Future<List<_OcrBox>> _loadOcr(String assetPath) {
     return _ocrCache.putIfAbsent(assetPath, () async {
@@ -192,44 +221,97 @@ class MindMapHighlightResolver {
   /// 1. 明示 [query]
   /// 2. [video_mindmap_queries.json] の上書き（タイトル語だけでは足りない／誤る記事）
   /// 3. タイトルのキーワード ⊆ OCR（またはその逆の長め一致）
+  ///
+  /// [languageCode] が `en` のときは、日本語 OCR で当たった枠を
+  /// orig_en の文言対応と英語 OCR の位置に載せ替えて英語の全体像へ描く。
   Future<MindMapHighlightData?> resolve({
     required String category,
     required String title,
     String? query,
+    String languageCode = 'ja',
   }) async {
-    final assets = MindMapCatalog.assetsForCategory(category);
+    final lang = languageCode == 'en' ? 'en' : 'ja';
+    final assets = MindMapCatalog.assetsForCategory(
+      category,
+      languageCode: lang,
+    );
     if (assets == null) return null;
 
-    final boxes = await _loadOcr(assets.ocr);
+    final jaAssets = lang == 'en'
+        ? MindMapCatalog.assetsForCategory(category)
+        : assets;
+    if (jaAssets == null) return null;
+
+    final boxes = await _loadOcr(jaAssets.ocr);
     if (boxes.isEmpty) return null;
 
-    List<String> queries = const [];
-    if (query != null && query.isNotEmpty) {
-      queries = [query];
-    } else {
-      final all = await _loadQueries();
-      final catKey = MindMapCatalog._canonicalCategory(category);
-      queries = all[catKey]?[title] ?? all[category]?[title] ?? const [];
-    }
-
-    if (queries.isNotEmpty) {
-      final scores = List<double>.filled(boxes.length, 0);
-      for (final q in queries) {
-        final nq = _normalize(q);
-        if (nq.isEmpty) continue;
-        for (var i = 0; i < boxes.length; i++) {
-          final score = _score(nq, _normalize(boxes[i].text));
-          if (score > scores[i]) scores[i] = score;
-        }
-      }
-      return _dataFromScores(assets.image, boxes, scores);
-    }
-
-    return _dataFromScores(
-      assets.image,
-      boxes,
-      _scoreTitleKeywords(boxes, title),
+    final queries = await _queriesFor(
+      category: category,
+      title: title,
+      query: query,
     );
+    final scores = queries.isNotEmpty
+        ? _scoreQueries(boxes, queries)
+        : _scoreTitleKeywords(boxes, title);
+    final selected = _selectBoxes(boxes, scores);
+    if (selected.isEmpty) return null;
+
+    if (lang != 'en') {
+      return MindMapHighlightData(
+        imageAsset: assets.image,
+        rects: selected.map((b) => b.rect.padded()).toList(),
+        matchedTexts: selected.map((b) => b.text).toList(),
+      );
+    }
+
+    final englishBoxes = await _loadOcr(assets.ocr);
+    if (englishBoxes.isEmpty) return null;
+    final phrases = await _phrasesFor(category);
+    return _transferToEnglish(
+      englishImage: assets.image,
+      japaneseHits: selected,
+      englishBoxes: englishBoxes,
+      phrases: phrases,
+    );
+  }
+
+  Future<List<String>> _queriesFor({
+    required String category,
+    required String title,
+    String? query,
+  }) async {
+    if (query != null && query.isNotEmpty) return [query];
+    final all = await _loadQueries();
+    final catKey = MindMapCatalog._canonicalCategory(category);
+    return all[catKey]?[title] ?? all[category]?[title] ?? const [];
+  }
+
+  Future<List<MindMapPhrase>> _phrasesFor(String category) async {
+    final all = await (_phrasesFuture ??= _loadPhrases());
+    final catKey = MindMapCatalog._canonicalCategory(category);
+    return all[catKey] ?? const [];
+  }
+
+  Future<Map<String, List<MindMapPhrase>>> _loadPhrases() async {
+    try {
+      final raw = await rootBundle.loadString(_phraseAsset);
+      return MindMapPhraseMap.parse(jsonDecode(raw));
+    } catch (_) {
+      return const {};
+    }
+  }
+
+  static List<double> _scoreQueries(List<_OcrBox> boxes, List<String> queries) {
+    final scores = List<double>.filled(boxes.length, 0);
+    for (final q in queries) {
+      final nq = _normalize(q);
+      if (nq.isEmpty) continue;
+      for (var i = 0; i < boxes.length; i++) {
+        final score = _score(nq, _normalize(boxes[i].text));
+        if (score > scores[i]) scores[i] = score;
+      }
+    }
+    return scores;
   }
 
   static MindMapHighlightData? _dataFromScores(
@@ -237,12 +319,22 @@ class MindMapHighlightResolver {
     List<_OcrBox> boxes,
     List<double> scores,
   ) {
+    final selected = _selectBoxes(boxes, scores);
+    if (selected.isEmpty) return null;
+    return MindMapHighlightData(
+      imageAsset: imageAsset,
+      rects: selected.map((b) => b.rect.padded()).toList(),
+      matchedTexts: selected.map((b) => b.text).toList(),
+    );
+  }
+
+  static List<_OcrBox> _selectBoxes(List<_OcrBox> boxes, List<double> scores) {
     const threshold = 0.55;
     var best = 0.0;
     for (final s in scores) {
       if (s > best) best = s;
     }
-    if (best < threshold) return null;
+    if (best < threshold) return const [];
 
     // 最高点付近だけ残す（「等速円運動」が「非等速円運動」にも当たるのを防ぐ）。
     final floor = best >= 0.99 ? best - 0.02 : best - 0.08;
@@ -252,7 +344,7 @@ class MindMapHighlightResolver {
         hits.add((box: boxes[i], score: scores[i]));
       }
     }
-    if (hits.isEmpty) return null;
+    if (hits.isEmpty) return const [];
 
     hits.sort((a, b) => b.score.compareTo(a.score));
     final selected = <_OcrBox>[];
@@ -261,12 +353,111 @@ class MindMapHighlightResolver {
       final dup = selected.any((s) => _rectsAlmostSame(s.rect, r));
       if (!dup) selected.add(hit.box);
     }
+    return selected;
+  }
 
+  /// 日本語 OCR で当たった枠を、英語全体像の対応する文字枠へ移す。
+  static MindMapHighlightData? _transferToEnglish({
+    required String englishImage,
+    required List<_OcrBox> japaneseHits,
+    required List<_OcrBox> englishBoxes,
+    required List<MindMapPhrase> phrases,
+  }) {
+    final selected = <_OcrBox>[];
+    for (final hit in japaneseHits) {
+      final queries = MindMapPhraseMap.englishQueriesFor(hit.text, phrases);
+      final matches = _englishBoxesFor(
+        queries: queries,
+        boxes: englishBoxes,
+        anchor: hit.rect,
+      );
+      for (final box in matches) {
+        final dup = selected.any((s) => _rectsAlmostSame(s.rect, box.rect));
+        if (!dup) selected.add(box);
+      }
+    }
+    if (selected.isEmpty) return null;
     return MindMapHighlightData(
-      imageAsset: imageAsset,
+      imageAsset: englishImage,
       rects: selected.map((b) => b.rect.padded()).toList(),
       matchedTexts: selected.map((b) => b.text).toList(),
     );
+  }
+
+  static List<_OcrBox> _englishBoxesFor({
+    required List<String> queries,
+    required List<_OcrBox> boxes,
+    required MindMapRect anchor,
+  }) {
+    final scored = <({_OcrBox box, double score, double distance})>[];
+    if (queries.isNotEmpty) {
+      final scores = List<double>.filled(boxes.length, 0);
+      for (final q in queries) {
+        final nq = _normalize(q);
+        if (nq.isEmpty) continue;
+        for (var i = 0; i < boxes.length; i++) {
+          final score = _scoreTopic(nq, _normalize(boxes[i].text));
+          if (score > scores[i]) scores[i] = score;
+        }
+      }
+      var best = 0.0;
+      for (final s in scores) {
+        if (s > best) best = s;
+      }
+      if (best >= 0.55) {
+        final floor = best >= 0.99 ? best - 0.02 : best - 0.08;
+        for (var i = 0; i < boxes.length; i++) {
+          if (scores[i] < 0.55 || scores[i] < floor) continue;
+          final distance = _centerDistance(anchor, boxes[i].rect);
+          if (distance <= 0.20) {
+            scored.add((
+              box: boxes[i],
+              score: scores[i],
+              distance: distance,
+            ));
+          }
+        }
+      }
+    }
+
+    if (scored.isEmpty) {
+      _OcrBox? nearest;
+      var nearestD = 0.05;
+      for (final box in boxes) {
+        final distance = _centerDistance(anchor, box.rect);
+        if (distance <= nearestD) {
+          nearestD = distance;
+          nearest = box;
+        }
+      }
+      return nearest == null ? const [] : [nearest];
+    }
+
+    scored.sort((a, b) => a.distance.compareTo(b.distance));
+    final cluster = scored.first.distance + 0.035;
+    return [
+      for (final hit in scored)
+        if (hit.distance <= cluster) hit.box,
+    ];
+  }
+
+  static double _centerDistance(MindMapRect a, MindMapRect b) {
+    final dx = (a.left + a.width / 2) - (b.left + b.width / 2);
+    final dy = (a.top + a.height / 2) - (b.top + b.height / 2);
+    return math.sqrt(dx * dx + dy * dy);
+  }
+
+  /// 英語の対応語用。否定接頭辞（non- / 非）つきの部分一致は捨てる。
+  static double _scoreTopic(String query, String text) {
+    if (query.isEmpty || text.isEmpty) return 0;
+    if (query == text) return 1.0;
+    if (_containsAsTopic(text, query)) {
+      return 0.7 + 0.25 * (query.length / text.length);
+    }
+    if (text.length >= 4 && _containsAsTopic(query, text)) {
+      return 0.7 + 0.25 * (text.length / query.length);
+    }
+    return 0;
   }
 
   static bool _rectsAlmostSame(MindMapRect a, MindMapRect b, {double eps = 0.01}) {
@@ -346,6 +537,7 @@ class MindMapHighlightResolver {
     final idx = hay.indexOf(needle);
     if (idx < 0) return false;
     if (idx > 0 && hay.substring(idx - 1, idx) == '非') return false;
+    if (idx >= 3 && hay.substring(idx - 3, idx) == 'non') return false;
     return true;
   }
 
@@ -379,8 +571,8 @@ class MindMapHighlightResolver {
         .replaceAll(RegExp(r'\s+'), '')
         .replaceAll('　', '')
         .replaceAll(RegExp(r'[【】\[\]「」『』？?]'), '')
-        .replaceAll('－', '-')
-        .replaceAll('−', '-')
+        .replaceAll(RegExp(r"['’‘´]"), '')
+        .replaceAll(RegExp(r'[-‐–—−－]'), '')
         .replaceAll('，', '、')
         .toLowerCase();
   }
@@ -407,6 +599,106 @@ class MindMapHighlightResolver {
   }
 }
 
+/// orig_en.key の日本語文言と英語文言の組。
+@immutable
+class MindMapPhrase {
+  final String ja;
+  final String en;
+
+  const MindMapPhrase({required this.ja, required this.en});
+}
+
+/// 日本語 OCR のヒットを、対応する英語の照合クエリへ分ける。
+class MindMapPhraseMap {
+  MindMapPhraseMap._();
+
+  static Map<String, List<MindMapPhrase>> parse(Object? decoded) {
+    if (decoded is! Map) return {};
+    final slides = decoded['slides'];
+    if (slides is! Map) return {};
+    final out = <String, List<MindMapPhrase>>{};
+    for (final entry in slides.entries) {
+      final slide = entry.value;
+      if (slide is! Map) continue;
+      final rawPhrases = slide['phrases'];
+      final phrases = <MindMapPhrase>[];
+      if (rawPhrases is List) {
+        for (final raw in rawPhrases) {
+          if (raw is! Map) continue;
+          final ja = (raw['ja'] as String?)?.trim() ?? '';
+          final en = (raw['en'] as String?)?.trim() ?? '';
+          if (ja.isEmpty || en.isEmpty) continue;
+          phrases.add(MindMapPhrase(ja: ja, en: en));
+        }
+      }
+      out[entry.key.toString()] = phrases;
+    }
+    return out;
+  }
+
+  static List<String> englishQueriesFor(
+    String japaneseText,
+    List<MindMapPhrase> phrases,
+  ) {
+    final hit = _phraseKey(japaneseText);
+    if (hit.length < 2) return const [];
+
+    MindMapPhrase? best;
+    var bestScore = 0.0;
+    var bestSegIndex = 0;
+    for (final phrase in phrases) {
+      final segs = _segments(phrase.ja);
+      for (var i = 0; i < segs.length; i++) {
+        final score = _segmentScore(hit, segs[i]);
+        if (score > bestScore) {
+          bestScore = score;
+          best = phrase;
+          bestSegIndex = i;
+        }
+      }
+    }
+    if (best == null || bestScore < 0.45) return const [];
+
+    final jaSegs = _segments(best.ja);
+    final enSegs = _segments(best.en);
+    if (enSegs.isEmpty) return const [];
+    if (jaSegs.length == enSegs.length) return [enSegs[bestSegIndex]];
+    if (enSegs.length == 1) return enSegs;
+    final idx = (bestSegIndex * enSegs.length / jaSegs.length)
+        .floor()
+        .clamp(0, enSegs.length - 1);
+    return [enSegs[idx]];
+  }
+
+  static List<String> _segments(String text) {
+    return text
+        .split(RegExp(r'[\n/／]'))
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty)
+        .toList();
+  }
+
+  static double _segmentScore(String hit, String segment) {
+    final n = _phraseKey(segment);
+    if (n.isEmpty || hit.isEmpty) return 0;
+    if (n == hit) return 1;
+    if (MindMapHighlightResolver._containsAsTopic(n, hit)) {
+      return hit.length / n.length;
+    }
+    if (hit.length >= 2 &&
+        MindMapHighlightResolver._containsAsTopic(hit, n) &&
+        n.length / hit.length >= 0.8) {
+      return n.length / hit.length;
+    }
+    return 0;
+  }
+
+  static String _phraseKey(String s) {
+    return MindMapHighlightResolver._normalize(s)
+        .replaceAll(RegExp(r'[()（）:：+＋・]'), '');
+  }
+}
+
 /// 理論記事と同じ見た目: 全体像 + 赤枠（薄い塗り・角丸）+ キャプション。
 class MindMapPositionBanner extends StatelessWidget {
   final MindMapHighlightData data;
@@ -418,10 +710,13 @@ class MindMapPositionBanner extends StatelessWidget {
     this.widthFactor = 0.58,
   });
 
-  static const _caption = '全体像と本内容の位置付け';
-
   @override
   Widget build(BuildContext context) {
+    final caption = AppLocalizations.of(context)?.mindMapPositionTitle ??
+        animL(
+          '全体像と本内容の位置付け',
+          'Overview and where this topic fits',
+        );
     return Padding(
       padding: const EdgeInsets.only(top: 8, bottom: 8),
       child: Column(
@@ -447,10 +742,10 @@ class MindMapPositionBanner extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 4),
-          const Text(
-            _caption,
+          Text(
+            caption,
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14, color: Colors.black54),
+            style: const TextStyle(fontSize: 14, color: Colors.black54),
           ),
         ],
       ),
@@ -697,7 +992,13 @@ class _MindMapHighlightFullscreenPageState
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text('全体像と本内容の位置付け'),
+        title: Text(
+          AppLocalizations.of(context)?.mindMapPositionTitle ??
+              animL(
+                '全体像と本内容の位置付け',
+                'Overview and where this topic fits',
+              ),
+        ),
       ),
       body: Stack(
         key: _viewerKey,
@@ -790,22 +1091,43 @@ class VideoMindMapBanner extends StatefulWidget {
 }
 
 class _VideoMindMapBannerState extends State<VideoMindMapBanner> {
-  late final Future<MindMapHighlightData?> _future;
+  Future<MindMapHighlightData?>? _future;
+  String? _languageCode;
 
-  @override
-  void initState() {
-    super.initState();
+  void _resolve(String languageCode) {
+    _languageCode = languageCode;
     _future = MindMapHighlightResolver.instance.resolve(
       category: widget.category,
       title: widget.title,
       query: widget.mindMapQuery,
+      languageCode: languageCode,
     );
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final lang = appLanguageCode(context);
+    if (_languageCode == lang && _future != null) return;
+    _resolve(lang);
+  }
+
+  @override
+  void didUpdateWidget(covariant VideoMindMapBanner oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.category != widget.category ||
+        oldWidget.title != widget.title ||
+        oldWidget.mindMapQuery != widget.mindMapQuery) {
+      _resolve(appLanguageCode(context));
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final future = _future;
+    if (future == null) return const SizedBox.shrink();
     return FutureBuilder<MindMapHighlightData?>(
-      future: _future,
+      future: future,
       builder: (context, snap) {
         final data = snap.data;
         if (data == null) return const SizedBox.shrink();

@@ -24,6 +24,10 @@ IMAGES = [
     ROOT / "assets/mindMap/emTheoryLandScope.jpeg",
     ROOT / "assets/mindMap/thermoDynamicsLandScope.jpeg",
     ROOT / "assets/mindMap/waveLandScope.jpeg",
+    ROOT / "assets/mindMap/en/dynamicsLandScope.jpeg",
+    ROOT / "assets/mindMap/en/emTheoryLandScope.jpeg",
+    ROOT / "assets/mindMap/en/thermoDynamicsLandScope.jpeg",
+    ROOT / "assets/mindMap/en/waveLandScope.jpeg",
 ]
 
 
@@ -34,7 +38,9 @@ def main() -> None:
         if not image.exists():
             print(f"skip (missing): {image}", file=sys.stderr)
             continue
-        out = OUT_DIR / f"{image.stem}.json"
+        out_dir = OUT_DIR / "en" if image.parent.name == "en" else OUT_DIR
+        out_dir.mkdir(parents=True, exist_ok=True)
+        out = out_dir / f"{image.stem}.json"
         print(f"OCR {image.name} -> {out.relative_to(ROOT)}")
         subprocess.check_call([py, str(OCR_PY), str(image), str(out)])
 
