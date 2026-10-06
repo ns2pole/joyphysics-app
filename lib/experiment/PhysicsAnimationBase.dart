@@ -5,6 +5,8 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
 import 'package:joyphysics/model.dart';
 import 'package:joyphysics/experiment/HasHeight.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
+import 'package:joyphysics/l10n/app_localizations.dart';
 import 'PhysicsAnimationScaffold.dart';
 import 'waves/animations/fields/wave_fields.dart';
 import 'waves/animations/widgets/wave_slider.dart';
@@ -126,8 +128,12 @@ abstract class PhysicsSimulation {
   bool get enableWavefrontTopView => false;
 
   /// 真上視点で出す波面レイヤー。干渉では波ごとに複数。
-  List<WavefrontLayer> get wavefrontLayers => const [
-        WavefrontLayer(id: 'total', label: '波面', color: Colors.blueAccent),
+  List<WavefrontLayer> get wavefrontLayers => [
+        WavefrontLayer(
+          id: 'total',
+          label: animL('波面', 'Wavefront'),
+          color: Colors.blueAccent,
+        ),
       ];
 
   /// チップ類 + 波面ビュー操作をまとめたコントロール
@@ -196,7 +202,10 @@ abstract class PhysicsSimulation {
                   size: 16,
                   color: topOn ? const Color(0xFF1565C0) : Colors.black54,
                 ),
-                label: const Text('真上から見る', style: TextStyle(fontSize: 12)),
+                label: Text(
+                  animL('真上から見る', 'Top view'),
+                  style: const TextStyle(fontSize: 12),
+                ),
                 selected: topOn,
                 onSelected: setTopView,
                 selectedColor: const Color(0xFFBBDEFB),
@@ -215,9 +224,9 @@ abstract class PhysicsSimulation {
               crossAxisAlignment: WrapCrossAlignment.center,
               alignment: WrapAlignment.center,
               children: [
-                const Text(
-                  '波面',
-                  style: TextStyle(
+                Text(
+                  animL('波面', 'Wavefront'),
+                  style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                     color: Color(0xFF546E7A),
@@ -342,7 +351,12 @@ abstract class WaveSimulation extends PhysicsSimulation {
     return [
       const Divider(),
       Text(
-        is2D ? '観測点 ($labelX, $labelY)' : '観測点 $labelX',
+        is2D
+            ? animL(
+                '観測点 ($labelX, $labelY)',
+                'Observation point ($labelX, $labelY)',
+              )
+            : animL('観測点 $labelX', 'Observation point $labelX'),
         style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
       ),
       WaveParameterSlider(
@@ -510,7 +524,9 @@ class _PhysicsSimulationViewState extends State<PhysicsSimulationView> {
 /// Waveアニメーション用のVideoオブジェクト生成ヘルパー
 Video createWaveVideo({
   required String title,
+  String? titleEn,
   required String latex,
+  String? latexEn,
   required PhysicsSimulation simulation,
   double height = 650,
   bool playsSound = false,
@@ -521,12 +537,14 @@ Video createWaveVideo({
     category: category,
     iconName: iconName,
     title: title,
+    titleEn: titleEn,
     videoURL: "",
     equipment: [],
     costRating: "★",
     isSimulation: true,
     playsSound: playsSound,
     latex: latex,
+    latexEn: latexEn,
     experimentWidgets: [
       PhysicsSimulationView(simulation: simulation, height: height),
     ],
@@ -538,16 +556,18 @@ class _WavefrontLegend extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
+    final l10n = AppLocalizations.of(context)!;
+    const labelStyle = TextStyle(fontSize: 10, color: Color(0xFF546E7A));
+    return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _LegendMark(dashed: false),
-        SizedBox(width: 4),
-        Text('山', style: TextStyle(fontSize: 10, color: Color(0xFF546E7A))),
-        SizedBox(width: 10),
-        _LegendMark(dashed: true),
-        SizedBox(width: 4),
-        Text('谷', style: TextStyle(fontSize: 10, color: Color(0xFF546E7A))),
+        const _LegendMark(dashed: false),
+        const SizedBox(width: 4),
+        Text(l10n.waveCrest, style: labelStyle),
+        const SizedBox(width: 10),
+        const _LegendMark(dashed: true),
+        const SizedBox(width: 4),
+        Text(l10n.waveTrough, style: labelStyle),
       ],
     );
   }

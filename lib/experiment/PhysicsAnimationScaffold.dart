@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:joyphysics/experiment/HasHeight.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
+import 'package:joyphysics/l10n/app_localizations.dart';
 import 'package:joyphysics/experiment/playback_controls.dart';
 import 'waves/animations/fields/wave_fields.dart';
 import 'waves/animations/utils/coordinate_transformer.dart';
@@ -192,6 +194,7 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
   }
 
   Widget _buildZoomButtons() {
+    final l10n = AppLocalizations.of(context);
     final canZoomOut = _scale > _minScale + 0.01;
     final canZoomIn = _scale < _maxScale - 0.01;
     return Column(
@@ -199,14 +202,14 @@ class _PhysicsAnimationScaffoldState extends State<PhysicsAnimationScaffold>
       children: [
         _CanvasZoomButton(
           icon: Icons.add,
-          tooltip: '拡大',
+          tooltip: l10n?.zoomIn ?? animL('拡大', 'Zoom in'),
           enabled: canZoomIn,
           onPressed: _zoomIn,
         ),
         const SizedBox(height: 6),
         _CanvasZoomButton(
           icon: Icons.remove,
-          tooltip: '縮小',
+          tooltip: l10n?.zoomOut ?? animL('縮小', 'Zoom out'),
           enabled: canZoomOut,
           onPressed: _zoomOut,
         ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 const highPitchSoundWarningTitle = '高い音が出ます';
 const highPitchSoundWarningMessage =
@@ -8,12 +9,18 @@ Future<bool> confirmHighPitchSound(BuildContext context) async {
   final proceed = await showDialog<bool>(
     context: context,
     builder: (ctx) => AlertDialog(
-      title: const Text(highPitchSoundWarningTitle),
-      content: const Text(highPitchSoundWarningMessage),
+      title: Text(animL(
+        highPitchSoundWarningTitle,
+        'A high-pitched sound will play',
+      )),
+      content: Text(animL(
+        highPitchSoundWarningMessage,
+        'The YouTube video plays a high-pitched sound. Please be careful if that is hard to listen to.',
+      )),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(ctx).pop(false),
-          child: const Text('戻る'),
+          child: Text(animL('戻る', 'Back')),
         ),
         TextButton(
           onPressed: () => Navigator.of(ctx).pop(true),

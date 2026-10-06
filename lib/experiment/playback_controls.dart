@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:joyphysics/l10n/app_localizations.dart';
 
 /// 自前クロックの再生ループ。波動の足場（enableTime）とは別に、
 /// Start で進めるシミュレーションが同じ一時停止を使う。
@@ -63,18 +64,22 @@ class PlayPauseResetButtons extends StatelessWidget {
     required this.playing,
     required this.onPlayPause,
     required this.onReset,
-    this.playTooltip = '再生',
-    this.pauseTooltip = '一時停止',
+    this.playTooltip,
+    this.pauseTooltip,
   });
 
   final bool playing;
   final VoidCallback onPlayPause;
   final VoidCallback onReset;
-  final String playTooltip;
-  final String pauseTooltip;
+  final String? playTooltip;
+  final String? pauseTooltip;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final play = playTooltip ?? l10n?.play ?? '再生';
+    final pause = pauseTooltip ?? l10n?.pause ?? '一時停止';
+    final reset = l10n?.reset ?? 'リセット';
     const btnSize = 26.0;
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -88,7 +93,7 @@ class PlayPauseResetButtons extends StatelessWidget {
             visualDensity: VisualDensity.compact,
             iconSize: btnSize,
             color: Colors.white,
-            tooltip: playing ? pauseTooltip : playTooltip,
+            tooltip: playing ? pause : play,
             onPressed: onPlayPause,
             icon: Icon(playing ? Icons.pause : Icons.play_arrow),
           ),
@@ -101,7 +106,7 @@ class PlayPauseResetButtons extends StatelessWidget {
             visualDensity: VisualDensity.compact,
             iconSize: btnSize,
             color: Colors.white,
-            tooltip: 'リセット',
+            tooltip: reset,
             onPressed: onReset,
             icon: const Icon(Icons.restore),
           ),
@@ -119,6 +124,8 @@ class RestartFromStartButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final label =
+        AppLocalizations.of(context)?.restartFromStart ?? '最初から';
     return FilledButton.icon(
       onPressed: onPressed,
       style: FilledButton.styleFrom(
@@ -127,7 +134,7 @@ class RestartFromStartButton extends StatelessWidget {
         visualDensity: VisualDensity.compact,
       ),
       icon: const Icon(Icons.replay, size: 18),
-      label: const Text('最初から'),
+      label: Text(label),
     );
   }
 }
@@ -137,14 +144,15 @@ class ResetOnlyButton extends StatelessWidget {
   const ResetOnlyButton({
     super.key,
     required this.onReset,
-    this.tooltip = 'リセット',
+    this.tooltip,
   });
 
   final VoidCallback onReset;
-  final String tooltip;
+  final String? tooltip;
 
   @override
   Widget build(BuildContext context) {
+    final tip = tooltip ?? AppLocalizations.of(context)?.reset ?? 'リセット';
     const btnSize = 26.0;
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -155,7 +163,7 @@ class ResetOnlyButton extends StatelessWidget {
         visualDensity: VisualDensity.compact,
         iconSize: btnSize,
         color: Colors.white,
-        tooltip: tooltip,
+        tooltip: tip,
         onPressed: onReset,
         icon: const Icon(Icons.restore),
       ),
