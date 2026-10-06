@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import 'package:joyphysics/experiment/playback_controls.dart';
 import 'coupled_oscillator_transverse_physics.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 final coupledOscillatorTransverse1D = createWaveVideo(
   title: '横波(N体バネ)',
+  titleEn: 'Transverse wave (N-mass springs)',
   height: 720,
   latex: r"""
   <div class="common-box">ポイント</div>
@@ -19,13 +21,24 @@ final coupledOscillatorTransverse1D = createWaveVideo(
   <p>$$\omega_n=2\sqrt{\frac{k}{m}}\,\sin\frac{n\pi}{2(N+1)}$$</p>
   <p>各モードの形は固定端の定在波と同じで、両端は常に節である。$N$ を大きくすると、連続な弦の固定端定在波に近づく。</p>
   """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>$N$ masses are connected side by side by springs, with both ends fixed to walls. The transverse displacement $y_j$ can be written exactly as a superposition of normal modes.</p>
+  <p>$$\begin{aligned}
+  y_j(t)
+  &=\sum_{n=1}^{N}\bigl(A_n\cos\omega_n t+B_n\sin\omega_n t\bigr)\\
+  &\quad\times\sin\frac{n\pi j}{N+1}
+  \end{aligned}$$</p>
+  <p>$$\omega_n=2\sqrt{\frac{k}{m}}\,\sin\frac{n\pi}{2(N+1)}$$</p>
+  <p>Each mode shape matches a fixed-end standing wave, so both ends are always nodes. As $N$ becomes large, the motion approaches a fixed-end standing wave on a continuous string.</p>
+  """,
   simulation: CoupledOscillatorTransverse1DSimulation(),
 );
 
 class CoupledOscillatorTransverse1DSimulation extends PhysicsSimulation {
   CoupledOscillatorTransverse1DSimulation()
       : super(
-          title: '横波(N体バネ)',
+          title: animL('横波(N体バネ)', 'Transverse wave (N-mass springs)'),
           formula: const FormulaDisplay(
             r'\omega_n=2\sqrt{\frac{k}{m}}\,\sin\frac{n\pi}{2(N+1)}',
           ),
@@ -161,7 +174,7 @@ class CoupledOscillatorTransverse1DSimulation extends PhysicsSimulation {
           playing: isRunning,
           onPlayPause: isRunning ? pause : start,
           onReset: resetMotion,
-          playTooltip: _inSession ? '再開' : '再生',
+          playTooltip: _inSession ? animL('再開', 'Resume') : animL('再生', 'Play'),
         );
       },
     );
@@ -183,8 +196,8 @@ class CoupledOscillatorTransverse1DSimulation extends PhysicsSimulation {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
-                '質点数 N',
+              Text(
+                animL('質点数 N', 'Number of masses N'),
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
               ),
               _IntegerStepperSlider(
@@ -314,7 +327,7 @@ class _IntegerStepperSlider extends StatelessWidget {
     return Row(
       children: [
         IconButton(
-          tooltip: '$label を減らす',
+          tooltip: animL('$label を減らす', 'Decrease $label'),
           visualDensity: VisualDensity.compact,
           constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
           padding: EdgeInsets.zero,
@@ -334,7 +347,7 @@ class _IntegerStepperSlider extends StatelessWidget {
           ),
         ),
         IconButton(
-          tooltip: '$label を増やす',
+          tooltip: animL('$label を増やす', 'Increase $label'),
           visualDensity: VisualDensity.compact,
           constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
           padding: EdgeInsets.zero,
@@ -458,8 +471,8 @@ class _CoupledOscillatorPainter extends CustomPainter {
         paint,
       );
       final tp = TextPainter(
-        text: const TextSpan(
-          text: '節',
+        text: TextSpan(
+          text: animL('節', 'Node'),
           style: TextStyle(color: _node, fontSize: 10, fontWeight: FontWeight.w700),
         ),
         textDirection: TextDirection.ltr,
@@ -546,7 +559,7 @@ class _CoupledOscillatorPainter extends CustomPainter {
       fontSize: 11,
       height: 1.35,
     );
-    final modeLine = mode >= 1 ? 'モード n = $mode（固定端の定在波）\n' : '';
+    final modeLine = mode >= 1 ? animL('モード n = $mode（固定端の定在波）\n', 'Mode n = $mode (fixed-end standing wave)\n') : '';
     final tp = TextPainter(
       text: TextSpan(
         children: [
@@ -555,8 +568,8 @@ class _CoupledOscillatorPainter extends CustomPainter {
             style: numStyle,
           ),
           if (running)
-            const TextSpan(
-              text: '運動中',
+            TextSpan(
+              text: animL('運動中', 'In motion'),
               style: statusStyle,
             ),
         ],

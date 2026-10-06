@@ -5,14 +5,23 @@ import '../fields/wave_fields.dart';
 import '../painters/wave_surface_painter.dart';
 import '../widgets/wave_slider.dart';
 import 'dart:math' as math;
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 final fixedReflection2D = createWaveVideo(
   title: "反射の法則 (固定端・2次元)",
+  titleEn: 'Law of reflection (fixed end, 2D)',
   latex: r"""
   <div class="common-box">ポイント</div>
   <p>反射の法則は自由端と同じで、入射角と反射角は等しいです。</p>
   <p>$$\theta_i=\theta_r$$</p>
   <p>固定端では反射で位相が $\pi$ ずれます。境界面 $x=0$ では入射波と反射波が打ち消し、変位は常に 0 です。</p>
+  <p>$$z_r=-z_i\quad(x=0)$$</p>
+  """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>The law of reflection is the same as for a free end: the angle of incidence equals the angle of reflection.</p>
+  <p>$$\theta_i=\theta_r$$</p>
+  <p>At a fixed end, reflection shifts the phase by $\pi$. On the boundary $x=0$, the incident and reflected waves cancel, so the displacement is always 0.</p>
   <p>$$z_r=-z_i\quad(x=0)$$</p>
   """,
   simulation: FixedReflection2DSimulation(),
@@ -21,7 +30,7 @@ final fixedReflection2D = createWaveVideo(
 class FixedReflection2DSimulation extends WaveSimulation {
   FixedReflection2DSimulation()
       : super(
-          title: "反射の法則 (固定端)",
+          title: animL("反射の法則 (固定端)", "Law of reflection (fixed end)"),
           is3D: true,
           formula: const FormulaDisplay(
               r'\displaystyle \theta_i=\theta_r,\quad z_r=-z_i\ (x=0)'),
@@ -42,11 +51,11 @@ class FixedReflection2DSimulation extends WaveSimulation {
   Set<String> get initialActiveIds => {'incident', 'reflected', 'combined'};
 
   @override
-  List<WavefrontLayer> get wavefrontLayers => const [
+  List<WavefrontLayer> get wavefrontLayers => [
         WavefrontLayer(
-            id: 'incident', label: '入射', color: Colors.purpleAccent),
+            id: 'incident', label: animL('入射', 'Incident'), color: Colors.purpleAccent),
         WavefrontLayer(
-            id: 'reflected', label: '反射', color: Colors.greenAccent),
+            id: 'reflected', label: animL('反射', 'Reflected'), color: Colors.greenAccent),
       ];
 
   @override
@@ -82,11 +91,11 @@ class FixedReflection2DSimulation extends WaveSimulation {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        buildChip('入射', 'incident', incidentColor, activeIds, updateActiveIds),
+        buildChip(animL('入射', 'Incident'), 'incident', incidentColor, activeIds, updateActiveIds),
         const SizedBox(width: 4),
-        buildChip('反射', 'reflected', reflectedColor, activeIds, updateActiveIds),
+        buildChip(animL('反射', 'Reflected'), 'reflected', reflectedColor, activeIds, updateActiveIds),
         const SizedBox(width: 4),
-        buildChip('合成', 'combined', combinedColor, activeIds, updateActiveIds),
+        buildChip(animL('合成', 'Combined'), 'combined', combinedColor, activeIds, updateActiveIds),
       ],
     );
   }
@@ -112,7 +121,7 @@ class FixedReflection2DSimulation extends WaveSimulation {
         activeComponentIds: activeIds,
         scale: scale,
         markers: [
-          getObsMarker(params, label: '合成波の観測点'),
+          getObsMarker(params, label: animL('合成波の観測点', 'Observation point of resultant wave')),
         ],
         mediumSlab: const MediumSlabOverlay(
           xStart: 0.0,

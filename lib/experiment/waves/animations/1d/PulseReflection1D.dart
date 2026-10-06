@@ -4,9 +4,11 @@ import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import '../fields/wave_fields.dart';
 import '../painters/wave_line_painter.dart';
 import '../widgets/wave_slider.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 final pulseReflection1D = createWaveVideo(
   title: "1次元パルスの反射",
+  titleEn: '1D pulse reflection',
   latex: r"""
   <div class="common-box">ポイント</div>
   <p>パルス波が境界で反射するとき、端の条件によって反射の仕方が異なります。</p>
@@ -15,15 +17,23 @@ final pulseReflection1D = createWaveVideo(
     <li><b>固定端反射</b>：端が固定されている場合、パルスは逆向き（正の変位なら負に反転）で反射します。端での変位は常に0になります。</li>
   </ul>
   """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>When a pulse reflects at a boundary, the reflection depends on the end condition.</p>
+  <ul>
+    <li><b>Free-end reflection</b>: If the end can move freely, the pulse reflects with the same orientation (a positive displacement stays positive). The phases reinforce, and the displacement at the end can be up to twice that of the incident wave.</li>
+    <li><b>Fixed-end reflection</b>: If the end is fixed, the pulse reflects with inverted orientation (a positive displacement becomes negative). The displacement at the end is always zero.</li>
+  </ul>
+  """,
   simulation: PulseReflection1DSimulation(),
 );
 
 class PulseReflection1DSimulation extends WaveSimulation {
   PulseReflection1DSimulation()
       : super(
-          title: "1次元パルスの反射",
+          title: animL("1次元パルスの反射", "1D pulse reflection"),
           is3D: false,
-          formula: const Column(
+          formula: Column(
             children: [
               FormulaDisplay(r'y = y_{incident} + y_{reflected}'),
             ],
@@ -51,11 +61,11 @@ class PulseReflection1DSimulation extends WaveSimulation {
     final speed = params['lambda']! / periodT;
     return [
       Text(
-        'T = ${periodT.toStringAsFixed(1)}（固定）   速度 v = ${speed.toStringAsFixed(2)}',
+        animL('T = ${periodT.toStringAsFixed(1)}（固定）   速度 v = ${speed.toStringAsFixed(2)}', 'T = ${periodT.toStringAsFixed(1)} (fixed)   Velocity v = ${speed.toStringAsFixed(2)}'),
         style: const TextStyle(fontSize: 12),
       ),
       WaveParameterSlider(
-        label: '速度',
+        label: animL('速度', 'Velocity'),
         value: speed,
         min: 0.3,
         max: 8.0,
@@ -64,9 +74,9 @@ class PulseReflection1DSimulation extends WaveSimulation {
       const SizedBox(height: 8),
       Row(
         children: [
-          const Text('波形: ', style: TextStyle(fontSize: 12)),
+          Text(animL('波形: ', 'Waveform: '), style: TextStyle(fontSize: 12)),
           ChoiceChip(
-            label: const Text('sin(半波)', style: TextStyle(fontSize: 12)),
+            label: Text(animL('sin(半波)', 'sin (half wave)'), style: TextStyle(fontSize: 12)),
             selected: params['shapeType'] == 0.0,
             onSelected: (val) => updateParam('shapeType', 0.0),
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
@@ -74,7 +84,7 @@ class PulseReflection1DSimulation extends WaveSimulation {
           ),
           const SizedBox(width: 4),
           ChoiceChip(
-            label: const Text('sin(1周期)', style: TextStyle(fontSize: 12)),
+            label: Text(animL('sin(1周期)', 'sin (1 period)'), style: TextStyle(fontSize: 12)),
             selected: params['shapeType'] == 1.0,
             onSelected: (val) => updateParam('shapeType', 1.0),
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
@@ -82,7 +92,7 @@ class PulseReflection1DSimulation extends WaveSimulation {
           ),
           const SizedBox(width: 4),
           ChoiceChip(
-            label: const Text('三角波', style: TextStyle(fontSize: 12)),
+            label: Text(animL('三角波', 'Triangle wave'), style: TextStyle(fontSize: 12)),
             selected: params['shapeType'] == 2.0,
             onSelected: (val) => updateParam('shapeType', 2.0),
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
@@ -93,9 +103,9 @@ class PulseReflection1DSimulation extends WaveSimulation {
       const SizedBox(height: 8),
       Row(
         children: [
-          const Text('端条件: ', style: TextStyle(fontSize: 12)),
+          Text(animL('端条件: ', 'End condition: '), style: TextStyle(fontSize: 12)),
           ChoiceChip(
-            label: const Text('固定端', style: TextStyle(fontSize: 12)),
+            label: Text(animL('固定端', 'Fixed end'), style: TextStyle(fontSize: 12)),
             selected: params['isFixedEnd'] == 1.0,
             onSelected: (val) => updateParam('isFixedEnd', 1.0),
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
@@ -103,7 +113,7 @@ class PulseReflection1DSimulation extends WaveSimulation {
           ),
           const SizedBox(width: 4),
           ChoiceChip(
-            label: const Text('自由端', style: TextStyle(fontSize: 12)),
+            label: Text(animL('自由端', 'Free end'), style: TextStyle(fontSize: 12)),
             selected: params['isFixedEnd'] == 0.0,
             onSelected: (val) => updateParam('isFixedEnd', 0.0),
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
@@ -120,13 +130,13 @@ class PulseReflection1DSimulation extends WaveSimulation {
     return Wrap(
       spacing: 8,
       children: [
-        buildChip('入射', 'incident', Colors.purpleAccent, activeIds,
+        buildChip(animL('入射', 'Incident'), 'incident', Colors.purpleAccent, activeIds,
             updateActiveIds,
             fontSize: 14),
-        buildChip('反射', 'reflected', Colors.greenAccent, activeIds,
+        buildChip(animL('反射', 'Reflected'), 'reflected', Colors.greenAccent, activeIds,
             updateActiveIds,
             fontSize: 14),
-        buildChip('合成', 'combined', Colors.blueAccent, activeIds,
+        buildChip(animL('合成', 'Combined'), 'combined', Colors.blueAccent, activeIds,
             updateActiveIds,
             fontSize: 14),
       ],
@@ -166,7 +176,7 @@ class PulseReflection1DSimulation extends WaveSimulation {
         activeComponentIds: activeIds,
         scale: scale,
         markers: [
-          getObsMarker(params, label: '合成波の観測点'),
+          getObsMarker(params, label: animL('合成波の観測点', 'Observation point of resultant wave')),
         ],
       ),
     );

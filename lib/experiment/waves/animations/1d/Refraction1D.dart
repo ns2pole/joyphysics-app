@@ -6,9 +6,11 @@ import '../fields/wave_fields.dart';
 import '../painters/wave_line_painter.dart';
 import '../painters/wave_surface_painter.dart';
 import '../widgets/wave_slider.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 final refraction1D = createWaveVideo(
   title: "1次元屈折",
+  titleEn: '1D refraction',
   latex: r"""
   <div class="common-box">ポイント</div>
   <p>異なる媒質の境界で波の速さが変わると、波長も変化します。周波数は変化しません。</p>
@@ -16,13 +18,20 @@ final refraction1D = createWaveVideo(
   <div class="common-box">注意</div>
   <p>実際には、屈折率が異なる境界面では透過（屈折）と同時に反射も起きます。このシミュレーションでは、波長の変化を見やすくするため、反射波は描いていません。</p>
   """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>When the wave speed changes at a boundary between media, the wavelength also changes. The frequency does not change.</p>
+  <p>The refractive index of medium 2 relative to medium 1 is $\displaystyle n=\frac{v_1}{v_2}=\frac{\lambda_1}{\lambda_2}$. In medium 2 the wavelength becomes $\displaystyle \frac{\lambda_1}{n}$.</p>
+  <div class="common-box">Note</div>
+  <p>In reality, both transmission (refraction) and reflection occur at an interface between different refractive indices. This simulation omits the reflected wave so that the change in wavelength is easier to see.</p>
+  """,
   simulation: Refraction1DSimulation(),
 );
 
 class Refraction1DSimulation extends WaveSimulation {
   Refraction1DSimulation()
       : super(
-          title: "1次元屈折",
+          title: animL("1次元屈折", "1D refraction"),
           is3D: false,
           formula: const Column(
             children: [
@@ -81,7 +90,7 @@ class Refraction1DSimulation extends WaveSimulation {
     return Wrap(
       spacing: 8,
       children: [
-        buildChip('波の表示', 'total', Colors.blue, activeIds, updateActiveIds,
+        buildChip(animL('波の表示', 'Wave display'), 'total', Colors.blue, activeIds, updateActiveIds,
             fontSize: 12),
       ],
     );
@@ -109,7 +118,7 @@ class Refraction1DSimulation extends WaveSimulation {
         activeComponentIds: activeIds,
         scale: scale,
         markers: [
-          getObsMarker(params, label: '観測点 a'),
+          getObsMarker(params, label: animL('観測点 a', 'Observation point a')),
         ],
         mediumSlab: MediumSlabOverlay(
           xStart: 0.0,

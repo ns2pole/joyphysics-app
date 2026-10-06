@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 class BeatExperimentWidget extends StatefulWidget {
   final bool useScaffold;
@@ -142,13 +143,15 @@ class _BeatExperimentWidgetState extends State<BeatExperimentWidget> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              "ビート周波数: ${beatFreq.toStringAsFixed(2)} Hz",
+              "${animL('ビート周波数', 'Beat frequency')}: ${beatFreq.toStringAsFixed(2)} Hz",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 20),
 
             // Sound1 Controls
-            Text("Sound1 周波数: ${freq1.toStringAsFixed(1)} Hz"),
+            Text(
+              "${animL('Sound1 周波数', 'Sound 1 frequency')}: ${freq1.toStringAsFixed(1)} Hz",
+            ),
             Slider(
               value: freq1,
               min: 100,
@@ -164,12 +167,16 @@ class _BeatExperimentWidgetState extends State<BeatExperimentWidget> {
               children: [
                 ElevatedButton(
                   onPressed: isPlaying1 ? null : () => playSound1(freq1),
-                  child: Text(isPlaying1 ? 'Sound1 再生中' : 'Sound1 再生'),
+                  child: Text(
+                    isPlaying1
+                        ? animL('Sound1 再生中', 'Sound 1 playing')
+                        : animL('Sound1 再生', 'Play sound 1'),
+                  ),
                 ),
                 SizedBox(width: 12),
                 ElevatedButton(
                   onPressed: isPlaying1 ? stopSound1 : null,
-                  child: Text('Sound1 停止'),
+                  child: Text(animL('Sound1 停止', 'Stop sound 1')),
                 ),
               ],
             ),
@@ -177,7 +184,9 @@ class _BeatExperimentWidgetState extends State<BeatExperimentWidget> {
             SizedBox(height: 30),
 
             // Sound2 Controls
-            Text("Sound2 周波数: ${freq2.toStringAsFixed(1)} Hz"),
+            Text(
+              "${animL('Sound2 周波数', 'Sound 2 frequency')}: ${freq2.toStringAsFixed(1)} Hz",
+            ),
             Slider(
               value: freq2,
               min: 100,
@@ -193,12 +202,16 @@ class _BeatExperimentWidgetState extends State<BeatExperimentWidget> {
               children: [
                 ElevatedButton(
                   onPressed: isPlaying2 ? null : () => playSound2(freq2),
-                  child: Text(isPlaying2 ? 'Sound2 再生中' : 'Sound2 再生'),
+                  child: Text(
+                    isPlaying2
+                        ? animL('Sound2 再生中', 'Sound 2 playing')
+                        : animL('Sound2 再生', 'Play sound 2'),
+                  ),
                 ),
                 SizedBox(width: 12),
                 ElevatedButton(
                   onPressed: isPlaying2 ? stopSound2 : null,
-                  child: Text('Sound2 停止'),
+                  child: Text(animL('Sound2 停止', 'Stop sound 2')),
                 ),
               ],
             ),

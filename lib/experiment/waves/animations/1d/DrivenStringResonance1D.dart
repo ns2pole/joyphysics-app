@@ -2,9 +2,11 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import '../widgets/wave_slider.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 final drivenStringResonance1D = createWaveVideo(
   title: "弦上の定在波(駆動)",
+  titleEn: 'Standing wave on a driven string',
   latex: r"""
   <div class="common-box">ポイント</div>
   <p>左端はバイブレータによる<strong>駆動</strong>（$\displaystyle y(0,t)=A\sin\frac{2\pi t}{T}$）、右端は<strong>固定端</strong>（$y(L)=0$）です。</p>
@@ -18,6 +20,20 @@ final drivenStringResonance1D = createWaveVideo(
   \end{aligned}$$
   </p>
   <p>右端固定のたびに符号が反転し、左端では駆動条件を満たす次の右向き波が足されます。共振は $\displaystyle f=\frac{nv}{2L}$（$\displaystyle \frac{f}{f_1}=1,2,3,\ldots$）です。画面の和には往復ごとの弱い減衰を掛け、共振でも振幅が際限なく増えないようにしています。</p>
+  """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>The left end is <strong>driven</strong> by a vibrator ($\displaystyle y(0,t)=A\sin\frac{2\pi t}{T}$), and the right end is a <strong>fixed end</strong> ($y(L)=0$).</p>
+  <p>Superposition of multiple reflections of traveling waves (any term with a negative argument in parentheses is taken as $0$):</p>
+  <p>
+  $$\begin{aligned}
+  y=A\sum_{n=0}\Big[
+  &\,\sin\frac{2\pi}{T}\left(t-\frac{2nL+x}{v}\right)\\
+  &-\sin\frac{2\pi}{T}\left(t-\frac{2(n+1)L-x}{v}\right)
+  \Big]
+  \end{aligned}$$
+  </p>
+  <p>The sign flips at each fixed-end reflection on the right; at the left end the next right-going wave is added to satisfy the driving condition. Resonance occurs at $\displaystyle f=\frac{nv}{2L}$ ($\displaystyle \frac{f}{f_1}=1,2,3,\ldots$). The on-screen sum includes a weak attenuation per round trip so the amplitude does not grow without bound at resonance.</p>
   """,
   simulation: DrivenStringResonance1DSimulation(),
   height: 720,
@@ -46,7 +62,7 @@ int? _nearestResonanceMode(double ratio) {
 class DrivenStringResonance1DSimulation extends WaveSimulation {
   DrivenStringResonance1DSimulation()
       : super(
-          title: "弦上の定在波(駆動)",
+          title: animL("弦上の定在波(駆動)", "Standing wave on a driven string"),
           is3D: false,
           showTimeOverlay: false,
           formula: const Column(
@@ -134,8 +150,8 @@ class DrivenStringResonance1DSimulation extends WaveSimulation {
         'λ/L = ${(lambda / L).toStringAsFixed(2)}\n'
         'f₁ = ${f1.toStringAsFixed(0)} Hz   '
         'f/f₁ = ${ratio.toStringAsFixed(2)}'
-        '${nearResonance ? '  ★共振' : ''}   '
-        '（×${slowMo.toStringAsFixed(0)} スロー）',
+        "${nearResonance ? animL('  ★共振', '  ★resonance') : ''}   "
+        "${animL('（×${slowMo.toStringAsFixed(0)} スロー）', '(×${slowMo.toStringAsFixed(0)} slow)')}",
         style: TextStyle(
           fontSize: 12,
           fontWeight: nearResonance ? FontWeight.bold : FontWeight.normal,
@@ -165,14 +181,14 @@ class DrivenStringResonance1DSimulation extends WaveSimulation {
         onChanged: setTensionSnapped,
       ),
       WaveParameterSlider(
-        label: 'スロー',
+        label: animL('スロー', 'Slow'),
         value: params['slowMo']!,
         min: 10.0,
         max: 100.0,
         onChanged: (val) => updateParam('slowMo', val),
       ),
       const SizedBox(height: 4),
-      const Text('糸の太さ ρ（細い→太い）',
+      Text(animL('糸の太さ ρ（細い→太い）', 'String thickness ρ (thin → thick)'),
           style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
       Wrap(
         spacing: 4,
@@ -484,7 +500,7 @@ class DrivenStringApparatusPainter extends CustomPainter {
         ..strokeWidth = 1.5,
     );
     _drawLabel(canvas, Offset(aX - 36, stringY - 58), '${freq.toStringAsFixed(0)} Hz');
-    _drawLabel(canvas, Offset(aX - 28, stringY - 42), 'バイブレータ');
+    _drawLabel(canvas, Offset(aX - 28, stringY - 42), animL('バイブレータ', 'Vibrator'));
 
     final strokeW = 1.5 + rhoLevel * 0.7;
     final stringPaint = Paint()
@@ -548,7 +564,7 @@ class DrivenStringApparatusPainter extends CustomPainter {
     );
     canvas.drawCircle(pulleyCenter, 2.2, Paint()..color = Colors.black87);
     _drawLabel(
-        canvas, Offset(pulleyCenter.dx + pulleyR + 4, stringY - 42), '定滑車');
+        canvas, Offset(pulleyCenter.dx + pulleyR + 4, stringY - 42), animL('定滑車', 'Fixed pulley'));
 
     final pulleyStringPaint = Paint()
       ..color = const Color(0xFF1565C0)
@@ -587,7 +603,7 @@ class DrivenStringApparatusPainter extends CustomPainter {
         't=${simTime < 0.1 ? '${(simTime * 1000).toStringAsFixed(1)} ms' : '${simTime.toStringAsFixed(3)} s'}  '
         'v=${waveSpeed.toStringAsFixed(0)} m/s  λ=${lambda.toStringAsFixed(3)} m  '
         'λ/L=${(lambda / length).toStringAsFixed(2)}'
-        '${nearResonance ? '  共振' : ''}';
+        "${nearResonance ? animL('  共振', '  resonance') : ''}";
     final tp = TextPainter(
       text: TextSpan(
         text: info,

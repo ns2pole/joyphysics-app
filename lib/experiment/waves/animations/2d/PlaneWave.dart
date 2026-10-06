@@ -5,14 +5,22 @@ import '../fields/wave_fields.dart';
 import '../painters/wave_surface_painter.dart';
 import '../widgets/wave_slider.dart';
 import 'dart:math' as math;
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 final planeWave = createWaveVideo(
   title: "直線波",
+  titleEn: 'Plane wave',
   latex: r"""
   <div class="common-box">解説</div>
   <p>進行方向に垂直な直線上で位相が等しい波です。2次元では波面が直線になるため、3次元の平面波に対応する波を直線波と呼びます。進行方向の角度を $\theta$ とすると</p>
   <p>$$z=A\sin\left(2\pi\left(\frac{t}{T}-\frac{x\cos\theta+y\sin\theta}{\lambda}\right)\right)$$</p>
   <p>一定位相の点は速さ $\displaystyle v=\frac{\lambda}{T}$ で $\theta$ 方向へ進みます。</p>
+  """,
+  latexEn: r"""
+  <div class="common-box">Explanation</div>
+  <p>A wave whose phase is the same along a straight line perpendicular to the direction of travel. In 2D the wavefronts are straight lines, so the wave corresponding to a 3D plane wave is called a plane wave. With travel direction angle $\theta$,</p>
+  <p>$$z=A\sin\left(2\pi\left(\frac{t}{T}-\frac{x\cos\theta+y\sin\theta}{\lambda}\right)\right)$$</p>
+  <p>Points of constant phase advance in the $\theta$ direction at speed $\displaystyle v=\frac{\lambda}{T}$.</p>
   """,
   simulation: PlaneWaveSimulation(),
 );
@@ -20,7 +28,7 @@ final planeWave = createWaveVideo(
 class PlaneWaveSimulation extends WaveSimulation {
   PlaneWaveSimulation()
       : super(
-          title: "直線波",
+          title: animL("直線波", "Plane wave"),
           is3D: true,
           formula: const FormulaDisplay(
               r'\displaystyle z=A\sin\left(2\pi\left(\frac{t}{T}-\frac{x\cos\theta+y\sin\theta}{\lambda}\right)\right)'),
@@ -81,7 +89,7 @@ class PlaneWaveSimulation extends WaveSimulation {
         activeComponentIds: activeIds,
         scale: scale,
         markers: [
-          getObsMarker(params, label: '観測点 (a, b)'),
+          getObsMarker(params, label: animL('観測点 (a, b)', 'Observation point (a, b)')),
         ],
       ),
     );

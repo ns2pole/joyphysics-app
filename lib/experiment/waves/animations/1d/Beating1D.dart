@@ -4,9 +4,11 @@ import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import '../fields/wave_fields.dart';
 import '../painters/wave_line_painter.dart';
 import '../widgets/wave_slider.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 final beating1D = createWaveVideo(
   title: "うなり",
+  titleEn: 'Beats',
   latex: r"""
   <div class="common-box">うなり（beating）</div>
   <p>振動数がわずかに異なる2つの波を、同じ速さで重ねると、振幅が周期的に増減します。これを<b>うなり</b>と呼びます。</p>
@@ -15,13 +17,21 @@ final beating1D = createWaveVideo(
   <p>$$\displaystyle f_b=\left|f_1-f_2\right|=\left|\frac{1}{T_1}-\frac{1}{T_2}\right|$$</p>
   <p>波の速さは共通なので、波長は周期に比例します。$\displaystyle \lambda_2=\lambda_1\frac{T_2}{T_1}$。</p>
   """,
+  latexEn: r"""
+  <div class="common-box">Beats</div>
+  <p>When two waves with slightly different frequencies travel at the same speed and are superimposed, the amplitude rises and falls periodically. This is called <b>beats</b>.</p>
+  <p>$$y=y_1+y_2$$</p>
+  <p>The beat frequency is the difference of the two frequencies.</p>
+  <p>$$\displaystyle f_b=\left|f_1-f_2\right|=\left|\frac{1}{T_1}-\frac{1}{T_2}\right|$$</p>
+  <p>Because the wave speed is the same for both, wavelength is proportional to period: $\displaystyle \lambda_2=\lambda_1\frac{T_2}{T_1}$.</p>
+  """,
   simulation: Beating1DSimulation(),
 );
 
 class Beating1DSimulation extends WaveSimulation {
   Beating1DSimulation()
       : super(
-          title: "うなり",
+          title: animL("うなり", "Beats"),
           is3D: false,
           formula: const Column(
             children: [
@@ -57,35 +67,35 @@ class Beating1DSimulation extends WaveSimulation {
         style: const TextStyle(fontSize: 12),
       ),
       WaveParameterSlider(
-        label: '振幅 A',
+        label: animL('振幅 A', 'Amplitude A'),
         value: params['amplitude']!,
         min: 0.1,
         max: 1.0,
         onChanged: (v) => updateParam('amplitude', v),
       ),
       WaveParameterSlider(
-        label: '波長 λ',
+        label: animL('波長 λ', 'Wavelength λ'),
         value: params['lambda']!,
         min: 1.0,
         max: 8.0,
         onChanged: (v) => updateParam('lambda', v),
       ),
       WaveParameterSlider(
-        label: '周期 T1',
+        label: animL('周期 T1', 'Period T1'),
         value: params['periodT1']!,
         min: 0.6,
         max: 4.0,
         onChanged: (v) => updateParam('periodT1', v),
       ),
       WaveParameterSlider(
-        label: '周期 T2',
+        label: animL('周期 T2', 'Period T2'),
         value: params['periodT2']!,
         min: 0.6,
         max: 4.0,
         onChanged: (v) => updateParam('periodT2', v),
       ),
       WaveParameterSlider(
-        label: '位相差 φ2',
+        label: animL('位相差 φ2', 'Phase difference φ2'),
         value: params['phase2']!,
         min: 0.0,
         max: 2 * math.pi,
@@ -100,9 +110,9 @@ class Beating1DSimulation extends WaveSimulation {
     return Wrap(
       spacing: 8,
       children: [
-        buildChip('波1', 'wave1', Colors.purpleAccent, activeIds, updateActiveIds, fontSize: 14),
-        buildChip('波2', 'wave2', Colors.greenAccent, activeIds, updateActiveIds, fontSize: 14),
-        buildChip('合成', 'total', Colors.blueAccent, activeIds, updateActiveIds, fontSize: 14),
+        buildChip(animL('波1', 'Wave 1'), 'wave1', Colors.purpleAccent, activeIds, updateActiveIds, fontSize: 14),
+        buildChip(animL('波2', 'Wave 2'), 'wave2', Colors.greenAccent, activeIds, updateActiveIds, fontSize: 14),
+        buildChip(animL('合成', 'Combined'), 'total', Colors.blueAccent, activeIds, updateActiveIds, fontSize: 14),
       ],
     );
   }
@@ -127,7 +137,7 @@ class Beating1DSimulation extends WaveSimulation {
         activeComponentIds: activeIds,
         scale: scale,
         markers: [
-          getObsMarker(params, label: '観測点 a'),
+          getObsMarker(params, label: animL('観測点 a', 'Observation point a')),
         ],
       ),
     );
@@ -174,13 +184,13 @@ class BeatingField extends WaveField {
   List<WaveComponent> getComponents(double x, double y, double t, Set<String> activeIds) {
     final comps = <WaveComponent>[];
     if (activeIds.contains('wave1')) {
-      comps.add(WaveComponent(id: 'wave1', label: '波1', color: Colors.purpleAccent, value: _z1(x, t)));
+      comps.add(WaveComponent(id: 'wave1', label: animL('波1', 'Wave 1'), color: Colors.purpleAccent, value: _z1(x, t)));
     }
     if (activeIds.contains('wave2')) {
-      comps.add(WaveComponent(id: 'wave2', label: '波2', color: Colors.greenAccent, value: _z2(x, t)));
+      comps.add(WaveComponent(id: 'wave2', label: animL('波2', 'Wave 2'), color: Colors.greenAccent, value: _z2(x, t)));
     }
     if (activeIds.contains('total')) {
-      comps.add(WaveComponent(id: 'total', label: '合成', color: Colors.blueAccent, value: z(x, y, t)));
+      comps.add(WaveComponent(id: 'total', label: animL('合成', 'Combined'), color: Colors.blueAccent, value: z(x, y, t)));
     }
     return comps;
   }

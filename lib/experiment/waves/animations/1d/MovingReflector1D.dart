@@ -3,6 +3,7 @@ import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import '../fields/wave_fields.dart';
 import '../painters/wave_line_painter.dart';
 import '../widgets/wave_slider.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 /// 入射を上・反射を下に少しずらして軸分けする。
 const kMovingReflectorIncidentAxisY = 0.9;
@@ -11,13 +12,14 @@ const kMovingReflectorAxisOffsets = <String, double>{
   'incident': kMovingReflectorIncidentAxisY,
   'reflected': kMovingReflectorReflectedAxisY,
 };
-const kMovingReflectorAxisLabels = <String, String>{
-  'incident': '入射',
-  'reflected': '反射',
+Map<String, String> get kMovingReflectorAxisLabels => <String, String>{
+  'incident': animL('入射', 'Incident'),
+  'reflected': animL('反射', 'Reflected'),
 };
 
 final movingReflector1D = createWaveVideo(
   title: "動く物体による反射",
+  titleEn: 'Reflection from a moving object',
   latex: r"""
   <div class="common-box">ポイント</div>
   <p>反射体が動いている場合、反射波には<b>2回のドップラー効果</b>がかかります。</p>
@@ -27,13 +29,22 @@ final movingReflector1D = createWaveVideo(
   <p>$$f_r = f \frac{c - v}{c + v}$$</p>
   <p>ここで $c$ は波の速さ、$v$ は反射体の速度（波の進行方向を正）です。</p>
   """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>When the reflector is moving, the reflected wave undergoes the <b>Doppler effect twice</b>.</p>
+  <p>1. The frequency of the incident wave received by the reflector changes (moving observer).</p>
+  <p>2. The frequency of the wave re-emitted by the reflector as a source changes (moving source).</p>
+  <p>As a result, the reflected frequency $f_r$ relative to the original frequency $f$ is</p>
+  <p>$$f_r = f \frac{c - v}{c + v}$$</p>
+  <p>Here $c$ is the wave speed and $v$ is the reflector velocity (positive in the wave's travel direction).</p>
+  """,
   simulation: MovingReflector1DSimulation(),
 );
 
 class MovingReflector1DSimulation extends WaveSimulation {
   MovingReflector1DSimulation()
       : super(
-          title: "動く物体による反射",
+          title: animL("動く物体による反射", "Reflection from a moving object"),
           is3D: false,
           formula: const Column(
             children: [
@@ -63,28 +74,31 @@ class MovingReflector1DSimulation extends WaveSimulation {
     final c = params['lambda']! / params['periodT']!;
     return [
       Text(
-        '波の速さ c = ${c.toStringAsFixed(2)}   速度 v = ${params['vReflector']!.toStringAsFixed(2)}',
+        animL(
+          "波の速さ c = ${c.toStringAsFixed(2)}   速度 v = ${params['vReflector']!.toStringAsFixed(2)}",
+          "Wave speed c = ${c.toStringAsFixed(2)}   velocity v = ${params['vReflector']!.toStringAsFixed(2)}",
+        ),
         style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
       ),
       LambdaSlider(
-        label: '波長 λ',
+        label: animL('波長 λ', 'Wavelength λ'),
         value: params['lambda']!,
         onChanged: (v) => updateParam('lambda', v),
       ),
       PeriodTSlider(
-        label: '周期 T',
+        label: animL('周期 T', 'Period T'),
         value: params['periodT']!,
         onChanged: (v) => updateParam('periodT', v),
       ),
       WaveParameterSlider(
-        label: '速度 v',
+        label: animL('速度 v', 'Velocity v'),
         value: params['vReflector']!,
         min: -c * 0.8,
         max: c * 0.8,
         onChanged: (v) => updateParam('vReflector', v),
       ),
       WaveParameterSlider(
-        label: '初期位置 x₀',
+        label: animL('初期位置 x₀', 'Initial position x₀'),
         value: params['x0']!,
         min: -5.0,
         max: 5.0,
@@ -93,9 +107,9 @@ class MovingReflector1DSimulation extends WaveSimulation {
       ),
       Row(
         children: [
-          const Text('端条件: ', style: TextStyle(fontSize: 12)),
+          Text(animL('端条件: ', 'End condition: '), style: TextStyle(fontSize: 12)),
           ChoiceChip(
-            label: const Text('固定端', style: TextStyle(fontSize: 12)),
+            label: Text(animL('固定端', 'Fixed end'), style: TextStyle(fontSize: 12)),
             selected: params['isFixedEnd'] == 1.0,
             onSelected: (val) => updateParam('isFixedEnd', 1.0),
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
@@ -103,7 +117,7 @@ class MovingReflector1DSimulation extends WaveSimulation {
           ),
           const SizedBox(width: 4),
           ChoiceChip(
-            label: const Text('自由端', style: TextStyle(fontSize: 12)),
+            label: Text(animL('自由端', 'Free end'), style: TextStyle(fontSize: 12)),
             selected: params['isFixedEnd'] == 0.0,
             onSelected: (val) => updateParam('isFixedEnd', 0.0),
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
@@ -119,10 +133,10 @@ class MovingReflector1DSimulation extends WaveSimulation {
     return Wrap(
       spacing: 8,
       children: [
-        buildChip('入射波', 'incident', Colors.purpleAccent, activeIds,
+        buildChip(animL('入射波', 'Incident wave'), 'incident', Colors.purpleAccent, activeIds,
             updateActiveIds,
             fontSize: 14),
-        buildChip('反射波', 'reflected', Colors.greenAccent, activeIds,
+        buildChip(animL('反射波', 'Reflected wave'), 'reflected', Colors.greenAccent, activeIds,
             updateActiveIds,
             fontSize: 14),
       ],

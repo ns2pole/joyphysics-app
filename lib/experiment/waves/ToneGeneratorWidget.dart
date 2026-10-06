@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:joyphysics/experiment/high_pitch_sound_warning.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 class ToneGeneratorWidget extends StatefulWidget {
   final double initialFreq;
@@ -147,7 +148,7 @@ class _ToneGeneratorWidgetState extends State<ToneGeneratorWidget> {
                     icon: const Icon(Icons.remove_circle_outline),
                   ),
                   Text(
-                    "周波数: $_freqLabel Hz",
+                    "${animL('周波数', 'Frequency')}: $_freqLabel Hz",
                     style: const TextStyle(fontSize: 20),
                   ),
                   IconButton(
@@ -173,12 +174,14 @@ class _ToneGeneratorWidgetState extends State<ToneGeneratorWidget> {
                 children: [
                   ElevatedButton(
                     onPressed: isPlaying ? null : () => playSound(freq),
-                    child: Text(isPlaying ? '再生中' : '再生'),
+                    child: Text(
+                      isPlaying ? animL('再生中', 'Playing') : animL('再生', 'Play'),
+                    ),
                   ),
                   const SizedBox(width: 12),
                   ElevatedButton(
                     onPressed: isPlaying ? stopSound : null,
-                    child: const Text('停止'),
+                    child: Text(animL('停止', 'Stop')),
                   ),
                 ],
               ),

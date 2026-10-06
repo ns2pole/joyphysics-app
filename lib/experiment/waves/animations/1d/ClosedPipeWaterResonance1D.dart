@@ -5,9 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import '../widgets/wave_slider.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 final closedPipeWaterResonance1D = createWaveVideo(
   title: "気柱の振動(閉管)",
+  titleEn: 'Air-column vibration (closed pipe)',
   latex: r"""
   <div class="common-box">ポイント</div>
   <p>水面が閉口（変位の節）、上端が開口（変位の腹）です。開口は圧力駆動 $p(0)=\varepsilon\sin(2\pi f t)$ で、変位そのものは固定しません。</p>
@@ -16,6 +18,15 @@ final closedPipeWaterResonance1D = createWaveVideo(
   <p>$$f_n=\frac{(2n-1)v}{4(L+\Delta l)}$$</p>
   <p>$$\Delta l=0.6r\ \text{または}\ 0.8r$$</p>
   <p>変位は開口から入り、水面（固定端）と開口（自由端）で反射して積み上がります。音速が速いので画面はスロー再生です。破線は管の外の仮想腹（$\Delta l$）です。</p>
+  """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>The water surface is a closed end (node of displacement), and the top is an open end (antinode of displacement). The open end is pressure-driven, $p(0)=\varepsilon\sin(2\pi f t)$; the displacement itself is not held fixed.</p>
+  <p>Because of the end correction $\Delta l$, the effective reflection point lies outside the pipe. Numbering modes from lowest as $n=1,2,3,\ldots$, the resonance conditions are</p>
+  <p>$$L+\Delta l=(2n-1)\frac{\lambda}{4}$$</p>
+  <p>$$f_n=\frac{(2n-1)v}{4(L+\Delta l)}$$</p>
+  <p>$$\Delta l=0.6r\ \text{or}\ 0.8r$$</p>
+  <p>Displacement enters from the open end and builds up by reflections at the water surface (fixed end) and the open end (free end). Because the speed of sound is high, the display runs in slow motion. The dashed line marks the virtual antinode outside the pipe ($\Delta l$).</p>
   """,
   simulation: ClosedPipeWaterResonance1DSimulation(),
   height: 720,
@@ -69,7 +80,7 @@ class ClosedPipeWaterResonance1DSimulation extends WaveSimulation {
 
   ClosedPipeWaterResonance1DSimulation()
       : super(
-          title: "気柱の振動(閉管)",
+          title: animL("気柱の振動(閉管)", "Air-column vibration (closed pipe)"),
           is3D: false,
           showTimeOverlay: false,
           formula: const Column(
@@ -115,8 +126,8 @@ class ClosedPipeWaterResonance1DSimulation extends WaveSimulation {
         'L+Δl = ${(leff * 100).toStringAsFixed(1)} cm\n'
         'f₁ = ${f1.toStringAsFixed(0)} Hz   '
         'f/f₁ = ${ratio.toStringAsFixed(2)}'
-        '${mode != null ? '  ★第$mode 共鳴' : ''}   '
-        '（×${slowMo.toStringAsFixed(0)} スロー）',
+        "${mode != null ? animL('  ★第$mode 共鳴', '  ★mode $mode resonance') : ''}   "
+        "${animL('（×${slowMo.toStringAsFixed(0)} スロー）', '(×${slowMo.toStringAsFixed(0)} slow)')}",
         style: TextStyle(
           fontSize: 12,
           fontWeight: mode != null ? FontWeight.bold : FontWeight.normal,
@@ -147,14 +158,14 @@ class ClosedPipeWaterResonance1DSimulation extends WaveSimulation {
         onChanged: (val) => updateParam('radiusCm', val),
       ),
       WaveParameterSlider(
-        label: 'スロー',
+        label: animL('スロー', 'Slow'),
         value: params['slowMo']!,
         min: 50.0,
         max: 1500.0,
         onChanged: (val) => updateParam('slowMo', val),
       ),
       const SizedBox(height: 4),
-      const Text('開口端補正 Δl',
+      Text(animL('開口端補正 Δl', 'End correction Δl'),
           style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
       Wrap(
         spacing: 8,
@@ -388,7 +399,7 @@ class ClosedPipeWaterPainter extends CustomPainter {
 
     _drawLabel(canvas, Offset(cx + 24, openY - dlPx - 30),
         '${freq.toStringAsFixed(0)} Hz');
-    _drawLabel(canvas, Offset(cx + 24, openY - dlPx - 16), '音源（圧力駆動）');
+    _drawLabel(canvas, Offset(cx + 24, openY - dlPx - 16), animL('音源（圧力駆動）', 'Source (pressure-driven)'));
 
     // 開口から入射し、水面で固定端反射・開口で自由端反射する多重反射
     final waveAmp = (16.0 / 3.0) * scale;
@@ -466,7 +477,7 @@ class ClosedPipeWaterPainter extends CustomPainter {
     }
 
     // 管の入り口（開口端補正の境目）
-    drawGuide(openY, '開口', openingPaint, labelX: crossR + 4);
+    drawGuide(openY, animL('開口', 'Open end'), openingPaint, labelX: crossR + 4);
 
     if (mode != null) {
       final odd = 2 * mode - 1;
@@ -474,16 +485,16 @@ class ClosedPipeWaterPainter extends CustomPainter {
       for (var k = 0;; k++) {
         final x = k * lam / 2;
         if (x > leff - 1e-9) break;
-        drawGuide(yOf(x), '節', nodePaint);
+        drawGuide(yOf(x), animL('節', 'Node'), nodePaint);
       }
       for (var k = 0;; k++) {
         final x = (2 * k + 1) * lam / 4;
         if (x > leff + 1e-9) break;
-        drawGuide(yOf(x), '腹', antinodePaint);
+        drawGuide(yOf(x), animL('腹', 'Antinode'), antinodePaint);
       }
     } else {
-      drawGuide(waterY, '節', nodePaint);
-      drawGuide(virtY, '腹', antinodePaint);
+      drawGuide(waterY, animL('節', 'Node'), nodePaint);
+      drawGuide(virtY, animL('腹', 'Antinode'), antinodePaint);
     }
 
     // Dimension labels
@@ -502,13 +513,13 @@ class ClosedPipeWaterPainter extends CustomPainter {
       'Δl = ${(dl * 100).toStringAsFixed(2)} cm',
     );
 
-    _drawLabel(canvas, Offset(tubeLeft - 4, (openY + waterY) / 2), '気柱');
-    _drawLabel(canvas, Offset(tubeLeft + 6, (waterY + tubeBottom) / 2), '水');
+    _drawLabel(canvas, Offset(tubeLeft - 4, (openY + waterY) / 2), animL('気柱', 'Air column'));
+    _drawLabel(canvas, Offset(tubeLeft + 6, (waterY + tubeBottom) / 2), animL('水', 'Water'));
 
     final info =
         'λ=${lambda.toStringAsFixed(3)} m  '
         'λ/4=${(lambda / 4 * 100).toStringAsFixed(1)} cm  '
-        '${near ? '第$mode 共鳴' : ''}';
+        "${near ? animL('第$mode 共鳴', 'mode $mode resonance') : ''}";
     final tp = TextPainter(
       text: TextSpan(
         text: info,

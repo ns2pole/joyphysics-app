@@ -4,13 +4,20 @@ import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import '../fields/wave_fields.dart';
 import '../painters/wave_line_painter.dart';
 import '../widgets/wave_slider.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 final superposition1D = createWaveVideo(
   title: "重ね合わせの原理",
+  titleEn: 'Principle of superposition',
   latex: r"""
   <div class="common-box">ポイント</div>
   <p>2つの波が重なり合うとき、その場所での変位は、それぞれの波が単独でそこに到達したときの変位の和になります。</p>
   <p>これを<b>重ね合わせの原理</b>と呼びます。重なり合った後、それぞれの波は互いに影響を受けることなく通り過ぎていきます（独立性）。</p>
+  """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>When two waves overlap, the displacement at each point is the sum of the displacements each wave would produce there alone.</p>
+  <p>This is the <b>principle of superposition</b>. After overlapping, the waves pass through without affecting each other (independence).</p>
   """,
   simulation: Superposition1DSimulation(),
 );
@@ -18,9 +25,9 @@ final superposition1D = createWaveVideo(
 class Superposition1DSimulation extends WaveSimulation {
   Superposition1DSimulation()
       : super(
-          title: "重ね合わせの原理",
+          title: animL("重ね合わせの原理", "Principle of superposition"),
           is3D: false,
-          formula: const Column(
+          formula: Column(
             children: [
               FormulaDisplay(r'\displaystyle y = y_1 + y_2'),
             ],
@@ -49,7 +56,7 @@ class Superposition1DSimulation extends WaveSimulation {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('パターン1', style: TextStyle(fontSize: 12)),
+            Text(animL('パターン1', 'Pattern 1'), style: TextStyle(fontSize: 12)),
             Radio<double>(
               value: 0.0,
               groupValue: params['isOpposite'],
@@ -57,7 +64,7 @@ class Superposition1DSimulation extends WaveSimulation {
               visualDensity: VisualDensity.compact,
             ),
             const SizedBox(width: 8),
-            const Text('パターン2', style: TextStyle(fontSize: 12)),
+            Text(animL('パターン2', 'Pattern 2'), style: TextStyle(fontSize: 12)),
             Radio<double>(
               value: 1.0,
               groupValue: params['isOpposite'],
@@ -68,20 +75,21 @@ class Superposition1DSimulation extends WaveSimulation {
         ),
       ),
       Text(
-        'T = ${kDefaultWavePeriodT.toStringAsFixed(1)}（固定）   '
-        '速度 v = ${(params['lambda']! / kDefaultWavePeriodT).toStringAsFixed(2)}   '
-        '幅 W = ${params['pulseWidth']!.toStringAsFixed(2)}',
-        style: const TextStyle(fontSize: 12),
+        animL(
+          "T = ${kDefaultWavePeriodT.toStringAsFixed(1)}（固定）   速度 v = ${(params['lambda']! / kDefaultWavePeriodT).toStringAsFixed(2)}   幅 W = ${params['pulseWidth']!.toStringAsFixed(2)}",
+          "T = ${kDefaultWavePeriodT.toStringAsFixed(1)} (fixed)   velocity v = ${(params['lambda']! / kDefaultWavePeriodT).toStringAsFixed(2)}   width W = ${params['pulseWidth']!.toStringAsFixed(2)}",
+        ),
+        style: TextStyle(fontSize: 12),
       ),
       WaveParameterSlider(
-        label: '速度',
+        label: animL('速度', 'Speed'),
         value: params['lambda']! / kDefaultWavePeriodT,
         min: 0.3,
         max: 8.0,
         onChanged: (v) => updateParam('lambda', v * kDefaultWavePeriodT),
       ),
       ThicknessLSlider(
-        label: 'パルス幅',
+        label: animL('パルス幅', 'Pulse width'),
         value: params['pulseWidth']!,
         min: 0.5,
         max: 4.0,
@@ -89,7 +97,7 @@ class Superposition1DSimulation extends WaveSimulation {
       ),
       Row(
         children: [
-          const Text('波形: ', style: TextStyle(fontSize: 12)),
+          Text(animL('波形: ', 'Waveform: '), style: TextStyle(fontSize: 12)),
           ChoiceChip(
             label: const Text('sin', style: TextStyle(fontSize: 12)),
             selected: params['isTriangle'] == 0.0,
@@ -99,7 +107,7 @@ class Superposition1DSimulation extends WaveSimulation {
           ),
           const SizedBox(width: 4),
           ChoiceChip(
-            label: const Text('三角波', style: TextStyle(fontSize: 12)),
+            label: Text(animL('三角波', 'Triangle wave'), style: TextStyle(fontSize: 12)),
             selected: params['isTriangle'] == 1.0,
             onSelected: (val) => updateParam('isTriangle', 1.0),
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
@@ -116,11 +124,11 @@ class Superposition1DSimulation extends WaveSimulation {
     return Wrap(
       spacing: 8,
       children: [
-        buildChip('波1', 'wave1', Colors.purpleAccent, activeIds, updateActiveIds,
+        buildChip(animL('波1', 'Wave 1'), 'wave1', Colors.purpleAccent, activeIds, updateActiveIds,
             fontSize: 14),
-        buildChip('波2', 'wave2', Colors.greenAccent, activeIds, updateActiveIds,
+        buildChip(animL('波2', 'Wave 2'), 'wave2', Colors.greenAccent, activeIds, updateActiveIds,
             fontSize: 14),
-        buildChip('合成', 'combined', Colors.blueAccent, activeIds, updateActiveIds,
+        buildChip(animL('合成', 'Combined'), 'combined', Colors.blueAccent, activeIds, updateActiveIds,
             fontSize: 14),
       ],
     );
@@ -148,7 +156,7 @@ class Superposition1DSimulation extends WaveSimulation {
         activeComponentIds: activeIds,
         scale: scale,
         markers: [
-          getObsMarker(params, label: '合成波の観測点'),
+          getObsMarker(params, label: animL('合成波の観測点', 'Observation point of resultant wave')),
         ],
       ),
     );

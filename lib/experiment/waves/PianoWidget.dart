@@ -6,6 +6,7 @@ import 'dart:async';
 
 import './FrequencyMeasureWidget.dart';
 import '../../model.dart'; // Videoクラス定義
+import 'package:joyphysics/utils/locale_utils.dart';
 
 /// 白鍵（ド〜ド）
 class PianoKey extends StatefulWidget {
@@ -37,7 +38,6 @@ class _PianoKeyState extends State<PianoKey> {
   Future<void> _initPlayer() async {
     try {
       await _player.openPlayer();
-      _initialized = true;
     } catch (e) {
       print("Player init failed: $e");
     }
@@ -103,10 +103,15 @@ class _PianoKeyState extends State<PianoKey> {
         child: Align(
           alignment: Alignment.bottomCenter,
           child: Padding(
-            padding: const EdgeInsets.only(bottom: 6),
+            padding: const EdgeInsets.only(bottom: 4),
             child: Text(
               widget.label,
-              style: const TextStyle(fontSize: 12, color: Colors.black),
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 11,
+                height: 1.15,
+                color: Colors.black,
+              ),
             ),
           ),
         ),
@@ -120,19 +125,21 @@ class PianoWidget extends StatelessWidget {
   final double height;
   PianoWidget({Key? key, this.height = 160}) : super(key: key);
 
-  final List<Map<String, dynamic>> _whiteKeys = const [
-    {"note": "ド", "freq": 261.63},
-    {"note": "レ", "freq": 293.66},
-    {"note": "ミ", "freq": 329.63},
-    {"note": "ファ", "freq": 349.23},
-    {"note": "ソ", "freq": 392.00},
-    {"note": "ラ", "freq": 440.00},
-    {"note": "シ", "freq": 493.88},
-    {"note": "ド", "freq": 523.25},
+  /// ja: カタカナ / en: Do + scientific pitch (C4…)
+  static const List<Map<String, dynamic>> _whiteKeys = [
+    {"ja": "ド", "en": "Do\n(C4)", "freq": 261.63},
+    {"ja": "レ", "en": "Re\n(D4)", "freq": 293.66},
+    {"ja": "ミ", "en": "Mi\n(E4)", "freq": 329.63},
+    {"ja": "ファ", "en": "Fa\n(F4)", "freq": 349.23},
+    {"ja": "ソ", "en": "Sol\n(G4)", "freq": 392.00},
+    {"ja": "ラ", "en": "La\n(A4)", "freq": 440.00},
+    {"ja": "シ", "en": "Si\n(B4)", "freq": 493.88},
+    {"ja": "ド", "en": "Do\n(C5)", "freq": 523.25},
   ];
 
   @override
   Widget build(BuildContext context) {
+    final english = isEnglishAppLocale(context);
     return Center(
       child: FractionallySizedBox(
         widthFactor: 0.9,
@@ -144,7 +151,7 @@ class PianoWidget extends StatelessWidget {
                 .map((k) => Expanded(
                       child: PianoKey(
                         frequency: k["freq"] as double,
-                        label: k["note"] as String,
+                        label: english ? k["en"] as String : k["ja"] as String,
                       ),
                     ))
                 .toList(),
@@ -154,4 +161,3 @@ class PianoWidget extends StatelessWidget {
     );
   }
 }
-

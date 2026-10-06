@@ -5,9 +5,11 @@ import '../fields/wave_fields.dart';
 import '../painters/wave_surface_painter.dart';
 import '../widgets/wave_slider.dart';
 import 'dart:math' as math;
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 final refractionLaw = createWaveVideo(
   title: "2次元直線波の屈折",
+  titleEn: 'Refraction of a 2D plane wave',
   latex: r"""
   <div class="common-box">ポイント</div>
   <p>スネルの法則: $n_1 \sin \theta_1 = n_2 \sin \theta_2$</p>
@@ -15,13 +17,20 @@ final refractionLaw = createWaveVideo(
   <div class="common-box">注意</div>
   <p>実際には、屈折率が異なる境界面では透過（屈折）と同時に反射も起きます。このシミュレーションでは、波長と進行方向の変化を見やすくするため、反射波は描いていません。</p>
   """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>Snell's law: $n_1 \sin \theta_1 = n_2 \sin \theta_2$</p>
+  <p>When the wave enters a medium with larger refractive index, the wavelength shortens and the direction of travel bends toward the normal.</p>
+  <div class="common-box">Note</div>
+  <p>In reality, both transmission (refraction) and reflection occur at an interface between different refractive indices. This simulation omits the reflected wave so that the changes in wavelength and direction are easier to see.</p>
+  """,
   simulation: RefractionLawSimulation(),
 );
 
 class RefractionLawSimulation extends WaveSimulation {
   RefractionLawSimulation()
       : super(
-          title: "2次元直線波の屈折",
+          title: animL("2次元直線波の屈折", "Refraction of a 2D plane wave"),
           is3D: true,
           formula: const FormulaDisplay(r'n_1\sin\theta_1=n_2\sin\theta_2'),
         );
@@ -92,7 +101,7 @@ class RefractionLawSimulation extends WaveSimulation {
         activeComponentIds: activeIds,
         scale: scale,
         markers: [
-          getObsMarker(params, label: '観測点 (a, b)'),
+          getObsMarker(params, label: animL('観測点 (a, b)', 'Observation point (a, b)')),
         ],
         mediumSlab: MediumSlabOverlay(
           xStart: 0.0,

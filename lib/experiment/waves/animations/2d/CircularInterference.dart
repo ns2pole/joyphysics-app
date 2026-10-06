@@ -4,9 +4,11 @@ import '../fields/wave_fields.dart';
 import '../painters/wave_surface_painter.dart';
 import '../widgets/wave_slider.dart';
 import 'dart:math' as math;
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 final circularInterference = createWaveVideo(
   title: "円形波干渉",
+  titleEn: 'Circular wave interference',
   latex: r"""
   <div class="common-box">ポイント</div>
   <p>2つの波源からの波を重ねます。位相差 $\phi$ を含めて、描いている強め合いは</p>
@@ -15,15 +17,23 @@ final circularInterference = createWaveVideo(
   <p>$$\displaystyle \frac{r_1-r_2}{\lambda}+\frac{\phi}{2\pi}=m+\frac{1}{2}$$</p>
   <p>$\phi=0$ なら、経路差が波長の整数倍で強め合い、半波長の奇数倍で弱め合います。観測点の変位は、2つの波の変位の和です。</p>
   """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>We superpose waves from two sources. Including the phase difference $\phi$, constructive interference occurs when</p>
+  <p>$$\displaystyle \frac{r_1-r_2}{\lambda}+\frac{\phi}{2\pi}=m$$</p>
+  <p>and destructive interference when</p>
+  <p>$$\displaystyle \frac{r_1-r_2}{\lambda}+\frac{\phi}{2\pi}=m+\frac{1}{2}$$</p>
+  <p>If $\phi=0$, the waves reinforce when the path difference is an integer multiple of the wavelength, and cancel when it is an odd multiple of half a wavelength. The displacement at an observation point is the sum of the displacements of the two waves.</p>
+  """,
   simulation: CircularInterferenceSimulation(),
 );
 
 class CircularInterferenceSimulation extends WaveSimulation {
   CircularInterferenceSimulation()
       : super(
-          title: "円形波干渉",
+          title: animL("円形波干渉", "Circular wave interference"),
           is3D: true,
-          formula: const Column(
+          formula: Column(
             children: [
               FormulaDisplay(
                 r'\displaystyle \frac{r_1-r_2}{\lambda}+\frac{\phi}{2\pi}=m',
@@ -51,9 +61,9 @@ class CircularInterferenceSimulation extends WaveSimulation {
       {'combined', 'cross1', 'cross2', 'showNodalLines', 'showAntinodalLines'};
 
   @override
-  List<WavefrontLayer> get wavefrontLayers => const [
-        WavefrontLayer(id: 'wave1', label: '波1', color: Colors.purpleAccent),
-        WavefrontLayer(id: 'wave2', label: '波2', color: Colors.greenAccent),
+  List<WavefrontLayer> get wavefrontLayers => [
+        WavefrontLayer(id: 'wave1', label: animL('波1', 'Wave 1'), color: Colors.purpleAccent),
+        WavefrontLayer(id: 'wave2', label: animL('波2', 'Wave 2'), color: Colors.greenAccent),
       ];
 
   @override
@@ -93,13 +103,13 @@ class CircularInterferenceSimulation extends WaveSimulation {
           spacing: 8,
           alignment: WrapAlignment.center,
           children: [
-            buildChip('波1', 'wave1', Colors.purpleAccent, activeIds,
+            buildChip(animL('波1', 'Wave 1'), 'wave1', Colors.purpleAccent, activeIds,
                 updateActiveIds,
                 fontSize: 12),
-            buildChip('波2', 'wave2', Colors.greenAccent, activeIds,
+            buildChip(animL('波2', 'Wave 2'), 'wave2', Colors.greenAccent, activeIds,
                 updateActiveIds,
                 fontSize: 12),
-            buildChip('合成', 'combined', Colors.blueAccent, activeIds,
+            buildChip(animL('合成', 'Combined'), 'combined', Colors.blueAccent, activeIds,
                 updateActiveIds,
                 fontSize: 12),
           ],
@@ -109,16 +119,16 @@ class CircularInterferenceSimulation extends WaveSimulation {
           spacing: 8,
           alignment: WrapAlignment.center,
           children: [
-            buildChip('節線', 'showNodalLines', Colors.orangeAccent, activeIds,
+            buildChip(animL('節線', 'Nodal lines'), 'showNodalLines', Colors.orangeAccent, activeIds,
                 updateActiveIds,
                 fontSize: 12),
-            buildChip('腹線', 'showAntinodalLines', Colors.orangeAccent, activeIds,
+            buildChip(animL('腹線', 'Antinodal lines'), 'showAntinodalLines', Colors.orangeAccent, activeIds,
                 updateActiveIds,
                 fontSize: 12),
-            buildChip('断面1', 'cross1', Colors.purpleAccent, activeIds,
+            buildChip(animL('断面1', 'Cross section 1'), 'cross1', Colors.purpleAccent, activeIds,
                 updateActiveIds,
                 fontSize: 12),
-            buildChip('断面2', 'cross2', Colors.greenAccent, activeIds,
+            buildChip(animL('断面2', 'Cross section 2'), 'cross2', Colors.greenAccent, activeIds,
                 updateActiveIds,
                 fontSize: 12),
           ],
@@ -167,7 +177,7 @@ class CircularInterferenceSimulation extends WaveSimulation {
         markers: [
           WaveMarker(point: math.Point(0.0, a), color: Colors.yellow),
           WaveMarker(point: math.Point(0.0, -a), color: Colors.yellow),
-          getObsMarker(params, label: '合成波の観測点'),
+          getObsMarker(params, label: animL('合成波の観測点', 'Observation point of resultant wave')),
         ],
         radialCrossSections: sections,
         showCrossSectionSum: true,

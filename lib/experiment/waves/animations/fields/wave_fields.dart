@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 /// 曲面の可視領域は [-5, 5]。直線波の波面は左端 x=-5（θ=0）から入る。
 /// 以前は 7.5 で画面外から来ていたため、T=0.5 だと約 0.6 秒空いて見えた。
@@ -76,10 +77,10 @@ abstract class WaveField {
   double z(double x, double y, double t) => math.sin(phase(x, y, t));
 
   /// 真上視点で山/谷を描く対象。既定は単一波。
-  List<WavefrontLayer> get wavefrontLayers => const [
+  List<WavefrontLayer> get wavefrontLayers => [
         WavefrontLayer(
           id: 'total',
-          label: '波面',
+          label: animL('波面', 'Wavefront'),
           color: Colors.blueAccent,
         ),
       ];
@@ -108,7 +109,7 @@ abstract class WaveField {
     return [
       WaveComponent(
         id: 'total',
-        label: '合成波',
+        label: animL('合成波', 'Resultant wave'),
         color: Colors.blue,
         value: z(x, y, t),
       ),
@@ -170,7 +171,7 @@ class PlaneWaveField extends WaveField {
       return [
         WaveComponent(
           id: 'total',
-          label: '直線波',
+          label: animL('直線波', 'Plane wave'),
           color: Colors.blueAccent,
           value: z(x, y, t),
         ),
@@ -271,7 +272,7 @@ class SlabRefractionWaveField extends WaveField {
       return [
         WaveComponent(
           id: 'total',
-          label: '屈折波',
+          label: animL('屈折波', 'Refracted wave'),
           color: Colors.blueAccent,
           value: z(x, y, t),
         ),
@@ -377,9 +378,9 @@ class HalfPlaneDispersionWaveField extends WaveField {
   }
 
   @override
-  List<WavefrontLayer> get wavefrontLayers => const [
-        WavefrontLayer(id: 'red', label: '赤', color: Colors.red),
-        WavefrontLayer(id: 'blue', label: '青', color: Colors.blue),
+  List<WavefrontLayer> get wavefrontLayers => [
+        WavefrontLayer(id: 'red', label: animL('赤', 'Red'), color: Colors.red),
+        WavefrontLayer(id: 'blue', label: animL('青', 'Blue'), color: Colors.blue),
       ];
 
   @override
@@ -391,7 +392,7 @@ class HalfPlaneDispersionWaveField extends WaveField {
     if (activeIds.contains('red')) {
       out.add(WaveComponent(
         id: 'red',
-        label: '赤',
+        label: animL('赤', 'Red'),
         color: Colors.red,
         value: _zOf('red', x, y, t),
       ));
@@ -399,7 +400,7 @@ class HalfPlaneDispersionWaveField extends WaveField {
     if (activeIds.contains('blue')) {
       out.add(WaveComponent(
         id: 'blue',
-        label: '青',
+        label: animL('青', 'Blue'),
         color: Colors.blue,
         value: _zOf('blue', x, y, t),
       ));
@@ -519,16 +520,16 @@ class ReflectionWaveField extends WaveField {
     final List<WaveComponent> res = [];
     if (activeIds.contains('incident')) {
       res.add(WaveComponent(
-          id: 'incident', label: '入射波', color: Colors.purpleAccent, value: zi));
+          id: 'incident', label: animL('入射波', 'Incident wave'), color: Colors.purpleAccent, value: zi));
     }
     if (activeIds.contains('reflected')) {
       res.add(WaveComponent(
-          id: 'reflected', label: '反射波', color: Colors.greenAccent, value: zr));
+          id: 'reflected', label: animL('反射波', 'Reflected wave'), color: Colors.greenAccent, value: zr));
     }
     if (activeIds.contains('combined')) {
       res.add(WaveComponent(
           id: 'combined',
-          label: '合成波',
+          label: animL('合成波', 'Resultant wave'),
           color: Colors.blueAccent,
           value: zi + zr));
     }
@@ -536,11 +537,11 @@ class ReflectionWaveField extends WaveField {
   }
 
   @override
-  List<WavefrontLayer> get wavefrontLayers => const [
+  List<WavefrontLayer> get wavefrontLayers => [
         WavefrontLayer(
-            id: 'incident', label: '入射', color: Colors.purpleAccent),
+            id: 'incident', label: animL('入射', 'Incident'), color: Colors.purpleAccent),
         WavefrontLayer(
-            id: 'reflected', label: '反射', color: Colors.greenAccent),
+            id: 'reflected', label: animL('反射', 'Reflected'), color: Colors.greenAccent),
       ];
 
   @override
@@ -668,16 +669,16 @@ class OneDimensionReflectionField extends WaveField {
     final List<WaveComponent> res = [];
     if (activeIds.contains('incident')) {
       res.add(WaveComponent(
-          id: 'incident', label: '入射波', color: Colors.purpleAccent, value: zi));
+          id: 'incident', label: animL('入射波', 'Incident wave'), color: Colors.purpleAccent, value: zi));
     }
     if (activeIds.contains('reflected')) {
       res.add(WaveComponent(
-          id: 'reflected', label: '反射波', color: Colors.greenAccent, value: zr));
+          id: 'reflected', label: animL('反射波', 'Reflected wave'), color: Colors.greenAccent, value: zr));
     }
     if (activeIds.contains('combined')) {
       res.add(WaveComponent(
           id: 'combined',
-          label: '合成波',
+          label: animL('合成波', 'Resultant wave'),
           color: Colors.blueAccent,
           value: zi + zr));
     }
@@ -805,7 +806,7 @@ class OneDimensionSlabRefractionField extends WaveField {
       return [
         WaveComponent(
           id: 'total',
-          label: '合成波',
+          label: animL('合成波', 'Resultant wave'),
           color: Colors.blueAccent,
           value: val,
         ),
@@ -993,26 +994,26 @@ class ThinFilmInterferenceField extends WaveField {
     final List<WaveComponent> res = [];
     if (activeIds.contains('incident')) {
       res.add(WaveComponent(
-          id: 'incident', label: '入射波', color: Colors.purpleAccent, value: zi));
+          id: 'incident', label: animL('入射波', 'Incident wave'), color: Colors.purpleAccent, value: zi));
     }
     if (activeIds.contains('reflected1')) {
       res.add(WaveComponent(
           id: 'reflected1',
-          label: '反射波1',
+          label: animL('反射波1', 'Reflected wave 1'),
           color: Colors.greenAccent,
           value: zr1));
     }
     if (activeIds.contains('reflected2')) {
       res.add(WaveComponent(
           id: 'reflected2',
-          label: '反射波2',
+          label: animL('反射波2', 'Reflected wave 2'),
           color: Colors.orangeAccent,
           value: zr2));
     }
     if (activeIds.contains('combinedReflected')) {
       res.add(WaveComponent(
           id: 'combinedReflected',
-          label: '合成反射波',
+          label: animL('合成反射波', 'Combined reflected wave'),
           color: Colors.blueAccent,
           value: zr1 + zr2));
     }
@@ -1105,16 +1106,16 @@ class CircularInterferenceField extends WaveField {
     final List<WaveComponent> res = [];
     if (activeIds.contains('wave1')) {
       res.add(WaveComponent(
-          id: 'wave1', label: '波1', color: Colors.purpleAccent, value: v1));
+          id: 'wave1', label: animL('波1', 'Wave 1'), color: Colors.purpleAccent, value: v1));
     }
     if (activeIds.contains('wave2')) {
       res.add(WaveComponent(
-          id: 'wave2', label: '波2', color: Colors.greenAccent, value: v2));
+          id: 'wave2', label: animL('波2', 'Wave 2'), color: Colors.greenAccent, value: v2));
     }
     if (activeIds.contains('combined')) {
       res.add(WaveComponent(
           id: 'combined',
-          label: '合成波',
+          label: animL('合成波', 'Resultant wave'),
           color: Colors.blueAccent,
           value: v1 + v2));
     }
@@ -1122,9 +1123,9 @@ class CircularInterferenceField extends WaveField {
   }
 
   @override
-  List<WavefrontLayer> get wavefrontLayers => const [
-        WavefrontLayer(id: 'wave1', label: '波1', color: Colors.purpleAccent),
-        WavefrontLayer(id: 'wave2', label: '波2', color: Colors.greenAccent),
+  List<WavefrontLayer> get wavefrontLayers => [
+        WavefrontLayer(id: 'wave1', label: animL('波1', 'Wave 1'), color: Colors.purpleAccent),
+        WavefrontLayer(id: 'wave2', label: animL('波2', 'Wave 2'), color: Colors.greenAccent),
       ];
 
   @override
@@ -1204,7 +1205,7 @@ class CircularWaveField extends WaveField {
       return [
         WaveComponent(
           id: 'total',
-          label: '円形波',
+          label: animL('円形波', 'Circular wave'),
           color: Colors.blueAccent,
           value: z(x, y, t),
         ),
@@ -1310,16 +1311,16 @@ class PlaneWaveInterferenceField extends WaveField {
     final List<WaveComponent> res = [];
     if (activeIds.contains('wave1')) {
       res.add(WaveComponent(
-          id: 'wave1', label: '波1', color: Colors.purpleAccent, value: z1));
+          id: 'wave1', label: animL('波1', 'Wave 1'), color: Colors.purpleAccent, value: z1));
     }
     if (activeIds.contains('wave2')) {
       res.add(WaveComponent(
-          id: 'wave2', label: '波2', color: Colors.greenAccent, value: z2));
+          id: 'wave2', label: animL('波2', 'Wave 2'), color: Colors.greenAccent, value: z2));
     }
     if (activeIds.contains('combined')) {
       res.add(WaveComponent(
           id: 'combined',
-          label: '合成波',
+          label: animL('合成波', 'Resultant wave'),
           color: Colors.blueAccent,
           value: z1 + z2));
     }
@@ -1327,9 +1328,9 @@ class PlaneWaveInterferenceField extends WaveField {
   }
 
   @override
-  List<WavefrontLayer> get wavefrontLayers => const [
-        WavefrontLayer(id: 'wave1', label: '波1', color: Colors.purpleAccent),
-        WavefrontLayer(id: 'wave2', label: '波2', color: Colors.greenAccent),
+  List<WavefrontLayer> get wavefrontLayers => [
+        WavefrontLayer(id: 'wave1', label: animL('波1', 'Wave 1'), color: Colors.purpleAccent),
+        WavefrontLayer(id: 'wave2', label: animL('波2', 'Wave 2'), color: Colors.greenAccent),
       ];
 
   @override
@@ -1467,26 +1468,26 @@ class ThinFilmInterference2DField extends WaveField {
     final List<WaveComponent> res = [];
     if (activeIds.contains('incident')) {
       res.add(WaveComponent(
-          id: 'incident', label: '入射波', color: Colors.purpleAccent, value: zi));
+          id: 'incident', label: animL('入射波', 'Incident wave'), color: Colors.purpleAccent, value: zi));
     }
     if (activeIds.contains('reflected1')) {
       res.add(WaveComponent(
           id: 'reflected1',
-          label: '反射波1',
+          label: animL('反射波1', 'Reflected wave 1'),
           color: Colors.greenAccent,
           value: zr1));
     }
     if (activeIds.contains('reflected2')) {
       res.add(WaveComponent(
           id: 'reflected2',
-          label: '反射波2',
+          label: animL('反射波2', 'Reflected wave 2'),
           color: Colors.orangeAccent,
           value: zr2));
     }
     if (activeIds.contains('combined')) {
       res.add(WaveComponent(
           id: 'combined',
-          label: '合成反射波',
+          label: animL('合成反射波', 'Combined reflected wave'),
           color: Colors.blueAccent,
           value: zr1 + zr2));
     }
@@ -1494,13 +1495,13 @@ class ThinFilmInterference2DField extends WaveField {
   }
 
   @override
-  List<WavefrontLayer> get wavefrontLayers => const [
+  List<WavefrontLayer> get wavefrontLayers => [
         WavefrontLayer(
-            id: 'incident', label: '入射', color: Colors.purpleAccent),
+            id: 'incident', label: animL('入射', 'Incident'), color: Colors.purpleAccent),
         WavefrontLayer(
-            id: 'reflected1', label: '反射1', color: Colors.greenAccent),
+            id: 'reflected1', label: animL('反射1', 'Reflection 1'), color: Colors.greenAccent),
         WavefrontLayer(
-            id: 'reflected2', label: '反射2', color: Colors.orangeAccent),
+            id: 'reflected2', label: animL('反射2', 'Reflection 2'), color: Colors.orangeAccent),
       ];
 
   @override
@@ -1649,16 +1650,16 @@ class YoungDoubleSlitField extends WaveField {
     final List<WaveComponent> res = [];
     if (activeIds.contains('wave1')) {
       res.add(WaveComponent(
-          id: 'wave1', label: '波1', color: Colors.purpleAccent, value: z1));
+          id: 'wave1', label: animL('波1', 'Wave 1'), color: Colors.purpleAccent, value: z1));
     }
     if (activeIds.contains('wave2')) {
       res.add(WaveComponent(
-          id: 'wave2', label: '波2', color: Colors.greenAccent, value: z2));
+          id: 'wave2', label: animL('波2', 'Wave 2'), color: Colors.greenAccent, value: z2));
     }
     if (activeIds.contains('combined')) {
       res.add(WaveComponent(
           id: 'combined',
-          label: '合成波',
+          label: animL('合成波', 'Resultant wave'),
           color: Colors.yellow,
           value: z1 + z2));
     }
@@ -1666,9 +1667,9 @@ class YoungDoubleSlitField extends WaveField {
   }
 
   @override
-  List<WavefrontLayer> get wavefrontLayers => const [
-        WavefrontLayer(id: 'wave1', label: '波1', color: Colors.purpleAccent),
-        WavefrontLayer(id: 'wave2', label: '波2', color: Colors.greenAccent),
+  List<WavefrontLayer> get wavefrontLayers => [
+        WavefrontLayer(id: 'wave1', label: animL('波1', 'Wave 1'), color: Colors.purpleAccent),
+        WavefrontLayer(id: 'wave2', label: animL('波2', 'Wave 2'), color: Colors.greenAccent),
       ];
 
   @override
@@ -1772,16 +1773,16 @@ class PulseSuperpositionField extends WaveField {
     final List<WaveComponent> res = [];
     if (activeIds.contains('wave1')) {
       res.add(WaveComponent(
-          id: 'wave1', label: '波1', color: Colors.purpleAccent, value: z1));
+          id: 'wave1', label: animL('波1', 'Wave 1'), color: Colors.purpleAccent, value: z1));
     }
     if (activeIds.contains('wave2')) {
       res.add(WaveComponent(
-          id: 'wave2', label: '波2', color: Colors.greenAccent, value: z2));
+          id: 'wave2', label: animL('波2', 'Wave 2'), color: Colors.greenAccent, value: z2));
     }
     if (activeIds.contains('combined')) {
       res.add(WaveComponent(
           id: 'combined',
-          label: '合成波',
+          label: animL('合成波', 'Resultant wave'),
           color: Colors.blueAccent,
           value: z1 + z2));
     }
@@ -1875,16 +1876,16 @@ class PulseReflectionField extends WaveField {
     final List<WaveComponent> res = [];
     if (activeIds.contains('incident')) {
       res.add(WaveComponent(
-          id: 'incident', label: '入射波', color: Colors.purpleAccent, value: zi));
+          id: 'incident', label: animL('入射波', 'Incident wave'), color: Colors.purpleAccent, value: zi));
     }
     if (activeIds.contains('reflected')) {
       res.add(WaveComponent(
-          id: 'reflected', label: '反射波', color: Colors.greenAccent, value: zr));
+          id: 'reflected', label: animL('反射波', 'Reflected wave'), color: Colors.greenAccent, value: zr));
     }
     if (activeIds.contains('combined')) {
       res.add(WaveComponent(
           id: 'combined',
-          label: '合成波',
+          label: animL('合成波', 'Resultant wave'),
           color: Colors.blueAccent,
           value: zi + zr));
     }
@@ -1974,7 +1975,7 @@ class DopplerEffect2DField extends WaveField {
       return [
         WaveComponent(
           id: 'total',
-          label: 'ドップラー効果',
+          label: animL('ドップラー効果', 'Doppler effect'),
           color: Colors.blueAccent,
           value: z(x, y, t),
         ),
@@ -2146,7 +2147,7 @@ class DopplerEffectObserverMovingField extends WaveField {
       return [
         WaveComponent(
           id: 'total',
-          label: 'ドップラー効果(観測者移動)',
+          label: animL('ドップラー効果(観測者移動)', 'Doppler effect (moving observer)'),
           color: Colors.blueAccent,
           value: z(x, y, t),
         ),
@@ -2229,7 +2230,7 @@ class MovingReflectorField extends WaveField {
     if (activeIds.contains('incident')) {
       res.add(WaveComponent(
         id: 'incident',
-        label: '入射波',
+        label: animL('入射波', 'Incident wave'),
         color: Colors.purpleAccent,
         value: _incidentAt(x, t),
       ));
@@ -2237,7 +2238,7 @@ class MovingReflectorField extends WaveField {
     if (activeIds.contains('reflected')) {
       res.add(WaveComponent(
         id: 'reflected',
-        label: '反射波',
+        label: animL('反射波', 'Reflected wave'),
         color: Colors.greenAccent,
         value: _reflectedAt(x, t),
       ));
@@ -2326,16 +2327,16 @@ class TwoSource1DField extends WaveField {
     final List<WaveComponent> res = [];
     if (activeIds.contains('wave1')) {
       res.add(WaveComponent(
-          id: 'wave1', label: '音源1', color: Colors.purpleAccent, value: z1));
+          id: 'wave1', label: animL('音源1', 'Source 1'), color: Colors.purpleAccent, value: z1));
     }
     if (activeIds.contains('wave2')) {
       res.add(WaveComponent(
-          id: 'wave2', label: '音源2', color: Colors.greenAccent, value: z2));
+          id: 'wave2', label: animL('音源2', 'Source 2'), color: Colors.greenAccent, value: z2));
     }
     if (activeIds.contains('combined')) {
       res.add(WaveComponent(
           id: 'combined',
-          label: '合成波',
+          label: animL('合成波', 'Resultant wave'),
           color: Colors.blueAccent,
           value: z1 + z2));
     }
@@ -2439,16 +2440,16 @@ class CircularPlaneInterferenceField extends WaveField {
     final List<WaveComponent> res = [];
     if (activeIds.contains('waveC')) {
       res.add(WaveComponent(
-          id: 'waveC', label: '円形波', color: Colors.purpleAccent, value: zC));
+          id: 'waveC', label: animL('円形波', 'Circular wave'), color: Colors.purpleAccent, value: zC));
     }
     if (activeIds.contains('waveP')) {
       res.add(WaveComponent(
-          id: 'waveP', label: '直線波', color: Colors.greenAccent, value: zP));
+          id: 'waveP', label: animL('直線波', 'Plane wave'), color: Colors.greenAccent, value: zP));
     }
     if (activeIds.contains('combined')) {
       res.add(WaveComponent(
           id: 'combined',
-          label: '合成波',
+          label: animL('合成波', 'Resultant wave'),
           color: Colors.blueAccent,
           value: zC + zP));
     }
@@ -2456,11 +2457,11 @@ class CircularPlaneInterferenceField extends WaveField {
   }
 
   @override
-  List<WavefrontLayer> get wavefrontLayers => const [
+  List<WavefrontLayer> get wavefrontLayers => [
         WavefrontLayer(
-            id: 'waveC', label: '円形波', color: Colors.purpleAccent),
+            id: 'waveC', label: animL('円形波', 'Circular wave'), color: Colors.purpleAccent),
         WavefrontLayer(
-            id: 'waveP', label: '直線波', color: Colors.greenAccent),
+            id: 'waveP', label: animL('直線波', 'Plane wave'), color: Colors.greenAccent),
       ];
 
   @override

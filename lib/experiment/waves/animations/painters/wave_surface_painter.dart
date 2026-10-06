@@ -8,6 +8,7 @@ import 'package:flutter/material.dart' as material;
 import '../fields/wave_fields.dart';
 import '../utils/coordinate_transformer.dart';
 import 'contour_dash.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 /// 節線・腹線の世界座標線分キャッシュ（metric は時間非依存）。
 class _ZeroContourCache {
@@ -351,7 +352,7 @@ class WaveSurfacePainter extends CustomPainter {
         return [
           WaveComponent(
             id: 'total',
-            label: '波面',
+            label: animL('波面', 'Wavefront'),
             color: surfaceColor ?? const Color(0xFFB38CFF),
             value: field.z(x, y, time),
           )

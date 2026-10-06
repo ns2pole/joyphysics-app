@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import 'package:joyphysics/experiment/playback_controls.dart';
 import 'coupled_oscillator_transverse_physics.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 final coupledOscillatorLongitudinal1D = createWaveVideo(
   title: '縦波,疎密波(N体バネ)',
+  titleEn: 'Longitudinal wave / density wave (N-mass springs)',
   height: 920,
   latex: r"""
   <div class="common-box">ポイント</div>
@@ -19,13 +21,24 @@ final coupledOscillatorLongitudinal1D = createWaveVideo(
   <p>$$\omega_n=2\sqrt{\\frac{k}{m}}\,\sin\\frac{n\pi}{2(N+1)}$$</p>
   <p>密なところ（圧縮）と疎なところ（伸長）が交互に進むのが縦波である。$N$ を大きくすると連続な媒質の疎密波に近づく。</p>
   """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>$N$ masses are connected in a line by springs, with both ends fixed to walls. The longitudinal displacement $u_j$ (left–right shift from equilibrium) can be written exactly as a superposition of the same normal modes as in the transverse case.</p>
+  <p>$$\begin{aligned}
+  u_j(t)
+  &=\sum_{n=1}^{N}\bigl(A_n\cos\omega_n t+B_n\sin\omega_n t\bigr)\\
+  &\quad\times\sin\frac{n\pi j}{N+1}
+  \end{aligned}$$</p>
+  <p>$$\omega_n=2\sqrt{\frac{k}{m}}\,\sin\frac{n\pi}{2(N+1)}$$</p>
+  <p>A longitudinal wave is the alternating advance of dense (compressed) and rare (stretched) regions. As $N$ becomes large, the motion approaches a density wave in a continuous medium.</p>
+  """,
   simulation: CoupledOscillatorLongitudinal1DSimulation(),
 );
 
 class CoupledOscillatorLongitudinal1DSimulation extends PhysicsSimulation {
   CoupledOscillatorLongitudinal1DSimulation()
       : super(
-          title: '縦波,疎密波(N体バネ)',
+          title: animL('縦波,疎密波(N体バネ)', 'Longitudinal wave / density wave (N-mass springs)'),
           formula: const FormulaDisplay(
             r'\omega_n=2\sqrt{\frac{k}{m}}\,\sin\frac{n\pi}{2(N+1)}',
           ),
@@ -167,7 +180,7 @@ class CoupledOscillatorLongitudinal1DSimulation extends PhysicsSimulation {
           playing: isRunning,
           onPlayPause: isRunning ? pause : start,
           onReset: resetMotion,
-          playTooltip: inSession ? '再開' : '再生',
+          playTooltip: inSession ? animL('再開', 'Resume') : animL('再生', 'Play'),
         );
       },
     );
@@ -189,8 +202,8 @@ class CoupledOscillatorLongitudinal1DSimulation extends PhysicsSimulation {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
-                '質点数 N',
+              Text(
+                animL('質点数 N', 'Number of masses N'),
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
               ),
               _IntegerStepperSlider(
@@ -358,7 +371,7 @@ class _IntegerStepperSlider extends StatelessWidget {
     return Row(
       children: [
         IconButton(
-          tooltip: '$label を減らす',
+          tooltip: animL('$label を減らす', 'Decrease $label'),
           visualDensity: VisualDensity.compact,
           constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
           padding: EdgeInsets.zero,
@@ -380,7 +393,7 @@ class _IntegerStepperSlider extends StatelessWidget {
           ),
         ),
         IconButton(
-          tooltip: '$label を増やす',
+          tooltip: animL('$label を増やす', 'Increase $label'),
           visualDensity: VisualDensity.compact,
           constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
           padding: EdgeInsets.zero,
@@ -601,7 +614,7 @@ class _LongitudinalPainter extends CustomPainter {
           ),
           if (running || paused)
             TextSpan(
-              text: running ? '運動中' : '一時停止',
+              text: running ? animL('運動中', 'In motion') : animL('一時停止', 'Pause'),
               style: statusStyle,
             ),
         ],
@@ -648,8 +661,8 @@ String? longitudinalDensityLabel(
   double deltaU, {
   double threshold = kLongitudinalDensityAbsThreshold,
 }) {
-  if (deltaU > threshold) return '疎';
-  if (deltaU < -threshold) return '密';
+  if (deltaU > threshold) return animL('疎', 'Rarefaction');
+  if (deltaU < -threshold) return animL('密', 'Compression');
   return null;
 }
 
@@ -681,9 +694,9 @@ List<String?> longitudinalDensityLabels(
     if (lab == null) continue;
     final left = i > 0 ? dus[i - 1] : dus[i];
     final right = i + 1 < dus.length ? dus[i + 1] : dus[i];
-    if (lab == '密' && dus[i] <= left && dus[i] <= right) {
+    if (lab == animL('密', 'Compression') && dus[i] <= left && dus[i] <= right) {
       out[i] = lab;
-    } else if (lab == '疎' && dus[i] >= left && dus[i] >= right) {
+    } else if (lab == animL('疎', 'Rarefaction') && dus[i] >= left && dus[i] >= right) {
       out[i] = lab;
     }
   }
@@ -802,7 +815,7 @@ void _paintDensityMarksWithGuides(
     u,
     peaksOnly: true,
   );
-  final sample = _densityMarkTextPainter('密', _kDensityDenseColor);
+  final sample = _densityMarkTextPainter(animL('密', 'Compression'), _kDensityDenseColor);
   final radius = math.max(sample.width, sample.height) * 0.5 + 4.5;
   final maxY = math.max(radius + 2, canvasBottom - radius - 4);
   final autoBaseY = math.min(maxY, lineStartY + radius + 12);
@@ -817,7 +830,7 @@ void _paintDensityMarksWithGuides(
   );
   for (final mark in marks) {
     final color =
-        mark.text == '密' ? _kDensityDenseColor : _kDensityRareColor;
+        mark.text == animL('密', 'Compression') ? _kDensityDenseColor : _kDensityRareColor;
     _drawVerticalDashedLine(
       canvas,
       mark.x,
@@ -1038,8 +1051,8 @@ class _TransverseDisplacementGraphPainter extends CustomPainter {
     final label = TextPainter(
       text: TextSpan(
         text: showDensityLabels
-            ? '同じ変位の横波表示（区間中央の疎／密）'
-            : '同じ変位の横波表示',
+            ? animL('同じ変位の横波表示（区間中央の疎／密）', 'Same-displacement transverse view (rarefaction/compression at segment centers)')
+            : animL('同じ変位の横波表示', 'Same-displacement transverse view'),
         style: const TextStyle(
           color: Color(0xFF102027),
           fontSize: 12,

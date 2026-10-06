@@ -4,9 +4,11 @@ import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import '../fields/wave_fields.dart';
 import '../painters/wave_surface_painter.dart';
 import '../widgets/wave_slider.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 final dopplerEffect2D = createWaveVideo(
   title: "2次元ドップラー効果(音源移動)",
+  titleEn: '2D Doppler effect (moving source)',
   latex: r"""
   <div class="common-box">ドップラー効果 (2次元)</div>
   <p>音源が移動しながら波を放出すると、音源の進行方向では波長が短くなり（周波数が高くなり）、逆方向では波長が長くなります（周波数が低くなります）。</p>
@@ -15,13 +17,21 @@ final dopplerEffect2D = createWaveVideo(
   <p>$$t - \tau = \frac{\sqrt{(x - v\tau)^2 + y^2}}{V}$$</p>
   <p>ここで $V = \frac{\lambda}{T}$ は波の速さ、$v$ は音源の速度です。音源は原点を出発して $x$ 軸上を正の向きに動きます。</p>
   """,
+  latexEn: r"""
+  <div class="common-box">Doppler effect (2D)</div>
+  <p>When a source emits waves while moving, the wavelength becomes shorter (frequency higher) ahead of the source and longer (frequency lower) behind it.</p>
+  <p>The wave observed at time $t$ and position $(x, y)$ was emitted by the source at an earlier time $\tau$ (the emission time: retarded time).</p>
+  <p>This $\tau$ satisfies</p>
+  <p>$$t - \tau = \frac{\sqrt{(x - v\tau)^2 + y^2}}{V}$$</p>
+  <p>Here $\displaystyle V = \frac{\lambda}{T}$ is the wave speed and $v$ is the source velocity. The source starts at the origin and moves in the positive $x$ direction.</p>
+  """,
   simulation: DopplerEffect2DSimulation(),
 );
 
 class DopplerEffect2DSimulation extends WaveSimulation {
   DopplerEffect2DSimulation()
       : super(
-          title: "2次元ドップラー効果(音源移動)",
+          title: animL("2次元ドップラー効果(音源移動)", "2D Doppler effect (moving source)"),
           is3D: true,
           formula: const Column(
             children: [
@@ -66,21 +76,21 @@ class DopplerEffect2DSimulation extends WaveSimulation {
 
     return [
       Text(
-        '波の速さ V = ${V.toStringAsFixed(2)}',
+        animL('波の速さ V = ${V.toStringAsFixed(2)}', 'Wave speed V = ${V.toStringAsFixed(2)}'),
         style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
       ),
       LambdaSlider(
-        label: '波長 λ',
+        label: animL('波長 λ', 'Wavelength λ'),
         value: params['lambda']!,
         onChanged: (v) => safeUpdateParam('lambda', v),
       ),
       PeriodTSlider(
-        label: '周期 T',
+        label: animL('周期 T', 'Period T'),
         value: params['periodT']!,
         onChanged: (v) => safeUpdateParam('periodT', v),
       ),
       WaveParameterSlider(
-        label: '音源速度 v',
+        label: animL('音源速度 v', 'Source velocity v'),
         value: params['vSource']!,
         min: 0.0,
         max: V, // 音速までに制限
@@ -96,7 +106,7 @@ class DopplerEffect2DSimulation extends WaveSimulation {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         buildChip(
-          '断面',
+          animL('断面', 'Cross section'),
           'showCrossSection',
           Colors.deepPurple,
           activeIds,
@@ -130,7 +140,7 @@ class DopplerEffect2DSimulation extends WaveSimulation {
         scale: scale,
         markers: [
           WaveMarker(point: source, color: Colors.yellow),
-          getObsMarker(params, label: '観測点 (a, b)'),
+          getObsMarker(params, label: animL('観測点 (a, b)', 'Observation point (a, b)')),
         ],
         radialCrossSections: [
           if (activeIds.contains('showCrossSection'))

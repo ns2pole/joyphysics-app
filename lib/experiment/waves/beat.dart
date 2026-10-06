@@ -10,8 +10,11 @@ final beat = Video(
   category: 'waves',
   iconName: "beat",
   title: "うなり",
+  titleEn: "Beats",
   videoURL: "mlSLhdJq7bk",
+  videoURLEn: "mlSLhdJq7bk",
   equipment: ["スマホ"],  // スマホだけで実験
+  equipmentEn: ["smartphone"],
   costRating: "★☆☆",
   latex: r"""
 <div class="common-box">うなりとは？</div>
@@ -41,6 +44,36 @@ $$</p>
   <li>同時再生モードをオンにして 2 つのトーンを鳴らす</li>
   <li>イヤホンまたはスピーカーでうなりの速さを耳で聴く</li>
   <li>周波数差を変えて聴き比べることで、うなり周波数と聞こえ方の関係を学ぶ</li>
+</ol>
+""",
+  latexEn: r"""
+<div class="common-box">What are beats?</div>
+<p>When two sound waves with slightly different frequencies overlap, interference makes the loudness rise and fall periodically. This is called a <b>beat</b>.</p>
+<p>The beat frequency is given by:</p>
+<p>$$
+f_{\mathrm{beat}} = \bigl| f_1 - f_2 \bigr|
+$$</p>
+
+<div class="common-box">Experiment 1: 350 Hz vs 351 Hz</div>
+<ul>
+  <li>Set frequencies: $f_1 = 350\,\mathrm{Hz}$, $f_2 = 351\,\mathrm{Hz}$</li>
+  <li>Beat frequency: $|351 - 350| = 1\,\mathrm{Hz}$</li>
+  <li>Play 350 Hz and 351 Hz tones together on a smartphone app and feel the slow loud–soft change once per second.</li>
+</ul>
+
+<div class="common-box">Experiment 2: 340 Hz vs 344 Hz</div>
+<ul>
+  <li>Set frequencies: $f_1 = 340\,\mathrm{Hz}$, $f_2 = 344\,\mathrm{Hz}$</li>
+  <li>Beat frequency: $|344 - 340| = 4\,\mathrm{Hz}$</li>
+  <li>Play 340 Hz and 344 Hz tones together on a smartphone app and feel the faster loud–soft change four times per second.</li>
+</ul>
+
+<div class="common-box">Procedure</div>
+<ol>
+  <li>Prepare each frequency tone in a smartphone tone-generator app</li>
+  <li>Turn on simultaneous playback and sound both tones</li>
+  <li>Listen with earphones or a speaker to hear how fast the beats are</li>
+  <li>Change the frequency difference and compare how the beat frequency relates to what you hear</li>
 </ol>
 """,
   experimentWidgets: [

@@ -5,14 +5,22 @@ import '../fields/wave_fields.dart';
 import '../painters/wave_line_painter.dart';
 import '../utils/coordinate_transformer.dart';
 import '../widgets/wave_slider.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 final waveEquation1D = createWaveVideo(
   title: "波の式",
+  titleEn: 'Wave formula',
   latex: r"""
   <div class="common-box">波の式</div>
   <p>振幅 $A$、周期 $T$、波長 $\lambda$、初期位相 $\phi$ の正弦波が $x$ 軸の正の向きに進むとき、時刻 $t$、位置 $x$ における媒質の変位 $y$ は次のように表されます。</p>
   <p>$$y(x, t) = A \sin\left\{ 2\pi \left( \frac{t}{T} - \frac{x}{\lambda} \right) + \phi \right\}$$</p>
   <p>上側のグラフは時刻 $t$ を固定したときの波の形（$y-x$ グラフ）、下側のグラフは場所 $x=a$ を固定したときの媒質の時間変化（$y-t$ グラフ）を表しています。</p>
+  """,
+  latexEn: r"""
+  <div class="common-box">Wave equation</div>
+  <p>For a sinusoidal wave of amplitude $A$, period $T$, wavelength $\lambda$, and initial phase $\phi$ traveling in the positive $x$ direction, the medium displacement $y$ at time $t$ and position $x$ is</p>
+  <p>$$y(x, t) = A \sin\left\{ 2\pi \left( \frac{t}{T} - \frac{x}{\lambda} \right) + \phi \right\}$$</p>
+  <p>The upper graph shows the wave shape at fixed time $t$ ($y$–$x$ graph); the lower graph shows the time variation of the medium at fixed position $x=a$ ($y$–$t$ graph).</p>
   """,
   simulation: WaveEquationSimulation(),
 );
@@ -20,8 +28,8 @@ final waveEquation1D = createWaveVideo(
 class WaveEquationSimulation extends WaveSimulation {
   WaveEquationSimulation()
       : super(
-          title: "波の式",
-          formula: const Column(
+          title: animL("波の式", "Wave formula"),
+          formula: Column(
             children: [
               FormulaDisplay(
                   r'\displaystyle y = A \sin\left\{ 2\pi \left( \frac{t}{T} - \frac{x}{\lambda} \right) + \phi \right\}'),
@@ -44,28 +52,28 @@ class WaveEquationSimulation extends WaveSimulation {
   List<Widget> buildControls(context, params, updateParam) {
     return [
       WaveParameterSlider(
-        label: '振幅 A',
+        label: animL('振幅 A', 'Amplitude A'),
         value: params['amplitude']!,
         min: 0.1,
         max: 1.0,
         onChanged: (v) => updateParam('amplitude', v),
       ),
       WaveParameterSlider(
-        label: '波長 λ',
+        label: animL('波長 λ', 'Wavelength λ'),
         value: params['lambda']!,
         min: 1.0,
         max: 8.0,
         onChanged: (v) => updateParam('lambda', v),
       ),
       WaveParameterSlider(
-        label: '周期 T',
+        label: animL('周期 T', 'Period T'),
         value: params['periodT']!,
         min: 0.5,
         max: 5.0,
         onChanged: (v) => updateParam('periodT', v),
       ),
       WaveParameterSlider(
-        label: '初期位相 φ',
+        label: animL('初期位相 φ', 'Initial phase φ'),
         value: params['initialPhase']!,
         min: 0.0,
         max: 2 * math.pi,
@@ -99,7 +107,7 @@ class WaveEquationSimulation extends WaveSimulation {
                   showTicks: true,
                   scale: scale,
                   markers: [
-                    getObsMarker(params, label: '観測点 a'),
+                    getObsMarker(params, label: animL('観測点 a', 'Observation point a')),
                   ],
                 ),
               ),
@@ -117,7 +125,7 @@ class WaveEquationSimulation extends WaveSimulation {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                   color: Colors.white70,
-                  child: const Text('y-x グラフ (時刻 t での波の形)',
+                  child: Text(animL('y-x グラフ (時刻 t での波の形)', 'y–x graph (wave shape at time t)'),
                       style:
                           TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
                 ),
@@ -145,7 +153,7 @@ class WaveEquationSimulation extends WaveSimulation {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                   color: Colors.white70,
-                  child: const Text('y-t グラフ (場所 x=a での媒質の動き)',
+                  child: Text(animL('y-t グラフ (場所 x=a での媒質の動き)', 'y–t graph (medium motion at x=a)'),
                       style:
                           TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
                 ),

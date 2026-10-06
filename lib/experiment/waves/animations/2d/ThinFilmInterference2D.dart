@@ -5,13 +5,20 @@ import '../fields/wave_fields.dart';
 import '../painters/wave_surface_painter.dart';
 import '../widgets/wave_slider.dart';
 import 'dart:math' as math;
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 final thinFilmInterference2D = createWaveVideo(
   title: "薄膜干渉 (2次元)",
+  titleEn: 'Thin-film interference (2D)',
   latex: r"""
   <div class="common-box">ポイント</div>
   <p>膜の中を往復する光路差は $\displaystyle \Delta=2nd\cos\theta_2$ です。$\theta_2$ は膜の中の角です。</p>
   <p>表面（屈折率が小さい側から大きい側）だけ位相が $\pi$ ずれるとき、反射の弱め合いは $\displaystyle \frac{\Delta}{\lambda}=m$、強め合いは $\displaystyle \frac{\Delta}{\lambda}=m+\frac{1}{2}$ です。</p>
+  """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>The optical path difference for a round trip inside the film is $\displaystyle \Delta=2nd\cos\theta_2$. Here $\theta_2$ is the angle inside the film.</p>
+  <p>When only the front surface (from lower to higher refractive index) shifts the phase by $\pi$, destructive interference in reflection occurs for $\displaystyle \frac{\Delta}{\lambda}=m$, and constructive interference for $\displaystyle \frac{\Delta}{\lambda}=m+\frac{1}{2}$.</p>
   """,
   simulation: ThinFilmInterference2DSimulation(),
 );
@@ -19,7 +26,7 @@ final thinFilmInterference2D = createWaveVideo(
 class ThinFilmInterference2DSimulation extends WaveSimulation {
   ThinFilmInterference2DSimulation()
       : super(
-          title: "薄膜干渉 (2次元)",
+          title: animL("薄膜干渉 (2次元)", "Thin-film interference (2D)"),
           is3D: true,
           formula: const FormulaDisplay(r'\Delta = 2nd \cos \theta_2'),
         );
@@ -42,13 +49,13 @@ class ThinFilmInterference2DSimulation extends WaveSimulation {
       {'incident', 'reflected1', 'reflected2', 'combined'};
 
   @override
-  List<WavefrontLayer> get wavefrontLayers => const [
+  List<WavefrontLayer> get wavefrontLayers => [
         WavefrontLayer(
-            id: 'incident', label: '入射', color: Colors.purpleAccent),
+            id: 'incident', label: animL('入射', 'Incident'), color: Colors.purpleAccent),
         WavefrontLayer(
-            id: 'reflected1', label: '反射1', color: Colors.greenAccent),
+            id: 'reflected1', label: animL('反射1', 'Reflection 1'), color: Colors.greenAccent),
         WavefrontLayer(
-            id: 'reflected2', label: '反射2', color: Colors.orangeAccent),
+            id: 'reflected2', label: animL('反射2', 'Reflection 2'), color: Colors.orangeAccent),
       ];
 
   @override
@@ -98,16 +105,16 @@ class ThinFilmInterference2DSimulation extends WaveSimulation {
       spacing: 4,
       runSpacing: 4,
       children: [
-        buildChip('入射', 'incident', Colors.purpleAccent, activeIds,
+        buildChip(animL('入射', 'Incident'), 'incident', Colors.purpleAccent, activeIds,
             updateActiveIds,
             fontSize: 10),
-        buildChip('反射1', 'reflected1', Colors.greenAccent, activeIds,
+        buildChip(animL('反射1', 'Reflection 1'), 'reflected1', Colors.greenAccent, activeIds,
             updateActiveIds,
             fontSize: 10),
-        buildChip('反射2', 'reflected2', Colors.orangeAccent, activeIds,
+        buildChip(animL('反射2', 'Reflection 2'), 'reflected2', Colors.orangeAccent, activeIds,
             updateActiveIds,
             fontSize: 10),
-        buildChip('合成', 'combined', Colors.blueAccent, activeIds,
+        buildChip(animL('合成', 'Combined'), 'combined', Colors.blueAccent, activeIds,
             updateActiveIds,
             fontSize: 10),
       ],
@@ -135,7 +142,7 @@ class ThinFilmInterference2DSimulation extends WaveSimulation {
         activeComponentIds: activeIds,
         scale: scale,
         markers: [
-          getObsMarker(params, label: '合成波の観測点'),
+          getObsMarker(params, label: animL('合成波の観測点', 'Observation point of resultant wave')),
         ],
         mediumSlab: MediumSlabOverlay(
           xStart: 0.0,

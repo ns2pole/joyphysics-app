@@ -4,6 +4,8 @@ import 'package:light/light.dart';
 import 'dart:async';
 import 'package:joyphysics/experiment/HasHeight.dart';
 import 'package:joyphysics/experiment/sensor_app_store_dialog.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
+import 'package:joyphysics/l10n/catalog_name_localizations.dart';
 import 'package:joyphysics/shared_components.dart';
 
 class LuxMeasurementWidget extends StatefulWidget with HasHeight {
@@ -40,8 +42,17 @@ class _LuxMeasurementWidgetState extends State<LuxMeasurementWidget> {
           if (mounted) {
             showSensorAppStoreDialog(
               context,
-              title: '光センサーはアプリ版で',
-              message: 'Web版では照度の本番測定に対応していません。アプリをインストールしてフル体験してください。',
+              title: animUi(
+                context,
+                ja: '光センサーはアプリ版で',
+                en: 'Light sensor is available in the app',
+              ),
+              message: animUi(
+                context,
+                ja: 'Web版では照度の本番測定に対応していません。アプリをインストールしてフル体験してください。',
+                en:
+                    'Full illuminance measurement is not available on the web. Install the app for the full experience.',
+              ),
             );
           }
         });
@@ -67,15 +78,23 @@ class _LuxMeasurementWidgetState extends State<LuxMeasurementWidget> {
   @override
   Widget build(BuildContext context) {
     final content = SensorDisplayCard(
-      title: "現在の照度",
+      title: animUi(
+        context,
+        ja: '現在の照度',
+        en: 'Current illuminance',
+      ),
       height: widget.height,
       children: lux == null
           ? [
               const CircularProgressIndicator(),
               const SizedBox(height: 16),
-              const Text(
-                "照度測定中...",
-                style: TextStyle(fontSize: 18, color: Colors.black),
+              Text(
+                animUi(
+                  context,
+                  ja: '照度測定中...',
+                  en: 'Measuring illuminance…',
+                ),
+                style: const TextStyle(fontSize: 18, color: Colors.black),
               ),
             ]
           : [
@@ -96,7 +115,7 @@ class _LuxMeasurementWidgetState extends State<LuxMeasurementWidget> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('光センサー'),
+        title: Text(localizeCatalogName(context, '光センサー')),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,

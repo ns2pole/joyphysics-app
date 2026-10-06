@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import '../painters/thin_film_stack_painter.dart';
 import '../widgets/wave_slider.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 final thinFilmInterference1D = createWaveVideo(
   title: "薄膜干渉 (1次元)",
+  titleEn: 'Thin-film interference (1D)',
   latex: r"""
   <div class="common-box">ポイント</div>
   <p>表面での反射と裏面での反射が干渉します。</p>
@@ -13,13 +15,21 @@ final thinFilmInterference1D = createWaveVideo(
   <p>$$\displaystyle \frac{2nL}{\lambda}=m\quad\text{（弱め合い）}$$</p>
   <p>$$\displaystyle \frac{2nL}{\lambda}=m+\frac{1}{2}\quad\text{（強め合い）}$$</p>
   """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>Reflection from the front surface and from the back surface interfere.</p>
+  <p>Reflection from a lower to a higher refractive index shifts the phase by $\pi$; reflection from higher to lower does not shift the phase.</p>
+  <p>This view is the case with a phase shift only at the front surface (a thin film in air). The optical path difference to the back surface is $2nL$, and for normal-incidence reflection</p>
+  <p>$$\displaystyle \frac{2nL}{\lambda}=m\quad\text{(destructive)}$$</p>
+  <p>$$\displaystyle \frac{2nL}{\lambda}=m+\frac{1}{2}\quad\text{(constructive)}$$</p>
+  """,
   simulation: ThinFilmInterference1DSimulation(),
 );
 
 class ThinFilmInterference1DSimulation extends WaveSimulation {
   ThinFilmInterference1DSimulation()
       : super(
-          title: "薄膜干渉 (1次元)",
+          title: animL("薄膜干渉 (1次元)", "Thin-film interference (1D)"),
           is3D: false,
           formula: const Column(
             children: [
@@ -79,7 +89,7 @@ class ThinFilmInterference1DSimulation extends WaveSimulation {
       spacing: 8,
       children: [
         buildChip(
-          '入射波',
+          animL('入射波', 'Incident wave'),
           'incident',
           Colors.purpleAccent,
           activeIds,
@@ -87,7 +97,7 @@ class ThinFilmInterference1DSimulation extends WaveSimulation {
           fontSize: 12,
         ),
         buildChip(
-          '反射1',
+          animL('反射1', 'Reflection 1'),
           'reflected1',
           Colors.greenAccent,
           activeIds,
@@ -95,7 +105,7 @@ class ThinFilmInterference1DSimulation extends WaveSimulation {
           fontSize: 12,
         ),
         buildChip(
-          '反射2',
+          animL('反射2', 'Reflection 2'),
           'reflected2',
           Colors.orangeAccent,
           activeIds,
@@ -103,7 +113,7 @@ class ThinFilmInterference1DSimulation extends WaveSimulation {
           fontSize: 12,
         ),
         buildChip(
-          '合成反射',
+          animL('合成反射', 'Combined reflection'),
           'combinedReflected',
           Colors.blueAccent,
           activeIds,

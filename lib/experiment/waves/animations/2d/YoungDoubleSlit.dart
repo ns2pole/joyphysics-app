@@ -5,9 +5,11 @@ import '../fields/wave_fields.dart';
 import '../painters/wave_surface_painter.dart';
 import '../widgets/wave_slider.dart';
 import 'dart:math' as math;
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 final youngDoubleSlit = createWaveVideo(
   title: "ヤングの実験",
+  titleEn: 'Young\'s double-slit experiment',
   latex: r"""
   <div class="common-box">ポイント</div>
   <p>2つのスリットを通過した光が干渉し、スクリーン上に明暗の縞模様（干渉縞）を作ります。</p>
@@ -15,13 +17,20 @@ final youngDoubleSlit = createWaveVideo(
   <p>$$\displaystyle \frac{r_1-r_2}{\lambda}+\frac{\phi}{2\pi}=m$$</p>
   <p>$\phi=0$ でスクリーンが十分遠いときは、明線間隔を $\displaystyle \Delta x=\frac{L\lambda}{d}$ と近似できます。この画面は $L$ が $d$ の数倍なので、その間隔は腹線の位置と一致しません。</p>
   """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>Light that passes through two slits interferes and forms a pattern of bright and dark fringes (an interference pattern) on the screen.</p>
+  <p>The constructive interference drawn here is based on the path difference itself. Including a phase difference $\phi$,</p>
+  <p>$$\displaystyle \frac{r_1-r_2}{\lambda}+\frac{\phi}{2\pi}=m$$</p>
+  <p>When $\phi=0$ and the screen is far enough away, the fringe spacing can be approximated as $\displaystyle \Delta x=\frac{L\lambda}{d}$. In this view $L$ is only a few times $d$, so that spacing does not match the positions of the antinodal lines.</p>
+  """,
   simulation: YoungDoubleSlitSimulation(),
 );
 
 class YoungDoubleSlitSimulation extends WaveSimulation {
   YoungDoubleSlitSimulation()
       : super(
-          title: "ヤングの実験",
+          title: animL("ヤングの実験", "Young's double-slit experiment"),
           is3D: true,
           formula: const FormulaDisplay(
             r'\displaystyle \frac{r_1-r_2}{\lambda}+\frac{\phi}{2\pi}=m',
@@ -49,9 +58,9 @@ class YoungDoubleSlitSimulation extends WaveSimulation {
       };
 
   @override
-  List<WavefrontLayer> get wavefrontLayers => const [
-        WavefrontLayer(id: 'wave1', label: '波1', color: Colors.purpleAccent),
-        WavefrontLayer(id: 'wave2', label: '波2', color: Colors.greenAccent),
+  List<WavefrontLayer> get wavefrontLayers => [
+        WavefrontLayer(id: 'wave1', label: animL('波1', 'Wave 1'), color: Colors.purpleAccent),
+        WavefrontLayer(id: 'wave2', label: animL('波2', 'Wave 2'), color: Colors.greenAccent),
       ];
 
   @override
@@ -77,7 +86,7 @@ class YoungDoubleSlitSimulation extends WaveSimulation {
       ),
       const SizedBox(height: 4),
       Text(
-        '遠いスクリーンの近似 Δx = Lλ/d = ${deltaX.toStringAsFixed(2)}。この画面の腹線とは一致しない。',
+        animL('遠いスクリーンの近似 Δx = Lλ/d = ${deltaX.toStringAsFixed(2)}。この画面の腹線とは一致しない。', 'Far-screen approximation Δx = Lλ/d = ${deltaX.toStringAsFixed(2)}. Does not match the antinodal lines on this screen.'),
         style: const TextStyle(fontSize: 11, color: Color(0xFF546E7A)),
       ),
       const SizedBox(height: 8),
@@ -90,7 +99,7 @@ class YoungDoubleSlitSimulation extends WaveSimulation {
         onChanged: (val) => updateParam('periodT', val),
       ),
       ThicknessLSlider(
-        label: 'a (間隔)',
+        label: animL('a (間隔)', 'a (spacing)'),
         value: a,
         min: 0.1,
         max: 1.0,
@@ -113,19 +122,19 @@ class YoungDoubleSlitSimulation extends WaveSimulation {
           runSpacing: 4,
           alignment: WrapAlignment.center,
           children: [
-            buildChip('波1', 'wave1', Colors.purpleAccent, activeIds,
+            buildChip(animL('波1', 'Wave 1'), 'wave1', Colors.purpleAccent, activeIds,
                 updateActiveIds,
                 fontSize: 10),
-            buildChip('波2', 'wave2', Colors.greenAccent, activeIds,
+            buildChip(animL('波2', 'Wave 2'), 'wave2', Colors.greenAccent, activeIds,
                 updateActiveIds,
                 fontSize: 10),
-            buildChip('合成', 'combined', Colors.yellow, activeIds,
+            buildChip(animL('合成', 'Combined'), 'combined', Colors.yellow, activeIds,
                 updateActiveIds,
                 fontSize: 10),
-            buildChip('節線', 'showNodalLines', Colors.orangeAccent, activeIds,
+            buildChip(animL('節線', 'Nodal lines'), 'showNodalLines', Colors.orangeAccent, activeIds,
                 updateActiveIds,
                 fontSize: 10),
-            buildChip('腹線', 'showAntinodalLines', Colors.orangeAccent, activeIds,
+            buildChip(animL('腹線', 'Antinodal lines'), 'showAntinodalLines', Colors.orangeAccent, activeIds,
                 updateActiveIds,
                 fontSize: 10),
           ],
@@ -135,10 +144,10 @@ class YoungDoubleSlitSimulation extends WaveSimulation {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             _buildToggleButton(Icons.screenshot_monitor, 'showScreen', activeIds,
-                updateActiveIds, 'スクリーン', Colors.purple),
+                updateActiveIds, animL('スクリーン', 'Screen'), Colors.purple),
             const SizedBox(width: 8),
             _buildToggleButton(Icons.bar_chart, 'showIntensityLine', activeIds,
-                updateActiveIds, '強度', Colors.green),
+                updateActiveIds, animL('強度', 'Intensity'), Colors.green),
           ],
         ),
       ],

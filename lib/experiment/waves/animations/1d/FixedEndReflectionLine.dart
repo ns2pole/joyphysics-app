@@ -5,9 +5,11 @@ import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import '../fields/wave_fields.dart';
 import '../painters/wave_line_painter.dart';
 import '../widgets/wave_slider.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 final fixedEndReflectionLine = createWaveVideo(
   title: "固定端反射 (線モデル)",
+  titleEn: 'Fixed-end reflection (line model)',
   latex: r"""
   <div class="common-box">解説</div>
   <p>1次元の媒質上の波の反射を線で表したモデルです。</p>
@@ -18,7 +20,7 @@ final fixedEndReflectionLine = createWaveVideo(
 class FixedEndReflectionLineSimulation extends WaveSimulation {
   FixedEndReflectionLineSimulation()
       : super(
-          title: "固定端反射 (線モデル)",
+          title: animL("固定端反射 (線モデル)", "Fixed-end reflection (line model)"),
           is3D: false,
           formula: const Column(
             children: [
@@ -67,13 +69,13 @@ class FixedEndReflectionLineSimulation extends WaveSimulation {
     return Wrap(
       spacing: 8,
       children: [
-        buildChip('入射波', 'incident', Colors.purpleAccent, activeIds,
+        buildChip(animL('入射波', 'Incident wave'), 'incident', Colors.purpleAccent, activeIds,
             updateActiveIds,
             fontSize: 12),
-        buildChip('反射波', 'reflected', Colors.greenAccent, activeIds,
+        buildChip(animL('反射波', 'Reflected wave'), 'reflected', Colors.greenAccent, activeIds,
             updateActiveIds,
             fontSize: 12),
-        buildChip('合成波', 'combined', Colors.blueAccent, activeIds,
+        buildChip(animL('合成波', 'Resultant wave'), 'combined', Colors.blueAccent, activeIds,
             updateActiveIds,
             fontSize: 12),
       ],
@@ -103,7 +105,7 @@ class FixedEndReflectionLineSimulation extends WaveSimulation {
         activeComponentIds: activeIds,
         scale: scale,
         markers: [
-          getObsMarker(params, label: '合成波の観測点'),
+          getObsMarker(params, label: animL('合成波の観測点', 'Observation point of resultant wave')),
         ],
       ),
     );

@@ -4,8 +4,11 @@ final openPipeResonance = Video(
   category: 'waves', // ← 追加
     iconName: "openPipeResonance",
     title: "気柱の振動(開管)",
+    titleEn: "Air column vibration (open pipe)",
     videoURL: "08SRSu2SoGI",
+    videoURLEn: "Z9Mexmws4LM",
     equipment: ["サランラップ", "水差し", "スマホ"],
+    equipmentEn: ["plastic-wrap core", "water jug", "smartphone"],
     costRating: "★☆☆", latex: r"""
     <div class="common-box">ポイント</div>
 <ul style="line-height:1.6;">
@@ -83,6 +86,85 @@ final openPipeResonance = Video(
         <li>実験値：$f_1=527\ \mathrm{Hz}$, $f_2=1055\ \mathrm{Hz}$, $f_3=1594\ \mathrm{Hz}$</li>
     </ul>
     <p>理論値と測定値は、開口端補正を加えることでより正確に予測できる。</p>
+<br>
+""",
+    latexEn: r"""
+    <div class="common-box">Key points</div>
+<ul style="line-height:1.6;">
+  <li>In a pipe open at both ends (open pipe), a standing wave forms with antinodes (maximum amplitude) at both ends.</li>
+  <li>The resonance frequencies $f$ are then given by:<br>
+      $$f = \frac{nv}{2L} \quad (n = 1, 2, 3, \dots)$$</li>
+  <li>In reality, the sound wave leaks slightly outward at each open end, so reflection occurs outside the physical end.</li>
+  <li>Accounting for this with open-end correction $h$, the effective length increases by $2h$ (both ends), giving:<br>
+      $$f = \frac{nv}{2(L + 2h)}$$</li>
+</ul>
+
+<p>※ Symbol definitions:</p>
+<ul style="line-height:1.6;">
+  <li>$f$: resonance frequency (hertz, Hz)</li>
+  <li>$n$: resonance mode number (natural number)</li>
+  <li>$v$: speed of sound (metres per second, m/s)</li>
+  <li>$L$: physical length of the pipe (metres, m)</li>
+  <li>$h$: open-end correction length (metres, m)</li>
+  <li>$r$: inner radius of the pipe (metres, m)</li>
+</ul>
+<div class="common-box">Setup</div>
+    <p>Blow into a plastic-wrap core of length $L = 31\ \mathrm{cm}$. Find the frequencies of the fundamental and the higher harmonics produced by resonance.</p>
+    <p>(1) Ignoring the open-end correction, compute the frequencies for $n=1,2,3,4$.</p>
+    <p>(2) Taking the open-end correction as $h=0.6r$ or $h=0.8r$ with $r=1.15\ \mathrm{cm}$, compute the frequencies for $n=1,2,3$.</p>
+
+    <div class="common-box">Theory</div>
+    <p>In a pipe open at both ends, the node–antinode condition gives standing waves with<br>
+    $$L = \frac{\lambda}{2},\; \lambda,\; \frac{3\lambda}{2},\;\dots$$<br>
+    Using the relation between speed of sound $v$ and wavelength $\lambda$, $\displaystyle v = f\lambda$, one obtains
+    $$f = \frac{nv}{2L}$$
+    ($n$: natural number).</p>
+
+    
+    <p>Take the speed of sound $v=340\ \mathrm{m/s}$ and the pipe length $L = 0.31\ \mathrm{m}$.</p>
+
+    <p>(1) Without open-end correction:</p>
+    $$\begin{aligned}
+    f_1 &= \frac{1 \times 340}{2 \times 0.31} \fallingdotseq 548\ [\mathrm{Hz}] \\
+    f_2 &= \frac{2 \times 340}{2 \times 0.31} \fallingdotseq 1097\ [\mathrm{Hz}] \\
+    f_3 &= \frac{3 \times 340}{2 \times 0.31} \fallingdotseq 1645\ [\mathrm{Hz}] \\
+    f_4 &= \frac{4 \times 340}{2 \times 0.31} \fallingdotseq 2194\ [\mathrm{Hz}]
+    \end{aligned}$$
+
+    <p>(2) With open-end correction:</p>
+    <p>For $r=1.15\ \mathrm{cm}$,</p>
+    <ul>
+    <li>$h=0.6r=0.0069\ \mathrm{m}$ → $L+2h=0.3238\ \mathrm{m}$</li>
+    <li>$h=0.8r=0.0092\ \mathrm{m}$ → $L+2h=0.3284\ \mathrm{m}$</li>
+    </ul>
+
+    <p>Frequencies with correction:</p>
+
+    <p>For $h=0.6r$:</p>
+    $$\begin{aligned}
+    f_1 &\fallingdotseq \frac{340}{2 \times 0.3238} \fallingdotseq 525\ [\mathrm{Hz}] \\
+    f_2 &\fallingdotseq 1050\ [\mathrm{Hz}] \\
+    f_3 &\fallingdotseq 1575\ [\mathrm{Hz}]
+    \end{aligned}$$
+
+    <p>For $h=0.8r$:</p>
+    $$\begin{aligned}
+    f_1 &\fallingdotseq \frac{340}{2 \times 0.3284} \fallingdotseq 518\ [\mathrm{Hz}] \\
+    f_2 &\fallingdotseq 1035\ [\mathrm{Hz}] \\
+    f_3 &\fallingdotseq 1553\ [\mathrm{Hz}]
+    \end{aligned}$$
+
+    <div class="common-box">Answer</div>
+    <ul>
+        <li>Without open-end correction: $f_1=548\ \mathrm{Hz}$, $f_2=1097\ \mathrm{Hz}$, $f_3=1645\ \mathrm{Hz}$, $f_4=2194\ \mathrm{Hz}$</li>
+        <br>
+        <li>With open-end correction ($h=0.6r$): $f_1=525\ \mathrm{Hz}$, $f_2=1050\ \mathrm{Hz}$, $f_3=1575\ \mathrm{Hz}$</li>
+        <br>
+        <li>With open-end correction ($h=0.8r$): $f_1=518\ \mathrm{Hz}$, $f_2=1035\ \mathrm{Hz}$, $f_3=1553\ \mathrm{Hz}$</li>
+        <br>
+        <li>Measured values: $f_1=527\ \mathrm{Hz}$, $f_2=1055\ \mathrm{Hz}$, $f_3=1594\ \mathrm{Hz}$</li>
+    </ul>
+    <p>Theory and measurement agree more closely once the open-end correction is included.</p>
 <br>
 """,
 );

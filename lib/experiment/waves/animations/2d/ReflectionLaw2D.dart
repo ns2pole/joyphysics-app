@@ -5,13 +5,20 @@ import '../fields/wave_fields.dart';
 import '../painters/wave_surface_painter.dart';
 import '../widgets/wave_slider.dart';
 import 'dart:math' as math;
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 final reflectionLaw2D = createWaveVideo(
   title: "反射の法則 (自由端・2次元)",
+  titleEn: 'Law of reflection (free end, 2D)',
   latex: r"""
   <div class="common-box">ポイント</div>
   <p>反射の法則: 入射角 = 反射角</p>
   <p>自由端反射では、位相の変化はありません。</p>
+  """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>Law of reflection: angle of incidence = angle of reflection</p>
+  <p>In free-end reflection there is no phase change.</p>
   """,
   simulation: ReflectionLaw2DSimulation(),
 );
@@ -19,7 +26,7 @@ final reflectionLaw2D = createWaveVideo(
 class ReflectionLaw2DSimulation extends WaveSimulation {
   ReflectionLaw2DSimulation()
       : super(
-          title: "反射の法則 (自由端)",
+          title: animL("反射の法則 (自由端)", "Law of reflection (free end)"),
           is3D: true,
           formula:
               const FormulaDisplay(r'\theta_{incident} = \theta_{reflected}'),
@@ -40,11 +47,11 @@ class ReflectionLaw2DSimulation extends WaveSimulation {
   Set<String> get initialActiveIds => {'incident', 'reflected', 'combined'};
 
   @override
-  List<WavefrontLayer> get wavefrontLayers => const [
+  List<WavefrontLayer> get wavefrontLayers => [
         WavefrontLayer(
-            id: 'incident', label: '入射', color: Colors.purpleAccent),
+            id: 'incident', label: animL('入射', 'Incident'), color: Colors.purpleAccent),
         WavefrontLayer(
-            id: 'reflected', label: '反射', color: Colors.greenAccent),
+            id: 'reflected', label: animL('反射', 'Reflected'), color: Colors.greenAccent),
       ];
 
   @override
@@ -80,11 +87,11 @@ class ReflectionLaw2DSimulation extends WaveSimulation {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        buildChip('入射', 'incident', incidentColor, activeIds, updateActiveIds),
+        buildChip(animL('入射', 'Incident'), 'incident', incidentColor, activeIds, updateActiveIds),
         const SizedBox(width: 4),
-        buildChip('反射', 'reflected', reflectedColor, activeIds, updateActiveIds),
+        buildChip(animL('反射', 'Reflected'), 'reflected', reflectedColor, activeIds, updateActiveIds),
         const SizedBox(width: 4),
-        buildChip('合成', 'combined', combinedColor, activeIds, updateActiveIds),
+        buildChip(animL('合成', 'Combined'), 'combined', combinedColor, activeIds, updateActiveIds),
       ],
     );
   }
@@ -110,7 +117,7 @@ class ReflectionLaw2DSimulation extends WaveSimulation {
         activeComponentIds: activeIds,
         scale: scale,
         markers: [
-          getObsMarker(params, label: '合成波の観測点'),
+          getObsMarker(params, label: animL('合成波の観測点', 'Observation point of resultant wave')),
         ],
         mediumSlab: const MediumSlabOverlay(
           xStart: 0.0,

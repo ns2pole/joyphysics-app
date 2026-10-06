@@ -4,9 +4,11 @@ import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import '../fields/wave_fields.dart';
 import '../painters/wave_line_painter.dart';
 import '../widgets/wave_slider.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 final dopplerEffect1D = createWaveVideo(
   title: "1次元ドップラー効果(音源移動)",
+  titleEn: '1D Doppler effect (moving source)',
   latex: r"""
   <div class="common-box">ドップラー効果 (1次元)</div>
   <p>音源が移動しながら波を放出すると、音源の進行方向では波長が短くなり（周波数が高くなり）、逆方向では波長が長くなります（周波数が低くなります）。</p>
@@ -14,15 +16,22 @@ final dopplerEffect1D = createWaveVideo(
   <p>$$f = \frac{V}{V - v} f_0$$</p>
   <p>となります。</p>
   """,
+  latexEn: r"""
+  <div class="common-box">Doppler effect (1D)</div>
+  <p>When a moving source emits waves, the wavelength shortens (frequency rises) ahead of the source and lengthens (frequency falls) behind it.</p>
+  <p>With sound speed $V$, source speed $v$, and source frequency $f_0$, the frequency $f$ observed in the source's direction of travel is</p>
+  <p>$$f = \frac{V}{V - v} f_0$$</p>
+  <p>.</p>
+  """,
   simulation: DopplerEffect1DSimulation(),
 );
 
 class DopplerEffect1DSimulation extends WaveSimulation {
   DopplerEffect1DSimulation()
       : super(
-          title: "1次元ドップラー効果(音源移動)",
+          title: animL("1次元ドップラー効果(音源移動)", "1D Doppler effect (moving source)"),
           is3D: false,
-          formula: const Column(
+          formula: Column(
             children: [
               FormulaDisplay(
                   r'\displaystyle y = A \sin \left\{ 2\pi \left( f_\pm t \mp \frac{x}{\lambda_\pm} \right) \right\}'),
@@ -30,7 +39,7 @@ class DopplerEffect1DSimulation extends WaveSimulation {
               FormulaDisplay(
                   r'\displaystyle f_\pm = \frac{V}{V \mp v} f_0, \quad \lambda_\pm = \frac{V \mp v}{V} \lambda_0'),
               SizedBox(height: 4),
-              Text('(複号：進行方向の前方で上、後方で下)',
+              Text(animL('(複号：進行方向の前方で上、後方で下)', '(±: upper when ahead of travel, lower when behind)'),
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
             ],
           ),
@@ -62,21 +71,21 @@ class DopplerEffect1DSimulation extends WaveSimulation {
 
     return [
       Text(
-        '波の速さ V = ${V.toStringAsFixed(2)}',
+        animL('波の速さ V = ${V.toStringAsFixed(2)}', 'Wave speed V = ${V.toStringAsFixed(2)}'),
         style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
       ),
       LambdaSlider(
-        label: '波長 λ',
+        label: animL('波長 λ', 'Wavelength λ'),
         value: params['lambda']!,
         onChanged: (v) => safeUpdateParam('lambda', v),
       ),
       PeriodTSlider(
-        label: '周期 T',
+        label: animL('周期 T', 'Period T'),
         value: params['periodT']!,
         onChanged: (v) => safeUpdateParam('periodT', v),
       ),
       WaveParameterSlider(
-        label: '音源速度 v',
+        label: animL('音源速度 v', 'Source velocity v'),
         value: params['vSource']!,
         min: -V,
         max: V,
@@ -107,8 +116,8 @@ class DopplerEffect1DSimulation extends WaveSimulation {
         showTicks: true,
         scale: scale,
         markers: [
-          WaveMarker(point: math.Point(sourceX, 0.0), color: Colors.yellow, label: '音源'),
-          getObsMarker(params, label: '観測点 a'),
+          WaveMarker(point: math.Point(sourceX, 0.0), color: Colors.yellow, label: animL('音源', 'Source')),
+          getObsMarker(params, label: animL('観測点 a', 'Observation point a')),
         ],
       ),
     );

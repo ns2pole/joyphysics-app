@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:joyphysics/experiment/HasHeight.dart';
 import 'package:joyphysics/experiment/sensor_app_store_dialog.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
+import 'package:joyphysics/l10n/catalog_name_localizations.dart';
 import 'package:joyphysics/shared_components.dart';
 
 class FrequencyMeasureWidget extends StatefulWidget with HasHeight {
@@ -42,8 +44,17 @@ class _FrequencyMeasureWidgetState extends State<FrequencyMeasureWidget> {
           if (mounted) {
             showSensorAppStoreDialog(
               context,
-              title: '周波数測定はアプリ版で',
-              message: 'Web版ではマイクからの本番測定に対応していません。アプリをインストールしてフル体験してください。',
+              title: animUi(
+                context,
+                ja: '周波数測定はアプリ版で',
+                en: 'Frequency measurement is available in the app',
+              ),
+              message: animUi(
+                context,
+                ja: 'Web版ではマイクからの本番測定に対応していません。アプリをインストールしてフル体験してください。',
+                en:
+                    'Full microphone measurement is not available on the web. Install the app for the full experience.',
+              ),
             );
           }
         });
@@ -74,21 +85,34 @@ class _FrequencyMeasureWidgetState extends State<FrequencyMeasureWidget> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('マイク権限が必要です'),
-        content: const Text('この機能を使うためにはマイクの権限が必要です。権限を許可してください。'),
+        title: Text(
+          animUi(
+            context,
+            ja: 'マイク権限が必要です',
+            en: 'Microphone permission required',
+          ),
+        ),
+        content: Text(
+          animUi(
+            context,
+            ja: 'この機能を使うためにはマイクの権限が必要です。権限を許可してください。',
+            en:
+                'This feature needs microphone permission. Please allow access.',
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               _checkPermissionAndStartMic();
             },
-            child: const Text('再試行'),
+            child: Text(animUi(context, ja: '再試行', en: 'Try again')),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
             },
-            child: const Text('キャンセル'),
+            child: Text(animUi(context, ja: 'キャンセル', en: 'Cancel')),
           ),
         ],
       ),
@@ -99,21 +123,33 @@ class _FrequencyMeasureWidgetState extends State<FrequencyMeasureWidget> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('マイク権限が永久に拒否されています'),
-        content: const Text('権限を手動で設定アプリから許可してください。'),
+        title: Text(
+          animUi(
+            context,
+            ja: 'マイク権限が永久に拒否されています',
+            en: 'Microphone permission permanently denied',
+          ),
+        ),
+        content: Text(
+          animUi(
+            context,
+            ja: '権限を手動で設定アプリから許可してください。',
+            en: 'Please allow permission manually in Settings.',
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () {
               openAppSettings();
               Navigator.pop(context);
             },
-            child: const Text('設定を開く'),
+            child: Text(animUi(context, ja: '設定を開く', en: 'Open Settings')),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
             },
-            child: const Text('キャンセル'),
+            child: Text(animUi(context, ja: 'キャンセル', en: 'Cancel')),
           ),
         ],
       ),
@@ -149,15 +185,23 @@ class _FrequencyMeasureWidgetState extends State<FrequencyMeasureWidget> {
   @override
   Widget build(BuildContext context) {
     final content = SensorDisplayCard(
-      title: "現在の周波数",
+      title: animUi(
+        context,
+        ja: '現在の周波数',
+        en: 'Current frequency',
+      ),
       height: widget.height,
       children: _frequency == null
           ? [
               const CircularProgressIndicator(),
               const SizedBox(height: 16),
-              const Text(
-                "周波数計測中...",
-                style: TextStyle(fontSize: 18, color: Colors.black),
+              Text(
+                animUi(
+                  context,
+                  ja: '周波数計測中...',
+                  en: 'Measuring frequency…',
+                ),
+                style: const TextStyle(fontSize: 18, color: Colors.black),
               ),
             ]
           : [
@@ -179,7 +223,7 @@ class _FrequencyMeasureWidgetState extends State<FrequencyMeasureWidget> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('周波数センサー'),
+        title: Text(localizeCatalogName(context, '周波数センサー')),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,

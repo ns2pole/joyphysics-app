@@ -4,9 +4,11 @@ import '../fields/wave_fields.dart';
 import '../painters/wave_surface_painter.dart';
 import '../widgets/wave_slider.dart';
 import 'dart:math' as math;
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 final circularPlaneInterference = createWaveVideo(
   title: "円形波と直線波の干渉",
+  titleEn: 'Interference of a circular wave and a plane wave',
   latex: r"""
   <div class="common-box">解説</div>
   <p>中心から広がる円形波と、一方向に進む直線波が重なり合うことで干渉縞が生じます。</p>
@@ -15,13 +17,21 @@ final circularPlaneInterference = createWaveVideo(
   <p>\[ z = z_C + z_P \]</p>
   <p>周期が異なると、定常な節線・腹線はありません。</p>
   """,
+  latexEn: r"""
+  <div class="common-box">Explanation</div>
+  <p>Interference fringes form when a circular wave spreading from a center overlaps a plane wave traveling in one direction.</p>
+  <p>The plane wave is set to arrive from the negative $x$ direction.</p>
+  <p>The displacement $z$ of the resultant wave is the sum of the circular-wave displacement $z_C$ and the plane-wave displacement $z_P$:</p>
+  <p>\[ z = z_C + z_P \]</p>
+  <p>If the periods differ, there are no stationary nodal or antinodal lines.</p>
+  """,
   simulation: CircularPlaneInterferenceSimulation(),
 );
 
 class CircularPlaneInterferenceSimulation extends WaveSimulation {
   CircularPlaneInterferenceSimulation()
       : super(
-          title: "円形波と直線波の干渉",
+          title: animL("円形波と直線波の干渉", "Interference of a circular wave and a plane wave"),
           is3D: true,
           formula: const Column(
             children: [
@@ -54,11 +64,11 @@ class CircularPlaneInterferenceSimulation extends WaveSimulation {
       {'combined', 'showNodalLines', 'showAntinodalLines'};
 
   @override
-  List<WavefrontLayer> get wavefrontLayers => const [
+  List<WavefrontLayer> get wavefrontLayers => [
         WavefrontLayer(
-            id: 'waveC', label: '円形波', color: Colors.purpleAccent),
+            id: 'waveC', label: animL('円形波', 'Circular wave'), color: Colors.purpleAccent),
         WavefrontLayer(
-            id: 'waveP', label: '直線波', color: Colors.greenAccent),
+            id: 'waveP', label: animL('直線波', 'Plane wave'), color: Colors.greenAccent),
       ];
 
   bool _samePeriod(Map<String, double> params) =>
@@ -67,7 +77,7 @@ class CircularPlaneInterferenceSimulation extends WaveSimulation {
   @override
   List<Widget> buildControls(context, params, updateParam) {
     return [
-      const Text('円形波のパラメータ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+      Text(animL('円形波のパラメータ', 'Circular wave parameters'), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
       LambdaSlider(
         label: 'λC',
         value: params['lambdaC']!,
@@ -79,7 +89,7 @@ class CircularPlaneInterferenceSimulation extends WaveSimulation {
         onChanged: (v) => updateParam('periodTC', v),
       ),
       const SizedBox(height: 8),
-      const Text('直線波のパラメータ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+      Text(animL('直線波のパラメータ', 'Plane wave parameters'), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
       ThetaSlider(
         value: params['thetaP']!,
         maxDeg: 360,
@@ -105,16 +115,16 @@ class CircularPlaneInterferenceSimulation extends WaveSimulation {
       spacing: 8,
       alignment: WrapAlignment.center,
       children: [
-        buildChip('円形波', 'waveC', Colors.purpleAccent, activeIds, updateActiveIds,
+        buildChip(animL('円形波', 'Circular wave'), 'waveC', Colors.purpleAccent, activeIds, updateActiveIds,
             fontSize: 12),
-        buildChip('直線波', 'waveP', Colors.greenAccent, activeIds, updateActiveIds,
+        buildChip(animL('直線波', 'Plane wave'), 'waveP', Colors.greenAccent, activeIds, updateActiveIds,
             fontSize: 12),
-        buildChip('合成', 'combined', Colors.blueAccent, activeIds, updateActiveIds,
+        buildChip(animL('合成', 'Combined'), 'combined', Colors.blueAccent, activeIds, updateActiveIds,
             fontSize: 12),
-        buildChip('節線', 'showNodalLines', Colors.orangeAccent, activeIds,
+        buildChip(animL('節線', 'Nodal lines'), 'showNodalLines', Colors.orangeAccent, activeIds,
             updateActiveIds,
             fontSize: 12),
-        buildChip('腹線', 'showAntinodalLines', Colors.orangeAccent, activeIds,
+        buildChip(animL('腹線', 'Antinodal lines'), 'showAntinodalLines', Colors.orangeAccent, activeIds,
             updateActiveIds,
             fontSize: 12),
       ],
@@ -143,8 +153,8 @@ class CircularPlaneInterferenceSimulation extends WaveSimulation {
         activeComponentIds: activeIds,
         scale: scale,
         markers: [
-          WaveMarker(point: const math.Point(0.0, 0.0), color: Colors.yellow, label: '円形波源'),
-          getObsMarker(params, label: '観測点'),
+          WaveMarker(point: math.Point(0.0, 0.0), color: Colors.yellow, label: animL('円形波源', 'Circular source')),
+          getObsMarker(params, label: animL('観測点', 'Observation point')),
         ],
         showNodalLines: canNodal && activeIds.contains('showNodalLines'),
         nodalMetric: canNodal ? field.nodalMetric : null,

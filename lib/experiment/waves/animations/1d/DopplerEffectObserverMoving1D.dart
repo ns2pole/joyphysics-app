@@ -4,9 +4,11 @@ import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import '../fields/wave_fields.dart';
 import '../painters/wave_line_painter.dart';
 import '../widgets/wave_slider.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 final dopplerEffectObserverMoving1D = createWaveVideo(
   title: "1次元ドップラー効果(観測者移動)",
+  titleEn: '1D Doppler effect (moving observer)',
   latex: r"""
   <div class="common-box">ドップラー効果 (1次元)</div>
   <p>音源が静止していても、観測者が波に向かって（または波から遠ざかるように）移動すると、観測される周波数が変化します。</p>
@@ -14,22 +16,29 @@ final dopplerEffectObserverMoving1D = createWaveVideo(
   <p>$$f = \frac{V + u}{V} f_0$$</p>
   <p>となります。</p>
   """,
+  latexEn: r"""
+  <div class="common-box">Doppler effect (1D)</div>
+  <p>Even if the source is at rest, the observed frequency changes when the observer moves toward (or away from) the waves.</p>
+  <p>With sound speed $V$, observer speed $u$ (positive toward the source), and source frequency $f_0$, the observed frequency $f$ is</p>
+  <p>$$f = \frac{V + u}{V} f_0$$</p>
+  <p>.</p>
+  """,
   simulation: DopplerEffectObserverMoving1DSimulation(),
 );
 
 class DopplerEffectObserverMoving1DSimulation extends WaveSimulation {
   DopplerEffectObserverMoving1DSimulation()
       : super(
-          title: "1次元ドップラー効果(観測者移動)",
+          title: animL("1次元ドップラー効果(観測者移動)", "1D Doppler effect (moving observer)"),
           is3D: false,
-          formula: const Column(
+          formula: Column(
             children: [
               FormulaDisplay(
                   r'y = A \sin \left\{ 2\pi \left( f_0 t \mp \frac{x}{\lambda} \right) \right\}'),
               SizedBox(height: 8),
               FormulaDisplay(r'\displaystyle f = \frac{V - u_{\parallel}}{V} f_0'),
               SizedBox(height: 4),
-              Text('u∥ は波の進む向きの速度。波に向かうと周波数は上がる。',
+              Text(animL('u∥ は波の進む向きの速度。波に向かうと周波数は上がる。', 'u∥ is the velocity along the wave direction. Approaching the wave raises the frequency.'),
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
             ],
           ),
@@ -50,27 +59,27 @@ class DopplerEffectObserverMoving1DSimulation extends WaveSimulation {
     final V = params['lambda']! / params['periodT']!;
     return [
       Text(
-        '波の速さ V = ${V.toStringAsFixed(2)}',
+        animL('波の速さ V = ${V.toStringAsFixed(2)}', 'Wave speed V = ${V.toStringAsFixed(2)}'),
         style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
       ),
       LambdaSlider(
-        label: '波長 λ',
+        label: animL('波長 λ', 'Wavelength λ'),
         value: params['lambda']!,
         onChanged: (v) => updateParam('lambda', v),
       ),
       PeriodTSlider(
-        label: '周期 T',
+        label: animL('周期 T', 'Period T'),
         value: params['periodT']!,
         onChanged: (v) => updateParam('periodT', v),
       ),
       WaveParameterSlider(
-        label: '観測者速度 u',
+        label: animL('観測者速度 u', 'Observer velocity u'),
         value: params['vObserver']!,
         min: -V * 2,
         max: V * 2,
         onChanged: (v) => updateParam('vObserver', v),
       ),
-      ...buildObsSliders(params, updateParam, is2D: false, labelX: '初期位置 x0'),
+      ...buildObsSliders(params, updateParam, is2D: false, labelX: animL('初期位置 x0', 'Initial position x0')),
     ];
   }
 
@@ -104,12 +113,12 @@ class DopplerEffectObserverMoving1DSimulation extends WaveSimulation {
         showTicks: true,
         scale: scale,
         markers: [
-          const WaveMarker(
-              point: math.Point(0.0, 0.0), color: Colors.yellow, label: '音源'),
+          WaveMarker(
+              point: math.Point(0.0, 0.0), color: Colors.yellow, label: animL('音源', 'Source')),
           WaveMarker(
               point: math.Point(obsX, 0.0),
               color: Colors.red,
-              label: '観測者  f/f0=${ratio.toStringAsFixed(2)}'),
+              label: animL('観測者  f/f0=${ratio.toStringAsFixed(2)}', 'Observer  f/f0=${ratio.toStringAsFixed(2)}')),
         ],
       ),
     );
@@ -120,9 +129,9 @@ class DopplerEffectObserverMoving1DSimulation extends WaveSimulation {
     final v = parameters['vObserver']!;
     final obsX = parameters['obsX']! + v * time;
     return [
-      const WaveMarker(
-          point: math.Point(0.0, 0.0), color: Colors.yellow, label: '音源'),
-      WaveMarker(point: math.Point(obsX, 0.0), color: Colors.red, label: '観測者'),
+      WaveMarker(
+          point: math.Point(0.0, 0.0), color: Colors.yellow, label: animL('音源', 'Source')),
+      WaveMarker(point: math.Point(obsX, 0.0), color: Colors.red, label: animL('観測者', 'Observer')),
     ];
   }
 

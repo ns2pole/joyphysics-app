@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import '../widgets/wave_slider.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 class _RayOptics {
   static const double dropRadius = 1.0;
@@ -126,6 +127,7 @@ class _RayOptics {
 
 final rainbowDroplet2D = createWaveVideo(
   title: "単一水滴の光路（主虹）",
+  titleEn: 'Single-droplet ray path (primary rainbow)',
   latex: r"""
   <div class="common-box">ポイント</div>
   <p>入射パラメータ $k$ を 0 から 1 の範囲で動かし、球状水滴での屈折→内部反射→出射を可視化します。</p>
@@ -295,6 +297,175 @@ final rainbowDroplet2D = createWaveVideo(
     })();
   </script>
   """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>Vary the impact parameter $k$ from 0 to 1 to visualize refraction → internal reflection → exit in a spherical water droplet.</p>
+  <p>Dispersion between red light ($n=1.33$) and blue light ($n=1.34$) produces a difference in the exit direction.</p>
+  <p><b>Why only the upper half is drawn</b>: the lower half of the droplet has the same kind of ray path, but the explanation focuses on the upper side where the angle relations near the exit point are easier to see.</p>
+  <p><b>Link to the rainbow</b>: a single droplet shows that light concentrates near a certain angle and that this angle shifts with wavelength. The arc you see in the sky as a “rainbow” appears when many such droplets are present (see the separate item “Primary rainbow (many droplets)”).</p>
+  <p><b>Display modes</b></p>
+  <ul>
+    <li><b>Normal</b>: follow how a single ray bends along the path</li>
+    <li><b>Tiny droplet</b>: shrink the droplet so the incident and exit directions (and their extensions) are easier to see to the edge</li>
+    <li><b>Exit-point zoom</b>: zoom near the exit point to make the angle between the dashed lines (vertical angles, $\phi$) easier to read</li>
+    <li><b>Ray bundle</b>: draw many equally spaced rays for $k=0\sim 0.99$ at once to see intuitively which direction light tends to concentrate in</li>
+  </ul>
+  <p><b>Theory ($k$ to $\phi$)</b></p>
+  <p>
+    With incidence angle $i$ and refraction angle $r$
+    \[ i=\arcsin k \]
+    \[ r=\arcsin\left(\frac{k}{n}\right) \]
+    the exit direction for the primary rainbow (refraction → internal reflection → exit) is
+    \[ \phi(k)=4r-2i\ \ (\mathrm{rad}) \]
+    \[ 4r-2i=4\arcsin\left(\frac{k}{n}\right)-2\arcsin(k) \]
+    In degrees,
+    \[ \phi_{\deg}(k)=\frac{180}{\pi}\,\phi(k) \]
+    (red: $n=1.33$, blue: $n=1.34$).
+  </p>
+  <p><b>Theory curve (degrees)</b></p>
+  <canvas id="phi-plot" style="width:100%; height:260px; display:block;"></canvas>
+  <script>
+    (function(){
+      const canvas = document.getElementById('phi-plot');
+      if (!canvas) return;
+      const nRed = 1.33, nBlue = 1.34;
+      const kMin = 0.0, kMax = 0.99;
+
+      function phiDeg(k, n) {
+        const i = Math.asin(k);
+        const r = Math.asin(k / n);
+        return (180 / Math.PI) * (4 * r - 2 * i);
+      }
+
+      function draw() {
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        const cssW = Math.max(260, rect.width || 0);
+        const cssH = Math.max(180, rect.height || 0);
+        canvas.width = Math.floor(cssW * dpr);
+        canvas.height = Math.floor(cssH * dpr);
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        // compute ranges
+        const samples = 220;
+        let yMin = Infinity, yMax = -Infinity;
+        const red = [];
+        const blue = [];
+        for (let s = 0; s < samples; s++) {
+          const t = samples === 1 ? 0 : s / (samples - 1);
+          const k = kMin + (kMax - kMin) * t;
+          const yr = phiDeg(k, nRed);
+          const yb = phiDeg(k, nBlue);
+          red.push({k, y: yr});
+          blue.push({k, y: yb});
+          yMin = Math.min(yMin, yr, yb);
+          yMax = Math.max(yMax, yr, yb);
+        }
+        const padY = (yMax - yMin) * 0.08 + 0.4;
+        yMin -= padY;
+        yMax += padY;
+
+        // layout
+        const m = {l: 46, r: 14, t: 12, b: 34};
+        const W = cssW, H = cssH;
+        const plotW = W - m.l - m.r;
+        const plotH = H - m.t - m.b;
+
+        function x(k){ return m.l + (k - kMin) / (kMax - kMin) * plotW; }
+        function y(v){ return m.t + (yMax - v) / (yMax - yMin) * plotH; }
+
+        // background
+        ctx.clearRect(0, 0, W, H);
+        ctx.fillStyle = 'rgba(255,255,255,1)';
+        ctx.fillRect(0, 0, W, H);
+
+        // grid + axes
+        ctx.strokeStyle = 'rgba(0,0,0,0.12)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        // x ticks
+        const xTicks = [0, 0.25, 0.5, 0.75, 0.99];
+        for (const xt of xTicks) {
+          const xx = x(xt);
+          ctx.moveTo(xx, m.t);
+          ctx.lineTo(xx, m.t + plotH);
+        }
+        // y ticks
+        const yTicks = 4;
+        for (let i = 0; i <= yTicks; i++) {
+          const vv = yMin + (yMax - yMin) * (i / yTicks);
+          const yy = y(vv);
+          ctx.moveTo(m.l, yy);
+          ctx.lineTo(m.l + plotW, yy);
+        }
+        ctx.stroke();
+
+        // axis lines
+        ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+        ctx.beginPath();
+        ctx.moveTo(m.l, m.t);
+        ctx.lineTo(m.l, m.t + plotH);
+        ctx.lineTo(m.l + plotW, m.t + plotH);
+        ctx.stroke();
+
+        // labels
+        ctx.fillStyle = 'rgba(0,0,0,0.8)';
+        ctx.font = '12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        for (const xt of xTicks) {
+          ctx.fillText(xt.toFixed(2), x(xt), m.t + plotH + 6);
+        }
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        for (let i = 0; i <= yTicks; i++) {
+          const vv = yMin + (yMax - yMin) * (i / yTicks);
+          ctx.fillText(vv.toFixed(1), m.l - 6, y(vv));
+        }
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        ctx.fillText('k', m.l + plotW - 6, m.t + plotH + 6);
+        ctx.fillText('φ [deg]', 6, m.t);
+
+        // lines
+        function drawLine(points, stroke) {
+          ctx.strokeStyle = stroke;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          for (let i = 0; i < points.length; i++) {
+            const p = points[i];
+            const xx = x(p.k), yy = y(p.y);
+            if (i === 0) ctx.moveTo(xx, yy);
+            else ctx.lineTo(xx, yy);
+          }
+          ctx.stroke();
+        }
+        drawLine(red, 'rgba(220,40,40,0.95)');
+        drawLine(blue, 'rgba(40,90,220,0.95)');
+
+        // legend
+        const lx = m.l + 10, ly = m.t + 10;
+        ctx.fillStyle = 'rgba(255,255,255,0.85)';
+        ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+        ctx.lineWidth = 1;
+        ctx.fillRect(lx - 6, ly - 6, 150, 36);
+        ctx.strokeRect(lx - 6, ly - 6, 150, 36);
+        ctx.font = '12px sans-serif';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = 'rgba(220,40,40,0.95)';
+        ctx.fillText('red: n=1.33', lx, ly + 6);
+        ctx.fillStyle = 'rgba(40,90,220,0.95)';
+        ctx.fillText('blue: n=1.34', lx, ly + 22);
+      }
+
+      // draw now + on resize
+      draw();
+      window.addEventListener('resize', function(){ setTimeout(draw, 60); });
+    })();
+  </script>
+  """,
   simulation: RainbowDroplet2DSimulation(),
   height: 780,
 );
@@ -302,12 +473,19 @@ final rainbowDroplet2D = createWaveVideo(
 /// 多数水滴。各水滴の光線束がピーク角で密になる。
 final rainbowMultiDroplet2D = createWaveVideo(
   title: "主虹（多数水滴）",
+  titleEn: 'Primary rainbow (many droplets)',
   latex: r"""
   <div class="common-box">ポイント</div>
   <p>単一水滴では、赤 ($n=1.33$) で約 $42.5^\circ$、青 ($n=1.34$) で約 $41.1^\circ$ に光が集中します。角が大きい赤が外側です。</p>
   <p>太陽を背にした観測者には、反太陽点のまわりのこの角度の円錐上にある水滴が見えます。空ではそれが弧です。</p>
   <p>この画面は水滴を縦に並べ、各水滴からの光線束を描きます。束が密になる方向がピーク角です。</p>
   """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>For a single water droplet, light concentrates near about $42.5^\circ$ for red ($n=1.33$) and about $41.1^\circ$ for blue ($n=1.34$). The larger angle (red) lies on the outside.</p>
+  <p>To an observer with the Sun at their back, droplets on a cone at this angle around the anti-solar point are visible. In the sky that appears as an arc.</p>
+  <p>This screen stacks droplets vertically and draws ray bundles from each. The direction where the bundle is densest is the peak angle.</p>
+""",
   simulation: RainbowDroplet2DSimulation(multiDroplet: true),
   height: 780,
 );
@@ -315,7 +493,7 @@ final rainbowMultiDroplet2D = createWaveVideo(
 class RainbowDroplet2DSimulation extends WaveSimulation {
   RainbowDroplet2DSimulation({this.multiDroplet = false})
       : super(
-          title: multiDroplet ? "主虹（多数水滴）" : "単一水滴の光路（主虹）",
+          title: multiDroplet ? animL("主虹（多数水滴）", "Primary rainbow (many droplets)") : animL("単一水滴の光路（主虹）", "Single-droplet ray path (primary rainbow)"),
           is3D: false,
           showTimeOverlay: false,
           enableTime: true,
@@ -380,22 +558,22 @@ class RainbowDroplet2DSimulation extends WaveSimulation {
           runSpacing: 8,
           children: [
             ChoiceChip(
-              label: const Text('通常'),
+              label: Text(animL('通常', 'Normal')),
               selected: viewMode == _RainbowViewMode.normal,
               onSelected: (_) => updateParam('viewMode', 0.0),
             ),
             ChoiceChip(
-              label: const Text('極小水滴'),
+              label: Text(animL('極小水滴', 'Tiny droplet')),
               selected: viewMode == _RainbowViewMode.tinyDroplet,
               onSelected: (_) => updateParam('viewMode', 1.0),
             ),
             ChoiceChip(
-              label: const Text('出射点拡大'),
+              label: Text(animL('出射点拡大', 'Exit-point zoom')),
               selected: viewMode == _RainbowViewMode.exitZoom,
               onSelected: (_) => updateParam('viewMode', 2.0),
             ),
             ChoiceChip(
-              label: const Text('光線束'),
+              label: Text(animL('光線束', 'Ray bundle')),
               selected: viewMode == _RainbowViewMode.singleRayBundle,
               onSelected: (_) => updateParam('viewMode', 3.0),
             ),
@@ -406,19 +584,19 @@ class RainbowDroplet2DSimulation extends WaveSimulation {
           spacing: 14,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            const Text(
-              '描画色:',
+            Text(
+              animL('描画色:', 'Draw colors:'),
               style: TextStyle(fontWeight: FontWeight.w700),
             ),
             FilterChip(
-              label: const Text('あか'),
+              label: Text(animL('あか', 'red')),
               selected: bundleSelection.drawRed,
               onSelected: (v) => setBundleSelection(red: v),
               selectedColor: Colors.red.withOpacity(0.18),
               checkmarkColor: Colors.red.shade700,
             ),
             FilterChip(
-              label: const Text('あお'),
+              label: Text(animL('あお', 'blue')),
               selected: bundleSelection.drawBlue,
               onSelected: (v) => setBundleSelection(blue: v),
               selectedColor: Colors.blue.withOpacity(0.18),
@@ -432,8 +610,8 @@ class RainbowDroplet2DSimulation extends WaveSimulation {
           runSpacing: 8,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            const Text(
-              '描画色:',
+            Text(
+              animL('描画色:', 'Draw colors:'),
               style: TextStyle(fontWeight: FontWeight.w700),
             ),
             for (int i = 0; i < _sevenColorPalette.length; i++)
@@ -457,7 +635,7 @@ class RainbowDroplet2DSimulation extends WaveSimulation {
           onChanged: (v) => updateParam('k', v),
         ),
       Text(
-        '理論ピーク φ: 赤 ${metrics.redPeakPhi.toStringAsFixed(2)}° / 青 ${metrics.bluePeakPhi.toStringAsFixed(2)}°',
+        animL('理論ピーク φ: 赤 ${metrics.redPeakPhi.toStringAsFixed(2)}° / 青 ${metrics.bluePeakPhi.toStringAsFixed(2)}°', 'Theory peak φ: red ${metrics.redPeakPhi.toStringAsFixed(2)}° / blue ${metrics.bluePeakPhi.toStringAsFixed(2)}°'),
         style: const TextStyle(
           fontSize: 20,
           fontWeight: FontWeight.w800,
@@ -575,7 +753,7 @@ class RainbowDroplet2DSimulation extends WaveSimulation {
   }
 
   String _colorLabel(int i) {
-    const labels = ['赤', '橙', '黄', '緑', '水', '青', '紫'];
+    final labels = [animL('赤', 'Red'), animL('橙', 'Orange'), animL('黄', 'Yellow'), animL('緑', 'Green'), animL('水', 'Water'), animL('青', 'Blue'), animL('紫', 'Violet')];
     return labels[i];
   }
 

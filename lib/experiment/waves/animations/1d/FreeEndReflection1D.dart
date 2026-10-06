@@ -5,13 +5,20 @@ import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import '../fields/wave_fields.dart';
 import '../painters/wave_line_painter.dart';
 import '../widgets/wave_slider.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 final freeEndReflection1D = createWaveVideo(
   title: "1次元の定在波(自由端反射)",
+  titleEn: '1D standing wave (free-end reflection)',
   latex: r"""
   <div class="common-box">ポイント</div>
   <p>自由端では、反射波は入射波と同位相で反射します。</p>
   <p>合成波は端で常に振幅が最大となります（腹）。</p>
+  """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>At a free end, the reflected wave has the same phase as the incident wave.</p>
+  <p>The combined wave has maximum amplitude at the end at all times (an antinode).</p>
   """,
   simulation: FreeEndReflection1DSimulation(),
 );
@@ -19,7 +26,7 @@ final freeEndReflection1D = createWaveVideo(
 class FreeEndReflection1DSimulation extends WaveSimulation {
   FreeEndReflection1DSimulation()
       : super(
-          title: "1次元の定在波(自由端反射)",
+          title: animL("1次元の定在波(自由端反射)", "1D standing wave (free-end reflection)"),
           is3D: false,
           formula: const Column(
             children: [
@@ -68,13 +75,13 @@ class FreeEndReflection1DSimulation extends WaveSimulation {
     return Wrap(
       spacing: 8,
       children: [
-        buildChip('入射波', 'incident', Colors.purpleAccent, activeIds,
+        buildChip(animL('入射波', 'Incident wave'), 'incident', Colors.purpleAccent, activeIds,
             updateActiveIds,
             fontSize: 12),
-        buildChip('反射波', 'reflected', Colors.greenAccent, activeIds,
+        buildChip(animL('反射波', 'Reflected wave'), 'reflected', Colors.greenAccent, activeIds,
             updateActiveIds,
             fontSize: 12),
-        buildChip('合成波', 'combined', Colors.blueAccent, activeIds,
+        buildChip(animL('合成波', 'Resultant wave'), 'combined', Colors.blueAccent, activeIds,
             updateActiveIds,
             fontSize: 12),
       ],
@@ -104,7 +111,7 @@ class FreeEndReflection1DSimulation extends WaveSimulation {
         activeComponentIds: activeIds,
         scale: scale,
         markers: [
-          getObsMarker(params, label: '合成波の観測点'),
+          getObsMarker(params, label: animL('合成波の観測点', 'Observation point of resultant wave')),
         ],
       ),
     );

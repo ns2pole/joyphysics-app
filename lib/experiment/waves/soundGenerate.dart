@@ -12,6 +12,7 @@ final soundGenerate = Video(
   category: 'waves',
   iconName: "megaphone",
   title: "スマホによる音波の生成",
+  titleEn: "Generating sound waves with a smartphone",
   videoURL: "",
   equipment: [],
   costRating: "★☆☆",
@@ -30,6 +31,23 @@ final soundGenerate = Video(
 </ul>
 <p>
 スマホだけでこれらの現象を手軽に観察できます。ぜひ試してみて下さい。
+</p>
+""",
+  latexEn: r"""
+<div class="common-box">Generating sound waves with a smartphone</div>
+<p>
+By playing sound from a smartphone and adjusting its frequency, you can freely change the pitch.<br>
+With this, you can experience physical phenomena such as the following.
+</p>
+
+<ul>
+  <li><b>Pitch:</b> Changing the frequency $f$ changes how high or low the sound is.</li>
+  <li><b>Resonance:</b> Sound directed at an instrument or container rings loudly at particular frequencies.</li>
+  <li><b>Interference (beats):</b> Two tones with slightly different frequencies played together produce beats that repeatedly grow louder and softer.</li>
+  <li><b>Doppler effect:</b> Moving the source (smartphone) or the observer changes the heard pitch.</li>
+</ul>
+<p>
+You can observe these phenomena casually with only a smartphone. Give them a try.
 </p>
 """,
   experimentWidgets: [ToneGeneratorWidget(initialFreq: 340, height: 180)],

@@ -4,9 +4,11 @@ import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import '../fields/wave_fields.dart';
 import '../painters/wave_line_painter.dart';
 import '../widgets/wave_slider.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 final twoSource1D = createWaveVideo(
   title: "1次元干渉",
+  titleEn: '1D interference',
   latex: r"""
   <div class="common-box">ポイント</div>
   <p>一直線上の二つの音源から、同じ振幅・同じ周期の波が出ます。媒質の変位は重ね合わせで</p>
@@ -15,15 +17,23 @@ final twoSource1D = createWaveVideo(
   <p>$$\Delta\varphi=2\pi\frac{r_1-r_2}{\lambda}+\phi$$</p>
   <p>強め合いは $\displaystyle \frac{\Delta\varphi}{2\pi}=m$、弱め合いは $\displaystyle \frac{\Delta\varphi}{2\pi}=m+\frac{1}{2}$（$m$ は整数）です。波は速さ $\displaystyle v=\frac{\lambda}{T}$ で届くまで変位は 0 です。</p>
   """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>Two sources on a line emit waves of the same amplitude and period. The medium displacement is the superposition</p>
+  <p>$$y=y_1+y_2$$</p>
+  <p>With distances $r_1$ and $r_2$ to sources 1 and 2, and initial phase $\phi$ of source 2, the phase difference is</p>
+  <p>$$\Delta\varphi=2\pi\frac{r_1-r_2}{\lambda}+\phi$$</p>
+  <p>Constructive interference when $\displaystyle \frac{\Delta\varphi}{2\pi}=m$, destructive when $\displaystyle \frac{\Delta\varphi}{2\pi}=m+\frac{1}{2}$ ($m$ an integer). Until the wave arrives at speed $\displaystyle v=\frac{\lambda}{T}$, the displacement is 0.</p>
+  """,
   simulation: TwoSource1DSimulation(),
 );
 
 class TwoSource1DSimulation extends WaveSimulation {
   TwoSource1DSimulation()
       : super(
-          title: "1次元干渉",
+          title: animL("1次元干渉", "1D interference"),
           is3D: false,
-          formula: const Column(
+          formula: Column(
             children: [
               FormulaDisplay(
                   r'\displaystyle y=y_1+y_2,\quad \frac{\Delta\varphi}{2\pi}=\frac{r_1-r_2}{\lambda}+\frac{\phi}{2\pi}'),
@@ -49,24 +59,24 @@ class TwoSource1DSimulation extends WaveSimulation {
   List<Widget> buildControls(context, params, updateParam) {
     return [
       LambdaSlider(
-        label: '波長',
+        label: animL('波長', 'Wavelength'),
         value: params['lambda']!,
         onChanged: (v) => updateParam('lambda', v),
       ),
       PeriodTSlider(
-        label: '周期',
+        label: animL('周期', 'Period'),
         value: params['periodT']!,
         onChanged: (v) => updateParam('periodT', v),
       ),
       ThicknessLSlider(
-        label: '音源間距離D',
+        label: animL('音源間距離D', 'Source separation D'),
         value: params['distanceD']!,
         min: 0.1,
         max: 8.0,
         onChanged: (v) => updateParam('distanceD', v),
       ),
       WaveParameterSlider(
-        label: '位相ずれ',
+        label: animL('位相ずれ', 'Phase shift'),
         value: params['phaseShift']!,
         min: 0.0,
         max: 2 * math.pi,
@@ -81,11 +91,11 @@ class TwoSource1DSimulation extends WaveSimulation {
     return Wrap(
       spacing: 8,
       children: [
-        buildChip('音源1', 'wave1', Colors.purpleAccent, activeIds, updateActiveIds,
+        buildChip(animL('音源1', 'Source 1'), 'wave1', Colors.purpleAccent, activeIds, updateActiveIds,
             fontSize: 14),
-        buildChip('音源2', 'wave2', Colors.greenAccent, activeIds, updateActiveIds,
+        buildChip(animL('音源2', 'Source 2'), 'wave2', Colors.greenAccent, activeIds, updateActiveIds,
             fontSize: 14),
-        buildChip('合成波', 'combined', Colors.blueAccent, activeIds, updateActiveIds,
+        buildChip(animL('合成波', 'Resultant wave'), 'combined', Colors.blueAccent, activeIds, updateActiveIds,
             fontSize: 14),
       ],
     );
@@ -121,7 +131,7 @@ class TwoSource1DSimulation extends WaveSimulation {
             color: Colors.green,
             label: 'S2',
           ),
-          getObsMarker(params, label: '観測点'),
+          getObsMarker(params, label: animL('観測点', 'Observation point')),
         ],
       ),
     );

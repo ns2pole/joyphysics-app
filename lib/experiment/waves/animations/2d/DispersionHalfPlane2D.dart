@@ -5,6 +5,7 @@ import '../painters/wave_surface_painter.dart';
 import '../utils/coordinate_transformer.dart';
 import '../widgets/wave_slider.dart';
 import 'dart:math' as math;
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 /// 水（20℃）。C 線（赤 656.3 nm）と F 線（青 486.1 nm）。
 const double kWaterNRed = 1.33115;
@@ -17,6 +18,7 @@ const double kDispersionLambdaBlue = 1.20;
 
 final dispersionHalfPlane2D = createWaveVideo(
   title: "2次元直線波の分散",
+  titleEn: 'Dispersion of a 2D plane wave',
   latex: r"""
   <div class="common-box">ポイント</div>
   <p>色によって屈折率が違うので、同じ入射角でも屈折角が少し違います。</p>
@@ -28,13 +30,24 @@ final dispersionHalfPlane2D = createWaveVideo(
   <p>角の差は $1^\circ$ より小さいので、波面の折れ方は赤と青でほとんど重なって見えます。よく見ると、青の方がわずかに大きく屈折しています。波面の間隔（波長）の違いの方がはっきりします。</p>
   <p>「光線」をオンにすると、入射光線と、赤・青の屈折光線を重ねます。</p>
   """,
+  latexEn: r"""
+  <div class="common-box">Key points</div>
+  <p>Because the refractive index depends on color, the angle of refraction differs slightly even for the same angle of incidence.</p>
+  <p>Snell's law: $\sin\theta_1=n\sin\theta_2$ (the refractive index on the air side is $1$)</p>
+  <p>In water, red has $n=1.331$ and blue has $n=1.337$. For an incidence angle of $80^\circ$, the refraction angles are $47.72^\circ$ for red and $47.44^\circ$ for blue. Blue bends $0.28^\circ$ more toward the normal.</p>
+  <p>The yellow region is water of sufficient thickness; everything to the right of the interface is water.</p>
+  <div class="common-box">Note</div>
+  <p>At the interface, reflection occurs together with transmission. In this simulation, reflected waves are not drawn so that the refracted wavefronts are easier to see.</p>
+  <p>The angular difference is less than $1^\circ$, so the bends of the red and blue wavefronts look almost the same. Looking carefully, blue is refracted slightly more. The difference in wavefront spacing (wavelength) is clearer.</p>
+  <p>Turning on "Rays" overlays the incident ray and the red and blue refracted rays.</p>
+  """,
   simulation: DispersionHalfPlaneSimulation(),
 );
 
 class DispersionHalfPlaneSimulation extends WaveSimulation {
   DispersionHalfPlaneSimulation()
       : super(
-          title: "2次元直線波の分散",
+          title: animL("2次元直線波の分散", "Dispersion of a 2D plane wave"),
           is3D: true,
         );
 
@@ -56,9 +69,7 @@ class DispersionHalfPlaneSimulation extends WaveSimulation {
         const FormulaDisplay(r'n_{\mathrm{red}}=1.331,\ n_{\mathrm{blue}}=1.337'),
         const SizedBox(height: 6),
         Text(
-          '80°入射: 赤 ${ex.redDeg.toStringAsFixed(2)}°、'
-          '青 ${ex.blueDeg.toStringAsFixed(2)}°'
-          '（青の方が ${ex.gapDeg.toStringAsFixed(2)}° 大きく折れる）',
+          animL('80°入射: 赤 ${ex.redDeg.toStringAsFixed(2)}°、青 ${ex.blueDeg.toStringAsFixed(2)}°（青の方が ${ex.gapDeg.toStringAsFixed(2)}° 大きく折れる）', '80° incidence: red ${ex.redDeg.toStringAsFixed(2)}°,blue ${ex.blueDeg.toStringAsFixed(2)}°(blue bends ${ex.gapDeg.toStringAsFixed(2)}° more)'),
           textAlign: TextAlign.center,
           style: const TextStyle(
             fontSize: 14,
@@ -73,7 +84,7 @@ class DispersionHalfPlaneSimulation extends WaveSimulation {
 
   @override
   String? get situation =>
-      'よく見ると、青の方がわずかに大きく屈折しています。';
+      animL('よく見ると、青の方がわずかに大きく屈折しています。', 'On close look, blue refracts slightly more.');
 
   static double get lambdaRed =>
       kDispersionLambdaBlue * kWaterLambdaRedNm / kWaterLambdaBlueNm;
@@ -95,9 +106,9 @@ class DispersionHalfPlaneSimulation extends WaveSimulation {
       };
 
   @override
-  List<WavefrontLayer> get wavefrontLayers => const [
-        WavefrontLayer(id: 'red', label: '赤', color: Colors.red),
-        WavefrontLayer(id: 'blue', label: '青', color: Colors.blue),
+  List<WavefrontLayer> get wavefrontLayers => [
+        WavefrontLayer(id: 'red', label: animL('赤', 'Red'), color: Colors.red),
+        WavefrontLayer(id: 'blue', label: animL('青', 'Blue'), color: Colors.blue),
       ];
 
   @override
@@ -107,7 +118,7 @@ class DispersionHalfPlaneSimulation extends WaveSimulation {
       alignment: WrapAlignment.center,
       children: [
         buildChip(
-          '光線',
+          animL('光線', 'Rays'),
           'showRays',
           Colors.deepOrange,
           activeIds,
@@ -126,7 +137,7 @@ class DispersionHalfPlaneSimulation extends WaveSimulation {
     final gap = redDeg - blueDeg;
     return [
       Text(
-        'いまの入射角: 赤 ${redDeg.toStringAsFixed(2)}°   青 ${blueDeg.toStringAsFixed(2)}°   差 ${gap.toStringAsFixed(2)}°',
+        animL('いまの入射角: 赤 ${redDeg.toStringAsFixed(2)}°   青 ${blueDeg.toStringAsFixed(2)}°   差 ${gap.toStringAsFixed(2)}°', 'Current incidence: red ${redDeg.toStringAsFixed(2)}°   blue ${blueDeg.toStringAsFixed(2)}°   difference ${gap.toStringAsFixed(2)}°'),
         textAlign: TextAlign.center,
         style: const TextStyle(fontSize: 12),
       ),

@@ -4,9 +4,11 @@ import '../fields/wave_fields.dart';
 import '../painters/wave_surface_painter.dart';
 import '../widgets/wave_slider.dart';
 import 'dart:math' as math;
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 final planeWaveInterference = createWaveVideo(
   title: "直線波干渉",
+  titleEn: 'Plane wave interference',
   latex: r"""
   <div class="common-box">解説</div>
   <p>2つの異なる方向へ進む直線波が重なり合うことで干渉縞が生じます。</p>
@@ -14,13 +16,20 @@ final planeWaveInterference = createWaveVideo(
   <p>\[ z = z_1 + z_2 \]</p>
   <p>周期が異なると、定常な節線・腹線はありません。</p>
   """,
+  latexEn: r"""
+  <div class="common-box">Explanation</div>
+  <p>Interference fringes form when two plane waves traveling in different directions overlap.</p>
+  <p>The displacement $z$ of the resultant wave is the sum of the individual displacements $z_1$ and $z_2$:</p>
+  <p>\[ z = z_1 + z_2 \]</p>
+  <p>If the periods differ, there are no stationary nodal or antinodal lines.</p>
+  """,
   simulation: PlaneWaveInterferenceSimulation(),
 );
 
 class PlaneWaveInterferenceSimulation extends WaveSimulation {
   PlaneWaveInterferenceSimulation()
       : super(
-          title: "直線波干渉",
+          title: animL("直線波干渉", "Plane wave interference"),
           is3D: true,
           formula: const Column(
             children: [
@@ -54,9 +63,9 @@ class PlaneWaveInterferenceSimulation extends WaveSimulation {
       {'combined', 'showNodalLines', 'showAntinodalLines'};
 
   @override
-  List<WavefrontLayer> get wavefrontLayers => const [
-        WavefrontLayer(id: 'wave1', label: '波1', color: Colors.purpleAccent),
-        WavefrontLayer(id: 'wave2', label: '波2', color: Colors.greenAccent),
+  List<WavefrontLayer> get wavefrontLayers => [
+        WavefrontLayer(id: 'wave1', label: animL('波1', 'Wave 1'), color: Colors.purpleAccent),
+        WavefrontLayer(id: 'wave2', label: animL('波2', 'Wave 2'), color: Colors.greenAccent),
       ];
 
   bool _samePeriod(Map<String, double> params) =>
@@ -65,7 +74,7 @@ class PlaneWaveInterferenceSimulation extends WaveSimulation {
   @override
   List<Widget> buildControls(context, params, updateParam) {
     return [
-      const Text('波1のパラメータ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+      Text(animL('波1のパラメータ', 'Wave 1 parameters'), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
       ThetaSlider(
         value: params['theta1']!,
         maxDeg: 360,
@@ -80,7 +89,7 @@ class PlaneWaveInterferenceSimulation extends WaveSimulation {
         onChanged: (v) => updateParam('periodT1', v),
       ),
       const SizedBox(height: 8),
-      const Text('波2のパラメータ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+      Text(animL('波2のパラメータ', 'Wave 2 parameters'), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
       ThetaSlider(
         value: params['theta2']!,
         maxDeg: 360,
@@ -104,16 +113,16 @@ class PlaneWaveInterferenceSimulation extends WaveSimulation {
       spacing: 8,
       alignment: WrapAlignment.center,
       children: [
-        buildChip('波1', 'wave1', Colors.purpleAccent, activeIds, updateActiveIds,
+        buildChip(animL('波1', 'Wave 1'), 'wave1', Colors.purpleAccent, activeIds, updateActiveIds,
             fontSize: 12),
-        buildChip('波2', 'wave2', Colors.greenAccent, activeIds, updateActiveIds,
+        buildChip(animL('波2', 'Wave 2'), 'wave2', Colors.greenAccent, activeIds, updateActiveIds,
             fontSize: 12),
-        buildChip('合成', 'combined', Colors.blueAccent, activeIds, updateActiveIds,
+        buildChip(animL('合成', 'Combined'), 'combined', Colors.blueAccent, activeIds, updateActiveIds,
             fontSize: 12),
-        buildChip('節線', 'showNodalLines', Colors.orangeAccent, activeIds,
+        buildChip(animL('節線', 'Nodal lines'), 'showNodalLines', Colors.orangeAccent, activeIds,
             updateActiveIds,
             fontSize: 12),
-        buildChip('腹線', 'showAntinodalLines', Colors.orangeAccent, activeIds,
+        buildChip(animL('腹線', 'Antinodal lines'), 'showAntinodalLines', Colors.orangeAccent, activeIds,
             updateActiveIds,
             fontSize: 12),
       ],
@@ -143,7 +152,7 @@ class PlaneWaveInterferenceSimulation extends WaveSimulation {
         activeComponentIds: activeIds,
         scale: scale,
         markers: [
-          getObsMarker(params, label: '観測点'),
+          getObsMarker(params, label: animL('観測点', 'Observation point')),
         ],
         showNodalLines: canNodal && activeIds.contains('showNodalLines'),
         nodalMetric: canNodal ? field.nodalMetric : null,

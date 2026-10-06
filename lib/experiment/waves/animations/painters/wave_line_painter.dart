@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../fields/wave_fields.dart';
 import '../utils/coordinate_transformer.dart';
 import 'wave_surface_painter.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 class WaveLinePainter extends CustomPainter {
   WaveLinePainter({
@@ -100,7 +101,7 @@ class WaveLinePainter extends CustomPainter {
         return [
           WaveComponent(
             id: 'total',
-            label: '合成波',
+            label: animL('合成波', 'Resultant wave'),
             color: surfaceColor,
             value: field.z(x, 0, time),
           ),

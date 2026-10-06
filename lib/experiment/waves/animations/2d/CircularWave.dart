@@ -4,14 +4,22 @@ import 'package:joyphysics/experiment/PhysicsAnimationBase.dart';
 import '../fields/wave_fields.dart';
 import '../painters/wave_surface_painter.dart';
 import '../widgets/wave_slider.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 final circularWave = createWaveVideo(
   title: "円形波",
+  titleEn: 'Circular wave',
   latex: r"""
   <div class="common-box">解説</div>
   <p>原点の点源から速さ $\displaystyle v=\frac{\lambda}{T}$ で円形に広がる波です。波が距離 $r$ に届いたあと</p>
   <p>$$z=A\sin\left(2\pi\left(\frac{t}{T}-\frac{r}{\lambda}\right)\right),\quad r=\sqrt{x^{2}+y^{2}}$$</p>
   <p>届くまでは変位は 0 です。波面は原点を中心とする円です。</p>
+  """,
+  latexEn: r"""
+  <div class="common-box">Explanation</div>
+  <p>A wave that spreads in circles from a point source at the origin at speed $\displaystyle v=\frac{\lambda}{T}$. After the wave reaches distance $r$,</p>
+  <p>$$z=A\sin\left(2\pi\left(\frac{t}{T}-\frac{r}{\lambda}\right)\right),\quad r=\sqrt{x^{2}+y^{2}}$$</p>
+  <p>Until it arrives, the displacement is 0. Wavefronts are circles centered at the origin.</p>
   """,
   simulation: CircularWaveSimulation(),
 );
@@ -19,7 +27,7 @@ final circularWave = createWaveVideo(
 class CircularWaveSimulation extends WaveSimulation {
   CircularWaveSimulation()
       : super(
-          title: "円形波",
+          title: animL("円形波", "Circular wave"),
           is3D: true,
           formula: const FormulaDisplay(
               r'\displaystyle z=A\sin\left(2\pi\left(\frac{t}{T}-\frac{\sqrt{x^{2}+y^{2}}}{\lambda}\right)\right)'),
@@ -63,7 +71,7 @@ class CircularWaveSimulation extends WaveSimulation {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         buildChip(
-          '断面',
+          animL('断面', 'Cross section'),
           'showCrossSection',
           Colors.deepPurple,
           activeIds,
@@ -93,7 +101,7 @@ class CircularWaveSimulation extends WaveSimulation {
         scale: scale,
         markers: [
           WaveMarker(point: const math.Point(0.0, 0.0), color: Colors.yellow),
-          getObsMarker(params, label: '観測点 (a, b)'),
+          getObsMarker(params, label: animL('観測点 (a, b)', 'Observation point (a, b)')),
         ],
         radialCrossSections: [
           if (activeIds.contains('showCrossSection'))

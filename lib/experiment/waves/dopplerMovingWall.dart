@@ -9,8 +9,11 @@ final dopplerMovingWall = Video(
   category: 'waves',
   iconName: "doppler1",
   title: "動く物体による反射と速度測定",
+  titleEn: "Reflection from a moving object and speed measurement",
   videoURL: "C6Mq7apCUcU",
+  videoURLEn: "C6Mq7apCUcU",
   equipment: ["スマホ2台", "板（ノートや下敷きでもいけると思います）"],
+  equipmentEn: ["2 smartphones", "board (a notebook or desk pad also works)"],
   costRating: "★☆☆",
   latex: r"""
 <div class="common-box">壁が動くときのドップラー効果</div>
@@ -190,6 +193,183 @@ $$
   <li>上の式から壁の速さ $u$ を求める</li>
 </ol>
 <p>周波数測定は「センサーを使う」の<b>うなり</b>と同じ機能です。下の測定ウィジェットでも観測できます。</p>
+""",
+  latexEn: r"""
+<div class="common-box">Doppler effect for a moving wall</div>
+<p>A fixed source emits sound of frequency $f$, and we observe at the source the frequency $f_{\mathrm{ref}}$ of the sound reflected back from a wall. Let the speed of sound be $v$.</p>
+<p>When the reflector moves, the reflected wave undergoes the <b>Doppler effect twice</b>. The video below shows this experiment.</p>
+
+<div class="common-box">Experimental data</div>
+<p>The settings and data from the video experiment are as follows.</p>
+<ul>
+  <li>Source frequency: $f_0 = 11074\,\mathrm{Hz}$</li>
+  <li>Speed of sound: $v = 340\,\mathrm{m/s}$ (standard value)</li>
+</ul>
+<table style="border-collapse: collapse; width: 100%; margin: 12px auto; border: 1px solid #333;">
+  <thead>
+    <tr>
+      <th style="border: 1px solid #333; padding: 6px 8px; background-color: #f2f2f2;">Trial</th>
+      <th style="border: 1px solid #333; padding: 6px 8px; background-color: #f2f2f2;">Type</th>
+      <th style="border: 1px solid #333; padding: 6px 8px; background-color: #f2f2f2;">Reflected frequency [Hz]</th>
+      <th style="border: 1px solid #333; padding: 6px 8px; background-color: #f2f2f2;">Difference from source [Hz]</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="border: 1px solid #333; padding: 6px 8px;">1st</td>
+      <td style="border: 1px solid #333; padding: 6px 8px;">Minimum</td>
+      <td style="border: 1px solid #333; padding: 6px 8px;">11050</td>
+      <td style="border: 1px solid #333; padding: 6px 8px;">$-24$</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #333; padding: 6px 8px;">1st</td>
+      <td style="border: 1px solid #333; padding: 6px 8px;">Maximum</td>
+      <td style="border: 1px solid #333; padding: 6px 8px;">11094</td>
+      <td style="border: 1px solid #333; padding: 6px 8px;">$+20$</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #333; padding: 6px 8px;">2nd</td>
+      <td style="border: 1px solid #333; padding: 6px 8px;">Minimum</td>
+      <td style="border: 1px solid #333; padding: 6px 8px;">11058</td>
+      <td style="border: 1px solid #333; padding: 6px 8px;">$-16$</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #333; padding: 6px 8px;">2nd</td>
+      <td style="border: 1px solid #333; padding: 6px 8px;">Maximum</td>
+      <td style="border: 1px solid #333; padding: 6px 8px;">11090</td>
+      <td style="border: 1px solid #333; padding: 6px 8px;">$+16$</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="common-box">Theory: wall speed formulas</div>
+<p><b>(i) Wall approaching the source</b></p>
+<p>The frequency observed after reflection from the wall is $\displaystyle f_{\mathrm{ref}} = f\frac{v+u}{v-u}$. Hence the wall speed $u$ is</p>
+$$
+u = v\frac{f_{\mathrm{ref}}-f}{f_{\mathrm{ref}}+f}
+$$
+<p><b>(ii) Wall receding from the source</b></p>
+<p>The frequency observed after reflection from the wall is $\displaystyle f_{\mathrm{ref}} = f\frac{v-u}{v+u}$. Hence the wall speed $u$ is</p>
+$$
+u = v\frac{f-f_{\mathrm{ref}}}{f_{\mathrm{ref}}+f}
+$$
+<p><b>(iii) Unified expression for wall speed</b></p>
+<p>Whether approaching or receding, the wall speed can be written as</p>
+$$
+u = v\left|\frac{f-f_{\mathrm{ref}}}{f+f_{\mathrm{ref}}}\right|
+$$
+
+<div class="common-box">Numerical calculation</div>
+<p>Below we take $v=340\,\mathrm{m/s}$ and $f=11074\,\mathrm{Hz}$. Speeds are found as $u$ with $u\ge 0$.</p>
+<p>For both approaching and receding cases, $\displaystyle u = v\left|\frac{f-f_{\mathrm{ref}}}{f+f_{\mathrm{ref}}}\right|$ gives the following results.</p>
+
+<p><b>(1) Trial 1: receding</b></p>
+$$\begin{aligned}
+u_{1,\mathrm{rec}}
+&= 340\frac{11074-11050}{11050+11074} \\
+&= 340\frac{24}{22124} \\
+&\fallingdotseq 0.3688\,\mathrm{m/s}
+\end{aligned}$$
+
+<p><b>(2) Trial 1: approaching</b></p>
+$$\begin{aligned}
+u_{1,\mathrm{app}}
+&= 340\frac{11094-11074}{11094+11074} \\
+&= 340\frac{20}{22168} \\
+&\fallingdotseq 0.3067\,\mathrm{m/s}
+\end{aligned}$$
+
+<p><b>(3) Trial 2: receding</b></p>
+$$\begin{aligned}
+u_{2,\mathrm{rec}}
+&= 340\frac{11074-11058}{11058+11074} \\
+&= 340\frac{16}{22132} \\
+&\fallingdotseq 0.2458\,\mathrm{m/s}
+\end{aligned}$$
+
+<p><b>(4) Trial 2: approaching</b></p>
+$$\begin{aligned}
+u_{2,\mathrm{app}}
+&= 340\frac{11090-11074}{11090+11074} \\
+&= 340\frac{16}{22164} \\
+&\fallingdotseq 0.2454\,\mathrm{m/s}
+\end{aligned}$$
+
+<p><b>(5) Summary of results</b></p>
+<table style="border-collapse: collapse; width: 100%; margin: 12px auto; border: 1px solid #333;">
+  <thead>
+    <tr>
+      <th style="border: 1px solid #333; padding: 6px 8px; background-color: #f2f2f2;">Trial</th>
+      <th style="border: 1px solid #333; padding: 6px 8px; background-color: #f2f2f2;">Type</th>
+      <th style="border: 1px solid #333; padding: 6px 8px; background-color: #f2f2f2;">Reflected frequency [Hz]</th>
+      <th style="border: 1px solid #333; padding: 6px 8px; background-color: #f2f2f2;">Difference from source [Hz]</th>
+      <th style="border: 1px solid #333; padding: 6px 8px; background-color: #f2f2f2;">Wall speed [m/s]</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="border: 1px solid #333; padding: 6px 8px;">1st</td>
+      <td style="border: 1px solid #333; padding: 6px 8px;">Minimum</td>
+      <td style="border: 1px solid #333; padding: 6px 8px;">11050</td>
+      <td style="border: 1px solid #333; padding: 6px 8px;">$-24$</td>
+      <td style="border: 1px solid #333; padding: 6px 8px;">$0.3688$</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #333; padding: 6px 8px;">1st</td>
+      <td style="border: 1px solid #333; padding: 6px 8px;">Maximum</td>
+      <td style="border: 1px solid #333; padding: 6px 8px;">11094</td>
+      <td style="border: 1px solid #333; padding: 6px 8px;">$+20$</td>
+      <td style="border: 1px solid #333; padding: 6px 8px;">$0.3067$</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #333; padding: 6px 8px;">2nd</td>
+      <td style="border: 1px solid #333; padding: 6px 8px;">Minimum</td>
+      <td style="border: 1px solid #333; padding: 6px 8px;">11058</td>
+      <td style="border: 1px solid #333; padding: 6px 8px;">$-16$</td>
+      <td style="border: 1px solid #333; padding: 6px 8px;">$0.2458$</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #333; padding: 6px 8px;">2nd</td>
+      <td style="border: 1px solid #333; padding: 6px 8px;">Maximum</td>
+      <td style="border: 1px solid #333; padding: 6px 8px;">11090</td>
+      <td style="border: 1px solid #333; padding: 6px 8px;">$+16$</td>
+      <td style="border: 1px solid #333; padding: 6px 8px;">$0.2454$</td>
+    </tr>
+  </tbody>
+</table>
+<p>※ Source frequency is $f_0 = 11074\,\mathrm{Hz}$</p>
+
+<div class="common-box">Theory: Doppler formulas for a moving wall (derivation)</div>
+<p><b>(1) Frequency received by the wall (moving-observer Doppler)</b></p>
+<p>When the wall approaches the source, the frequency $f_1$ received by the wall is</p>
+$$
+f_1 = f\frac{v+u}{v}
+$$
+<p>(moving-observer formula).</p>
+
+<p><b>(2) Frequency after reflection (treat the wall as a moving source)</b></p>
+<p>Because the wall approaches the source, it hears frequency $\displaystyle f_1 = f\frac{v+u}{v}$. Treating the wall as a moving source of frequency $f_1$ at speed $u$, the frequency reflected back to the source is</p>
+$$
+f_{\mathrm{ref}} = f_1\frac{v}{v-u}\quad\cdots(1)
+$$
+<p>(moving-source formula).</p>
+<p>Substituting $\displaystyle f_1 = f\frac{v+u}{v}$ into (1) yields</p>
+$$
+f_{\mathrm{ref}} = f\frac{v+u}{v-u}
+$$
+<p>※ When the wall recedes, replace $u\to -u$ to obtain</p>
+$$
+f_1 = f\frac{v-u}{v},\qquad f_{\mathrm{ref}} = f\frac{v-u}{v+u}
+$$
+
+<div class="common-box">How to run the experiment</div>
+<ol>
+  <li>On one smartphone, play the tone below near $11074\,\mathrm{Hz}$ (keep the source fixed)</li>
+  <li>With the other smartphone, measure the reflected frequency near the source</li>
+  <li>Move a board (a notebook or desk pad also works) toward and away from the source and read the max/min of $f_{\mathrm{ref}}$</li>
+  <li>Find the wall speed $u$ from the formulas above</li>
+</ol>
+<p>Frequency measurement uses the same feature as <b>Beats</b> under Sensors. You can also observe with the measurement widget below.</p>
 """,
   experimentWidgets: [
     FrequencyMeasureWidget(height: 180, useScaffold: false),
