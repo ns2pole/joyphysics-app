@@ -12,7 +12,11 @@ import 'package:joyphysics/experiment/waves/FrequencyMeasureWidget.dart';
 import 'package:joyphysics/experiment/sensorArticlesData.dart';
 import 'package:joyphysics/experiment/sensor_availability.dart';
 import 'package:joyphysics/experiment/sensor_availability_types.dart';
+import 'package:joyphysics/experiment/sensor_gadget_l10n.dart';
+import 'package:joyphysics/l10n/app_localizations.dart';
+import 'package:joyphysics/l10n/catalog_name_localizations.dart';
 import 'package:joyphysics/shared_components.dart';
+import 'package:joyphysics/utils/locale_utils.dart';
 
 class SensorListView extends StatefulWidget {
   const SensorListView({super.key});
@@ -83,7 +87,9 @@ class _SensorListViewState extends State<SensorListView> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(granted.message)),
+          SnackBar(
+            content: Text(sensorAvailabilityMessage(context, granted)),
+          ),
         );
       }
       return;
@@ -137,18 +143,31 @@ class _SensorListViewState extends State<SensorListView> {
       },
   ];
 
+  String _titleSuffix(AppLocalizations l10n, SensorAvailability status) {
+    if (status.isAvailable) return '';
+    if (status.needsPermission) return l10n.sensorPermissionRequiredSuffix;
+    if (status.state == SensorAvailabilityState.denied) {
+      return l10n.sensorPermissionDeniedSuffix;
+    }
+    if (status.state == SensorAvailabilityState.checking) {
+      return l10n.sensorCheckingSuffix;
+    }
+    return l10n.sensorUnsupportedSuffix;
+  }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: Text('センサーを使う')),
+      appBar: AppBar(title: Text(l10n.useSensorsTitle)),
       body: ListView.separated(
         itemCount: sensors.length + 1, // +1 = 解説記事
-        separatorBuilder: (_, __) => Divider(),
+        separatorBuilder: (_, __) => const Divider(),
         itemBuilder: (context, index) {
           if (index < sensors.length) {
             final sensor = sensors[index];
             final availabilityKey = sensor['key'] as String;
+            final nameKey = sensor['name'] as String;
             final status =
                 _availability[availabilityKey] ?? SensorAvailability.unavailable;
             final isAvailable = status.isAvailable;
@@ -156,18 +175,8 @@ class _SensorListViewState extends State<SensorListView> {
             final canTap = isAvailable ||
                 status.needsPermission ||
                 (kIsWeb && !isChecking);
-            final String titleSuffix;
-            if (isAvailable) {
-              titleSuffix = '';
-            } else if (status.needsPermission) {
-              titleSuffix = '(許可が必要)';
-            } else if (status.state == SensorAvailabilityState.denied) {
-              titleSuffix = '(許可拒否)';
-            } else if (status.state == SensorAvailabilityState.checking) {
-              titleSuffix = '(確認中)';
-            } else {
-              titleSuffix = '(端末非対応)';
-            }
+            final titleSuffix = _titleSuffix(l10n, status);
+            final displayName = localizeCatalogName(context, nameKey);
 
             return ListTile(
               leading: Icon(
@@ -175,7 +184,7 @@ class _SensorListViewState extends State<SensorListView> {
                 color: (isAvailable || kIsWeb) ? null : Colors.grey,
               ),
               title: Text(
-                '${sensor['name']}$titleSuffix',
+                '$displayName$titleSuffix',
                 style: TextStyle(
                   color: (isAvailable || kIsWeb) ? null : Colors.grey,
                 ),
@@ -190,7 +199,6 @@ class _SensorListViewState extends State<SensorListView> {
                   : null,
             );
           } else {
-            // 一番下の「解説記事一覧」
             return _buildArticlesAccordion(context);
           }
         },
@@ -199,11 +207,12 @@ class _SensorListViewState extends State<SensorListView> {
   }
 
   Widget _buildArticlesAccordion(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return ExpansionTile(
-      leading: Icon(Icons.menu_book, color: Colors.blue),
+      leading: const Icon(Icons.menu_book, color: Colors.blue),
       title: Text(
-        'センサー実験\ 解説記事一覧',
-        style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
+        l10n.sensorArticlesSection,
+        style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
       ),
       initiallyExpanded: true,
       children: sensorArticlesByCategory.entries.map((entry) {
@@ -221,28 +230,36 @@ class _SensorListViewState extends State<SensorListView> {
         (_availability[categoryName] ?? SensorAvailability.unavailable)
             .isAvailable;
     final bool articleUsable = !hasLinkedSensor || isAvailable || kIsWeb;
+    final lang = appLanguageCode(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SectionHeader(
-            name: categoryName, disabled: !articleUsable, fontSize: 16),
-        ...videos.map((video) {
+          name: localizeCatalogName(context, categoryName),
+          disabled: !articleUsable,
+          fontSize: 16,
+        ),
+        ...videos
+            .where((video) => video.isAvailableForLanguage(lang))
+            .map((video) {
           return Padding(
-            padding: EdgeInsets.symmetric(horizontal: 32 / 3, vertical: 2),
+            padding: const EdgeInsets.symmetric(horizontal: 32 / 3, vertical: 2),
             child: ListTile(
-              contentPadding: EdgeInsets.symmetric(horizontal: 0),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 0),
               leading: Opacity(
                 opacity: articleUsable ? 1.0 : 0.5,
                 child: Image.asset(
-                  'assets/icon/smartphone_only.png',
+                  isEnglishAppLocale(context)
+                      ? 'assets/icon/smartphone_only_en.png'
+                      : 'assets/icon/smartphone_only.png',
                   width: 60,
                   height: 40,
                   fit: BoxFit.contain,
                 ),
               ),
               title: Text(
-                video.title,
+                video.localizedTitle(lang),
                 style: TextStyle(
                   fontSize: 15,
                   color: articleUsable ? Colors.black87 : Colors.grey,
@@ -261,8 +278,8 @@ class _SensorListViewState extends State<SensorListView> {
                   : null,
             ),
           );
-        }).toList(),
-        SizedBox(height: 4),
+        }),
+        const SizedBox(height: 4),
       ],
     );
   }

@@ -10,6 +10,9 @@ import 'package:joyphysics/formulaCollectionView.dart';
 import 'package:joyphysics/home_promo_links.dart';
 import 'package:joyphysics/search/article_search_page.dart';
 import 'package:joyphysics/search/searchable_articles.dart';
+import 'package:joyphysics/l10n/app_localizations.dart';
+import 'package:joyphysics/l10n/catalog_name_localizations.dart';
+import 'package:joyphysics/utils/locale_utils.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
@@ -44,7 +47,10 @@ class JoyPhysicsApp extends StatelessWidget {
         navigatorKey: appNavigatorKey, // ← 同じキーを MaterialApp に渡す
         navigatorObservers: [homeRouteObserver],
         debugShowCheckedModeBanner: false,
-        title: 'アニメと実験で学ぶ高校物理',
+        onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        localeResolutionCallback: resolveAppLocale,
         theme: ThemeData(
           fontFamily: 'KeiFont',
           primarySwatch: Colors.blue,
@@ -127,9 +133,12 @@ class JoyPhysicsApp extends StatelessWidget {
 class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final lang = appLanguageCode(context);
     final articleCount = categoriesData.fold<int>(
       0,
-      (sum, category) => sum + countCategoryArticles(category),
+      (sum, category) =>
+          sum + countCategoryArticles(category, languageCode: lang),
     );
     return Column(
       children: [
@@ -137,11 +146,11 @@ class _Header extends StatelessWidget {
         const SizedBox(height: 6),
         Image.asset('assets/init/profile_arrange.png', width: 90, height: 60),
         SizedBox(height: 4),
-        Text('アニメと実験で学ぶ',
+        Text(l10n.homeTitleLine1,
             style: TextStyle(
                     fontFamily: 'KeiFont',fontSize: 34,  color: Colors.black
                 ),),
-        Text('高校物理',
+        Text(l10n.homeTitleLine2,
         style: TextStyle(
                 fontFamily: 'KeiFont',fontSize: 34, color: Colors.black,
                 height: 1.0, // 行間を揃える
@@ -163,7 +172,7 @@ class _AppVersionLabel extends StatefulWidget {
 }
 
 class _AppVersionLabelState extends State<_AppVersionLabel> {
-  static const String _updateDate = '2026-09-30';
+  static const String _updateDate = '2026-10-05';
   static const TextStyle _metaStyle = TextStyle(
     fontFamily: 'KeiFont',
     fontSize: 13,
@@ -175,6 +184,7 @@ class _AppVersionLabelState extends State<_AppVersionLabel> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return FutureBuilder<PackageInfo>(
       future: _packageInfo,
       builder: (context, snapshot) {
@@ -189,7 +199,7 @@ class _AppVersionLabelState extends State<_AppVersionLabel> {
               children: [
                 Text('ver $version', style: _metaStyle),
                 const SizedBox(width: 10),
-                Text('${widget.articleCount}記事', style: _metaStyle),
+                Text(l10n.articleCount(widget.articleCount), style: _metaStyle),
               ],
             ),
             const SizedBox(height: 2),
@@ -288,7 +298,11 @@ class CategoryList extends StatelessWidget {
       },
     );
   }
-    // ---------------- UI ビルダー ----------------
+  /// ホームのカテゴリ系ボタン左右余白。英語ラベルが長いので en では半分。
+  double _homeButtonHorizontalPadding(BuildContext context) =>
+      isEnglishAppLocale(context) ? 38 : 75;
+
+  // ---------------- UI ビルダー ----------------
   Widget _buildSensorDownloadCta(BuildContext context) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 40),
         child: Card(
@@ -322,7 +336,10 @@ class CategoryList extends StatelessWidget {
       );
 
   Widget _buildSensorButton(BuildContext context) => Padding(
-        padding: EdgeInsets.symmetric(vertical: 8, horizontal: 75),
+        padding: EdgeInsets.symmetric(
+          vertical: 8,
+          horizontal: _homeButtonHorizontalPadding(context),
+        ),
         child: GestureDetector(
           onTap: () => Navigator.push(
             context,
@@ -339,12 +356,12 @@ class CategoryList extends StatelessWidget {
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                Icon(Icons.sensors, color: Colors.white, size: 35),
-                SizedBox(width: 8),
+              children: [
+                const Icon(Icons.sensors, color: Colors.white, size: 35),
+                const SizedBox(width: 8),
                 Text(
-                  'センサーを使う！',
-                  style: TextStyle(
+                  AppLocalizations.of(context)!.useSensors,
+                  style: const TextStyle(
                     fontFamily: 'KeiFont',
                     fontSize: 22,
                     fontWeight: FontWeight.w300,
@@ -358,7 +375,10 @@ class CategoryList extends StatelessWidget {
       );
 
   Widget _buildFormulaButton(BuildContext context) => Padding(
-        padding: EdgeInsets.symmetric(vertical: 8, horizontal: 75),
+        padding: EdgeInsets.symmetric(
+          vertical: 8,
+          horizontal: _homeButtonHorizontalPadding(context),
+        ),
         child: GestureDetector(
           onTap: () => Navigator.push(
             context,
@@ -373,12 +393,12 @@ class CategoryList extends StatelessWidget {
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                Icon(Icons.functions, color: Colors.white, size: 35),
-                SizedBox(width: 8),
+              children: [
+                const Icon(Icons.functions, color: Colors.white, size: 35),
+                const SizedBox(width: 8),
                 Text(
-                  '物理公式集',
-                  style: TextStyle(
+                  AppLocalizations.of(context)!.formulaCollection,
+                  style: const TextStyle(
                     fontFamily: 'KeiFont',
                     fontSize: 22,
                     fontWeight: FontWeight.w300,
@@ -392,7 +412,10 @@ class CategoryList extends StatelessWidget {
       );
 
   Widget _buildCategoryButton(BuildContext context, Category cat) => Padding(
-        padding: EdgeInsets.symmetric(vertical: 8, horizontal: 75),
+        padding: EdgeInsets.symmetric(
+          vertical: 8,
+          horizontal: _homeButtonHorizontalPadding(context),
+        ),
         child: GestureDetector(
           onTap: () => Navigator.push(
             context,
@@ -419,9 +442,10 @@ class CategoryList extends StatelessWidget {
                       color: Colors.white,
                     ),
                     children: [
-                      TextSpan(text: cat.name),
+                      TextSpan(text: localizeCatalogName(context, cat.name)),
                       TextSpan(
-                        text: '(${countCategoryArticles(cat)})',
+                        text:
+                            '(${countCategoryArticles(cat, languageCode: appLanguageCode(context))})',
                         style: const TextStyle(fontSize: 14),
                       ),
                     ],
@@ -435,7 +459,10 @@ class CategoryList extends StatelessWidget {
 
   Widget _buildTheoryButton(BuildContext context, Map<String, Object> tb) =>
       Padding(
-        padding: EdgeInsets.symmetric(vertical: 8, horizontal: 75),
+        padding: EdgeInsets.symmetric(
+          vertical: 8,
+          horizontal: _homeButtonHorizontalPadding(context),
+        ),
         child: GestureDetector(
           onTap: () => Navigator.push(
             context,
@@ -467,7 +494,10 @@ class CategoryList extends StatelessWidget {
       );
 
   Widget _buildAboutButton(BuildContext context) => Padding(
-        padding: EdgeInsets.symmetric(vertical: 48, horizontal: 75),
+        padding: EdgeInsets.symmetric(
+          vertical: 48,
+          horizontal: _homeButtonHorizontalPadding(context),
+        ),
         child: GestureDetector(
           onTap: () => Navigator.push(
             context,
@@ -486,8 +516,8 @@ class CategoryList extends StatelessWidget {
                 Image.asset('assets/init/about.gif', width: 35, height: 35),
                 SizedBox(width: 8),
                 Text(
-                  'アプリについて',
-                  style: TextStyle(
+                  AppLocalizations.of(context)!.aboutApp,
+                  style: const TextStyle(
                     fontSize: 24,
                     color: Colors.white,
                   ),

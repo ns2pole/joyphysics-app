@@ -1,6 +1,7 @@
 // lib/utils/update_checker.dart
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:joyphysics/l10n/app_localizations.dart';
 import 'package:new_version_plus/new_version_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -143,36 +144,46 @@ class UpdateChecker {
 
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(title),
+      builder: (ctx) {
+        final l10n = AppLocalizations.of(ctx);
+        final dialogTitle = l10n?.updateDialogTitle ?? title;
+        final dialogMessage = l10n?.updateDialogMessage ?? message;
+        final dialogLater = l10n?.updateDialogLater ?? laterText;
+        final dialogUpdate = l10n?.updateDialogUpdate ?? updateText;
+        return AlertDialog(
+        title: Text(dialogTitle),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(message),
+            Text(dialogMessage),
             if (storeInfo != null) ...[
               const SizedBox(height: 8),
               Text('Store version: $storeInfo', style: const TextStyle(fontSize: 12)),
             ],
             if (releaseNotes.isNotEmpty) ...[
               const SizedBox(height: 8),
-              Text('更新内容: $releaseNotes', style: const TextStyle(fontSize: 12)),
+              Text(
+                l10n?.updateDialogReleaseNotes(releaseNotes) ??
+                    '更新内容: $releaseNotes',
+                style: const TextStyle(fontSize: 12),
+              ),
             ],
           ],
         ),
         actions: [
           TextButton(
-            child: Text(laterText),
+            child: Text(dialogLater),
             onPressed: () async {
-              debugPrint('[UpdateChecker] user pressed: $laterText');
+              debugPrint('[UpdateChecker] user pressed: $dialogLater');
               await prefs.setInt("last_update_prompt_millis", DateTime.now().millisecondsSinceEpoch);
               Navigator.of(ctx).pop();
             },
           ),
           TextButton(
-            child: Text(updateText),
+            child: Text(dialogUpdate),
             onPressed: () async {
-              debugPrint('[UpdateChecker] user pressed: $updateText');
+              debugPrint('[UpdateChecker] user pressed: $dialogUpdate');
               Navigator.of(ctx).pop();
 
               // ここが重要：launchAppStore は "ストアのリンク（URL）" を期待するので、
@@ -199,7 +210,8 @@ class UpdateChecker {
             },
           ),
         ],
-      ),
+      );
+      },
     );
   }
 }

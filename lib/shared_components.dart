@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:joyphysics/experiment/high_pitch_sound_warning.dart';
+import 'package:joyphysics/l10n/app_localizations.dart';
 import 'package:joyphysics/model.dart';
+import 'package:joyphysics/utils/locale_utils.dart';
 
 /// 記事ヘッダ。home（ContentView）と同じ `init.png` を画面上端基準で切り出す。
 class HomeBackgroundAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -200,14 +202,14 @@ class _PhysicsFullscreenImagePageState
               children: [
                 _FullscreenZoomButton(
                   icon: Icons.add,
-                  tooltip: '拡大',
+                  tooltip: AppLocalizations.of(context)?.zoomIn ?? '拡大',
                   enabled: canZoomIn,
                   onPressed: _zoomIn,
                 ),
                 const SizedBox(height: 8),
                 _FullscreenZoomButton(
                   icon: Icons.remove,
-                  tooltip: '縮小',
+                  tooltip: AppLocalizations.of(context)?.zoomOut ?? '縮小',
                   enabled: canZoomOut,
                   onPressed: _zoomOut,
                 ),
@@ -374,19 +376,35 @@ class PhysicsBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final en = isEnglishAppLocale(context);
     return Wrap(
       crossAxisAlignment: WrapCrossAlignment.center,
       spacing: 10,
       runSpacing: 5,
       children: [
         if (isSmartPhoneOnly)
-          _buildImage('assets/icon/smartphone_only.png', width: width ?? 60, height: height ?? 40),
+          _buildImage(
+            en
+                ? 'assets/icon/smartphone_only_en.png'
+                : 'assets/icon/smartphone_only.png',
+            width: width ?? 60,
+            height: height ?? 40,
+          ),
         if (isSimulation)
-          _buildImage('assets/icon/anime.png', width: width ?? 60, height: height ?? 40),
+          _buildImage(
+            en ? 'assets/icon/anime_en.png' : 'assets/icon/anime.png',
+            width: width ?? 60,
+            height: height ?? 40,
+          ),
         if (isExperiment)
-          _buildImage('assets/icon/experiment.png', width: width ?? 60, height: height ?? 40),
+          _buildImage(
+            en ? 'assets/icon/experiment_en.png' : 'assets/icon/experiment.png',
+            width: width ?? 60,
+            height: height ?? 40,
+          ),
         if (isNew)
-          _buildImage('assets/others/new.gif', width: width ?? 45, height: height ?? 30),
+          _buildImage('assets/others/new.gif',
+              width: width ?? 45, height: height ?? 30),
       ],
     );
   }
@@ -502,12 +520,16 @@ class SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final label = disabled
+        ? '$title${l10n?.inPreparationSuffix ?? '（準備中）'}'
+        : title;
     return Container(
       width: double.infinity,
       color: backgroundColor ?? (disabled ? Colors.grey[200] : Colors.grey[300]),
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: Text(
-        disabled ? '$title（準備中）' : title,
+        label,
         style: TextStyle(
           fontSize: fontSize,
           fontWeight: FontWeight.bold,

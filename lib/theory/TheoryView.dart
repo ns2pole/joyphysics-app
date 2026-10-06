@@ -7,6 +7,10 @@ import 'package:joyphysics/model.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 import 'package:joyphysics/shared_components.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
+import 'package:joyphysics/l10n/app_localizations.dart';
+import 'package:joyphysics/l10n/catalog_name_localizations.dart';
+import 'package:joyphysics/utils/locale_utils.dart';
 
 // ─────────────────────────────
 // TheoryListView
@@ -19,11 +23,20 @@ class TheoryListView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final subcategories = theoryData[categoryName] ?? [];
-    final imageAsset = Category.getMindMapAssetByName(categoryName);
+    final lang = appLanguageCode(context);
+    final imageAsset = Category.getMindMapAssetByName(
+      categoryName,
+      languageCode: lang,
+    );
 
+    final displayCategory = localizeCatalogName(context, categoryName);
+    final mindMapLabel = localizeCatalogName(
+      context,
+      Category.getMindMapLabelByName(categoryName),
+    );
     return Scaffold(
       appBar: AppBar(
-        title: Text(categoryName),
+        title: Text(displayCategory),
         backgroundColor: Colors.teal,
       ),
       body: ListView(
@@ -38,7 +51,7 @@ class TheoryListView extends StatelessWidget {
                     MaterialPageRoute(
                       builder: (_) => PhysicsFullscreenImagePage(
                         imageAsset: imageAsset,
-                        title: Category.getMindMapLabelByName(categoryName),
+                        title: mindMapLabel,
                       ),
                     ),
                   );
@@ -66,7 +79,7 @@ class TheoryListView extends StatelessWidget {
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
-                        Category.getMindMapLabelByName(categoryName),
+                        mindMapLabel,
                         style: const TextStyle(
                           fontSize: 14,
                           color: Colors.black54,
@@ -81,9 +94,14 @@ class TheoryListView extends StatelessWidget {
           ...<Widget>[
             // フェーズ1：全サブカテゴリについて「アクティブ（inPreparation != true）だけ」を表示
             for (final sub in subcategories) ...[
-              if (sub.topics.any((t) => t.inPreparation != true))
-                SectionHeader(name: sub.name, fontSize: 20),
-              for (final topic in sub.topics.where((t) => t.inPreparation != true))
+              if (sub.topics.any((t) =>
+                  t.inPreparation != true && t.isAvailableForLanguage(lang)))
+                SectionHeader(
+                  name: localizeCatalogName(context, sub.name),
+                  fontSize: 20,
+                ),
+              for (final topic in sub.topics.where((t) =>
+                  t.inPreparation != true && t.isAvailableForLanguage(lang)))
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                   child: ClipRRect(
@@ -92,7 +110,10 @@ class TheoryListView extends StatelessWidget {
                       color: Colors.blue[50]?.withOpacity(0.1),
                       child: ListTile(
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16 / 3),
-                        title: parseTextWithMath(topic.title, isNew: topic.isNew),
+                        title: parseTextWithMath(
+                          topic.localizedTitle(lang),
+                          isNew: topic.isNew,
+                        ),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () {
                           Navigator.push(
@@ -109,9 +130,15 @@ class TheoryListView extends StatelessWidget {
 
             // フェーズ2：全サブカテゴリについて「準備中（inPreparation == true）だけ」を表示
             for (final sub in subcategories) ...[
-              if (sub.topics.any((t) => t.inPreparation == true))
-                SectionHeader(name: sub.name, disabled: true, fontSize: 20),
-              for (final topic in sub.topics.where((t) => t.inPreparation == true))
+              if (sub.topics.any((t) =>
+                  t.inPreparation == true && t.isAvailableForLanguage(lang)))
+                SectionHeader(
+                  name: localizeCatalogName(context, sub.name),
+                  disabled: true,
+                  fontSize: 20,
+                ),
+              for (final topic in sub.topics.where((t) =>
+                  t.inPreparation == true && t.isAvailableForLanguage(lang)))
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                   child: Stack(
@@ -124,7 +151,10 @@ class TheoryListView extends StatelessWidget {
                             contentPadding: const EdgeInsets.symmetric(horizontal: 16 / 3),
                             title: Opacity(
                               opacity: 0.6,
-                              child: parseTextWithMath(topic.title, isNew: topic.isNew),
+                              child: parseTextWithMath(
+                                topic.localizedTitle(lang),
+                                isNew: topic.isNew,
+                              ),
                             ),
                             trailing: null,
                             onTap: null, // 無効化
@@ -167,12 +197,15 @@ class TopicDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final rawHtml = topic.latexContent;
+    final l10n = AppLocalizations.of(context)!;
+    final lang = appLanguageCode(context);
+    final title = topic.localizedTitle(lang);
+    final rawHtml = topic.localizedLatexContent(lang);
     final bodyFragment = _extractBodyFragment(rawHtml);
 
     return Scaffold(
       appBar: HomeBackgroundAppBar(
-        title: Text(topic.title.replaceAll(RegExp(r'\$.*?\$'), "")),
+        title: Text(title.replaceAll(RegExp(r'\$.*?\$'), "")),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -190,7 +223,7 @@ class TopicDetailPage extends StatelessWidget {
                         MaterialPageRoute(
                           builder: (_) => PhysicsFullscreenImagePage(
                             imageAsset: topic.imageAsset!,
-                            title: '全体像と本内容の位置付け',
+                            title: l10n.mindMapPositionTitle,
                           ),
                         ),
                       );
@@ -211,10 +244,10 @@ class TopicDetailPage extends StatelessWidget {
                   ),
                 ),
               if (topic.imageAsset != null && topic.imageAsset!.isNotEmpty) 
-                const Text(
-                  '全体像と本内容の位置付け',
+                Text(
+                  l10n.mindMapPositionTitle,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 14,
                     color: Colors.black54,
                   ),
@@ -224,7 +257,8 @@ class TopicDetailPage extends StatelessWidget {
               LatexWebView(
                 latexHtml: bodyFragment,
               ),
-              if (topic.videoURL != null && topic.videoURL!.isNotEmpty) ...[
+              if (topic.localizedVideoURL(lang) case final videoURL?
+                  when videoURL.isNotEmpty) ...[
                 Padding(
                   padding: const EdgeInsets.only(top: 16, bottom: 12),
                   child: Semantics(
@@ -246,10 +280,14 @@ class TopicDetailPage extends StatelessWidget {
                             ),
                           ],
                         ),
-                        child: const Text(
-                          '本内容の対応実験',
+                        child: Text(
+                          animUi(
+                            context,
+                            ja: '本内容の対応実験',
+                            en: 'Experiment for this topic',
+                          ),
                           textAlign: TextAlign.center,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                             color: Colors.black87,
@@ -261,7 +299,7 @@ class TopicDetailPage extends StatelessWidget {
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 0),
-                  child: PhysicsYouTubePlayer(videoURL: topic.videoURL),
+                  child: PhysicsYouTubePlayer(videoURL: videoURL),
                 ),
               ],
             ],

@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:joyphysics/experiment/ExperimentView.dart';
 import 'package:joyphysics/experiment/categoriesData.dart';
 import 'package:joyphysics/experiment/sensorArticlesData.dart';
+import 'package:joyphysics/l10n/app_localizations.dart';
+import 'package:joyphysics/l10n/catalog_name_localizations.dart';
 import 'package:joyphysics/search/searchable_articles.dart';
 import 'package:joyphysics/shared_components.dart';
+import 'package:joyphysics/utils/locale_utils.dart';
 
 const String kArticleSearchHeroTag = 'home-article-search';
 
@@ -36,6 +39,7 @@ class HomeArticleSearchBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 56),
       child: Hero(
@@ -45,14 +49,14 @@ class HomeArticleSearchBox extends StatelessWidget {
           child: InkWell(
             onTap: () => openArticleSearch(context),
             borderRadius: BorderRadius.circular(24),
-            child: const ArticleSearchFieldShell(
+            child: ArticleSearchFieldShell(
               child: Row(
                 children: [
-                  Icon(Icons.search, color: Colors.black54),
-                  SizedBox(width: 8),
+                  const Icon(Icons.search, color: Colors.black54),
+                  const SizedBox(width: 8),
                   Text(
-                    'キーワード検索',
-                    style: TextStyle(fontSize: 16, color: Colors.black54),
+                    l10n.keywordSearch,
+                    style: const TextStyle(fontSize: 16, color: Colors.black54),
                   ),
                 ],
               ),
@@ -96,18 +100,24 @@ class ArticleSearchPage extends StatefulWidget {
 class _ArticleSearchPageState extends State<ArticleSearchPage> {
   final TextEditingController _controller = TextEditingController();
   final FocusNode _focusNode = FocusNode();
-  late final List<SearchableArticle> _allArticles;
+  late List<SearchableArticle> _allArticles;
   List<SearchableArticle> _results = const [];
 
   @override
   void initState() {
     super.initState();
+    _controller.addListener(_onQueryChanged);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     _allArticles = flattenAllSearchableArticles(
       categoriesData,
       sensorArticlesByCategory,
       sensorCategoryName: kSensorCategoryName,
+      languageCode: appLanguageCode(context),
     );
-    _controller.addListener(_onQueryChanged);
   }
 
   void _onQueryChanged() {
@@ -126,6 +136,7 @@ class _ArticleSearchPageState extends State<ArticleSearchPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final query = _controller.text.trim();
     return Scaffold(
       backgroundColor: Colors.white,
@@ -134,7 +145,7 @@ class _ArticleSearchPageState extends State<ArticleSearchPage> {
         foregroundColor: Colors.black87,
         elevation: 0,
         scrolledUnderElevation: 0,
-        title: const Text('記事を検索'),
+        title: Text(l10n.searchArticles),
       ),
       body: Column(
         children: [
@@ -166,9 +177,9 @@ class _ArticleSearchPageState extends State<ArticleSearchPage> {
                           autofocus: true,
                           textInputAction: TextInputAction.search,
                           style: const TextStyle(fontSize: 16),
-                          decoration: const InputDecoration(
-                            hintText: 'キーワード検索',
-                            hintStyle: TextStyle(
+                          decoration: InputDecoration(
+                            hintText: l10n.keywordSearch,
+                            hintStyle: const TextStyle(
                               fontSize: 16,
                               color: Colors.black54,
                             ),
@@ -199,14 +210,15 @@ class _ArticleSearchPageState extends State<ArticleSearchPage> {
   }
 
   Widget _buildResults(String query) {
+    final l10n = AppLocalizations.of(context)!;
     if (query.isEmpty) {
       return const SizedBox.expand();
     }
     if (_results.isEmpty) {
-      return const Center(
+      return Center(
         child: Text(
-          '該当する記事がありません',
-          style: TextStyle(fontSize: 16, color: Colors.black54),
+          l10n.noMatchingArticles,
+          style: const TextStyle(fontSize: 16, color: Colors.black54),
         ),
       );
     }
@@ -246,7 +258,7 @@ class _CategoryBand extends StatelessWidget {
       color: const Color(0xFFC3734F),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: Text(
-        name,
+        localizeCatalogName(context, name),
         style: const TextStyle(
           fontFamily: 'KeiFont',
           fontSize: 18,
@@ -291,7 +303,7 @@ class _SearchArticleTile extends StatelessWidget {
                 )
               : const SizedBox(width: 48, height: 27),
           title: TitleWithPhysicsBadge(
-            title: video.title,
+            title: video.localizedTitle(appLanguageCode(context)),
             badge: PhysicsBadge(
               isNew: video.isNew ?? false,
               isSimulation: video.isSimulation ?? false,

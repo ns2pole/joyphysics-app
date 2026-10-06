@@ -2,9 +2,12 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:joyphysics/LatexView.dart';
 import 'package:joyphysics/experiment/sensorArticlesData.dart';
+import 'package:joyphysics/l10n/app_localizations.dart';
+import 'package:joyphysics/l10n/catalog_name_localizations.dart';
 import 'package:joyphysics/model.dart';
 import 'package:joyphysics/shared_components.dart';
 import 'package:joyphysics/joy_physics_store_uris.dart';
+import 'package:joyphysics/utils/locale_utils.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SensorArticlesView extends StatelessWidget {
@@ -23,8 +26,9 @@ class SensorArticlesView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('センサー関係の記事')),
+      appBar: AppBar(title: Text(l10n.sensorArticlesTitle)),
       body: ListView(
         padding: const EdgeInsets.all(12),
         children: [
@@ -37,14 +41,16 @@ class SensorArticlesView extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'センサーを使いたい人はこちらから',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    Text(
+                      l10n.sensorWantToUse,
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 6),
-                    const Text(
-                      'Web版ではセンサーが使えません。アプリをダウンロードしてね。',
-                      style: TextStyle(fontSize: 14, color: Colors.black87),
+                    Text(
+                      l10n.sensorWebUnavailable,
+                      style: const TextStyle(
+                          fontSize: 14, color: Colors.black87),
                     ),
                     const SizedBox(height: 10),
                     Wrap(
@@ -94,19 +100,20 @@ class _ArticleCategoryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final lang = appLanguageCode(context);
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 6),
       child: ExpansionTile(
         leading: const Icon(Icons.menu_book, color: Colors.blue),
         title: Text(
-          categoryName,
+          localizeCatalogName(context, categoryName),
           style: const TextStyle(fontWeight: FontWeight.w700),
         ),
         children: videos
             .map(
               (video) => ListTile(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16 / 3),
-                title: Text(video.title),
+                title: Text(video.localizedTitle(lang)),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => Navigator.push(
                   context,
@@ -129,13 +136,15 @@ class SensorArticleOnlyView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final title = video.localizedTitle(appLanguageCode(context));
     return Scaffold(
-      appBar: HomeBackgroundAppBar(title: Text(video.title)),
+      appBar: HomeBackgroundAppBar(title: Text(title)),
       body: video.latex == null
-          ? const Center(
+          ? Center(
               child: Text(
-                '記事は準備中です。',
-                style: TextStyle(color: Colors.black54),
+                l10n.articleInPreparation,
+                style: const TextStyle(color: Colors.black54),
               ),
             )
           : Scrollbar(
@@ -147,4 +156,3 @@ class SensorArticleOnlyView extends StatelessWidget {
     );
   }
 }
-

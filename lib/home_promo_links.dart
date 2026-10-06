@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
+import 'package:joyphysics/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -24,10 +25,6 @@ final _unitGachaAndroidStoreUri = Uri.parse(
   'https://play.google.com/store/apps/details?id=$_unitGachaAndroidPackageId',
 );
 
-const _unitGachaComments = [
-  '単位で検算やってますか？',
-  '単位計算は基本です',
-];
 const _unitGachaCommentCursorKey = 'unit_gacha_comment_cursor';
 const _calculusGachaCommentCursorKey = 'calculus_gacha_comment_cursor';
 const _calculusGachaCommentCount = 3;
@@ -83,11 +80,12 @@ class TutoringPromoLink extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return _withJoymathTypography(
-      const _HomeExternalPromoLink(
+      _HomeExternalPromoLink(
         url: _tutoringJmtyUrl,
-        line1: '実験を交えて物理を指導しています。',
-        line2: 'お気軽にお問い合わせ下さい。初回体験は無料で承ります。',
+        line1: l10n.tutoringLine1,
+        line2: l10n.tutoringLine2,
       ),
     );
   }
@@ -240,9 +238,11 @@ class UnitGachaPromoLink extends StatefulWidget {
 
 class _UnitGachaPromoLinkState extends State<UnitGachaPromoLink>
     with RouteAware, AutomaticKeepAliveClientMixin {
-  String _unitComment = _unitGachaComments.first;
+  int _unitCommentIndex = 0;
   int _calculusCommentIndex = 0;
   bool _routeSubscribed = false;
+
+  static const _unitCommentCount = 2;
 
   @override
   bool get wantKeepAlive => true;
@@ -281,8 +281,7 @@ class _UnitGachaPromoLinkState extends State<UnitGachaPromoLink>
     final prefs = await SharedPreferences.getInstance();
 
     final unitCursor = prefs.getInt(_unitGachaCommentCursorKey) ?? 0;
-    final unitComment =
-        _unitGachaComments[unitCursor % _unitGachaComments.length];
+    final unitIndex = unitCursor % _unitCommentCount;
     await prefs.setInt(_unitGachaCommentCursorKey, unitCursor + 1);
 
     late final int calculusIndex;
@@ -296,14 +295,21 @@ class _UnitGachaPromoLinkState extends State<UnitGachaPromoLink>
 
     if (!mounted) return;
     setState(() {
-      _unitComment = unitComment;
+      _unitCommentIndex = unitIndex;
       _calculusCommentIndex = calculusIndex;
     });
+  }
+
+  String _unitCommentText(AppLocalizations l10n) {
+    return _unitCommentIndex % _unitCommentCount == 0
+        ? l10n.unitGachaTagline1
+        : l10n.unitGachaTagline2;
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final l10n = AppLocalizations.of(context)!;
     final isCompact = _isCompact(context);
     const titleColor = Color(0xFF8B7355);
     final sectionFontSize = isCompact ? 16.0 : 19.0;
@@ -350,7 +356,7 @@ class _UnitGachaPromoLinkState extends State<UnitGachaPromoLink>
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: Text(
-                  '他アプリもよろしく！',
+                  l10n.otherAppsPlease,
                   style: TextStyle(
                     fontSize: sectionFontSize,
                     fontWeight: FontWeight.w600,
@@ -362,7 +368,7 @@ class _UnitGachaPromoLinkState extends State<UnitGachaPromoLink>
               ),
               const SizedBox(height: 20),
               _AppStorePromoRow(
-                title: '【極】微積ガチャ！',
+                title: l10n.joymathTitle,
                 comment: _CalculusGachaComment(
                   index: _calculusCommentIndex,
                   style: commentStyle,
@@ -386,9 +392,9 @@ class _UnitGachaPromoLinkState extends State<UnitGachaPromoLink>
               ),
               const SizedBox(height: 24),
               _AppStorePromoRow(
-                title: '単位ガチャ !',
+                title: l10n.unitGachaTitle,
                 comment: Text(
-                  _unitComment,
+                  _unitCommentText(l10n),
                   style: commentStyle,
                   textAlign: TextAlign.center,
                 ),
@@ -539,16 +545,17 @@ class _CalculusGachaComment extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final starSize = (style.fontSize ?? 13) + 1;
     if (index == _calculusGachaTopicsCommentIndex) {
-      const topics = [
-        '積分',
-        '極限',
-        '微分方程式',
-        '不定方程式',
-        '合同式',
-        '因数分解',
-        '漸化式',
+      final topics = [
+        l10n.joymathUnitsIntegral,
+        l10n.joymathUnitsLimit,
+        l10n.joymathUnitsDiffEq,
+        l10n.joymathUnitsIndeterminate,
+        l10n.joymathUnitsCongruence,
+        l10n.joymathUnitsFactorization,
+        l10n.joymathUnitsSequence,
       ];
       return Column(
         mainAxisSize: MainAxisSize.min,
@@ -563,7 +570,7 @@ class _CalculusGachaComment extends StatelessWidget {
             ],
           ),
           Text(
-            'の単元に対応しています',
+            l10n.joymathUnitsSuffix,
             style: style,
             textAlign: TextAlign.center,
           ),
@@ -576,20 +583,20 @@ class _CalculusGachaComment extends StatelessWidget {
           alignment: WrapAlignment.center,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            Text('星評価', style: style),
+            Text(l10n.starRating, style: style),
             _PartialFiveStars(fontSize: starSize),
-            Text('(4.8)の神アプリ', style: style),
+            Text(l10n.godAppWithRating, style: style),
           ],
         );
       case 1:
         return Text(
-          '電車を降り忘れるレベルで楽しい！',
+          l10n.joymathReviewFun,
           style: style,
           textAlign: TextAlign.center,
         );
       default:
         return Text(
-          '数学の計算力は基礎です',
+          l10n.joymathReviewBasic,
           style: style,
           textAlign: TextAlign.center,
         );

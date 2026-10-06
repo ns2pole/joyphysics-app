@@ -4,6 +4,7 @@ import 'dart:html' as html;
 import 'dart:js_util' as js_util;
 
 import 'package:flutter/material.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:joyphysics/dataExporter.dart';
 import 'package:joyphysics/model.dart';
@@ -188,7 +189,16 @@ class _LatexWebViewState extends State<LatexWebView> {
       if (target == null) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('指定されたトピックが見つかりません： $key')),
+            SnackBar(
+              content: Text(
+                animUi(
+                      context,
+                      ja: '指定されたトピックが見つかりません',
+                      en: 'Topic not found',
+                    ) +
+                    ': $key',
+              ),
+            ),
           );
         }
         return true;
@@ -538,7 +548,11 @@ class _LatexWebViewState extends State<LatexWebView> {
             height: _height,
             child: Center(
               child: Text(
-                'LaTeX表示の初期化に失敗しました',
+                animUi(
+                  context,
+                  ja: 'LaTeX表示の初期化に失敗しました',
+                  en: 'Failed to initialize the LaTeX view',
+                ),
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
             ),

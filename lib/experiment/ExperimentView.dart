@@ -18,6 +18,10 @@ import 'package:html/dom.dart' as dom; // ← これが重要
 import 'package:joyphysics/shared_components.dart';
 import 'package:joyphysics/document_title.dart';
 import 'package:joyphysics/mindMap/mind_map_highlight.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
+import 'package:joyphysics/l10n/app_localizations.dart';
+import 'package:joyphysics/l10n/catalog_name_localizations.dart';
+import 'package:joyphysics/utils/locale_utils.dart';
 
 // 表示モード
 enum VideoViewMode { byCategory, byFormula }
@@ -45,7 +49,9 @@ class _VideoListViewState extends State<VideoListView> {
       groupMap.putIfAbsent(f.categoryName, () => []).add(f);
     }
 
-    final overallImageAsset = widget.category.getMindMapAsset();
+    final lang = appLanguageCode(context);
+    final overallImageAsset =
+        widget.category.getMindMapAsset(languageCode: lang);
 
     // home (ContentView) と同じ配置だが、一覧は白オーバーレイを少し厚くして背景を薄くする
     return Scaffold(
@@ -67,7 +73,9 @@ class _VideoListViewState extends State<VideoListView> {
                     elevation: 0,
                     scrolledUnderElevation: 0,
                     surfaceTintColor: Colors.transparent,
-                    title: Text(widget.category.name),
+                    title: Text(
+                      localizeCatalogName(context, widget.category.name),
+                    ),
                   ),
                 ),
                 Expanded(
@@ -114,7 +122,10 @@ class _VideoListViewState extends State<VideoListView> {
                                       borderRadius: BorderRadius.circular(6),
                                     ),
                                     child: Text(
-                                      widget.category.getMindMapLabel(),
+                                      localizeCatalogName(
+                                        context,
+                                        widget.category.getMindMapLabel(),
+                                      ),
                                       style: const TextStyle(
                                         fontSize: 14,
                                         color: Colors.black54,
@@ -146,16 +157,22 @@ class _VideoListViewState extends State<VideoListView> {
                                     ? VideoViewMode.byCategory
                                     : VideoViewMode.byFormula;
                               }),
-                              children: const [
+                              children: [
                                 Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 16),
-                                  child: Text('単元一覧',
-                                      style: TextStyle(fontSize: 20)),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16),
+                                  child: Text(
+                                    AppLocalizations.of(context)!.unitList,
+                                    style: const TextStyle(fontSize: 20),
+                                  ),
                                 ),
                                 Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 16),
-                                  child: Text('公式一覧',
-                                      style: TextStyle(fontSize: 20)),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16),
+                                  child: Text(
+                                    AppLocalizations.of(context)!.formulaList,
+                                    style: const TextStyle(fontSize: 20),
+                                  ),
                                 ),
                               ],
                             ),
@@ -246,7 +263,7 @@ class _VideoCategoryList extends StatelessWidget {
             )
           : const SizedBox(width: 48, height: 27),
       title: TitleWithPhysicsBadge(
-        title: v.title,
+        title: v.localizedTitle(appLanguageCode(context)),
         badge: PhysicsBadge(
           isNew: v.isNew ?? false,
           isSimulation: v.isSimulation ?? false,
@@ -280,40 +297,45 @@ class _VideoCategoryList extends StatelessWidget {
     return Stack(
       children: [
         Container(color: Colors.grey[200], child: row),
-        const PreparationWatermark(),
+        PreparationWatermark(text: AppLocalizations.of(context)!.inPreparation),
       ],
     );
   }
 
-  List<Video> _activeVideos(Subcategory sub) {
+  List<Video> _activeVideos(Subcategory sub, String languageCode) {
     return sub.videos.where((v) {
       final hasVideo = v.videoURL.isNotEmpty &&
           v.videoURL.trim() != "（動画URLをここに）" &&
           !v.videoURL.contains("（動画URL");
       final hasWidget =
           v.experimentWidgets != null && v.experimentWidgets!.isNotEmpty;
-      return v.inPreparation != true && (hasVideo || hasWidget);
+      return v.inPreparation != true &&
+          (hasVideo || hasWidget) &&
+          v.isAvailableForLanguage(languageCode);
     }).toList();
   }
 
-  List<Video> _prepVideos(Subcategory sub) {
+  List<Video> _prepVideos(Subcategory sub, String languageCode) {
     return sub.videos.where((v) {
       final hasVideo = v.videoURL.isNotEmpty &&
           v.videoURL.trim() != "（動画URLをここに）" &&
           !v.videoURL.contains("（動画URL");
       final hasWidget =
           v.experimentWidgets != null && v.experimentWidgets!.isNotEmpty;
-      return v.inPreparation == true && (hasVideo || hasWidget);
+      return v.inPreparation == true &&
+          (hasVideo || hasWidget) &&
+          v.isAvailableForLanguage(languageCode);
     }).toList();
   }
 
   @override
   Widget build(BuildContext context) {
     final sections = <Widget>[];
+    final lang = appLanguageCode(context);
 
     for (final sub in subcategories) {
-      final actives = _activeVideos(sub);
-      final preps = _prepVideos(sub);
+      final actives = _activeVideos(sub, lang);
+      final preps = _prepVideos(sub, lang);
 
       if (actives.isNotEmpty) {
         final tiles = [
@@ -386,9 +408,12 @@ class _SubcategoryExpansion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final displayName = localizeCatalogName(context, name);
     final bg = disabled ? Colors.grey[200] : Colors.grey[300];
     final titleColor = disabled ? Colors.black45 : Colors.black87;
-    final label = disabled ? '$name（準備中）' : name;
+    final label =
+        disabled ? '$displayName${l10n.inPreparationSuffix}' : displayName;
 
     return Theme(
       data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
@@ -411,7 +436,7 @@ class _SubcategoryExpansion extends StatelessWidget {
         ),
         children: [
           for (final child in children)
-            ColoredBox(
+            Material(
               color: Colors.white,
               child: child,
             ),
@@ -435,9 +460,12 @@ class _SubcategoryFlatList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final displayName = localizeCatalogName(context, name);
     final bg = disabled ? Colors.grey[200] : Colors.grey[300];
     final titleColor = disabled ? Colors.black45 : Colors.black87;
-    final label = disabled ? '$name（準備中）' : name;
+    final label =
+        disabled ? '$displayName${l10n.inPreparationSuffix}' : displayName;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -471,12 +499,18 @@ Future<void> openVideoDetail(BuildContext context, Video video) async {
     final proceed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('音が出ます'),
-        content: const Text('この記事ではスピーカーから音が出ます。周囲に注意してください。'),
+        title: Text(animUi(ctx, ja: '音が出ます', en: 'Sound will play')),
+        content: Text(
+          animUi(
+            ctx,
+            ja: 'この記事ではスピーカーから音が出ます。周囲に注意してください。',
+            en: 'This article plays sound from the speaker. Please mind your surroundings.',
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('戻る'),
+            child: Text(animUi(ctx, ja: '戻る', en: 'Back')),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
@@ -504,7 +538,8 @@ class VideoDetailView extends StatefulWidget {
 class _VideoDetailViewState extends State<VideoDetailView> {
   List<_EmbeddedSimState> _simStates = [];
 
-  String get _pageTitle => widget.video.title;
+  String _pageTitle(BuildContext context) =>
+      widget.video.localizedTitle(appLanguageCode(context));
 
   ValueListenable<String>? get _dynamicExplanation {
     final widgets = widget.video.experimentWidgets;
@@ -531,10 +566,11 @@ class _VideoDetailViewState extends State<VideoDetailView> {
         },
       );
     }
-    if (widget.video.latex == null) return null;
+    final latex = widget.video.localizedLatex(appLanguageCode(context));
+    if (latex == null) return null;
     return LatexWebView(
       key: ValueKey('latex-${widget.video.title}'),
-      latexHtml: widget.video.latex!,
+      latexHtml: latex,
     );
   }
 
@@ -547,15 +583,15 @@ class _VideoDetailViewState extends State<VideoDetailView> {
   }
 
   void _syncDocumentTitle() {
-    if (kIsWeb) {
-      setDocumentTitle(_pageTitle);
-    }
+    if (!kIsWeb) return;
+    final lang = mounted ? appLanguageCode(context) : 'ja';
+    setDocumentTitle(widget.video.localizedTitle(lang));
   }
 
   @override
   void initState() {
     super.initState();
-    _syncDocumentTitle();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _syncDocumentTitle());
   }
 
   @override
@@ -670,14 +706,16 @@ class _VideoDetailViewState extends State<VideoDetailView> {
     }
 
     // YouTube（視覚モジュール）
-    if (widget.video.videoURL.isNotEmpty) {
+    final playableVideoURL =
+        widget.video.localizedVideoURL(appLanguageCode(context));
+    if (playableVideoURL.isNotEmpty) {
       items.add(
         SizedBox(
           width: double.infinity,
           child: AspectRatio(
             aspectRatio: 16 / 9,
             child: PhysicsYouTubePlayer(
-              videoURL: widget.video.videoURL,
+              videoURL: playableVideoURL,
               warnHighPitchSound: widget.video.warnsHighPitchSound,
             ),
           ),
@@ -686,10 +724,10 @@ class _VideoDetailViewState extends State<VideoDetailView> {
     }
 
     if (items.isEmpty) {
-      return const Center(
+      return Center(
         child: Text(
-          'このコンテンツには動画/実験がありません。',
-          style: TextStyle(color: Colors.black54),
+          AppLocalizations.of(context)!.noVideoOrExperiment,
+          style: const TextStyle(color: Colors.black54),
         ),
       );
     }
@@ -776,20 +814,22 @@ class _VideoDetailViewState extends State<VideoDetailView> {
     }
 
     // 実験道具
-    if (widget.video.equipment.isNotEmpty) {
+    final equipment =
+        widget.video.localizedEquipment(appLanguageCode(context));
+    if (equipment.isNotEmpty) {
       items.add(
         Padding(
           padding: const EdgeInsets.only(top: 16),
-          child: EquipmentListView(equipment: widget.video.equipment),
+          child: EquipmentListView(equipment: equipment),
         ),
       );
     }
 
     if (items.isEmpty) {
-      return const Center(
+      return Center(
         child: Text(
-          '解説がありません。',
-          style: TextStyle(color: Colors.black54),
+          AppLocalizations.of(context)!.noExplanation,
+          style: const TextStyle(color: Colors.black54),
         ),
       );
     }
@@ -808,7 +848,7 @@ class _VideoDetailViewState extends State<VideoDetailView> {
 
   @override
   Widget build(BuildContext context) {
-    final title = _pageTitle;
+    final title = _pageTitle(context);
     if (_isWideWeb(context)) {
       return Scaffold(
         appBar: HomeBackgroundAppBar(title: Text(title)),
@@ -853,14 +893,17 @@ class _VideoDetailViewState extends State<VideoDetailView> {
                 ),
               ),
             // 2. YouTube動画（これも視覚モジュールとして上部に配置）
-            if (widget.video.videoURL.isNotEmpty)
+            if (widget.video
+                    .localizedVideoURL(appLanguageCode(context))
+                    .isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 16),
                 child: SizedBox(
                   height: 200,
                   width: double.infinity,
                   child: PhysicsYouTubePlayer(
-                    videoURL: widget.video.videoURL,
+                    videoURL: widget.video
+                        .localizedVideoURL(appLanguageCode(context)),
                     warnHighPitchSound: widget.video.warnsHighPitchSound,
                   ),
                 ),
@@ -872,10 +915,15 @@ class _VideoDetailViewState extends State<VideoDetailView> {
                 child: latex,
               ),
             // 4. 実験道具を最後に
-            if (widget.video.equipment.isNotEmpty)
+            if (widget.video
+                .localizedEquipment(appLanguageCode(context))
+                .isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 16),
-                child: EquipmentListView(equipment: widget.video.equipment),
+                child: EquipmentListView(
+                  equipment: widget.video
+                      .localizedEquipment(appLanguageCode(context)),
+                ),
               ),
           ],
         ),
@@ -930,7 +978,8 @@ class FormulaList extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       TitleWithPhysicsBadge(
-                        title: f.relatedVideo.title,
+                        title: f.relatedVideo
+                            .localizedTitle(appLanguageCode(context)),
                         style: const TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w500,
@@ -1039,9 +1088,9 @@ class EquipmentListView extends StatelessWidget {
                 color: HexColor.fromHex('#E5E5E5'),
                 borderRadius: BorderRadius.circular(5),
               ),
-              child: const Text(
-                '実験道具',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              child: Text(
+                AppLocalizations.of(context)!.experimentEquipment,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
               ),
             ),
             ...equipment.map(

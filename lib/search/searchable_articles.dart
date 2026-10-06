@@ -23,18 +23,19 @@ bool isListedArticle(Video video) {
   return hasVideo || hasWidget;
 }
 
-bool isSearchableVideo(Video video) {
+bool isSearchableVideo(Video video, {String languageCode = 'ja'}) {
   if (video.inPreparation == true) return false;
-  return isListedArticle(video);
+  if (!isListedArticle(video)) return false;
+  return video.isAvailableForLanguage(languageCode);
 }
 
 /// ホームのカテゴリ名横に出す記事数。準備中は含めない。
-int countCategoryArticles(Category category) {
+int countCategoryArticles(Category category, {String languageCode = 'ja'}) {
   final seen = <Video>{};
   var count = 0;
   for (final subcategory in category.subcategories) {
     for (final video in subcategory.videos) {
-      if (!isSearchableVideo(video)) continue;
+      if (!isSearchableVideo(video, languageCode: languageCode)) continue;
       if (!seen.add(video)) continue;
       count++;
     }
@@ -42,13 +43,16 @@ int countCategoryArticles(Category category) {
   return count;
 }
 
-List<SearchableArticle> flattenSearchableArticles(List<Category> categories) {
+List<SearchableArticle> flattenSearchableArticles(
+  List<Category> categories, {
+  String languageCode = 'ja',
+}) {
   final seen = <Video>{};
   final articles = <SearchableArticle>[];
   for (final category in categories) {
     for (final subcategory in category.subcategories) {
       for (final video in subcategory.videos) {
-        if (!isSearchableVideo(video)) continue;
+        if (!isSearchableVideo(video, languageCode: languageCode)) continue;
         if (!seen.add(video)) continue;
         articles.add(SearchableArticle(
           video: video,
@@ -65,12 +69,16 @@ List<SearchableArticle> flattenAllSearchableArticles(
   List<Category> categories,
   Map<String, List<Video>> sensorArticlesByCategory, {
   String sensorCategoryName = 'センサー',
+  String languageCode = 'ja',
 }) {
-  final articles = flattenSearchableArticles(categories);
+  final articles = flattenSearchableArticles(
+    categories,
+    languageCode: languageCode,
+  );
   final seen = articles.map((article) => article.video).toSet();
   for (final entry in sensorArticlesByCategory.entries) {
     for (final video in entry.value) {
-      if (!isSearchableVideo(video)) continue;
+      if (!isSearchableVideo(video, languageCode: languageCode)) continue;
       if (!seen.add(video)) continue;
       articles.add(SearchableArticle(
         video: video,
@@ -85,6 +93,10 @@ List<SearchableArticle> flattenAllSearchableArticles(
 
 bool articleMatchesQuery(SearchableArticle article, String normalized) {
   if (article.video.title.toLowerCase().contains(normalized)) return true;
+  final titleEn = article.video.titleEn;
+  if (titleEn != null && titleEn.toLowerCase().contains(normalized)) {
+    return true;
+  }
   if (article.categoryName.toLowerCase().contains(normalized)) return true;
   if (article.subcategoryName.toLowerCase().contains(normalized)) return true;
   for (final keyword in article.keywords) {

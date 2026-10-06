@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:joyphysics/l10n/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class FormulaCollectionView extends StatefulWidget {
@@ -15,22 +16,39 @@ class _FormulaCollectionViewState extends State<FormulaCollectionView> {
   Orientation? _orientation;
   bool _beginnerMode = true;
 
-  static const _normalImages = <String>[
+  static const _normalImagesJa = <String>[
     'assets/others/physics_formulas_1.png',
     'assets/others/physics_formulas_2.png',
   ];
 
-  static const _beginnerImages = <String>[
+  static const _beginnerImagesJa = <String>[
     'assets/others/physics_formulas_beginner_1.png',
     'assets/others/physics_formulas_beginner_2.png',
+  ];
+
+  static const _normalImagesEn = <String>[
+    'assets/others/physics_formulas_en_1.png',
+    'assets/others/physics_formulas_en_2.png',
+  ];
+
+  static const _beginnerImagesEn = <String>[
+    'assets/others/physics_formulas_beginner_en_1.png',
+    'assets/others/physics_formulas_beginner_en_2.png',
   ];
 
   static const _minScale = 1.0;
   static const _maxScale = 6.0;
   static const _zoomStep = 0.5;
 
-  List<String> get _images =>
-      _beginnerMode ? _beginnerImages : _normalImages;
+  bool get _isJapanese =>
+      Localizations.localeOf(context).languageCode == 'ja';
+
+  List<String> get _images {
+    if (_isJapanese) {
+      return _beginnerMode ? _beginnerImagesJa : _normalImagesJa;
+    }
+    return _beginnerMode ? _beginnerImagesEn : _normalImagesEn;
+  }
 
   @override
   void initState() {
@@ -107,6 +125,7 @@ class _FormulaCollectionViewState extends State<FormulaCollectionView> {
     final canZoomIn = _scale < _maxScale - 0.01;
     final isPortrait =
         MediaQuery.orientationOf(context) == Orientation.portrait;
+    final showMercari = _isJapanese && _beginnerMode;
 
     return Scaffold(
       body: Stack(
@@ -127,7 +146,7 @@ class _FormulaCollectionViewState extends State<FormulaCollectionView> {
                     elevation: 0,
                     scrolledUnderElevation: 0,
                     surfaceTintColor: Colors.transparent,
-                    title: const Text('物理公式集'),
+                    title: Text(AppLocalizations.of(context)!.formulaCollection),
                   ),
                 ),
                 Expanded(
@@ -176,7 +195,7 @@ class _FormulaCollectionViewState extends State<FormulaCollectionView> {
                               compact: !isPortrait,
                               onDarkBackground: false,
                             ),
-                            if (_beginnerMode) ...[
+                            if (showMercari) ...[
                               const SizedBox(width: 8),
                               const _MercariSaleLink(),
                             ],
@@ -191,14 +210,14 @@ class _FormulaCollectionViewState extends State<FormulaCollectionView> {
                           children: [
                             _ZoomButton(
                               icon: Icons.add,
-                              tooltip: '拡大',
+                              tooltip: AppLocalizations.of(context)!.zoomIn,
                               enabled: canZoomIn,
                               onPressed: _zoomIn,
                             ),
                             const SizedBox(height: 8),
                             _ZoomButton(
                               icon: Icons.remove,
-                              tooltip: '縮小',
+                              tooltip: AppLocalizations.of(context)!.zoomOut,
                               enabled: canZoomOut,
                               onPressed: _zoomOut,
                             ),
@@ -251,7 +270,7 @@ class _BeginnerToggle extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'ビギナー',
+              AppLocalizations.of(context)!.beginner,
               style: TextStyle(
                 color: labelColor,
                 fontSize: compact ? 12 : 13,
@@ -337,7 +356,7 @@ class _BeginnerModeButton extends StatelessWidget {
   }
 }
 
-/// ビギナー公式のラミネート版（メルカリ）。タップで商品ページを開く。
+/// ビギナー公式のラミネート版（メルカリ）。日本語端末のみ表示。
 class _MercariSaleLink extends StatelessWidget {
   const _MercariSaleLink();
 
@@ -361,16 +380,16 @@ class _MercariSaleLink extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: _open,
-        child: const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _MercariMark(),
-              SizedBox(width: 6),
+              const _MercariMark(),
+              const SizedBox(width: 6),
               Text(
-                '販売中',
-                style: TextStyle(
+                AppLocalizations.of(context)!.onSale,
+                style: const TextStyle(
                   color: Color(0xFFFF0211),
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
