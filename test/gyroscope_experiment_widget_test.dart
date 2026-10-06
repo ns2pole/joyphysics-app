@@ -1,13 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:joyphysics/experiment/dynamics/GyroscopeExperimentWidget.dart';
+import 'package:joyphysics/l10n/app_localizations.dart';
+import 'package:joyphysics/utils/locale_utils.dart';
+
+Widget _wrap(Widget home, {Locale locale = const Locale('ja')}) {
+  return MaterialApp(
+    locale: locale,
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    localeResolutionCallback: resolveAppLocale,
+    home: home,
+  );
+}
 
 void main() {
   testWidgets('ジャイロセンサー画面が落ちずにタイトルを出す', (tester) async {
     await tester.pumpWidget(
-      const MaterialApp(
-        home: GyroscopeExperimentWidget(),
-      ),
+      _wrap(const GyroscopeExperimentWidget()),
     );
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
@@ -18,8 +28,8 @@ void main() {
 
   testWidgets('埋め込み表示でもカードタイトルが出る', (tester) async {
     await tester.pumpWidget(
-      const MaterialApp(
-        home: Scaffold(
+      _wrap(
+        const Scaffold(
           body: GyroscopeExperimentWidget(useScaffold: false),
         ),
       ),

@@ -1,9 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:joyphysics/experiment/high_pitch_sound_warning.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 import 'package:joyphysics/experiment/waves/ToneGeneratorWidget.dart';
 import 'package:joyphysics/experiment/waves/dopplerMovingWall.dart';
 import 'package:joyphysics/shared_components.dart';
+
+String get _warnTitle =>
+    animL(highPitchSoundWarningTitle, 'A high-pitched sound will play');
+String get _warnMessage => animL(
+      highPitchSoundWarningMessage,
+      'The YouTube video plays a high-pitched sound. Please be careful if that is hard to listen to.',
+    );
+String get _back => animL('戻る', 'Back');
 
 void main() {
   test('動く壁の記事はタップ警告なし・高音警告あり', () {
@@ -33,10 +42,10 @@ void main() {
 
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
-    expect(find.text(highPitchSoundWarningTitle), findsOneWidget);
-    expect(find.text(highPitchSoundWarningMessage), findsOneWidget);
+    expect(find.text(_warnTitle), findsOneWidget);
+    expect(find.text(_warnMessage), findsOneWidget);
 
-    await tester.tap(find.text('戻る'));
+    await tester.tap(find.text(_back));
     await tester.pumpAndSettle();
     expect(result, isFalse);
 
@@ -73,9 +82,9 @@ void main() {
 
     await tester.tap(find.byIcon(Icons.play_circle_fill));
     await tester.pumpAndSettle();
-    expect(find.text(highPitchSoundWarningTitle), findsOneWidget);
+    expect(find.text(_warnTitle), findsOneWidget);
 
-    await tester.tap(find.text('戻る'));
+    await tester.tap(find.text(_back));
     await tester.pumpAndSettle();
     expect(confirmedCount, 0);
     expect(find.byIcon(Icons.play_circle_fill), findsOneWidget);
@@ -87,7 +96,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(confirmedCount, 1);
     expect(find.byIcon(Icons.play_circle_fill), findsNothing);
-    expect(find.text(highPitchSoundWarningTitle), findsNothing);
+    expect(find.text(_warnTitle), findsNothing);
     expect(find.byKey(const Key('gated-child')), findsOneWidget);
   });
 
@@ -107,15 +116,15 @@ void main() {
     );
     await tester.pump();
 
-    await tester.tap(find.text('再生'));
+    await tester.tap(find.text(animL('再生', 'Play')));
     await tester.pumpAndSettle();
-    expect(find.text(highPitchSoundWarningTitle), findsOneWidget);
-    expect(find.text(highPitchSoundWarningMessage), findsOneWidget);
+    expect(find.text(_warnTitle), findsOneWidget);
+    expect(find.text(_warnMessage), findsOneWidget);
 
-    await tester.tap(find.text('戻る'));
+    await tester.tap(find.text(_back));
     await tester.pumpAndSettle();
-    expect(find.text('再生'), findsOneWidget);
-    expect(find.text('再生中'), findsNothing);
+    expect(find.text(animL('再生', 'Play')), findsOneWidget);
+    expect(find.text(animL('再生中', 'Playing')), findsNothing);
   });
 
   testWidgets('高音警告のYouTubeは確認前にプレイヤーを出さない', (tester) async {
@@ -133,9 +142,9 @@ void main() {
     expect(find.byIcon(Icons.play_circle_fill), findsOneWidget);
     await tester.tap(find.byIcon(Icons.play_circle_fill));
     await tester.pumpAndSettle();
-    expect(find.text(highPitchSoundWarningTitle), findsOneWidget);
+    expect(find.text(_warnTitle), findsOneWidget);
 
-    await tester.tap(find.text('戻る'));
+    await tester.tap(find.text(_back));
     await tester.pumpAndSettle();
     expect(find.byIcon(Icons.play_circle_fill), findsOneWidget);
   });

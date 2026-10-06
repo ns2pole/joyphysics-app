@@ -1,7 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:joyphysics/experiment/thermoDynamics/animations/heat_cycle_auto.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   const minT = 300.0;
 
   HeatCycleAutoSnapshot snap({
@@ -213,7 +216,7 @@ void main() {
           heating: true,
           volume: 0.40,
         )),
-        '定圧膨張',
+        animL('定圧膨張', 'Isobaric expansion'),
       );
       expect(
         heatCycleAutoStatusLabel(snap(
@@ -223,7 +226,7 @@ void main() {
           heating: true,
           volume: 0.25,
         )),
-        '定積昇圧',
+        animL('定積昇圧', 'Isochoric pressure rise'),
       );
       expect(
         heatCycleAutoStatusLabel(snap(
@@ -233,7 +236,7 @@ void main() {
           heating: true,
           volume: 0.70,
         )),
-        '加熱を止めています',
+        animL('加熱を止めています', 'Stopping heating'),
       );
       expect(
         heatCycleAutoStatusLabel(snap(
@@ -243,7 +246,7 @@ void main() {
           heating: false,
           volume: 0.70,
         )),
-        '荷物を下ろしています',
+        animL('荷物を下ろしています', 'Unloading cargo'),
       );
       expect(
         heatCycleAutoStatusLabel(snap(
@@ -252,7 +255,7 @@ void main() {
           insulated: false,
           heating: false,
         )),
-        '放熱により冷却中',
+        animL('放熱により冷却中', 'Cooling by heat loss'),
       );
       expect(
         heatCycleAutoStatusLabel(snap(
@@ -261,7 +264,7 @@ void main() {
           insulated: false,
           heating: false,
         )),
-        '断熱材を入れています',
+        animL('断熱材を入れています', 'Inserting insulation'),
       );
       expect(
         heatCycleAutoStatusLabel(snap(
@@ -270,7 +273,7 @@ void main() {
           insulated: true,
           heating: false,
         )),
-        '加熱を始めています',
+        animL('加熱を始めています', 'Starting heating'),
       );
     });
 

@@ -1,7 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:joyphysics/experiment/thermoDynamics/animations/thermo_process_auto.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('定積・定圧 Auto（温度往復）', () {
     const ambient = 300.0;
     const maxT = 1000.0;
@@ -232,7 +235,7 @@ void main() {
           insulated: true,
           heating: true,
         )),
-        '加熱中',
+        animL('加熱中', 'Heating'),
       );
       expect(
         thermoTempAutoStatusLabel(snap(
@@ -240,7 +243,7 @@ void main() {
           phase: ThermoTempAutoPhase.heating,
           insulated: false,
         )),
-        '断熱材を入れています',
+        animL('断熱材を入れています', 'Inserting insulation'),
       );
       expect(
         thermoTempAutoStatusLabel(snap(
@@ -249,7 +252,7 @@ void main() {
           insulated: true,
           heating: false,
         )),
-        '加熱を始めています',
+        animL('加熱を始めています', 'Starting heating'),
       );
       expect(
         thermoTempAutoStatusLabel(snap(
@@ -257,7 +260,7 @@ void main() {
           phase: ThermoTempAutoPhase.cooling,
           cooling: true,
         )),
-        '冷却中',
+        animL('冷却中', 'Cooling'),
       );
     });
   });

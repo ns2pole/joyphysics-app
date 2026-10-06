@@ -2,14 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:joyphysics/experiment/categoriesData.dart';
 import 'package:joyphysics/experiment/sensorArticlesData.dart';
+import 'package:joyphysics/l10n/app_localizations.dart';
 import 'package:joyphysics/model.dart';
 import 'package:joyphysics/search/article_search_page.dart';
 import 'package:joyphysics/search/searchable_articles.dart';
+import 'package:joyphysics/utils/locale_utils.dart';
 
 Video _video({
   required String title,
   bool inPreparation = false,
   String videoURL = 'abcdEFGhi12',
+  String? videoURLEn,
   List<Widget>? experimentWidgets,
 }) {
   return Video(
@@ -17,6 +20,7 @@ Video _video({
     iconName: '',
     title: title,
     videoURL: videoURL,
+    videoURLEn: videoURLEn,
     equipment: const [],
     costRating: '★',
     inPreparation: inPreparation,
@@ -35,7 +39,13 @@ Category _category(String name, List<Video> videos) {
 void main() {
   testWidgets('検索画面へ切り替わったあと入力欄にフォーカスが残る', (tester) async {
     await tester.pumpWidget(
-      const MaterialApp(home: Scaffold(body: HomeArticleSearchBox())),
+      MaterialApp(
+        locale: const Locale('ja'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        localeResolutionCallback: resolveAppLocale,
+        home: const Scaffold(body: HomeArticleSearchBox()),
+      ),
     );
 
     await tester.tap(find.text('キーワード検索'));
@@ -280,6 +290,8 @@ void main() {
       (v) => v.title == '動く物体による反射と速度測定',
     );
     expect(article.videoURL, 'C6Mq7apCUcU');
+    expect(article.videoURLEn, 'C6Mq7apCUcU');
+    expect(article.isAvailableForLanguage('en'), isTrue);
     expect(article.playsSound, isFalse);
     expect(article.warnsHighPitchSound, isTrue);
     expect(article.latex, contains('f_{\\mathrm{ref}}'));
@@ -287,5 +299,79 @@ void main() {
       extractVideoId('https://www.youtube.com/shorts/C6Mq7apCUcU'),
       'C6Mq7apCUcU',
     );
+  });
+
+  test('英語では JP専用YouTube記事を除外し、videoURLEn 付きとシミュレーションは残す', () {
+    final articles = flattenSearchableArticles(
+      [
+        _category('力学', [
+          _video(title: 'JPのみ'),
+          _video(title: '英対応', videoURLEn: 'abcdEFGhi12'),
+          _video(
+            title: 'シミュレーションのみ',
+            videoURL: '',
+            experimentWidgets: [const SizedBox()],
+          ),
+        ]),
+      ],
+      languageCode: 'en',
+    );
+
+    expect(
+      articles.map((a) => a.video.title).toList(),
+      ['英対応', 'シミュレーションのみ'],
+    );
+  });
+
+  test('実データの英語一覧に Shorts 英対応6本が含まれ、JP専用YouTubeは含まれない', () {
+    final enArticles = flattenAllSearchableArticles(
+      categoriesData,
+      sensorArticlesByCategory,
+      sensorCategoryName: kSensorCategoryName,
+      languageCode: 'en',
+    );
+    final enTitles = enArticles.map((a) => a.video.title).toSet();
+
+    // Bilingual Shorts (same ID for EN)
+    expect(enTitles, contains('動く物体による反射と速度測定'));
+    expect(enTitles, contains('向心力が突如消えた時の物体運動'));
+    expect(enTitles, contains('うなり'));
+    expect(enTitles, contains('1階と2階での大気圧の測定'));
+    expect(enTitles, contains('静止摩擦力と静止摩擦係数'));
+    expect(enTitles, contains('動摩擦力と動摩擦係数'));
+
+    // JP-only YouTube should be gone; bilingual EN ids remain.
+    final enJpOnlyVideos = enArticles
+        .where(
+          (a) =>
+              a.video.hasPlayableJapaneseVideo &&
+              !a.video.hasEnglishVideoURL,
+        )
+        .map((a) => a.video.title)
+        .toList();
+    expect(enJpOnlyVideos, isEmpty);
+
+    final jaOnlyVideoCount = flattenAllSearchableArticles(
+      categoriesData,
+      sensorArticlesByCategory,
+      sensorCategoryName: kSensorCategoryName,
+      languageCode: 'ja',
+    )
+        .where(
+          (a) =>
+              a.video.hasPlayableJapaneseVideo &&
+              !a.video.hasEnglishVideoURL,
+        )
+        .length;
+    expect(jaOnlyVideoCount, greaterThan(0));
+
+    // Simulations without YouTube stay on EN.
+    final enSimulations = enArticles.where(
+      (a) =>
+          !a.video.hasPlayableJapaneseVideo &&
+          a.video.experimentWidgets != null &&
+          a.video.experimentWidgets!.isNotEmpty,
+    );
+    expect(enSimulations, isNotEmpty);
   });
 }
