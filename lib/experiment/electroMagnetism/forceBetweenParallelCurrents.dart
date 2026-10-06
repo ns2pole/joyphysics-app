@@ -4,8 +4,10 @@ final forceBetweenParallelCurrents = Video(
   category: 'electroMagnetism', // ← 追加
     iconName: "forceBetweenParallelCurrents",
     title: "平行電流間に働く力",
+    titleEn: "Force between parallel currents",
     videoURL: "mp8eFvdeuZE",
     equipment: ["アルミホイル", "導線", "電池"],
+    equipmentEn: ["aluminum foil", "wire", "battery"],
     costRating: "★☆☆", latex: r"""
 <div class="common-box">ポイント</div>
 <p>2本の平行導線に電流 $I_1$, $I_2$ が流れるとき、それらの間に働く磁気力 $F$ は次の式で表される：</p>
@@ -29,6 +31,32 @@ final forceBetweenParallelCurrents = Video(
 <div style="text-align:center; margin:1em 0;">
   <img src="assets/electroMagnetismDetail/forceBetweenParallelCurrents.png"
        alt="平行電流間に働く力"
+       style="max-width:50%; height:auto;" />
+</div>
+""",
+    latexEn: r"""
+<div class="common-box">Key points</div>
+<p>When currents $I_1$ and $I_2$ flow in two parallel wires, the magnetic force $F$ between them is given by:</p>
+<p>$$ F = \frac{\mu_0 I_1 I_2 l}{2 \pi r} $$</p>
+<ul>
+<li>Currents in the same direction attract each other.</li>
+<li>Currents in opposite directions repel each other.</li>
+</ul>
+<p>※ Definition of symbols:</p>
+<ul style="line-height:1.6;">
+<li>$F$: magnitude of the force (N)</li>
+<li>$\mu_0$: permeability of free space (about $4\pi \times 10^{-7}$ T·m/A)</li>
+<li>$I_1$, $I_2$: magnitudes of the currents in each wire (A)</li>
+<li>$l$: length of wire over which the force acts (m)</li>
+<li>$r$: distance between the two wires (m)</li>
+</ul>
+
+<p><strong>※ This formula is an approximation when the wire length $l$ is much larger than the separation $r$ ($l \gg r$).</strong><br>
+If the wires are short, end effects cannot be neglected and the actual force differs from this formula.</p>
+
+<div style="text-align:center; margin:1em 0;">
+  <img src="assets/electroMagnetismDetail/forceBetweenParallelCurrents.png"
+       alt="Force between parallel currents"
        style="max-width:50%; height:auto;" />
 </div>
 """

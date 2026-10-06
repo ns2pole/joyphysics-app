@@ -4,8 +4,11 @@ final parallelPlateCapacitanceMeasurement = Video(
   category: 'electroMagnetism', // ← 追加
     iconName: "parallelPlateCapacitanceMeasurement",
     title: "平行板コンデンサの電気容量の測定",
+    titleEn: "Measuring the capacitance of a parallel-plate capacitor",
     videoURL: "vzdKFnLYhw0",
+    videoURLEn: "o9GC1svlF0A",
     equipment: ["金属板", "導線", "電源", "マルチメータ(C)", "洗濯バサミ", "絶縁物"],
+    equipmentEn: ["metal plate", "wire", "power supply", "multimeter (C)", "clothespin", "insulator"],
     costRating: "★★★", latex: r"""
 <div class="common-box">ポイント</div>
 <p>平行板コンデンサの電気容量$C$は誘電率$\varepsilon$、面積$S$、板間距離$d$によって次式で与えられる：</p>
@@ -32,6 +35,35 @@ C &= 8.854 \times 10^{-12} \times \frac{1.0 \times 10^{-2}}{7 \times 10^{-4}} \\
 
 <div class="common-box">答え</div>
 <p>この平行板コンデンサの静電容量は</p>
+<p>$$\boxed{C \fallingdotseq 126.5 \ \mathrm{pF}}$$</p>
+
+""",
+    latexEn: r"""
+<div class="common-box">Key points</div>
+<p>The capacitance $C$ of a parallel-plate capacitor is given by the permittivity $\varepsilon$, the area $S$, and the plate separation $d$ as:</p>
+<p>$$C = \varepsilon \frac{S}{d}$$</p>
+<p>Here $\varepsilon$ is $\varepsilon_0$ (the vacuum permittivity) in air; with a dielectric inserted, $\varepsilon = \kappa \varepsilon_0$, where $\kappa$ is the relative permittivity (dielectric constant) of the dielectric.</p>
+
+<div class="common-box">Setup</div>
+<p>Consider a parallel-plate capacitor in air. Find the capacitance $C$ under the following conditions.</p>
+<ul>
+  <li>Permittivity of air (nearly the same as vacuum): $$\varepsilon_0 = 8.854 \times 10^{-12} \ \mathrm{F \cdot m^{-1}}$$</li>
+  <li>Area of the plates: $$S = 10^2 \ \mathrm{cm^2} = 1.0 \times 10^{-2} \ \mathrm{m^2}$$</li>
+  <li>Separation between the plates: $$d = 0.7 \ \mathrm{mm} = 7 \times 10^{-4} \ \mathrm{m}$$</li>
+</ul>
+
+<div class="common-box">Theoretical calculation</div>
+<p>The capacitance of a parallel-plate capacitor is:</p>
+<p>$$C = \varepsilon_0 \cdot \frac{S}{d}$$</p>
+<p>Substituting the values:</p>
+<p>$$\begin{aligned}
+C &= 8.854 \times 10^{-12} \times \frac{1.0 \times 10^{-2}}{7 \times 10^{-4}} \\
+&= \frac{8.854 \times 10^{-14}}{7 \times 10^{-4}} \\
+&\fallingdotseq 126.5 \times 10^{-12} \ \mathrm{F} = 126.5 \ \mathrm{pF}
+\end{aligned}$$</p>
+
+<div class="common-box">Answer</div>
+<p>The capacitance of this parallel-plate capacitor is</p>
 <p>$$\boxed{C \fallingdotseq 126.5 \ \mathrm{pF}}$$</p>
 
 """

@@ -4,8 +4,10 @@ final resistivityTemperatureDependence = Video(
   category: 'electroMagnetism', // ← 追加
     iconName: "resistivityTemperatureDependence",
     title: "温度による銅線の抵抗変化",
+    titleEn: "Temperature dependence of copper wire resistance",
     videoURL: "WRXY65C0pA4",
     equipment: ["銅線", "マルチメータ", "お湯"],
+    equipmentEn: ["copper wire", "multimeter", "hot water"],
     costRating: "★★☆", latex: r"""
         <div class="common-box">ポイント</div>
         <p>抵抗は温度によって変化する。金属の抵抗値 $R_T$ は以下の式で表される。</p>
@@ -34,6 +36,39 @@ final resistivityTemperatureDependence = Video(
         <p>$$R_{100} = \frac{1.55 \times 10^{-8} \times (1 + 0.00393 \times 100) \times 15}{2.0106 \times 10^{-8}} \fallingdotseq 16.11 \, \Omega$$</p>
 
         <div class="common-box">答え</div>
+        <p>$$\boxed{\begin{aligned}
+            10^{\circ}\mathrm{C}&:\ R \fallingdotseq 12.02 \, \Omega \\
+            100^{\circ}\mathrm{C}&:\ R \fallingdotseq 16.11 \, \Omega
+        \end{aligned}}$$</p>
+    """,
+    latexEn: r"""
+        <div class="common-box">Key points</div>
+        <p>Resistance changes with temperature. For a metal, the resistance $R_T$ is given by</p>
+        <p>$$R_T = R_0 (1 + \alpha T)$$</p>
+        <p>The basic formula for resistance is</p>
+        <p>$$R = \rho \frac{ L}{A}$$</p>
+        <p>where $\rho$: resistivity, $L$: length, $A$: cross-sectional area.</p>
+
+        <div class="common-box">Setup</div>
+        <p>Find the resistance of a copper wire with diameter $d = 0.16 \mathrm{mm}$ and length $L = 15 \mathrm{m}$ at $10^{\circ}\mathrm{C}$ and at $100^{\circ}\mathrm{C}$.</p>
+        <p>Given:</p>
+        <ul>
+            <li>Resistivity of copper (at $0^{\circ}\mathrm{C}$): $\rho_0 = 1.55 \times 10^{-8} \, \Omega\cdot m$</li>
+            <li>Temperature coefficient: $\alpha = 0.00393\ ^{\circ}\mathrm{C}^{-1}$ (referenced to $0^{\circ}\mathrm{C}$)</li>
+        </ul>
+
+        <div class="common-box">Theoretical calculation</div>
+        <p>Cross-sectional area: $\displaystyle A = \frac{\pi d^2}{4} = \frac{\pi \times (0.00016)^2}{4} \fallingdotseq 2.0106 \times 10^{-8} \, m^2$</p>
+
+        <p>(1) At temperature $10^{\circ}\mathrm{C}$:</p>
+        <p>$$R_{10} = \frac{\rho_0 (1 + \alpha \times 10) L}{A}$$</p>
+        <p>$$R_{10} = \frac{1.55 \times 10^{-8} \times (1 + 0.00393 \times 10) \times 15}{2.0106 \times 10^{-8}} \fallingdotseq 12.02 \, \Omega$$</p>
+
+        <p>(2) At temperature $100^{\circ}\mathrm{C}$:</p>
+        <p>$$R_{100} = \frac{\rho_0 (1 + \alpha \times 100) L}{A}$$</p>
+        <p>$$R_{100} = \frac{1.55 \times 10^{-8} \times (1 + 0.00393 \times 100) \times 15}{2.0106 \times 10^{-8}} \fallingdotseq 16.11 \, \Omega$$</p>
+
+        <div class="common-box">Answer</div>
         <p>$$\boxed{\begin{aligned}
             10^{\circ}\mathrm{C}&:\ R \fallingdotseq 12.02 \, \Omega \\
             100^{\circ}\mathrm{C}&:\ R \fallingdotseq 16.11 \, \Omega

@@ -4,8 +4,10 @@ final resistanceVsLength = Video(
   category: 'electroMagnetism', // ← 追加
     iconName: "resistance",
     title: "抵抗の長さと抵抗値",
+    titleEn: "Resistance versus length of a conductor",
     videoURL: "dBMA0r6J6ns",
     equipment: ["ニクロム線", "電源", "豆電球", "導線"],
+    equipmentEn: ["nichrome wire", "power supply", "miniature bulb", "wire"],
     costRating: "★★☆", latex: r"""
 <div class="common-box">ポイント</div>
 <p>導体の抵抗値 $R$ は以下の式で表される：</p>
@@ -47,6 +49,77 @@ $$</p>
       <th>長さ $L$ (m)</th>
       <th>断面積 $A$ ($m^2$)</th>
       <th>抵抗 $R$ ($\Omega$)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0.5</td>
+      <td>0.5</td>
+      <td>$$1.96 \times 10^{-7}$$</td>
+      <td>2.80</td>
+    </tr>
+    <tr>
+      <td>0.5</td>
+      <td>1.0</td>
+      <td>$$1.96 \times 10^{-7}$$</td>
+      <td>5.60</td>
+    </tr>
+    <tr>
+      <td>0.35</td>
+      <td>0.5</td>
+      <td>$$9.62 \times 10^{-8}$$</td>
+      <td>5.72</td>
+    </tr>
+    <tr>
+      <td>0.35</td>
+      <td>1.0</td>
+      <td>$$9.62 \times 10^{-8}$$</td>
+      <td>11.43</td>
+    </tr>
+  </tbody>
+</table>
+""",
+    latexEn: r"""
+<div class="common-box">Key points</div>
+<p>The resistance $R$ of a conductor is given by:</p>
+<p>$$
+R = \rho \frac{L}{A}
+$$</p>
+<ul>
+  <li>$R$: resistance ($\Omega$)</li>
+  <li>$\rho$: resistivity ($\Omega \cdot m$)</li>
+  <li>$L$: length of the conductor ($m$)</li>
+  <li>$A$: cross-sectional area ($m^2$)</li>
+</ul>
+
+<div class="common-box">Setup</div>
+<p>Find the resistance of a nichrome wire under the following conditions.</p>
+<ul>
+  <li>Resistivity $\rho = 1.10 \times 10^{-6}\,\Omega\cdot\mathrm{m}$</li>
+  <li>Diameter $d = 0.5\,\mathrm{mm}$ or $0.35\,\mathrm{mm}$</li>
+  <li>Length $L = 0.5\,\mathrm{m}$ or $1.0\,\mathrm{m}$</li>
+</ul>
+
+<div class="common-box">Theoretical calculation</div>
+<p>The cross-sectional area $A$ from the diameter $d$ is:</p>
+<p>$$
+A = \pi \left( \frac{d}{2} \right)^2
+$$</p>
+
+<p>The resistance is:</p>
+<p>$$
+R = \rho \frac{L}{A}
+$$</p>
+
+<div class="common-box">Answer</div>
+<p>The calculated results are as follows.</p>
+<table border="1" cellspacing="0" cellpadding="5">
+  <thead>
+    <tr>
+      <th>Diameter $d$ (mm)</th>
+      <th>Length $L$ (m)</th>
+      <th>Area $A$ ($m^2$)</th>
+      <th>Resistance $R$ ($\Omega$)</th>
     </tr>
   </thead>
   <tbody>

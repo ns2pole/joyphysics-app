@@ -8,8 +8,10 @@ final magnetometer = Video(
   category: 'electroMagnetism',
   iconName: "magnet",
   title: "磁場の測定",
+  titleEn: "Measuring magnetic fields (magnetometer)",
   videoURL: "",
   equipment: ["スマホ"],
+  equipmentEn: ["smartphone"],
   costRating: "★☆☆",
   latex: r"""
 <div class="common-box">地磁気とは？</div>
@@ -51,6 +53,48 @@ H &= \sqrt{B_x^2 + B_y^2} = \sqrt{25^2 + 15^2} \\[6pt]
   <li>水平に置いて $x$ と $y$ の成分から三平方の定理で水平成分を計算できる</li>
   <li>磁石を使えば磁場の変化を視覚化できるが、強い磁石の取り扱いには注意が必要</li>
   <li>スマホの向きに応じて地磁気ベクトルが変化する様子を体験できる</li>
+</ol>
+""",
+  latexEn: r"""
+<div class="common-box">What is the geomagnetic field?</div>
+<p>The Earth behaves like a giant magnet, and a magnetic field (the geomagnetic field) surrounds it.</p>
+<p>The strength of the geomagnetic field varies by location, ranging from about 24000 nT to 66000 nT (nanotesla; $1\,\mu\mathrm{T}=1000\,\mathrm{nT}$) on Earth. In Japan, 2015 observations give about 44000 nT on Okinawa Island, about 51000 nT at the northern tip of Hokkaido, and about 46000 nT near Tokyo.</p>
+<p>Near Japan, the average horizontal component (H) of the geomagnetic field is about 30000 nT (about 30 μT). The amplitude of quiet-day variation is about 50 nT, but during magnetic storms changes of several hundred nT can be observed.</p>
+<p><small>※ These geomagnetic field strength values refer to the Wikipedia article “Geomagnetic field” (as of August 2025).</small></p>
+<div class="common-box">What the magnetic sensor measures</div>
+<p>A smartphone magnetometer detects magnetic field strength (μT) along three axes (x, y, z). You can use this to study the magnitude and direction of the geomagnetic field and how they change.</p>
+
+<div class="common-box">Horizontal component calculation and example</div>
+<p>With the smartphone placed horizontally, the horizontal component (H) can be calculated from the sensor’s x-component ($B_x$) and y-component ($B_y$) using the Pythagorean theorem:</p>
+<p>$$ H = \sqrt{B_x^2 + B_y^2} $$</p>
+<p>For example, if the x-component is 25 μT and the y-component is 15 μT, the horizontal component H is calculated as follows:</p>
+$$\begin{aligned}
+H &= \sqrt{B_x^2 + B_y^2} = \sqrt{25^2 + 15^2} \\[6pt]
+& = \sqrt{625 + 225} = \sqrt{850} \\[6pt]
+& \fallingdotseq 29.15 \mathrm{μT}
+\end{aligned}$$
+<p>This value gives the magnitude of the horizontal component of the geomagnetic field and is used for determining direction.</p>
+
+<div class="common-box">Experiment: bring a magnet close</div>
+<ul>
+  <li>Place the smartphone horizontally on a desk and display the x, y, and z magnetic field strengths and the total field magnitude on the screen.</li>
+  <li>When you bring a magnet near the phone, the values change significantly. Depending on the magnet’s strength, it may affect the phone’s sensors or hardware—handle with care.</li>
+  <li>Change the magnet’s orientation and distance to observe how the magnetic field vector changes.</li>
+</ul>
+
+<div class="common-box">Experiment: measure the direction of the geomagnetic field</div>
+<ul>
+  <li>Without using a magnet, change the orientation of the smartphone and observe.</li>
+  <li>Rotate the phone or turn it upside down to confirm the direction of the geomagnetic field.</li>
+  <li>This also helps you understand how compass apps and the compass principle work.</li>
+</ul>
+
+<div class="common-box">Summary</div>
+<ol>
+  <li>A smartphone magnetometer can observe magnetic field strength along the $x$, $y$, and $z$ axes</li>
+  <li>Placed horizontally, the horizontal component can be calculated from the $x$ and $y$ components via the Pythagorean theorem</li>
+  <li>A magnet can visualize field changes, but strong magnets must be handled with care</li>
+  <li>You can experience how the geomagnetic field vector changes with the phone’s orientation</li>
 </ol>
 """,
   experimentWidgets: [MagnetometerExperimentWidget(height: 380, useScaffold: false)],

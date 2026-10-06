@@ -1,35 +1,50 @@
 import 'dart:async';
-import 'dart:math';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:joyphysics/experiment/HasHeight.dart';
+import 'package:joyphysics/experiment/magnetometer_baseline.dart';
 import 'package:joyphysics/experiment/sensor_availability.dart';
 import 'package:joyphysics/experiment/sensor_availability_types.dart';
 import 'package:joyphysics/experiment/sensor_app_store_dialog.dart';
+import 'package:joyphysics/experiment/sensor_gadget_l10n.dart';
+import 'package:joyphysics/l10n/anim_ui.dart';
+import 'package:joyphysics/l10n/app_localizations.dart';
+import 'package:joyphysics/l10n/catalog_name_localizations.dart';
 import 'package:joyphysics/shared_components.dart';
 
 class MagnetometerExperimentWidget extends StatefulWidget with HasHeight {
   final double height;
   final bool useScaffold;
 
+  /// When false (default), skip the startup baseline prompt.
+  /// Embedded article gadgets keep absolute mode unless the user toggles.
+  final bool promptBaselineOnStart;
+
   const MagnetometerExperimentWidget({
     Key? key,
     this.height = 320,
     this.useScaffold = true,
+    this.promptBaselineOnStart = true,
   }) : super(key: key);
 
   @override
   double get widgetHeight => height;
 
   @override
-  State<MagnetometerExperimentWidget> createState() => _MagnetometerExperimentWidgetState();
+  State<MagnetometerExperimentWidget> createState() =>
+      _MagnetometerExperimentWidgetState();
 }
 
-class _MagnetometerExperimentWidgetState extends State<MagnetometerExperimentWidget> {
+class _MagnetometerExperimentWidgetState
+    extends State<MagnetometerExperimentWidget> {
   StreamSubscription<MagnetometerEvent>? _subscription;
   double _x = 0, _y = 0, _z = 0;
   SensorAvailability _availability = SensorAvailability.checking;
+
+  bool _useZeroBaseline = false;
+  double _baselineX = 0, _baselineY = 0, _baselineZ = 0;
+  bool _baselinePromptShown = false;
 
   @override
   void initState() {
@@ -54,7 +69,84 @@ class _MagnetometerExperimentWidgetState extends State<MagnetometerExperimentWid
     }
     if (status.isAvailable) {
       _startSubscription();
+      _scheduleBaselinePrompt();
     }
+  }
+
+  void _scheduleBaselinePrompt() {
+    if (!widget.promptBaselineOnStart || !widget.useScaffold) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _maybeShowBaselinePrompt();
+    });
+  }
+
+  Future<void> _maybeShowBaselinePrompt() async {
+    if (_baselinePromptShown || !mounted) return;
+    _baselinePromptShown = true;
+
+    final useZero = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: Text(
+          animUi(
+            ctx,
+            ja: 'ゼロ基準にしますか？',
+            en: 'Use zero baseline?',
+          ),
+        ),
+        content: Text(
+          animUi(
+            ctx,
+            ja:
+                'スマホ内部の装置などの周辺環境の影響により、ある程度の大きさの磁場があらかじめ観測されることがあります。\n\n現状の磁場をゼロ基準にしますか？\n（あとからトグルでも切り替えできます）',
+            en:
+                'Due to the phone’s internal parts and surroundings, some magnetic field is often already present.\n\nSet the current field as the zero baseline?\n(You can also switch this later with the toggle.)',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(
+              animUi(ctx, ja: '絶対値のまま', en: 'Keep absolute'),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(
+              animUi(ctx, ja: 'ゼロ基準にする', en: 'Set zero baseline'),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (!mounted || useZero == null) return;
+    setState(() {
+      if (useZero) {
+        _captureBaseline();
+        _useZeroBaseline = true;
+      } else {
+        _useZeroBaseline = false;
+      }
+    });
+  }
+
+  void _captureBaseline() {
+    _baselineX = _x;
+    _baselineY = _y;
+    _baselineZ = _z;
+  }
+
+  void _onZeroBaselineToggle(bool enabled) {
+    setState(() {
+      if (enabled) {
+        _captureBaseline();
+        _useZeroBaseline = true;
+      } else {
+        _useZeroBaseline = false;
+      }
+    });
   }
 
   void _startSubscription() {
@@ -77,21 +169,8 @@ class _MagnetometerExperimentWidgetState extends State<MagnetometerExperimentWid
     });
     if (status.isAvailable) {
       _startSubscription();
+      _scheduleBaselinePrompt();
     }
-  }
-
-  Color getColorByMagnitude(double mag) {
-    if (mag < 200) return Colors.green;
-    if (mag < 500) return Colors.yellow.shade700;
-    if (mag < 2000) return Colors.orange;
-    return Colors.red;
-  }
-
-  String getWarningText(double mag) {
-    if (mag < 200) return "磁場は正常範囲内です。";
-    if (mag < 500) return "やや強い磁場を検知しています。";
-    if (mag < 2000) return "強力な磁場です。";
-    return "非常に強い磁場です！端末への影響にご注意ください。";
   }
 
   @override
@@ -105,24 +184,66 @@ class _MagnetometerExperimentWidgetState extends State<MagnetometerExperimentWid
     final isAvailable = _availability.isAvailable;
     final needsPermission = _availability.needsPermission;
     final webStaticReadings = kIsWeb && !isAvailable && !needsPermission;
-    final magnitude = sqrt(_x * _x + _y * _y + _z * _z);
-    final color = getColorByMagnitude(magnitude);
-    final warningText = getWarningText(magnitude);
+    final field = magnetometerDisplayField(
+      rawX: _x,
+      rawY: _y,
+      rawZ: _z,
+      useZeroBaseline: _useZeroBaseline,
+      baselineX: _baselineX,
+      baselineY: _baselineY,
+      baselineZ: _baselineZ,
+    );
+    // Alerts follow the displayed magnitude (absolute or residual).
+    final color = magnetometerAlertColor(field.magnitude);
+    final warningText = magnetometerWarningText(context, field.magnitude);
 
     final content = SensorDisplayCard(
-      title: "現在の磁場強度",
+      title: animUi(
+        context,
+        ja: '現在の磁場強度',
+        en: 'Current magnetic field',
+      ),
       height: widget.height,
       children: (isAvailable || webStaticReadings)
           ? [
-              Text("X: ${_x.toStringAsFixed(1)} μT",
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(
+                  animUi(
+                    context,
+                    ja: '起動時をゼロ基準',
+                    en: 'Zero at current baseline',
+                  ),
+                  style: const TextStyle(fontSize: 16, color: Colors.black),
+                ),
+                subtitle: Text(
+                  _useZeroBaseline
+                      ? animUi(
+                          context,
+                          ja: '周辺影響を差し引いた相対値',
+                          en: 'Relative to captured environment offset',
+                        )
+                      : animUi(
+                          context,
+                          ja: 'センサーの絶対値（μT）',
+                          en: 'Sensor absolute values (μT)',
+                        ),
+                  style: const TextStyle(fontSize: 12, color: Colors.black54),
+                ),
+                value: _useZeroBaseline,
+                onChanged: _onZeroBaselineToggle,
+              ),
+              const SizedBox(height: 8),
+              Text('X: ${field.x.toStringAsFixed(1)} μT',
                   style: const TextStyle(fontSize: 24, color: Colors.black)),
-              Text("Y: ${_y.toStringAsFixed(1)} μT",
+              Text('Y: ${field.y.toStringAsFixed(1)} μT',
                   style: const TextStyle(fontSize: 24, color: Colors.black)),
-              Text("Z: ${_z.toStringAsFixed(1)} μT",
+              Text('Z: ${field.z.toStringAsFixed(1)} μT',
                   style: const TextStyle(fontSize: 24, color: Colors.black)),
               const SizedBox(height: 24),
               Text(
-                "合成磁場: ${magnitude.toStringAsFixed(1)} μT",
+                '${animUi(context, ja: '合成磁場', en: 'Resultant field')}: '
+                '${field.magnitude.toStringAsFixed(1)} μT',
                 style: TextStyle(
                     fontSize: 24, fontWeight: FontWeight.bold, color: color),
               ),
@@ -135,14 +256,14 @@ class _MagnetometerExperimentWidgetState extends State<MagnetometerExperimentWid
             ]
           : [
               Text(
-                _availability.message,
+                sensorAvailabilityMessage(context, _availability),
                 style: const TextStyle(fontSize: 18, color: Colors.grey),
               ),
               const SizedBox(height: 12),
               if (needsPermission)
                 ElevatedButton(
                   onPressed: _requestPermission,
-                  child: const Text('センサー利用を許可'),
+                  child: Text(AppLocalizations.of(context)!.allowSensorAccess),
                 ),
             ],
     );
@@ -154,7 +275,7 @@ class _MagnetometerExperimentWidgetState extends State<MagnetometerExperimentWid
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('磁気センサー'),
+        title: Text(localizeCatalogName(context, '磁気センサー')),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
