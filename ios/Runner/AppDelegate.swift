@@ -81,30 +81,48 @@ import AVFoundation
   }
 
   private func startMic(result: FlutterResult) {
-    audioEngine = AVAudioEngine()
+    stopMic()
 
-    guard let engine = audioEngine else {
-      result(FlutterError(code: "AUDIO_ENGINE_ERROR", message: "AudioEngine init failed", details: nil))
+    let session = AVAudioSession.sharedInstance()
+    do {
+      try session.setCategory(.playAndRecord, mode: .measurement, options: [.defaultToSpeaker])
+      try session.setActive(true)
+    } catch {
+      result(FlutterError(code: "AUDIO_SESSION_FAILED", message: error.localizedDescription, details: nil))
       return
     }
 
+    let engine = AVAudioEngine()
+    audioEngine = engine
+
     let inputNode = engine.inputNode
-    let bus = 0
+    let bus: AVAudioNodeBus = 0
+    let inputFormat = inputNode.outputFormat(forBus: bus)
 
-    let inputFormat = inputNode.inputFormat(forBus: bus)
+    guard inputFormat.sampleRate > 0, inputFormat.channelCount > 0 else {
+      stopMic()
+      result(FlutterError(code: "MIC_UNAVAILABLE", message: "マイク入力を開始できません", details: nil))
+      return
+    }
 
-    fftTap = FFTTap(node: inputNode, bus: bus, bufferSize: 16384, format: inputFormat) { [weak self] frequency in
+    guard let tap = FFTTap(node: inputNode, bus: bus, bufferSize: 16384, format: inputFormat, callback: { [weak self] frequency in
       DispatchQueue.main.async {
         self?.currentFrequency = frequency
       }
+    }) else {
+      stopMic()
+      result(FlutterError(code: "MIC_TAP_FAILED", message: "マイクの入力を開始できませんでした", details: nil))
+      return
     }
 
+    fftTap = tap
     fftTap?.start()
 
     do {
       try engine.start()
       result(nil)
     } catch {
+      stopMic()
       result(FlutterError(code: "AUDIO_ENGINE_START_FAILED", message: error.localizedDescription, details: nil))
     }
   }
@@ -159,11 +177,15 @@ class FFTTap {
     private var isRunning = false
     private let callback: (Double) -> Void
 
-    init(node: AVAudioNode,
-         bus: AVAudioNodeBus,
-         bufferSize: UInt32,
-         format: AVAudioFormat,
-         callback: @escaping (Double) -> Void) {
+    init?(node: AVAudioNode,
+          bus: AVAudioNodeBus,
+          bufferSize: UInt32,
+          format: AVAudioFormat,
+          callback: @escaping (Double) -> Void) {
+
+        guard format.sampleRate > 0, format.channelCount > 0 else {
+            return nil
+        }
 
         self.node = node
         self.bus = bus
@@ -172,7 +194,7 @@ class FFTTap {
 
         log2n = UInt(round(log2(Float(bufferSize))))
         guard let setup = vDSP_create_fftsetup(log2n, Int32(kFFTRadix2)) else {
-            fatalError("FFT setup failed")
+            return nil
         }
         fftSetup = setup
 
@@ -182,8 +204,16 @@ class FFTTap {
                              count: Int(bufferSize),
                              isHalfWindow: false)
 
-        node.installTap(onBus: bus, bufferSize: bufferSize, format: format) { [weak self] (buffer, _) in
-            self?.processBuffer(buffer: buffer)
+        do {
+            try ExceptionCatcher.try {
+                node.removeTap(onBus: bus)
+                node.installTap(onBus: bus, bufferSize: bufferSize, format: format) { [weak self] (buffer, _) in
+                    self?.processBuffer(buffer: buffer)
+                }
+            }
+        } catch {
+            vDSP_destroy_fftsetup(fftSetup)
+            return nil
         }
     }
 
