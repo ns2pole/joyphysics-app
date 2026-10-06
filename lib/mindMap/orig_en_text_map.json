@@ -1,0 +1,2055 @@
+{
+  "source": "lib/mindMap/orig_en.key",
+  "rule": "数式・変数・単位・数値記号はそのまま。日本語の文言と camelCase の記事キーは、物理で使う言い回しにした。同じ文言は count でまとめた。",
+  "slides": {
+    "dynamics": {
+      "title": "力学",
+      "phrases": [
+        {
+          "ja": "例:等加速度並進運動による慣性力\n遠心力、コリオリの力、オイラー力",
+          "en": "e.g. inertial force from uniformly accelerated translation / centrifugal force, Coriolis force, and Euler force",
+          "count": 1
+        },
+        {
+          "ja": "レンツベクトルの保存",
+          "en": "conservation of the Runge–Lenz vector",
+          "count": 1
+        },
+        {
+          "ja": "力学の第2法則",
+          "en": "Newton's second law",
+          "count": 1
+        },
+        {
+          "ja": "運動量変化と\n力積の関係",
+          "en": "relation between the change in momentum and the impulse",
+          "count": 1
+        },
+        {
+          "ja": "運動エネルギー変化と\n仕事の関係",
+          "en": "relation between the change in kinetic energy and the work",
+          "count": 1
+        },
+        {
+          "ja": "角運動量変化と\n力のモーメントの関係",
+          "en": "relation between the change in angular momentum and the torque",
+          "count": 1
+        },
+        {
+          "ja": "変位に比例する力",
+          "en": "force proportional to displacement",
+          "count": 1
+        },
+        {
+          "ja": "速度に比例する力",
+          "en": "force proportional to velocity",
+          "count": 1
+        },
+        {
+          "ja": "一定の力",
+          "en": "constant force",
+          "count": 1
+        },
+        {
+          "ja": "ケプラーの第1法則\n(楕円軌道,1609)",
+          "en": "Kepler's first law / (elliptical orbits, 1609)",
+          "count": 1
+        },
+        {
+          "ja": "2体問題",
+          "en": "two-body problem",
+          "count": 1
+        },
+        {
+          "ja": "質点系の力学",
+          "en": "mechanics of a system of particles",
+          "count": 1
+        },
+        {
+          "ja": "力学の第3法則\n作用反作用の法則",
+          "en": "Newton's third law / law of action and reaction",
+          "count": 1
+        },
+        {
+          "ja": "相対運動方程式",
+          "en": "equation of relative motion",
+          "count": 1
+        },
+        {
+          "ja": "剛体の力学",
+          "en": "rigid-body mechanics",
+          "count": 1
+        },
+        {
+          "ja": "慣性力(見かけの力)",
+          "en": "inertial force (fictitious force)",
+          "count": 1
+        },
+        {
+          "ja": "天文\n地球 月 太陽 惑星",
+          "en": "astronomy / Earth, Moon, Sun, planets",
+          "count": 1
+        },
+        {
+          "ja": "万有引力定数G\n(キャベンディッシュ1798)",
+          "en": "gravitational constant G / (Cavendish, 1798)",
+          "count": 1
+        },
+        {
+          "ja": "万有引力(逆2乗則)",
+          "en": "universal gravitation (inverse-square law)",
+          "count": 1
+        },
+        {
+          "ja": "月の運動",
+          "en": "motion of the Moon",
+          "count": 1
+        },
+        {
+          "ja": "運動方程式の厳密解",
+          "en": "exact solution of the equation of motion",
+          "count": 1
+        },
+        {
+          "ja": "天動説\n(アリストテレス)",
+          "en": "geocentric model / (Aristotle)",
+          "count": 1
+        },
+        {
+          "ja": "ガリレオが\n望遠鏡を使う",
+          "en": "Galileo uses a telescope",
+          "count": 1
+        },
+        {
+          "ja": "太陽黒点",
+          "en": "sunspots",
+          "count": 1
+        },
+        {
+          "ja": "金星の満ち欠け",
+          "en": "phases of Venus",
+          "count": 1
+        },
+        {
+          "ja": "地動説\n天球の回転について\n(コペルニクス)",
+          "en": "heliocentric model / On the Revolutions of the Heavenly Spheres / (Copernicus)",
+          "count": 1
+        },
+        {
+          "ja": "ニュートン(プリンシピア 1687)",
+          "en": "Newton (Principia, 1687)",
+          "count": 1
+        },
+        {
+          "ja": "例:落体の運動 斜方投射\n動摩擦力",
+          "en": "e.g. falling-body motion and projectile motion / kinetic friction",
+          "count": 1
+        },
+        {
+          "ja": "地上で近似",
+          "en": "approximated near Earth's surface",
+          "count": 1
+        },
+        {
+          "ja": "力積が 0",
+          "en": "the impulse is 0",
+          "count": 1
+        },
+        {
+          "ja": "F が保存力のみ",
+          "en": "F is a conservative force only",
+          "count": 1
+        },
+        {
+          "ja": "力のモーメントが 0",
+          "en": "the torque is 0",
+          "count": 1
+        },
+        {
+          "ja": "Fの具体例",
+          "en": "specific examples of F",
+          "count": 1
+        },
+        {
+          "ja": "紀元前350",
+          "en": "350 BCE",
+          "count": 1
+        },
+        {
+          "ja": "木星の衛星の発見\n(ガリレオ 星界の報告)",
+          "en": "discovery of Jupiter's satellites / (Galileo, Sidereus Nuncius)",
+          "count": 1
+        },
+        {
+          "ja": "ニュートン\n(プリンシピア)",
+          "en": "Newton / (Principia)",
+          "count": 1
+        },
+        {
+          "ja": "ケプラーの第3法則\n(調和の法則,1619)",
+          "en": "Kepler's third law / (harmonic law, 1619)",
+          "count": 2
+        },
+        {
+          "ja": "ケプラーの第1法則\n(楕円軌道)\nケプラーの2法則\n(面積速度一定)",
+          "en": "Kepler's first law / (elliptical orbits) / Kepler's second law / (constant areal velocity)",
+          "count": 1
+        },
+        {
+          "ja": "万有引力定数\n(キャベンディッシュ)",
+          "en": "gravitational constant / (Cavendish)",
+          "count": 1
+        },
+        {
+          "ja": "力学の第1法則\n慣性の法則",
+          "en": "Newton's first law / law of inertia",
+          "count": 1
+        },
+        {
+          "ja": "非慣性系",
+          "en": "non-inertial frame",
+          "count": 1
+        },
+        {
+          "ja": "質点が複数",
+          "en": "more than one particle",
+          "count": 1
+        },
+        {
+          "ja": "いつでも",
+          "en": "at all times",
+          "count": 1
+        },
+        {
+          "ja": "質点間距離が一定",
+          "en": "the distance between particles is constant",
+          "count": 1
+        },
+        {
+          "ja": "🌀高校物理 力学全体像",
+          "en": "High-school physics: overview of mechanics",
+          "count": 1
+        },
+        {
+          "ja": "運動方程式 ma = F",
+          "en": "equation of motion, ma = F",
+          "count": 1
+        },
+        {
+          "ja": "振り子の等時性\n(ガリレオ)",
+          "en": "isochronism of a pendulum / (Galileo)",
+          "count": 1
+        },
+        {
+          "ja": "ピサの斜塔実験\n(ガリレオ)",
+          "en": "Leaning Tower of Pisa experiment / (Galileo)",
+          "count": 1
+        },
+        {
+          "ja": "フックの法則",
+          "en": "Hooke's law",
+          "count": 1
+        },
+        {
+          "ja": "θ微小近似\n(振り子の等時性)",
+          "en": "small-angle approximation in θ / (isochronism of a pendulum)",
+          "count": 1
+        },
+        {
+          "ja": "年表",
+          "en": "timeline",
+          "count": 1
+        },
+        {
+          "ja": "運動量保存",
+          "en": "conservation of momentum",
+          "count": 1
+        },
+        {
+          "ja": "角運動量保存",
+          "en": "conservation of angular momentum",
+          "count": 1
+        },
+        {
+          "ja": "非等速円運動",
+          "en": "non-uniform circular motion",
+          "count": 1
+        },
+        {
+          "ja": "例:単振り子",
+          "en": "e.g. a simple pendulum",
+          "count": 1
+        },
+        {
+          "ja": "等速円運動",
+          "en": "uniform circular motion",
+          "count": 1
+        },
+        {
+          "ja": "例:円錐振り子",
+          "en": "e.g. a conical pendulum",
+          "count": 1
+        },
+        {
+          "ja": "その他の力",
+          "en": "other forces",
+          "count": 1
+        },
+        {
+          "ja": "例:フックの法則の力",
+          "en": "e.g. the Hooke's-law force",
+          "count": 1
+        },
+        {
+          "ja": "例:地上重力の位置エネルギー",
+          "en": "e.g. gravitational potential energy near Earth's surface",
+          "count": 1
+        },
+        {
+          "ja": "例:弾性力の位置エネルギー",
+          "en": "e.g. elastic potential energy",
+          "count": 1
+        },
+        {
+          "ja": "例:万有引力の位置エネルギー",
+          "en": "e.g. gravitational potential energy of universal gravitation",
+          "count": 1
+        },
+        {
+          "ja": "力学的エネルギー保存",
+          "en": "conservation of mechanical energy",
+          "count": 1
+        },
+        {
+          "ja": "例:2物体の衝突",
+          "en": "e.g. a collision of two bodies",
+          "count": 1
+        },
+        {
+          "ja": "例:ケプラーの第2法則\n(面積速度一定,1609)",
+          "en": "e.g. Kepler's second law / (constant areal velocity, 1609)",
+          "count": 1
+        },
+        {
+          "ja": "モーメントの釣り合い",
+          "en": "equilibrium of torques",
+          "count": 1
+        },
+        {
+          "ja": "剛体の静力学",
+          "en": "statics of a rigid body",
+          "count": 1
+        },
+        {
+          "ja": "力の釣り合い",
+          "en": "equilibrium of forces",
+          "count": 2
+        },
+        {
+          "ja": "例:落下運動(空気抵抗あり)",
+          "en": "e.g. falling motion (with air resistance)",
+          "count": 1
+        },
+        {
+          "ja": "等加速度直線運動",
+          "en": "uniformly accelerated rectilinear motion",
+          "count": 1
+        },
+        {
+          "ja": "三角関数解(単振動)",
+          "en": "trigonometric solution (simple harmonic motion)",
+          "count": 1
+        },
+        {
+          "ja": "指数関数解",
+          "en": "exponential solution",
+          "count": 1
+        },
+        {
+          "ja": "等速直線運動",
+          "en": "uniform rectilinear motion",
+          "count": 1
+        },
+        {
+          "ja": "例:静止摩擦力,浮力",
+          "en": "e.g. static friction, buoyancy",
+          "count": 1
+        }
+      ],
+      "articleKeys": [
+        {
+          "key": "inertialForceRotation",
+          "en": "inertial forces in a frame rotating at constant angular velocity (centrifugal force, Coriolis force, and Euler force)",
+          "count": 1
+        },
+        {
+          "key": "collisionConservation",
+          "en": "conservation of momentum in a collision",
+          "count": 2
+        },
+        {
+          "key": "momentum",
+          "en": "momentum and impulse",
+          "count": 1
+        },
+        {
+          "key": "workAndEnergy",
+          "en": "work and energy",
+          "count": 1
+        },
+        {
+          "key": "workAndLineIntegral",
+          "en": "work and the line integral",
+          "count": 1
+        },
+        {
+          "key": "angularMomentumAndTorq\nue",
+          "en": "angular momentum and torque",
+          "count": 1
+        },
+        {
+          "key": "keplerSecondLaw",
+          "en": "Kepler's second law",
+          "count": 1
+        },
+        {
+          "key": "uniformAcceleration",
+          "en": "uniformly accelerated motion",
+          "count": 1
+        },
+        {
+          "key": "conservativeForce",
+          "en": "conservative force",
+          "count": 2
+        },
+        {
+          "key": "rigidBodyBalanceOfForces",
+          "en": "equilibrium of forces on a rigid body",
+          "count": 2
+        },
+        {
+          "key": "doubleMassPoint",
+          "en": "two-particle system",
+          "count": 3
+        },
+        {
+          "key": "simpleHarmonicMotionSolution",
+          "en": "solution of simple harmonic motion",
+          "count": 1
+        },
+        {
+          "key": "runge_lenz_vector",
+          "en": "Runge–Lenz vector",
+          "count": 1
+        },
+        {
+          "key": "nonUniformCircularMotion",
+          "en": "non-uniform circular motion",
+          "count": 1
+        },
+        {
+          "key": "simplePendulum",
+          "en": "simple pendulum",
+          "count": 1
+        },
+        {
+          "key": "uniformCircularMotion",
+          "en": "uniform circular motion",
+          "count": 1
+        },
+        {
+          "key": "conicalPendulum",
+          "en": "conical pendulum",
+          "count": 1
+        },
+        {
+          "key": "eqOfMotion",
+          "en": "equation of motion",
+          "count": 1
+        },
+        {
+          "key": "actionAndReactionLaw",
+          "en": "law of action and reaction",
+          "count": 1
+        },
+        {
+          "key": "keplerThirdLaw",
+          "en": "Kepler's third law",
+          "count": 1
+        },
+        {
+          "key": "rigidBodyBalanceOfForcesworkAndEnergy",
+          "en": "equilibrium of a rigid body; work and energy",
+          "count": 1
+        },
+        {
+          "key": "keplerFirstLaw",
+          "en": "Kepler's first law",
+          "count": 1
+        },
+        {
+          "key": "doubleMassPointEnergy",
+          "en": "energy of a two-particle system",
+          "count": 1
+        },
+        {
+          "key": "systemsOfParticles",
+          "en": "system of particles",
+          "count": 1
+        },
+        {
+          "key": "inertialForceParallel",
+          "en": "inertial force in a frame in uniformly accelerated translation",
+          "count": 1
+        },
+        {
+          "key": "universalGravitationEnergyConserv",
+          "en": "conservation of energy under universal gravitation",
+          "count": 1
+        },
+        {
+          "key": "surfaceGravAndFookEnergyConservation",
+          "en": "conservation of energy under surface gravity and a Hooke's-law force",
+          "count": 2
+        },
+        {
+          "key": "surfaceGravityEnergyConservation",
+          "en": "conservation of energy under surface gravity",
+          "count": 1
+        },
+        {
+          "key": "fookEnergyConservation",
+          "en": "conservation of energy for a Hooke's-law force",
+          "count": 1
+        },
+        {
+          "key": "twoDimPolarCoordinatesEqOfMotion",
+          "en": "equation of motion in two-dimensional polar coordinates",
+          "count": 1
+        }
+      ],
+      "formulasUnchanged": [
+        {
+          "text": "∫  ⬜︎ • v dt",
+          "count": 1
+        },
+        {
+          "text": "∫   r × ⬜︎ dt",
+          "count": 1
+        },
+        {
+          "text": "∫  ⬜︎ dt",
+          "count": 1
+        },
+        {
+          "text": "N=2",
+          "count": 1
+        },
+        {
+          "text": "t",
+          "count": 6
+        },
+        {
+          "text": "F",
+          "count": 1
+        },
+        {
+          "text": "Σ",
+          "count": 1
+        },
+        {
+          "text": "=",
+          "count": 1
+        }
+      ],
+      "markers": [
+        {
+          "text": "ignore",
+          "en": "ignore",
+          "count": 3,
+          "note": "ハイライト生成で読み飛ばす印。物理用語ではない。"
+        }
+      ]
+    },
+    "electroMagnetism": {
+      "title": "電磁気学",
+      "phrases": [
+        {
+          "ja": "点電荷\nによる電位",
+          "en": "electric potential due to a point charge",
+          "count": 1
+        },
+        {
+          "ja": "アンペール・マックスウェルの法則",
+          "en": "Ampère–Maxwell law",
+          "count": 1
+        },
+        {
+          "ja": "年表",
+          "en": "timeline",
+          "count": 1
+        },
+        {
+          "ja": "電磁気学全体像",
+          "en": "overview of electromagnetism",
+          "count": 1
+        },
+        {
+          "ja": "電場についての\nガウスの法則",
+          "en": "Gauss's law for the electric field",
+          "count": 1
+        },
+        {
+          "ja": "磁場についての\nガウスの法則",
+          "en": "Gauss's law for the magnetic field",
+          "count": 1
+        },
+        {
+          "ja": "ファラデーの法則(電磁誘導)",
+          "en": "Faraday's law (electromagnetic induction)",
+          "count": 1
+        },
+        {
+          "ja": "電場,磁場の\n波動方程式",
+          "en": "wave equation of the electric and magnetic fields",
+          "count": 1
+        },
+        {
+          "ja": "無限に長い直線電流が\n作る磁場(右ねじの法則)",
+          "en": "magnetic field of an infinitely long straight current (right-handed screw rule)",
+          "count": 1
+        },
+        {
+          "ja": "平行板コンデンサの\n電気容量",
+          "en": "capacitance of a parallel-plate capacitor",
+          "count": 1
+        },
+        {
+          "ja": "円形電流が作る\n軸上の磁場",
+          "en": "on-axis magnetic field of a circular current",
+          "count": 1
+        },
+        {
+          "ja": "無限に長いソレノイドコイルに\n流れる電流が作る磁場",
+          "en": "magnetic field of a current in an infinitely long solenoid",
+          "count": 1
+        },
+        {
+          "ja": "コイルの自己誘導",
+          "en": "self-induction of a coil",
+          "count": 1
+        },
+        {
+          "ja": "コイルの相互誘導",
+          "en": "mutual induction of coils",
+          "count": 1
+        },
+        {
+          "ja": "クーロンの法則",
+          "en": "Coulomb's law",
+          "count": 1
+        },
+        {
+          "ja": "アンペールの法則",
+          "en": "Ampère's law",
+          "count": 1
+        },
+        {
+          "ja": "スカラーポテンシャル(電位) V",
+          "en": "scalar potential (electric potential) V",
+          "count": 1
+        },
+        {
+          "ja": "ベクトルポテンシャル A",
+          "en": "vector potential A",
+          "count": 1
+        },
+        {
+          "ja": "ローレンツ変換\n不変性",
+          "en": "Lorentz transformation / invariance",
+          "count": 1
+        },
+        {
+          "ja": "特殊相対性理論",
+          "en": "special relativity",
+          "count": 1
+        },
+        {
+          "ja": "RC回路",
+          "en": "RC circuit",
+          "count": 1
+        },
+        {
+          "ja": "LC回路",
+          "en": "LC circuit",
+          "count": 1
+        },
+        {
+          "ja": "RL回路",
+          "en": "RL circuit",
+          "count": 1
+        },
+        {
+          "ja": "コイルの自己インダクタンス",
+          "en": "self-inductance of a coil",
+          "count": 1
+        },
+        {
+          "ja": "コイルの相互インダクタンス",
+          "en": "mutual inductance of coils",
+          "count": 1
+        },
+        {
+          "ja": "力率",
+          "en": "power factor",
+          "count": 1
+        },
+        {
+          "ja": "抵抗でのジュール熱",
+          "en": "Joule heat in a resistor",
+          "count": 1
+        },
+        {
+          "ja": "容量\nリアクタンス",
+          "en": "capacitive reactance",
+          "count": 1
+        },
+        {
+          "ja": "インピーダンス",
+          "en": "impedance",
+          "count": 1
+        },
+        {
+          "ja": "電磁ポテンシャル",
+          "en": "electromagnetic potential",
+          "count": 1
+        },
+        {
+          "ja": "電場E",
+          "en": "electric field E",
+          "count": 1
+        },
+        {
+          "ja": "磁場B",
+          "en": "magnetic field B",
+          "count": 1
+        },
+        {
+          "ja": "無限平面に適用",
+          "en": "applied to an infinite plane",
+          "count": 1
+        },
+        {
+          "ja": "点電荷に適用",
+          "en": "applied to a point charge",
+          "count": 1
+        },
+        {
+          "ja": "電荷保存則\n(キルヒホッフ第1法則)",
+          "en": "conservation of charge / (Kirchhoff's first law)",
+          "count": 1
+        },
+        {
+          "ja": "ポインティングベクトル",
+          "en": "Poynting vector",
+          "count": 1
+        },
+        {
+          "ja": "遅延効果",
+          "en": "retardation",
+          "count": 1
+        },
+        {
+          "ja": "真空の誘電率:",
+          "en": "permittivity of free space:",
+          "count": 1
+        },
+        {
+          "ja": "真空の透磁率:",
+          "en": "permeability of free space:",
+          "count": 1
+        },
+        {
+          "ja": "グリーン関数",
+          "en": "Green's function",
+          "count": 1
+        },
+        {
+          "ja": "物質内部",
+          "en": "inside matter",
+          "count": 1
+        },
+        {
+          "ja": "紀元前600年頃",
+          "en": "around 600 BCE",
+          "count": 1
+        },
+        {
+          "ja": "静電気を観察\n(タレス)",
+          "en": "observation of static electricity / (Thales)",
+          "count": 1
+        },
+        {
+          "ja": "電気に正負が\nある事を提唱\n(シャルル)",
+          "en": "proposal that electricity has positive and negative kinds / (du Fay)",
+          "count": 1
+        },
+        {
+          "ja": "ライデン瓶の発明\n(ミュッセンブルーク)",
+          "en": "invention of the Leyden jar / (Musschenbroek)",
+          "count": 1
+        },
+        {
+          "ja": "クーロンの法則\nを発見",
+          "en": "discovery of Coulomb's law",
+          "count": 1
+        },
+        {
+          "ja": "ボルタ電池\nの発明",
+          "en": "invention of the voltaic pile",
+          "count": 1
+        },
+        {
+          "ja": "エルステッドの実験",
+          "en": "Ørsted's experiment",
+          "count": 1
+        },
+        {
+          "ja": "アンペールの法則\nを発見",
+          "en": "discovery of Ampère's law",
+          "count": 1
+        },
+        {
+          "ja": "オームの法則\nを発見",
+          "en": "discovery of Ohm's law",
+          "count": 1
+        },
+        {
+          "ja": "電磁誘導の発見\n(ファラデー)",
+          "en": "discovery of electromagnetic induction / (Faraday)",
+          "count": 1
+        },
+        {
+          "ja": "マクスウェル\n方程式を発表",
+          "en": "Maxwell publishes his equations",
+          "count": 1
+        },
+        {
+          "ja": "電磁波の\n存在を確認\n(ヘルツ)",
+          "en": "confirmation that electromagnetic waves exist / (Hertz)",
+          "count": 1
+        },
+        {
+          "ja": "ローレンツ力\nを導出",
+          "en": "derivation of the Lorentz force",
+          "count": 1
+        },
+        {
+          "ja": "特殊相対性理論を発表\n (アインシュタイン)",
+          "en": "publication of special relativity / (Einstein)",
+          "count": 1
+        },
+        {
+          "ja": "電磁場概念の提唱\n(ファラデー)",
+          "en": "introduction of the concept of the electromagnetic field / (Faraday)",
+          "count": 1
+        },
+        {
+          "ja": "ビオ・サバールの法則\nを発見",
+          "en": "discovery of the Biot–Savart law",
+          "count": 1
+        },
+        {
+          "ja": "回転",
+          "en": "curl",
+          "count": 1
+        },
+        {
+          "ja": "勾配",
+          "en": "gradient",
+          "count": 1
+        },
+        {
+          "ja": "時間で偏微分",
+          "en": "partial derivative with respect to time",
+          "count": 1
+        },
+        {
+          "ja": "ローレンツ変換",
+          "en": "Lorentz transformation",
+          "count": 1
+        },
+        {
+          "ja": "一様電場",
+          "en": "uniform electric field",
+          "count": 1
+        },
+        {
+          "ja": "逆2乗則の電場",
+          "en": "inverse-square electric field",
+          "count": 1
+        },
+        {
+          "ja": "ゲージ変換",
+          "en": "gauge transformation",
+          "count": 1
+        },
+        {
+          "ja": "V内部",
+          "en": "interior of V",
+          "count": 1
+        },
+        {
+          "ja": "🌀高校物理",
+          "en": "high-school physics",
+          "count": 1
+        },
+        {
+          "ja": "電場が時間変化なし",
+          "en": "the electric field does not change with time",
+          "count": 1
+        },
+        {
+          "ja": "電流が時間変化",
+          "en": "the current changes with time",
+          "count": 1
+        },
+        {
+          "ja": "物理定数",
+          "en": "physical constants",
+          "count": 1
+        },
+        {
+          "ja": "光速:",
+          "en": "speed of light:",
+          "count": 1
+        },
+        {
+          "ja": "RLC回路",
+          "en": "RLC circuit",
+          "count": 1
+        },
+        {
+          "ja": "コイルに\n蓄えられる\nエネルギー",
+          "en": "energy stored in a coil",
+          "count": 1
+        },
+        {
+          "ja": "ソレノイドコイルの自己インダクタンス",
+          "en": "self-inductance of a solenoid",
+          "count": 1
+        },
+        {
+          "ja": "コンデンサに\n蓄えられる\nエネルギー",
+          "en": "energy stored in a capacitor",
+          "count": 1
+        },
+        {
+          "ja": "回路方程式(キルヒホッフ第2法則)",
+          "en": "circuit equation (Kirchhoff's second law)",
+          "count": 1
+        },
+        {
+          "ja": "誘導\nリアクタンス",
+          "en": "inductive reactance",
+          "count": 1
+        },
+        {
+          "ja": "交流",
+          "en": "alternating current",
+          "count": 1
+        },
+        {
+          "ja": "回路が変化する時　ρl/S　抵抗率の温度依存性\nサイクロトロン　螺旋　レンツの法則",
+          "en": "when the circuit changes; ρl/S; temperature dependence of resistivity / cyclotron; helix; Lenz's law",
+          "count": 1
+        },
+        {
+          "ja": "変圧器",
+          "en": "transformer",
+          "count": 1
+        },
+        {
+          "ja": "重ね合わせの原理",
+          "en": "principle of superposition",
+          "count": 2
+        },
+        {
+          "ja": "クーロンの法則の実験\n(キャベンディッシュ)",
+          "en": "experiment on Coulomb's law / (Cavendish)",
+          "count": 1
+        },
+        {
+          "ja": "抵抗での消費電力",
+          "en": "power consumed in a resistor",
+          "count": 1
+        },
+        {
+          "ja": "時間平均",
+          "en": "time average",
+          "count": 1
+        },
+        {
+          "ja": "実効値",
+          "en": "root-mean-square value",
+          "count": 1
+        },
+        {
+          "ja": "減衰解",
+          "en": "decaying solution",
+          "count": 1
+        },
+        {
+          "ja": "代表的な回路",
+          "en": "representative circuits",
+          "count": 1
+        },
+        {
+          "ja": "電気回路",
+          "en": "electric circuit",
+          "count": 1
+        },
+        {
+          "ja": "臨界減衰",
+          "en": "critical damping",
+          "count": 1
+        },
+        {
+          "ja": "振動解",
+          "en": "oscillatory solution",
+          "count": 1
+        },
+        {
+          "ja": "線積分\n(渦なしの場合)",
+          "en": "line integral / (irrotational case)",
+          "count": 1
+        },
+        {
+          "ja": "電磁気力(電磁場から受ける力)",
+          "en": "electromagnetic force (force exerted by the electromagnetic field)",
+          "count": 1
+        },
+        {
+          "ja": "誘電分極",
+          "en": "dielectric polarization",
+          "count": 1
+        },
+        {
+          "ja": "静電誘導",
+          "en": "electrostatic induction",
+          "count": 1
+        },
+        {
+          "ja": "誘電体",
+          "en": "dielectric",
+          "count": 1
+        },
+        {
+          "ja": "静電遮蔽",
+          "en": "electrostatic shielding",
+          "count": 1
+        },
+        {
+          "ja": "誘電率\n比誘電率",
+          "en": "permittivity / relative permittivity",
+          "count": 1
+        },
+        {
+          "ja": "キャリア\n自由電子(n型)\nホール(p型)",
+          "en": "charge carriers / free electrons (n-type) / holes (p-type)",
+          "count": 1
+        },
+        {
+          "ja": "結合",
+          "en": "bonding",
+          "count": 1
+        },
+        {
+          "ja": "ダイオード\n太陽電池",
+          "en": "diode / solar cell",
+          "count": 1
+        },
+        {
+          "ja": "磁場の\nエネルギー",
+          "en": "energy of the magnetic field",
+          "count": 1
+        },
+        {
+          "ja": "磁気分極",
+          "en": "magnetic polarization",
+          "count": 1
+        },
+        {
+          "ja": "透磁率\n比透磁率",
+          "en": "permeability / relative permeability",
+          "count": 1
+        },
+        {
+          "ja": "常磁性体",
+          "en": "paramagnetic material",
+          "count": 1
+        },
+        {
+          "ja": "強磁性体",
+          "en": "ferromagnetic material",
+          "count": 1
+        },
+        {
+          "ja": "反磁性体",
+          "en": "diamagnetic material",
+          "count": 1
+        },
+        {
+          "ja": "ホール効果",
+          "en": "Hall effect",
+          "count": 1
+        },
+        {
+          "ja": "電流が磁場から受ける力",
+          "en": "force on a current in a magnetic field",
+          "count": 1
+        },
+        {
+          "ja": "電流間に働く力",
+          "en": "force between currents",
+          "count": 1
+        },
+        {
+          "ja": "電場の\nエネルギー",
+          "en": "energy of the electric field",
+          "count": 1
+        },
+        {
+          "ja": "半導体",
+          "en": "semiconductor",
+          "count": 1
+        },
+        {
+          "ja": "解く",
+          "en": "solve",
+          "count": 1
+        },
+        {
+          "ja": "電磁波",
+          "en": "electromagnetic wave",
+          "count": 1
+        },
+        {
+          "ja": "コンデンサ",
+          "en": "capacitor",
+          "count": 1
+        },
+        {
+          "ja": "自由電子の速さに\n比例する抵抗力モデル",
+          "en": "model of a resistive force proportional to the speed of free electrons",
+          "count": 1
+        },
+        {
+          "ja": "オームの法則",
+          "en": "Ohm's law",
+          "count": 1
+        },
+        {
+          "ja": "導体における\n電子の運動",
+          "en": "motion of electrons in a conductor",
+          "count": 1
+        },
+        {
+          "ja": "導体における\n電子の分布",
+          "en": "distribution of electrons in a conductor",
+          "count": 1
+        },
+        {
+          "ja": "抵抗率",
+          "en": "resistivity",
+          "count": 1
+        },
+        {
+          "ja": "抵抗",
+          "en": "resistance",
+          "count": 1
+        },
+        {
+          "ja": "長さ 断面積",
+          "en": "length and cross-sectional area",
+          "count": 1
+        },
+        {
+          "ja": "一様電場\nによる電位",
+          "en": "electric potential due to a uniform electric field",
+          "count": 1
+        },
+        {
+          "ja": "一般のコンデンサ\n電気容量",
+          "en": "capacitance of a general capacitor",
+          "count": 1
+        },
+        {
+          "ja": "電場,磁場についての方程式(マクスウェル方程式 1864)",
+          "en": "equations for the electric and magnetic fields (Maxwell's equations, 1864)",
+          "count": 1
+        },
+        {
+          "ja": "満たす",
+          "en": "satisfy",
+          "count": 1
+        }
+      ],
+      "articleKeys": [],
+      "formulasUnchanged": [
+        {
+          "text": "V",
+          "count": 2
+        },
+        {
+          "text": "μ",
+          "count": 3
+        },
+        {
+          "text": "= ➖",
+          "count": 1
+        },
+        {
+          "text": "∫",
+          "count": 8
+        },
+        {
+          "text": "E•n",
+          "count": 1
+        },
+        {
+          "text": "ε",
+          "count": 3
+        },
+        {
+          "text": "dS",
+          "count": 5
+        },
+        {
+          "text": "Σ",
+          "count": 1
+        },
+        {
+          "text": "Q",
+          "count": 1
+        },
+        {
+          "text": "B•n",
+          "count": 1
+        },
+        {
+          "text": "=",
+          "count": 4
+        },
+        {
+          "text": "E•l",
+          "count": 1
+        },
+        {
+          "text": "d",
+          "count": 2
+        },
+        {
+          "text": "dt",
+          "count": 2
+        },
+        {
+          "text": "ds",
+          "count": 2
+        },
+        {
+          "text": "B",
+          "count": 1
+        },
+        {
+          "text": "A",
+          "count": 5
+        },
+        {
+          "text": "B•l",
+          "count": 1
+        },
+        {
+          "text": "E",
+          "count": 1
+        },
+        {
+          "text": "•n",
+          "count": 3
+        },
+        {
+          "text": "j",
+          "count": 1
+        },
+        {
+          "text": "+",
+          "count": 1
+        },
+        {
+          "text": "c",
+          "count": 1
+        },
+        {
+          "text": "t",
+          "count": 2
+        },
+        {
+          "text": "⬜︎ × I(t) dt",
+          "count": 1
+        },
+        {
+          "text": "C=0",
+          "count": 1
+        },
+        {
+          "text": "L=0",
+          "count": 1
+        },
+        {
+          "text": "R=0",
+          "count": 1
+        },
+        {
+          "text": "F = q(E +v    B)",
+          "count": 1
+        },
+        {
+          "text": "×",
+          "count": 1
+        }
+      ]
+    },
+    "thermoDynamics": {
+      "title": "熱力学",
+      "phrases": [
+        {
+          "ja": "ボイルの法則\npV=一定",
+          "en": "Boyle's law / pV = constant",
+          "count": 1
+        },
+        {
+          "ja": "🌀高校物理 熱力学全体像",
+          "en": "High-school physics: overview of thermodynamics",
+          "count": 1
+        },
+        {
+          "ja": "ボイル・シャルルの法則",
+          "en": "Boyle–Charles law",
+          "count": 1
+        },
+        {
+          "ja": "シャルルの法則",
+          "en": "Charles's law",
+          "count": 1
+        },
+        {
+          "ja": "理想気体の状態方程式\npV=nRT",
+          "en": "equation of state of an ideal gas / pV=nRT",
+          "count": 1
+        },
+        {
+          "ja": "分子運動論(ミクロからマクロへ)",
+          "en": "kinetic theory (from the microscopic to the macroscopic)",
+          "count": 1
+        },
+        {
+          "ja": "気体の温度と気体分子の\n運動エネルギーの関係式",
+          "en": "relation between the temperature of a gas and the kinetic energy of its molecules",
+          "count": 1
+        },
+        {
+          "ja": "気体の圧力と気体分子の\n速さの関係式",
+          "en": "relation between the pressure of a gas and the speeds of its molecules",
+          "count": 1
+        },
+        {
+          "ja": "(等温変化)",
+          "en": "(isothermal process)",
+          "count": 1
+        },
+        {
+          "ja": "(定積変化)",
+          "en": "(isochoric process)",
+          "count": 1
+        },
+        {
+          "ja": "断熱変化",
+          "en": "adiabatic process",
+          "count": 1
+        },
+        {
+          "ja": "(定圧変化)",
+          "en": "(isobaric process)",
+          "count": 1
+        },
+        {
+          "ja": "平衡状態の気体のマクロな記述",
+          "en": "macroscopic description of a gas in equilibrium",
+          "count": 1
+        },
+        {
+          "ja": "単原子分子",
+          "en": "monatomic molecule",
+          "count": 1
+        },
+        {
+          "ja": "2原子分子",
+          "en": "diatomic molecule",
+          "count": 1
+        },
+        {
+          "ja": "適用",
+          "en": "apply",
+          "count": 1
+        },
+        {
+          "ja": "理想気体の\n内部エネルギー",
+          "en": "internal energy of an ideal gas",
+          "count": 1
+        },
+        {
+          "ja": "✖︎分子の個数N",
+          "en": "✖︎ (number of molecules N)",
+          "count": 1
+        },
+        {
+          "ja": "分子の弾性衝突モデル",
+          "en": "model of elastic collisions of molecules",
+          "count": 1
+        },
+        {
+          "ja": "気体が外部にする仕事",
+          "en": "work done by the gas",
+          "count": 1
+        },
+        {
+          "ja": "気体に与えた熱 Q",
+          "en": "heat Q supplied to the gas",
+          "count": 1
+        },
+        {
+          "ja": "気体の内部エネルギー変化 ΔU",
+          "en": "change ΔU in the internal energy of the gas",
+          "count": 1
+        },
+        {
+          "ja": "熱力学第1法則",
+          "en": "first law of thermodynamics",
+          "count": 1
+        },
+        {
+          "ja": "ゲイリュサックの法則",
+          "en": "Gay-Lussac's law",
+          "count": 1
+        },
+        {
+          "ja": "pV図と仕事W",
+          "en": "pV diagram and the work W",
+          "count": 1
+        },
+        {
+          "ja": "ポワソンの式",
+          "en": "Poisson's adiabatic relation",
+          "count": 1
+        },
+        {
+          "ja": "pV図と平衡状態の遷移",
+          "en": "pV diagram and transitions between equilibrium states",
+          "count": 1
+        },
+        {
+          "ja": "定圧",
+          "en": "isobaric",
+          "count": 1
+        },
+        {
+          "ja": "定積",
+          "en": "isochoric",
+          "count": 1
+        },
+        {
+          "ja": "等温",
+          "en": "isothermal",
+          "count": 1
+        },
+        {
+          "ja": "断熱",
+          "en": "adiabatic",
+          "count": 1
+        },
+        {
+          "ja": "一定",
+          "en": "constant",
+          "count": 3
+        },
+        {
+          "ja": "マイヤーの関係式",
+          "en": "Mayer's relation",
+          "count": 1
+        }
+      ],
+      "articleKeys": [],
+      "formulasUnchanged": [
+        {
+          "text": "Q=0",
+          "count": 1
+        },
+        {
+          "text": "↔︎W=pΔV",
+          "count": 1
+        },
+        {
+          "text": "ΔU=0",
+          "count": 1
+        },
+        {
+          "text": "nRT",
+          "count": 2
+        },
+        {
+          "text": "U=",
+          "count": 2
+        },
+        {
+          "text": "Nmv",
+          "count": 1
+        },
+        {
+          "text": "3V",
+          "count": 1
+        },
+        {
+          "text": "p=",
+          "count": 1
+        },
+        {
+          "text": "kT",
+          "count": 1
+        },
+        {
+          "text": "mv",
+          "count": 1
+        },
+        {
+          "text": "=",
+          "count": 6
+        },
+        {
+          "text": "ΔV=0",
+          "count": 1
+        },
+        {
+          "text": "+",
+          "count": 1
+        },
+        {
+          "text": "W",
+          "count": 2
+        },
+        {
+          "text": "pdV",
+          "count": 1
+        },
+        {
+          "text": "∫",
+          "count": 1
+        },
+        {
+          "text": "V",
+          "count": 10
+        },
+        {
+          "text": "p",
+          "count": 3
+        },
+        {
+          "text": "↔︎W=nRT log",
+          "count": 1
+        },
+        {
+          "text": "T",
+          "count": 2
+        },
+        {
+          "text": "Δp=0",
+          "count": 1
+        },
+        {
+          "text": "↔︎W=0",
+          "count": 1
+        },
+        {
+          "text": "ΔT=0",
+          "count": 1
+        },
+        {
+          "text": "Q=W",
+          "count": 1
+        },
+        {
+          "text": "Q=ΔU",
+          "count": 1
+        },
+        {
+          "text": "Q=ΔU+pΔV",
+          "count": 1
+        },
+        {
+          "text": "pV",
+          "count": 1
+        },
+        {
+          "text": "γ",
+          "count": 1
+        },
+        {
+          "text": "=ΔU+nRΔT",
+          "count": 1
+        },
+        {
+          "text": "C   = C   + nR",
+          "count": 1
+        },
+        {
+          "text": "R",
+          "count": 1
+        }
+      ]
+    },
+    "waves": {
+      "title": "波動",
+      "phrases": [
+        {
+          "ja": "ニュートンリング",
+          "en": "Newton's rings",
+          "count": 1
+        },
+        {
+          "ja": "空気層による干渉",
+          "en": "interference by an air layer",
+          "count": 1
+        },
+        {
+          "ja": "うなり",
+          "en": "beats",
+          "count": 1
+        },
+        {
+          "ja": "Maxwell方程式",
+          "en": "Maxwell's equations",
+          "count": 1
+        },
+        {
+          "ja": "🌀高校物理 波動全体像",
+          "en": "High-school physics: overview of waves",
+          "count": 1
+        },
+        {
+          "ja": "(電場 磁場の方程式)",
+          "en": "(equations for the electric and magnetic fields)",
+          "count": 1
+        },
+        {
+          "ja": "波　 動　 方　 程　 式",
+          "en": "wave equation",
+          "count": 1
+        },
+        {
+          "ja": "自由端反射",
+          "en": "reflection at a free end",
+          "count": 1
+        },
+        {
+          "ja": "重ね合わせの原理",
+          "en": "principle of superposition",
+          "count": 1
+        },
+        {
+          "ja": "ドップラー効果",
+          "en": "Doppler effect",
+          "count": 1
+        },
+        {
+          "ja": "観測者が動く",
+          "en": "the observer is moving",
+          "count": 1
+        },
+        {
+          "ja": "音源が動く",
+          "en": "the source is moving",
+          "count": 1
+        },
+        {
+          "ja": "腹と節",
+          "en": "antinodes and nodes",
+          "count": 1
+        },
+        {
+          "ja": "開口端補正",
+          "en": "end correction",
+          "count": 1
+        },
+        {
+          "ja": "固定端反射",
+          "en": "reflection at a fixed end",
+          "count": 1
+        },
+        {
+          "ja": "境界条件",
+          "en": "boundary conditions",
+          "count": 1
+        },
+        {
+          "ja": "横波",
+          "en": "transverse wave",
+          "count": 4
+        },
+        {
+          "ja": "縦波",
+          "en": "longitudinal wave",
+          "count": 2
+        },
+        {
+          "ja": "圧力勾配",
+          "en": "pressure gradient",
+          "count": 1
+        },
+        {
+          "ja": "位相速度と群速度",
+          "en": "phase velocity and group velocity",
+          "count": 1
+        },
+        {
+          "ja": "連  続  体  の  力  学",
+          "en": "continuum mechanics",
+          "count": 1
+        },
+        {
+          "ja": "張力",
+          "en": "tension",
+          "count": 1
+        },
+        {
+          "ja": "線形弾性",
+          "en": "linear elasticity",
+          "count": 1
+        },
+        {
+          "ja": "重力",
+          "en": "gravity",
+          "count": 1
+        },
+        {
+          "ja": "表面張力",
+          "en": "surface tension",
+          "count": 1
+        },
+        {
+          "ja": "電磁波(特に可視光)",
+          "en": "electromagnetic waves (especially visible light)",
+          "count": 1
+        },
+        {
+          "ja": "水面波",
+          "en": "water waves",
+          "count": 1
+        },
+        {
+          "ja": "弦を伝わる波",
+          "en": "waves on a string",
+          "count": 1
+        },
+        {
+          "ja": "光(筒)",
+          "en": "light (tube)",
+          "count": 1
+        },
+        {
+          "ja": "スリットを通る水面波",
+          "en": "water waves passing through a slit",
+          "count": 1
+        },
+        {
+          "ja": "光の屈折\n(水,油,アクリル)",
+          "en": "refraction of light / (water, oil, acrylic)",
+          "count": 1
+        },
+        {
+          "ja": "反射",
+          "en": "reflection",
+          "count": 1
+        },
+        {
+          "ja": "散乱",
+          "en": "scattering",
+          "count": 1
+        },
+        {
+          "ja": "分散",
+          "en": "dispersion",
+          "count": 1
+        },
+        {
+          "ja": "屈折",
+          "en": "refraction",
+          "count": 1
+        },
+        {
+          "ja": "透過",
+          "en": "transmission",
+          "count": 1
+        },
+        {
+          "ja": "偏光",
+          "en": "polarization",
+          "count": 1
+        },
+        {
+          "ja": "単スリット",
+          "en": "single slit",
+          "count": 1
+        },
+        {
+          "ja": "虹",
+          "en": "rainbow",
+          "count": 1
+        },
+        {
+          "ja": "プリズム",
+          "en": "prism",
+          "count": 1
+        },
+        {
+          "ja": "回折",
+          "en": "diffraction",
+          "count": 1
+        },
+        {
+          "ja": "干渉",
+          "en": "interference",
+          "count": 1
+        },
+        {
+          "ja": "定在波",
+          "en": "standing wave",
+          "count": 1
+        },
+        {
+          "ja": "レンズの式\n写像公式\n円とレンズの2次近似\n放物線と集光・焦点関係",
+          "en": "lens equation / imaging formula / quadratic approximation of a circle and a lens / parabola, focusing, and the focal relation",
+          "count": 1
+        },
+        {
+          "ja": "幾何光学",
+          "en": "geometrical optics",
+          "count": 1
+        },
+        {
+          "ja": "弦における定在波",
+          "en": "standing wave on a string",
+          "count": 1
+        },
+        {
+          "ja": "弦における波の反射",
+          "en": "reflection of a wave on a string",
+          "count": 1
+        },
+        {
+          "ja": "円形波の干渉(水面波)",
+          "en": "interference of circular waves (water waves)",
+          "count": 1
+        },
+        {
+          "ja": "ダブルスリット\n多重スリット\n回折格子",
+          "en": "double slit / multiple slits / diffraction grating",
+          "count": 1
+        },
+        {
+          "ja": "(S波)",
+          "en": "(S wave)",
+          "count": 1
+        },
+        {
+          "ja": "(P波)",
+          "en": "(P wave)",
+          "count": 1
+        },
+        {
+          "ja": "地震波",
+          "en": "seismic waves",
+          "count": 1
+        },
+        {
+          "ja": "牛乳粒子による散乱\nグルースティックによる散乱\n青空,夕焼け",
+          "en": "scattering by milk particles / scattering by a glue stick / blue sky and sunset",
+          "count": 1
+        },
+        {
+          "ja": "弦における波の透過",
+          "en": "transmission of a wave on a string",
+          "count": 1
+        },
+        {
+          "ja": "衝撃波",
+          "en": "shock wave",
+          "count": 1
+        },
+        {
+          "ja": "(底の浅い波)",
+          "en": "(shallow-water waves)",
+          "count": 1
+        },
+        {
+          "ja": "水面波の反射",
+          "en": "reflection of water waves",
+          "count": 1
+        },
+        {
+          "ja": "気柱の共鳴",
+          "en": "resonance of an air column",
+          "count": 1
+        },
+        {
+          "ja": "開管,閉管",
+          "en": "open pipe, closed pipe",
+          "count": 1
+        },
+        {
+          "ja": "波動方程式の解(波動関数)にまつわる諸現象",
+          "en": "phenomena associated with solutions of the wave equation (wave functions)",
+          "count": 1
+        },
+        {
+          "ja": "三角関数(波の式)の重ね合わせ",
+          "en": "superposition of trigonometric functions (wave expressions)",
+          "count": 1
+        },
+        {
+          "ja": "波動方程式の解",
+          "en": "solutions of the wave equation",
+          "count": 1
+        },
+        {
+          "ja": "フーリエ級数展開",
+          "en": "Fourier series expansion",
+          "count": 1
+        },
+        {
+          "ja": "弦における波の干渉",
+          "en": "interference of waves on a string",
+          "count": 1
+        },
+        {
+          "ja": "音波",
+          "en": "sound waves",
+          "count": 1
+        },
+        {
+          "ja": "(空気)",
+          "en": "(air)",
+          "count": 1
+        },
+        {
+          "ja": "30万",
+          "en": "300,000",
+          "count": 1
+        },
+        {
+          "ja": "2次元以上",
+          "en": "two or more dimensions",
+          "count": 1
+        },
+        {
+          "ja": "偏光板を通した光の観察\n砂糖水を通った光の観察",
+          "en": "observation of light through polarizers / observation of light that has passed through sugar water",
+          "count": 1
+        },
+        {
+          "ja": "薄膜干渉",
+          "en": "thin-film interference",
+          "count": 1
+        },
+        {
+          "ja": "異媒質間の現象",
+          "en": "phenomena at an interface between different media",
+          "count": 1
+        }
+      ],
+      "articleKeys": [],
+      "formulasUnchanged": [
+        {
+          "text": "7 [km/s]",
+          "count": 1
+        },
+        {
+          "text": "3.5 [km/s]",
+          "count": 1
+        },
+        {
+          "text": "=",
+          "count": 4
+        },
+        {
+          "text": "ρ",
+          "count": 1
+        },
+        {
+          "text": "T",
+          "count": 2
+        },
+        {
+          "text": "μ",
+          "count": 1
+        },
+        {
+          "text": "v",
+          "count": 2
+        },
+        {
+          "text": "ε",
+          "count": 1
+        },
+        {
+          "text": "v =",
+          "count": 2
+        },
+        {
+          "text": "γRT",
+          "count": 1
+        },
+        {
+          "text": "m",
+          "count": 1
+        },
+        {
+          "text": "[m/s]",
+          "count": 2
+        },
+        {
+          "text": "m/s",
+          "count": 1
+        },
+        {
+          "text": "=           [km/s]",
+          "count": 1
+        },
+        {
+          "text": "gh",
+          "count": 1
+        },
+        {
+          "text": "331.6+0.6 T",
+          "count": 1
+        }
+      ],
+      "markers": [
+        {
+          "text": "ignore",
+          "en": "ignore",
+          "count": 5,
+          "note": "ハイライト生成で読み飛ばす印。物理用語ではない。"
+        }
+      ]
+    }
+  }
+}
